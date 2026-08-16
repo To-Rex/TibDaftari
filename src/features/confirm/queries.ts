@@ -7,7 +7,7 @@ export function useTemplatesFor(companyId: Id, item: Pick<OrderItem, 'serviceTyp
   return useQuery({
     queryKey: ['templates', companyId, 'active', item?.serviceTypeId],
     queryFn: async () => {
-      const all = await repos.templates.list(companyId, { status: 'active', serviceTypeId: item!.serviceTypeId })
+      const all = (await repos.templates.list(companyId, { status: 'active', serviceTypeId: item!.serviceTypeId })).filter((t) => t.scope !== 'order')
       // most specific first: service-bound → category-bound → generic
       return all.sort((a, b) => score(b, item!) - score(a, item!))
     },
