@@ -3,13 +3,5 @@
   "provider": "node",
   "packages": {
     "node": "22"
-  },
-  "steps": {
-    "install": {
-      "commands": ["npm ci --no-audit --no-fund"]
-    },
-    "build": {
-      "commands": ["npm run build"]
-    }
   }
 }
