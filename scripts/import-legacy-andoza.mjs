@@ -80,7 +80,7 @@ const style = (e) => ({
   color: e.color || '#000000',
   align: ['left', 'center', 'right', 'justify'].includes(e.align) ? e.align : 'left',
   vAlign: 'top',
-  lineHeight: e.lh ? Number(e.lh) : 1.2,
+  lineHeight: e.lh ? Number(e.lh) : 1.15,
   letterSpacing: e.ls ? Number(e.ls) : undefined,
   background: e.bg && e.bg !== 'transparent' ? e.bg : undefined,
 })
@@ -105,11 +105,46 @@ function convert(el, docKey) {
   }
 }
 
+/**
+ * SES letterhead fix. In the pixel-perfect renderers (blanka_par.py etc.) the
+ * 4 organisation title lines are centred to the RIGHT of the logo (centre ≈
+ * 124.7 mm = 471 px), while the hand-made andoza JSON centres them across the
+ * full page width — which overlaps the logo. Re-centre any centred text that
+ * sits in the logo band and horizontally overlaps the logo image.
+ */
+function fixLetterhead(elements) {
+  const logo = elements.find((e) => e.type === 'image' && e.y < 60 && e.x < 120 && e.w > 100)
+  if (!logo) return elements
+  const logoRight = logo.x + logo.w
+  const band = logo.y + logo.h * 0.7 // organisation title lines only (section titles sit lower)
+  return elements.map((e) => {
+    if (e.type !== 'text' || e.style.align !== 'center') return e
+    if (e.y > band || e.x > logoRight) return e
+    const right = e.x + e.w
+    const x = logoRight + 6
+    if (right - x < 200) return e
+    return { ...e, x: round(x), w: round(right - x) } // legacy: line 1 starts at 263px — this gives ~258px
+  })
+}
+
+/** Text boxes on the same line must not overlap the next box (legacy PDF clips at the box edge). */
+function fixRowOverlaps(elements) {
+  const texts = elements.filter((e) => e.type === 'text' && !e.repeat)
+  return elements.map((e) => {
+    if (e.type !== 'text' || e.repeat || e.style.align === 'center') return e
+    const next = texts
+      .filter((o) => o !== e && Math.abs(o.y - e.y) < 8 && o.x > e.x + 20 && o.x < e.x + e.w)
+      .sort((a, b) => a.x - b.x)[0]
+    if (!next) return e
+    return { ...e, w: round(Math.max(30, next.x - e.x - 4)) }
+  })
+}
+
 const docs = {}
 for (const f of readdirSync(SRC).filter((x) => x.endsWith('.json'))) {
   const key = f.replace('.json', '')
   const src = JSON.parse(readFileSync(join(SRC, f), 'utf8'))
-  const elements = (src.elements ?? []).map((e) => convert(e, key)).filter(Boolean)
+  const elements = fixRowOverlaps(fixLetterhead((src.elements ?? []).map((e) => convert(e, key)).filter(Boolean)))
   docs[key] = { name: src.name ?? key, doc: { paper: 'A4', orientation: src.orientation === 'landscape' ? 'landscape' : 'portrait', background: src.bg || '#ffffff', margin: 40, elements } }
   console.log(key, elements.length, 'elements')
 }

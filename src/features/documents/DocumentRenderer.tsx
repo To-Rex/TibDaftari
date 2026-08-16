@@ -89,8 +89,12 @@ function ElementView({ el, z, ctx, raw, assetUrl, selected, onClick }: { el: Tem
   )
   const row = el.__row
   switch (el.type) {
-    case 'text':
-      return wrap(<div style={{ ...textStyleToCss(el.style), width: '100%', height: '100%', padding: el.padding }}>{raw ? el.text : interpolate(el.text, ctx, row)}</div>)
+    case 'text': {
+      // Legacy PDF semantics: a box shorter than two lines is a single line — clipped, never wrapped.
+      const lineH = el.style.fontSize * (el.style.lineHeight ?? 1.35)
+      const singleLine = el.h < lineH * 2 && !el.text.includes('\n')
+      return wrap(<div style={{ ...textStyleToCss(el.style), width: '100%', height: '100%', padding: el.padding, ...(singleLine ? { whiteSpace: 'nowrap', wordBreak: 'normal' } : {}) }}>{raw ? el.text : interpolate(el.text, ctx, row)}</div>)
+    }
     case 'field': {
       const def = fieldDef(ctx.schema, el.fieldKey)
       const label = def?.label ?? el.fieldKey
