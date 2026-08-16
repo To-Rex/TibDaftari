@@ -1,4 +1,4 @@
-# Clinic-Web — Architecture & Conventions
+# TibDaftari (Clinic-Web) — Architecture & Conventions
 
 React 19 + Vite 8 + TypeScript (strict) + Tailwind v4 + TanStack Query + Zustand + react-router 7 + i18next + motion.
 

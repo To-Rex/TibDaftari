@@ -1,4 +1,4 @@
-# Clinic-Web
+# TibDaftari — web ilova
 
 Ko‘p filialli klinika platformasining web ilovasi (React 19 + Vite + TypeScript). Uch modul bitta ilovada:
 

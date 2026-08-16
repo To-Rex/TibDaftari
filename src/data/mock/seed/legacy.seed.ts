@@ -84,7 +84,7 @@ function tableSchema(p: LgProduct, rows: LgNatija[]): AttributeSchema {
   }
   return {
     id: `sch_lg_${p.id}`, companyId: 'c1', name: p.name, version: 1, status: 'published', usedBy: 1, ...stamp(),
-    description: 'NavbatApp bazasidan import qilingan natija shabloni',
+    description: 'Import qilingan natija shabloni',
     fields: [table, { key: 'comment', label: 'Laborant izohi', type: 'longtext', required: false, order: 2, maxLength: 500 }],
   }
 }
@@ -183,7 +183,7 @@ export function buildLegacyCatalog(): { serviceTypes: ServiceType[]; schemas: At
     if (!src) continue
     const ids = b.serviceIds.map((n) => `st_lg_${n}`).filter((id) => serviceTypes.some((s) => s.id === id))
     const tpl: ResultTemplate = {
-      id: `tpl_andoza_${key}`, companyId: 'c1', name: `${src.name} (SES andoza)`, description: `NavbatApp andoza: ${b.note}`,
+      id: `tpl_andoza_${key}`, companyId: 'c1', name: `${src.name} (SES andoza)`, description: `SES andoza: ${b.note}`,
       status: b.status, version: 1, serviceTypeIds: ids, categoryIds: b.categoryIds ?? [], scope: b.scope, language: 'uz', doc: src.doc, usage: 0, ...stamp(400),
     }
     templates.push(tpl)

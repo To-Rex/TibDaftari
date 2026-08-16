@@ -3,7 +3,7 @@ import type { Dictionary } from './uz'
 
 export const ru: DeepPartial<Dictionary> = {
   common: {
-    appName: 'Clinic', loading: 'Загрузка…', save: 'Сохранить', saving: 'Сохранение…', cancel: 'Отмена', close: 'Закрыть', delete: 'Удалить', edit: 'Изменить',
+    appName: 'TibDaftari', loading: 'Загрузка…', save: 'Сохранить', saving: 'Сохранение…', cancel: 'Отмена', close: 'Закрыть', delete: 'Удалить', edit: 'Изменить',
     create: 'Создать', add: 'Добавить', search: 'Поиск', searchPlaceholder: 'Поиск…', filter: 'Фильтр', all: 'Все', yes: 'Да', no: 'Нет', back: 'Назад', next: 'Далее', done: 'Готово',
     actions: 'Действия', status: 'Статус', date: 'Дата', today: 'Сегодня', yesterday: 'Вчера', last7: '7 дней', last30: '30 дней', thisMonth: 'Этот месяц', total: 'Итого', sum: 'сум',
     empty: 'Ничего не найдено', emptyHint: 'Измените поиск или фильтр', error: 'Произошла ошибка', retry: 'Повторить', required: 'Обязательное поле', optional: 'необязательно',
@@ -32,6 +32,6 @@ export const ru: DeepPartial<Dictionary> = {
     ctaPatient: 'Посмотреть результаты', ctaStaff: 'Для сотрудников', feat1Title: 'Результат готов — приходит SMS', feat1Text: 'Как только врач подтвердит, результат появится в кабинете и придёт SMS.',
     feat2Title: 'Все документы сохраняются', feat2Text: 'PDF-бланки, чеки и история визитов — скачивайте в любое время.', feat3Title: 'Для сетевых клиник',
     feat3Text: 'Компания → филиал → сотрудник. Роли, права, отчёты и динамические шаблоны.', stat1: 'результатов доставлено', stat2: 'клиник', stat3: 'среднее ожидание',
-    footer: '© {{year}} Clinic. Все права защищены.', demoBadge: 'Демо-режим — тестовые данные',
+    footer: '© {{year}} TibDaftari. Все права защищены.', demoBadge: 'Демо-режим — тестовые данные',
   },
 }

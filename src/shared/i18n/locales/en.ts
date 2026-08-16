@@ -3,7 +3,7 @@ import type { Dictionary } from './uz'
 
 export const en: DeepPartial<Dictionary> = {
   common: {
-    appName: 'Clinic', loading: 'Loading…', save: 'Save', saving: 'Saving…', cancel: 'Cancel', close: 'Close', delete: 'Delete', edit: 'Edit', create: 'Create', add: 'Add',
+    appName: 'TibDaftari', loading: 'Loading…', save: 'Save', saving: 'Saving…', cancel: 'Cancel', close: 'Close', delete: 'Delete', edit: 'Edit', create: 'Create', add: 'Add',
     search: 'Search', searchPlaceholder: 'Search…', filter: 'Filter', all: 'All', yes: 'Yes', no: 'No', back: 'Back', next: 'Next', done: 'Done', actions: 'Actions', status: 'Status',
     date: 'Date', today: 'Today', yesterday: 'Yesterday', last7: '7 days', last30: '30 days', thisMonth: 'This month', total: 'Total', sum: 'UZS', empty: 'Nothing found',
     emptyHint: 'Try changing the search or filters', error: 'Something went wrong', retry: 'Retry', required: 'Required', optional: 'optional', confirm: 'Confirm', areYouSure: 'Are you sure?',
@@ -31,6 +31,6 @@ export const en: DeepPartial<Dictionary> = {
     ctaPatient: 'See my results', ctaStaff: 'For staff', feat1Title: 'Result ready — you get an SMS', feat1Text: 'As soon as the doctor approves, the result appears in your portal and an SMS is sent.',
     feat2Title: 'Every document is kept', feat2Text: 'PDF forms, receipts and visit history — download any time.', feat3Title: 'Built for multi-branch clinics',
     feat3Text: 'Company → branch → employee. Roles, permissions, reports and dynamic templates.', stat1: 'results delivered', stat2: 'clinics', stat3: 'average wait',
-    footer: '© {{year}} Clinic. All rights reserved.', demoBadge: 'Demo mode — mock data',
+    footer: '© {{year}} TibDaftari. All rights reserved.', demoBadge: 'Demo mode — mock data',
   },
 }

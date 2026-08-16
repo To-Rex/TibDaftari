@@ -1,7 +1,7 @@
 /** Base locale. Other locales must satisfy this shape (typed in index.ts). */
 export const uz = {
   common: {
-    appName: 'Clinic',
+    appName: 'TibDaftari',
     loading: 'Yuklanmoqda…',
     save: 'Saqlash',
     saving: 'Saqlanmoqda…',
@@ -154,7 +154,7 @@ export const uz = {
     stat1: 'natija yetkazildi',
     stat2: 'klinika',
     stat3: 'o‘rtacha kutish',
-    footer: '© {{year}} Clinic. Barcha huquqlar himoyalangan.',
+    footer: '© {{year}} TibDaftari. Barcha huquqlar himoyalangan.',
     demoBadge: 'Demo rejim — mock ma’lumotlar',
   },
 }
