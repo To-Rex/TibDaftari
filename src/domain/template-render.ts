@@ -44,6 +44,8 @@ export interface RenderContext {
   }
   company: { name: string; phone?: string; address?: string }
   branch: { name: string; address?: string }
+  /** department (category) of the service — its phone is printed in SES letterheads */
+  category: { name: string; phone?: string }
   today: string
   values: ValueMap
   schema: AttributeSchema | null

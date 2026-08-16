@@ -144,7 +144,7 @@ export interface ReportRepository {
 export interface PortalRepository {
   overview(patientId: Id): Promise<{ patient: Patient; orders: Order[]; documents: ResultDocument[]; companies: { id: Id; name: string }[] }>
   order(patientId: Id, orderId: Id): Promise<{ order: Order; items: OrderItem[]; documents: ResultDocument[] }>
-  document(patientId: Id, documentId: Id): Promise<{ document: ResultDocument; template: ResultTemplate; item?: OrderItem; order: Order; items: OrderItem[]; schemas: AttributeSchema[]; serviceCodes: Record<Id, string> }>
+  document(patientId: Id, documentId: Id): Promise<{ document: ResultDocument; template: ResultTemplate; item?: OrderItem; order: Order; items: OrderItem[]; schemas: AttributeSchema[]; serviceCodes: Record<Id, string>; category?: Category }>
 }
 
 export interface Repositories {

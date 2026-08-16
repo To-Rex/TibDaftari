@@ -183,9 +183,9 @@ export const SCHEMAS: AttributeSchema[] = [
 
 /** Categories — identical to the NavbatApp `category` table (ids 1/2/3, original spelling). */
 export const CATEGORIES: Category[] = [
-  { id: 'cat_paraz', companyId: 'c1', parentId: null, name: 'Parozitologiya', code: 'PAR', icon: 'Bug', color: '#5b8def', order: 1, isActive: true, workflow: 'lab', ...stamp(300) },
-  { id: 'cat_bak', companyId: 'c1', parentId: null, name: 'Bakteriologiya', code: 'BAK', icon: 'Microscope', color: '#e6a23c', order: 2, isActive: true, workflow: 'lab', ...stamp(300) },
-  { id: 'cat_vir', companyId: 'c1', parentId: null, name: 'Virusalogiya', code: 'VIR', icon: 'Dna', color: '#c2413f', order: 3, isActive: true, workflow: 'lab', ...stamp(300) },
+  { id: 'cat_paraz', companyId: 'c1', parentId: null, name: 'Parozitologiya', code: 'PAR', phone: '97-092-08-88; 97-457-83-89', icon: 'Bug', color: '#5b8def', order: 1, isActive: true, workflow: 'lab', ...stamp(300) },
+  { id: 'cat_bak', companyId: 'c1', parentId: null, name: 'Bakteriologiya', code: 'BAK', phone: '91-424-04-83; 93-093-29-92', icon: 'Microscope', color: '#e6a23c', order: 2, isActive: true, workflow: 'lab', ...stamp(300) },
+  { id: 'cat_vir', companyId: 'c1', parentId: null, name: 'Virusalogiya', code: 'VIR', phone: '93-207-82-88; 91-427-99-91', icon: 'Dna', color: '#c2413f', order: 3, isActive: true, workflow: 'lab', ...stamp(300) },
 ]
 
 /** Service types come exclusively from the NavbatApp `product` table (see legacy.seed.ts). */

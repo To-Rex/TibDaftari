@@ -10,6 +10,7 @@ export interface CategoryDraft {
   id?: Id
   name: string
   code: string
+  phone: string
   parentId: Id | null
   icon: string
   color: string
@@ -19,8 +20,8 @@ export interface CategoryDraft {
 
 export const draftFromCategory = (c?: Category | null, parentId: Id | null = null): CategoryDraft =>
   c
-    ? { id: c.id, name: c.name, code: c.code ?? '', parentId: c.parentId, icon: c.icon ?? 'Folder', color: c.color ?? COLOR_SWATCHES[0]!, workflow: c.workflow, isActive: c.isActive }
-    : { name: '', code: '', parentId, icon: 'FlaskConical', color: COLOR_SWATCHES[0]!, workflow: 'lab', isActive: true }
+    ? { id: c.id, name: c.name, code: c.code ?? '', phone: c.phone ?? '', parentId: c.parentId, icon: c.icon ?? 'Folder', color: c.color ?? COLOR_SWATCHES[0]!, workflow: c.workflow, isActive: c.isActive }
+    : { name: '', code: '', phone: '', parentId, icon: 'FlaskConical', color: COLOR_SWATCHES[0]!, workflow: 'lab', isActive: true }
 
 export function CategoryDrawer({ open, onClose, initial, categories, onSubmit, saving }: {
   open: boolean; onClose: () => void; initial: CategoryDraft | null; categories: Category[]; onSubmit: (d: CategoryDraft) => void; saving?: boolean
@@ -43,6 +44,7 @@ export function CategoryDrawer({ open, onClose, initial, categories, onSubmit, s
           <Field label={t('common.name')} required error={nameErr}>{(id) => <Input id={id} value={d.name} onChange={(e) => set('name', e.target.value)} invalid={!!nameErr} placeholder={t('catalog.tree.namePh')} autoFocus />}</Field>
           <Field label={t('catalog.tree.code')}>{(id) => <Input id={id} value={d.code} onChange={(e) => set('code', e.target.value)} mono placeholder="LAB" />}</Field>
         </div>
+        <Field label={t('catalog.tree.phone')} hint={t('catalog.tree.phoneHint')}>{(id) => <Input id={id} value={d.phone} onChange={(e) => set('phone', e.target.value)} placeholder="97-092-08-88; 97-457-83-89" />}</Field>
         <Field label={t('catalog.tree.parent')}>{(id) => (
           <Select id={id} value={d.parentId ?? ''} onChange={(e) => set('parentId', e.target.value || null)}>
             <option value="">{t('catalog.tree.rootLevel')}</option>

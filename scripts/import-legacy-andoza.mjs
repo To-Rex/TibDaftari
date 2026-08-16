@@ -223,14 +223,69 @@ function rebuildHepatitisTables(elements) {
   return res
 }
 
+/** Letterhead phone → department phone placeholder; "Намуна тури:" gets its bound value. */
+function bindLetterhead(elements, docKey) {
+  const out = []
+  for (const e of elements) {
+    if (e.type === 'text' && /^Телефон:\s*228-82-81/.test(String(e.text))) { out.push({ ...e, text: 'Телефон: {category.phone}' }); continue }
+    if (e.type === 'text' && /^Telefon:\s*\d/.test(String(e.text))) { out.push({ ...e, text: 'Telefon: {category.phone}' }); continue }
+    out.push(e)
+    if (e.type === 'text' && /^Намуна тури:/.test(String(e.text)) && docKey !== 'virusologiya' && docKey !== 'virus_bio') {
+      // value slot to the right of the label (bold, like the other values of the block)
+      out.push({ ...e, id: `${e.id}_v`, x: e.x + 118, w: Math.max(120, e.w - 118), text: '{values.sample_type}', style: { ...e.style, fontWeight: 700 }, name: 'Namuna turi' })
+    }
+  }
+  return out
+}
+
+/**
+ * natija_bak_k.fr3 (disbakterioz): same letterhead as bakteriologiya but a 3-column table
+ *   Текширилган микроорганизмлар | аниқланди | меъёр  — one repeated row per schema table row.
+ * Derived from the bakteriologiya doc by replacing its single-column table block.
+ */
+function deriveBakK(bakDoc) {
+  const els = bakDoc.elements
+  const TABLE_TOP = 378, TABLE_HDR_BOTTOM = 399, ROW0 = 400, STEP = 22
+  const isTable = (e) => e.y >= TABLE_TOP && e.y < ROW0 + STEP + 2 && (e.type === 'rect' || (e.type === 'text' && (e.repeat || /ТАҲЛИЛ НАТИЖАСИ/.test(String(e.text)))))
+  const keep = els.filter((e) => !isTable(e))
+  const cellStyle = els.find((e) => e.type === 'text' && e.repeat)?.style ?? { fontFamily: 'serif', fontSize: 16, fontWeight: 400, color: '#000000', align: 'left', vAlign: 'top', lineHeight: 1.15 }
+  const headStyle = { ...cellStyle, fontWeight: 700, align: 'center' }
+  const uid = () => `lg_bakk_${Math.random().toString(36).slice(2, 8)}`
+  const X = [53, 430, 560, 734] // column edges (name | found | norm)
+  const rect = (x, y, w, h, extra = {}) => ({ id: uid(), type: 'rect', x, y, w, h, fill: '#000000', ...extra })
+  const text = (x, y, w, t, style, extra = {}) => ({ id: uid(), type: 'text', x, y, w, h: 22, text: t, style, ...extra })
+  const rep = { fieldKey: 'rows', step: STEP }
+  const table = [
+    // header
+    rect(54, TABLE_TOP, 681, 1), rect(54, TABLE_HDR_BOTTOM, 681, 1),
+    ...X.map((x) => rect(x, TABLE_TOP, 1, TABLE_HDR_BOTTOM - TABLE_TOP + 1)),
+    text(X[0] + 2, TABLE_TOP + 3, X[1] - X[0] - 4, 'Текширилган микроорганизмлар', headStyle),
+    text(X[1] + 2, TABLE_TOP + 3, X[2] - X[1] - 4, 'аниқланди', headStyle),
+    text(X[2] + 2, TABLE_TOP + 3, X[3] - X[2] - 4, 'меъёр', headStyle),
+    // repeated row: vertical rules + bottom line + 3 cells (found cell highlighted when filled — legacy blue)
+    ...X.map((x) => rect(x, ROW0, 1, STEP, { repeat: rep })),
+    rect(54, ROW0 + STEP - 1, 681, 1, { repeat: rep }),
+    rect(X[1] + 1, ROW0, X[2] - X[1] - 1, STEP - 1, { fill: '#a9c4f5', repeat: rep, showIf: '{row.natija}' }),
+    text(X[0] + 3, ROW0 + 3, X[1] - X[0] - 6, '{i} {row.name}', cellStyle, { repeat: rep }),
+    text(X[1] + 3, ROW0 + 3, X[2] - X[1] - 6, '{row.natija}', { ...cellStyle, align: 'center' }, { repeat: rep }),
+    text(X[2] + 3, ROW0 + 3, X[3] - X[2] - 6, '{row.norma}', cellStyle, { repeat: rep }),
+  ]
+  // footer of the bak doc starts at y≈471; 13 rows × 22 = 286 → push everything below the table down so it clears the rows
+  const shift = ROW0 + 13 * STEP + 24 - 471
+  const moved = keep.map((e) => (e.y >= 471 ? { ...e, y: e.y + shift } : e))
+  return { ...bakDoc, elements: [...moved, ...table] }
+}
+
 const docs = {}
 for (const f of readdirSync(SRC).filter((x) => x.endsWith('.json'))) {
   const key = f.replace('.json', '')
   const src = JSON.parse(readFileSync(join(SRC, f), 'utf8'))
   let elements = fixRowOverlaps(fixLetterhead((src.elements ?? []).map((e) => convert(e, key)).filter(Boolean)))
   if (key === 'virusologiya') elements = rebuildHepatitisTables(elements)
+  elements = bindLetterhead(elements, key)
   docs[key] = { name: src.name ?? key, doc: { paper: 'A4', orientation: src.orientation === 'landscape' ? 'landscape' : 'portrait', background: src.bg || '#ffffff', margin: 40, elements } }
   console.log(key, elements.length, 'elements')
 }
+if (docs.bakteriologiya) { docs.bakteriologiya_k = { name: 'Ichak disbakteriozi (3 ustun)', doc: deriveBakK(docs.bakteriologiya.doc) }; console.log('bakteriologiya_k derived', docs.bakteriologiya_k.doc.elements.length, 'elements') }
 writeFileSync(OUT_JSON, JSON.stringify({ assets, docs }, null, 1), 'utf8')
 console.log('assets:', assets.length, '→', OUT_DIR)

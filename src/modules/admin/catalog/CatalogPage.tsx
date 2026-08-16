@@ -87,7 +87,7 @@ export default function CatalogPage() {
 
   const submitCategory = async (d: CategoryDraft) => {
     try {
-      await saveCat.mutateAsync({ id: d.id, name: d.name, code: d.code || undefined, parentId: d.parentId, icon: d.icon, color: d.color, workflow: d.workflow, isActive: d.isActive })
+      await saveCat.mutateAsync({ id: d.id, name: d.name, code: d.code || undefined, phone: d.phone.trim() || undefined, parentId: d.parentId, icon: d.icon, color: d.color, workflow: d.workflow, isActive: d.isActive })
       toast.success(t('catalog.tree.saved'))
       setCatDraft(null)
     } catch (e) { toast.error(errorMessage(e)) }

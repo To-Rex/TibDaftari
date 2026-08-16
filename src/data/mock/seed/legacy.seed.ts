@@ -25,9 +25,10 @@ const importedTemplates = rawTemplates as { assets: Omit<TemplateAsset, 'company
 /** Legacy andoza (NavbatApp app/shablon/andoza) → which services use it (mirrors legacy andoza_store.key_for_bundle). */
 const ANDOZA_BINDINGS: Record<string, { serviceIds: number[]; categoryIds?: string[]; scope: 'item' | 'order'; status: 'active' | 'draft'; note: string }> = {
   parazitologiya: { serviceIds: [66], scope: 'item', status: 'active', note: 'natija_par*.fr3' },
-  bakteriologiya: { serviceIds: [48, 50, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 64, 93], scope: 'item', status: 'active', note: 'natija_bak_jami.fr3' },
+  bakteriologiya: { serviceIds: [48, 50, 52, 53, 54, 55, 56, 57, 58, 59, 60], scope: 'item', status: 'active', note: 'natija_bak_jami.fr3' },
+  bakteriologiya_k: { serviceIds: [61], scope: 'item', status: 'active', note: 'natija_bak_k.fr3 (3 ustun: mikroorganizm / аниқланди / меъёр)' },
   gemokultura: { serviceIds: [51], scope: 'item', status: 'active', note: 'product 51' },
-  mikroflora: { serviceIds: [62], scope: 'item', status: 'active', note: 'natija_bak_ma.fr3' },
+  mikroflora: { serviceIds: [62, 64, 93], scope: 'item', status: 'active', note: 'natija_bak_ma.fr3 (4 ustun)' },
   virus_bio: { serviceIds: [97, 98, 99, 100, 101, 102, 103], scope: 'item', status: 'active', note: 'natija_virus.json (biokimyo)' },
   // Hepatitis panel: ONE document per order covering all bound hepatitis services (legacy request-level blanka).
   virusologiya: { serviceIds: [85, 95, 83, 84, 92, 96, 86, 87, 104, 88, 89, 90, 91], scope: 'order', status: 'active', note: 'natija_virus.fr3 (gepatit paneli 6/3/4 qator, chek darajasida)' },
@@ -47,6 +48,8 @@ const QUALITATIVE = new Set([83, 84, 86, 87, 92, 80, 85, 95, 96, 104])
 const QUANTITATIVE = new Set([88, 89, 90])
 const GENOTYPE = new Set([91])
 const BIOCHEM = new Set([97, 98, 99, 100, 101, 102, 103])
+/** SES 4-column antibiogram blanka (natija_bak_ma): mikroflora + 3/12-disk sensitivity tests */
+const ANTIBIOGRAM_LAYOUT = new Set([62, 64, 93])
 
 /** Columns for a product from `ustun` (falls back to product 0 defaults). Dedupes by field, preferring specific labels. */
 function columnsFor(pid: number): { key: string; label: string; width: number }[] {
@@ -63,7 +66,7 @@ function columnsFor(pid: number): { key: string; label: string; width: number }[
 }
 
 function tableSchema(p: LgProduct, rows: LgNatija[]): AttributeSchema {
-  const isAntibiogram = rows.some((r) => r.name1)
+  const isAntibiogram = rows.some((r) => r.name1) || ANTIBIOGRAM_LAYOUT.has(p.id)
   const cols = isAntibiogram
     ? [{ key: 'name', label: 'Антибиотик', width: 300 }, { key: 'natija', label: 'Сезувчанлиги', width: 120 }, { key: 'natija1', label: 'Антибиотик (2)', width: 300 }, { key: 'natija2', label: 'Сезувчанлиги (2)', width: 120 }]
     : columnsFor(p.id)
@@ -85,7 +88,11 @@ function tableSchema(p: LgProduct, rows: LgNatija[]): AttributeSchema {
   return {
     id: `sch_lg_${p.id}`, companyId: 'c1', name: p.name, version: 1, status: 'published', usedBy: 1, ...stamp(),
     description: 'Import qilingan natija shabloni',
-    fields: [table, { key: 'comment', label: 'Laborant izohi', type: 'longtext', required: false, order: 2, maxLength: 500 }],
+    fields: [
+      table,
+      { key: 'sample_type', label: 'Namuna turi', type: 'text', required: false, order: 2, placeholder: 'сийдик / нажас / кўкрак сути …' },
+      { key: 'comment', label: 'Laborant izohi', type: 'longtext', required: false, order: 3, maxLength: 500 },
+    ],
   }
 }
 
@@ -168,7 +175,7 @@ function virusSingleTemplate(assets: TemplateAsset[]): ResultTemplate {
       T(240, 92, 500, 22, 'XORAZM VILOYATI BOShQARMASI', { ...B, fontSize: 15, align: 'center' }, 'Tashkilot 3'),
       T(240, 113, 500, 22, 'XORAZM VILOYAT SES', { ...B, fontSize: 15, align: 'center' }, 'Tashkilot 4'),
       T(242, 140, 460, 16, 'Urganch sh, A.Baxodirxon ko‘chasi,177-uy,', { fontSize: 11.5 }, 'Manzil'),
-      T(242, 156, 460, 16, 'Telefon: 93-207-82-88; 91-427-99-91', { fontSize: 11.5 }, 'Telefon'),
+      T(242, 156, 460, 16, 'Telefon: {category.phone}', { fontSize: 11.5 }, 'Telefon'),
       T(242, 172, 460, 16, 'Veb sayt: www.xorazm-seojsx.uz', { fontSize: 11.5 }),
       T(242, 188, 460, 16, 'Telegram kanal: t.me/xorazmseojsx', { fontSize: 11.5 }),
       T(40, 222, 714, 22, 'VIRUSOLOGIYA TAHLILGOXI', { ...B, fontSize: 14, align: 'center' }, 'Bo‘lim'),

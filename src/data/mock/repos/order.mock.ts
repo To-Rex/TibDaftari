@@ -388,7 +388,8 @@ export const portalMock: PortalRepository = {
     const schemas = d.schemas.filter((s) => schemaIds.has(s.id))
     const serviceCodes: Record<string, string> = {}
     for (const i of items) serviceCodes[i.serviceTypeId] = d.serviceTypes.find((s) => s.id === i.serviceTypeId)?.code ?? i.serviceTypeId
-    return clone({ document, template, item, order, items, schemas, serviceCodes })
+    const category = d.categories.find((c) => c.id === (item ?? items[0])?.categoryId)
+    return clone({ document, template, item, order, items, schemas, serviceCodes, category })
   },
 }
 

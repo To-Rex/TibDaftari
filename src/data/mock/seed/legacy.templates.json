@@ -210,7 +210,7 @@
       "w": 416,
       "h": 22,
       "type": "text",
-      "text": "Телефон: 228-82-81 Факс: 228-82-89",
+      "text": "Телефон: {category.phone}",
       "style": {
        "fontFamily": "serif",
        "fontSize": 16,
@@ -487,6 +487,25 @@
        "lineHeight": 1.1
       },
       "name": "Намуна тури: "
+     },
+     {
+      "id": "lg_k_v",
+      "x": 529,
+      "y": 327,
+      "w": 120,
+      "h": 22,
+      "type": "text",
+      "text": "{values.sample_type}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "Namuna turi"
      },
      {
       "id": "lg_l",
@@ -976,7 +995,7 @@
       "w": 416,
       "h": 22,
       "type": "text",
-      "text": "Телефон: 228-82-81 Факс: 228-82-89",
+      "text": "Телефон: {category.phone}",
       "style": {
        "fontFamily": "serif",
        "fontSize": 16,
@@ -1253,6 +1272,25 @@
        "lineHeight": 1.1
       },
       "name": "Намуна тури: "
+     },
+     {
+      "id": "lg_1t_v",
+      "x": 529,
+      "y": 327,
+      "w": 120,
+      "h": 22,
+      "type": "text",
+      "text": "{values.sample_type}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "Namuna turi"
      },
      {
       "id": "lg_1u",
@@ -1742,7 +1780,7 @@
       "w": 416,
       "h": 22,
       "type": "text",
-      "text": "Телефон: 228-82-81 Факс: 228-82-89",
+      "text": "Телефон: {category.phone}",
       "style": {
        "fontFamily": "serif",
        "fontSize": 16,
@@ -2019,6 +2057,25 @@
        "lineHeight": 1.1
       },
       "name": "Намуна тури: "
+     },
+     {
+      "id": "lg_32_v",
+      "x": 529,
+      "y": 315,
+      "w": 120,
+      "h": 24,
+      "type": "text",
+      "text": "{values.sample_type}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 17,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "Namuna turi"
      },
      {
       "id": "lg_33",
@@ -2653,7 +2710,7 @@
       "w": 397,
       "h": 22,
       "type": "text",
-      "text": "Телефон: 228-82-81 Факс: 228-82-89",
+      "text": "Телефон: {category.phone}",
       "style": {
        "fontFamily": "serif",
        "fontSize": 16,
@@ -3742,7 +3799,7 @@
       "w": 416,
       "h": 22,
       "type": "text",
-      "text": "Телефон: 228-82-81 Факс: 228-82-89",
+      "text": "Телефон: {category.phone}",
       "style": {
        "fontFamily": "serif",
        "fontSize": 16,
@@ -5423,7 +5480,7 @@
       "fill": "#000000"
      },
      {
-      "id": "lg_hep_ngbkmj",
+      "id": "lg_hep_k96thy",
       "type": "text",
       "x": 56,
       "y": 409,
@@ -5441,7 +5498,7 @@
       }
      },
      {
-      "id": "lg_hep_rta9aw",
+      "id": "lg_hep_ry85qo",
       "type": "text",
       "x": 251,
       "y": 409,
@@ -5459,7 +5516,7 @@
       }
      },
      {
-      "id": "lg_hep_8ncckm",
+      "id": "lg_hep_djoa38",
       "type": "text",
       "x": 371,
       "y": 409,
@@ -5477,7 +5534,7 @@
       }
      },
      {
-      "id": "lg_hep_iuf4d4",
+      "id": "lg_hep_ln25f8",
       "type": "text",
       "x": 522,
       "y": 409,
@@ -5495,7 +5552,7 @@
       }
      },
      {
-      "id": "lg_hep_4r7f6e",
+      "id": "lg_hep_rzhtqe",
       "type": "text",
       "x": 658,
       "y": 409,
@@ -5513,7 +5570,7 @@
       }
      },
      {
-      "id": "lg_hep_2zbieu",
+      "id": "lg_hep_fduben",
       "type": "rect",
       "x": 54,
       "y": 426,
@@ -5522,7 +5579,7 @@
       "fill": "#000000"
      },
      {
-      "id": "lg_hep_k10k9w",
+      "id": "lg_hep_nq95hm",
       "type": "text",
       "x": 56,
       "y": 428,
@@ -5540,7 +5597,7 @@
       }
      },
      {
-      "id": "lg_hep_6f09ev",
+      "id": "lg_hep_qmhy5p",
       "type": "text",
       "x": 251,
       "y": 428,
@@ -5558,7 +5615,7 @@
       }
      },
      {
-      "id": "lg_hep_xuzmao",
+      "id": "lg_hep_exjjub",
       "type": "text",
       "x": 371,
       "y": 428,
@@ -5576,7 +5633,7 @@
       }
      },
      {
-      "id": "lg_hep_3rtrap",
+      "id": "lg_hep_q1ujd5",
       "type": "text",
       "x": 522,
       "y": 428,
@@ -5594,7 +5651,7 @@
       }
      },
      {
-      "id": "lg_hep_fkviy9",
+      "id": "lg_hep_tvntbw",
       "type": "text",
       "x": 658,
       "y": 428,
@@ -5612,7 +5669,7 @@
       }
      },
      {
-      "id": "lg_hep_g6zwsf",
+      "id": "lg_hep_gcp750",
       "type": "rect",
       "x": 54,
       "y": 445,
@@ -5621,7 +5678,7 @@
       "fill": "#000000"
      },
      {
-      "id": "lg_hep_3dq8xt",
+      "id": "lg_hep_c22hhd",
       "type": "text",
       "x": 56,
       "y": 447,
@@ -5639,7 +5696,7 @@
       }
      },
      {
-      "id": "lg_hep_8t2cxh",
+      "id": "lg_hep_xrs6b3",
       "type": "text",
       "x": 251,
       "y": 447,
@@ -5657,7 +5714,7 @@
       }
      },
      {
-      "id": "lg_hep_mg7uqn",
+      "id": "lg_hep_c09812",
       "type": "text",
       "x": 371,
       "y": 447,
@@ -5675,7 +5732,7 @@
       }
      },
      {
-      "id": "lg_hep_03qisd",
+      "id": "lg_hep_4a29qs",
       "type": "text",
       "x": 522,
       "y": 447,
@@ -5693,7 +5750,7 @@
       }
      },
      {
-      "id": "lg_hep_yay6n9",
+      "id": "lg_hep_6yzzsf",
       "type": "text",
       "x": 658,
       "y": 447,
@@ -5711,7 +5768,7 @@
       }
      },
      {
-      "id": "lg_hep_qjtwts",
+      "id": "lg_hep_wwps35",
       "type": "rect",
       "x": 54,
       "y": 464,
@@ -5720,7 +5777,7 @@
       "fill": "#000000"
      },
      {
-      "id": "lg_hep_cdfd41",
+      "id": "lg_hep_nd5e8b",
       "type": "text",
       "x": 56,
       "y": 466,
@@ -5738,7 +5795,7 @@
       }
      },
      {
-      "id": "lg_hep_d10niq",
+      "id": "lg_hep_usf0q0",
       "type": "text",
       "x": 251,
       "y": 466,
@@ -5756,7 +5813,7 @@
       }
      },
      {
-      "id": "lg_hep_61ij69",
+      "id": "lg_hep_pwrjsx",
       "type": "text",
       "x": 371,
       "y": 466,
@@ -5774,7 +5831,7 @@
       }
      },
      {
-      "id": "lg_hep_q6mzfv",
+      "id": "lg_hep_jeaupl",
       "type": "text",
       "x": 522,
       "y": 466,
@@ -5792,7 +5849,7 @@
       }
      },
      {
-      "id": "lg_hep_ut7ff1",
+      "id": "lg_hep_w28vk4",
       "type": "text",
       "x": 658,
       "y": 466,
@@ -5810,7 +5867,7 @@
       }
      },
      {
-      "id": "lg_hep_kf667i",
+      "id": "lg_hep_683l87",
       "type": "rect",
       "x": 54,
       "y": 483,
@@ -5819,7 +5876,7 @@
       "fill": "#000000"
      },
      {
-      "id": "lg_hep_nstm0o",
+      "id": "lg_hep_0kgpo7",
       "type": "text",
       "x": 56,
       "y": 485,
@@ -5837,7 +5894,7 @@
       }
      },
      {
-      "id": "lg_hep_c3nc32",
+      "id": "lg_hep_1w7ciw",
       "type": "text",
       "x": 251,
       "y": 485,
@@ -5855,7 +5912,7 @@
       }
      },
      {
-      "id": "lg_hep_rukbbk",
+      "id": "lg_hep_cjralz",
       "type": "text",
       "x": 371,
       "y": 485,
@@ -5873,7 +5930,7 @@
       }
      },
      {
-      "id": "lg_hep_dcgu2p",
+      "id": "lg_hep_ttakd3",
       "type": "text",
       "x": 522,
       "y": 485,
@@ -5891,7 +5948,7 @@
       }
      },
      {
-      "id": "lg_hep_f54fm1",
+      "id": "lg_hep_gq5ndx",
       "type": "text",
       "x": 658,
       "y": 485,
@@ -5909,7 +5966,7 @@
       }
      },
      {
-      "id": "lg_hep_6w5lje",
+      "id": "lg_hep_f0fgpu",
       "type": "rect",
       "x": 54,
       "y": 502,
@@ -5918,7 +5975,7 @@
       "fill": "#000000"
      },
      {
-      "id": "lg_hep_siyp96",
+      "id": "lg_hep_uvo7x3",
       "type": "text",
       "x": 56,
       "y": 504,
@@ -5936,7 +5993,7 @@
       }
      },
      {
-      "id": "lg_hep_46hjju",
+      "id": "lg_hep_1bntt9",
       "type": "text",
       "x": 251,
       "y": 504,
@@ -5954,7 +6011,7 @@
       }
      },
      {
-      "id": "lg_hep_bwcs8p",
+      "id": "lg_hep_xjjp5i",
       "type": "text",
       "x": 371,
       "y": 504,
@@ -5972,7 +6029,7 @@
       }
      },
      {
-      "id": "lg_hep_03x8sj",
+      "id": "lg_hep_7ddshe",
       "type": "text",
       "x": 522,
       "y": 504,
@@ -5990,7 +6047,7 @@
       }
      },
      {
-      "id": "lg_hep_l0mhj3",
+      "id": "lg_hep_jm7njy",
       "type": "text",
       "x": 658,
       "y": 504,
@@ -6008,7 +6065,7 @@
       }
      },
      {
-      "id": "lg_hep_47tff7",
+      "id": "lg_hep_sqxyhv",
       "type": "rect",
       "x": 54,
       "y": 521,
@@ -6017,7 +6074,7 @@
       "fill": "#000000"
      },
      {
-      "id": "lg_hep_v8rsku",
+      "id": "lg_hep_v90j6o",
       "type": "text",
       "x": 56,
       "y": 648,
@@ -6035,7 +6092,7 @@
       }
      },
      {
-      "id": "lg_hep_6zf83n",
+      "id": "lg_hep_39vk3v",
       "type": "text",
       "x": 56,
       "y": 666,
@@ -6053,7 +6110,7 @@
       }
      },
      {
-      "id": "lg_hep_h1mbgo",
+      "id": "lg_hep_smhl3h",
       "type": "text",
       "x": 249,
       "y": 648,
@@ -6071,7 +6128,7 @@
       }
      },
      {
-      "id": "lg_hep_or191m",
+      "id": "lg_hep_wcr2ea",
       "type": "text",
       "x": 249,
       "y": 666,
@@ -6089,7 +6146,7 @@
       }
      },
      {
-      "id": "lg_hep_rozzr4",
+      "id": "lg_hep_jufkmq",
       "type": "text",
       "x": 371,
       "y": 648,
@@ -6107,7 +6164,7 @@
       }
      },
      {
-      "id": "lg_hep_9pyd6e",
+      "id": "lg_hep_cospjv",
       "type": "text",
       "x": 520,
       "y": 648,
@@ -7593,6 +7650,927 @@
       "type": "image",
       "fit": "contain",
       "assetId": "as_lg_c2b8b5c9e1"
+     }
+    ]
+   }
+  },
+  "bakteriologiya_k": {
+   "name": "Ichak disbakteriozi (3 ustun)",
+   "doc": {
+    "paper": "A4",
+    "orientation": "portrait",
+    "background": "#ffffff",
+    "margin": 40,
+    "elements": [
+     {
+      "id": "lg_0",
+      "x": 50,
+      "y": 42,
+      "w": 186,
+      "h": 164,
+      "type": "image",
+      "fit": "contain",
+      "assetId": "as_lg_facf628b1f"
+     },
+     {
+      "id": "lg_1",
+      "x": 242,
+      "y": 42,
+      "w": 514,
+      "h": 26,
+      "type": "text",
+      "text": "САНИТАРИЯ-ЭПИДЕМИОЛОГИК ОСОЙИШТАЛИК",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 19,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "САНИТАРИЯ-ЭПИДЕМИОЛОГИК ОСОЙИШ"
+     },
+     {
+      "id": "lg_2",
+      "x": 242,
+      "y": 63,
+      "w": 514,
+      "h": 26,
+      "type": "text",
+      "text": "ВА ЖАМОАТ САЛОМАТЛИГИ ҚЎМИТАСИНИНГ",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 19,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "ВА ЖАМОАТ САЛОМАТЛИГИ ҚЎМИТАСИ"
+     },
+     {
+      "id": "lg_3",
+      "x": 242,
+      "y": 83,
+      "w": 514,
+      "h": 26,
+      "type": "text",
+      "text": "ХОРАЗМ ВИЛОЯТИ БОШҚАРМАСИ",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 19,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "ХОРАЗМ ВИЛОЯТИ БОШҚАРМАСИ"
+     },
+     {
+      "id": "lg_4",
+      "x": 242,
+      "y": 104,
+      "w": 514,
+      "h": 26,
+      "type": "text",
+      "text": "ХОРАЗМ ВИЛОЯТ СЭС",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 19,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "ХОРАЗМ ВИЛОЯТ СЭС"
+     },
+     {
+      "id": "lg_5",
+      "x": 333,
+      "y": 123,
+      "w": 416,
+      "h": 22,
+      "type": "text",
+      "text": "Урганч ш, А.Баходирхон кўчаси,177-уй,",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "Урганч ш, А.Баходирхон кўчаси,"
+     },
+     {
+      "id": "lg_6",
+      "x": 333,
+      "y": 141,
+      "w": 416,
+      "h": 22,
+      "type": "text",
+      "text": "Телефон: {category.phone}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "Телефон: 228-82-81 Факс: 228-8"
+     },
+     {
+      "id": "lg_7",
+      "x": 333,
+      "y": 159,
+      "w": 416,
+      "h": 22,
+      "type": "text",
+      "text": "Веб сайт: www.xorazm-seojsx.uz",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "Веб сайт: www.xorazm-seojsx.uz"
+     },
+     {
+      "id": "lg_8",
+      "x": 333,
+      "y": 177,
+      "w": 416,
+      "h": 22,
+      "type": "text",
+      "text": "Телеграм канал: t.me/xorazmseojsx",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "Телеграм канал: t.me/xorazmseo"
+     },
+     {
+      "id": "lg_9",
+      "x": 38,
+      "y": 205,
+      "w": 718,
+      "h": 58,
+      "type": "text",
+      "text": "{item.serviceName}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 24,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "[product.\"name\"]"
+     },
+     {
+      "id": "lg_a",
+      "x": 78,
+      "y": 270,
+      "w": 61,
+      "h": 22,
+      "type": "text",
+      "text": "Chek №: ",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "Chek №: "
+     },
+     {
+      "id": "lg_b",
+      "x": 143,
+      "y": 270,
+      "w": 260,
+      "h": 22,
+      "type": "text",
+      "text": "{order.number}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "[frequest.\"chek_nn\"]"
+     },
+     {
+      "id": "lg_c",
+      "x": 407,
+      "y": 269,
+      "w": 73,
+      "h": 22,
+      "type": "text",
+      "text": "Мурожаат: ",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "Мурожаат: "
+     },
+     {
+      "id": "lg_d",
+      "x": 484,
+      "y": 269,
+      "w": 302,
+      "h": 22,
+      "type": "text",
+      "text": "{order.date}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "[frequest.\"chek_sana_full\"]"
+     },
+     {
+      "id": "lg_e",
+      "x": 78,
+      "y": 298,
+      "w": 122,
+      "h": 22,
+      "type": "text",
+      "text": "Мижоз Ф.И.Ш.: ",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "Мижоз Ф.И.Ш.: "
+     },
+     {
+      "id": "lg_f",
+      "x": 204,
+      "y": 298,
+      "w": 203,
+      "h": 22,
+      "type": "text",
+      "text": "{patient.fullName}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "[frequest.\"bemor\"]"
+     },
+     {
+      "id": "lg_g",
+      "x": 411,
+      "y": 296,
+      "w": 113,
+      "h": 22,
+      "type": "text",
+      "text": "Натижа санаси: ",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "Натижа санаси: "
+     },
+     {
+      "id": "lg_h",
+      "x": 528,
+      "y": 296,
+      "w": 302,
+      "h": 22,
+      "type": "text",
+      "text": "{item.approvedAt}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "[frequest.\"tasdiq_sana_full\"]"
+     },
+     {
+      "id": "lg_i",
+      "x": 78,
+      "y": 327,
+      "w": 115,
+      "h": 22,
+      "type": "text",
+      "text": "Яшаш манзили: ",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "Яшаш манзили: "
+     },
+     {
+      "id": "lg_j",
+      "x": 197,
+      "y": 327,
+      "w": 210,
+      "h": 22,
+      "type": "text",
+      "text": "{patient.address}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "[faddress.\"street_home\"]"
+     },
+     {
+      "id": "lg_k",
+      "x": 411,
+      "y": 327,
+      "w": 227,
+      "h": 22,
+      "type": "text",
+      "text": "Намуна тури: ",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "Намуна тури: "
+     },
+     {
+      "id": "lg_k_v",
+      "x": 529,
+      "y": 327,
+      "w": 120,
+      "h": 22,
+      "type": "text",
+      "text": "{values.sample_type}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "Namuna turi"
+     },
+     {
+      "id": "lg_l",
+      "x": 78,
+      "y": 352,
+      "w": 110,
+      "h": 22,
+      "type": "text",
+      "text": "Туғилган сана: ",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "Туғилган сана: "
+     },
+     {
+      "id": "lg_m",
+      "x": 192,
+      "y": 352,
+      "w": 215,
+      "h": 22,
+      "type": "text",
+      "text": "{patient.birthDate}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "[user.\"birthday\"]"
+     },
+     {
+      "id": "lg_n",
+      "x": 411,
+      "y": 352,
+      "w": 121,
+      "h": 22,
+      "type": "text",
+      "text": "Телефон рақами: ",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "Телефон рақами: "
+     },
+     {
+      "id": "lg_o",
+      "x": 536,
+      "y": 352,
+      "w": 302,
+      "h": 22,
+      "type": "text",
+      "text": "{patient.phone}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "[frequest.\"tel\"]"
+     },
+     {
+      "id": "lg_y",
+      "x": 273,
+      "y": 710,
+      "w": 144,
+      "h": 143,
+      "type": "image",
+      "fit": "contain",
+      "assetId": "as_lg_5dfb2b9f55"
+     },
+     {
+      "id": "lg_z",
+      "x": 481,
+      "y": 728,
+      "w": 74,
+      "h": 44,
+      "type": "image",
+      "fit": "contain",
+      "assetId": "as_lg_20b0429e58"
+     },
+     {
+      "id": "lg_10",
+      "x": 481,
+      "y": 789,
+      "w": 83,
+      "h": 45,
+      "type": "image",
+      "fit": "contain",
+      "assetId": "as_lg_e1cb807916"
+     },
+     {
+      "id": "lg_11",
+      "x": 59,
+      "y": 723,
+      "w": 529,
+      "h": 26,
+      "type": "text",
+      "text": "Тахлил ўтказди: ",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 19,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "Тахлил ўтказди: "
+     },
+     {
+      "id": "lg_12",
+      "x": 59,
+      "y": 743,
+      "w": 454,
+      "h": 26,
+      "type": "text",
+      "text": "Врач бактериолог",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 19,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "Врач бактериолог"
+     },
+     {
+      "id": "lg_13",
+      "x": 567,
+      "y": 743,
+      "w": 159,
+      "h": 26,
+      "type": "text",
+      "text": "{item.technician}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 19,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "right",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "[laborant.\"name\"]"
+     },
+     {
+      "id": "lg_14",
+      "x": 59,
+      "y": 785,
+      "w": 529,
+      "h": 26,
+      "type": "text",
+      "text": "Тасдиқлайман: ",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 19,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "Тасдиқлайман: "
+     },
+     {
+      "id": "lg_15",
+      "x": 59,
+      "y": 805,
+      "w": 454,
+      "h": 26,
+      "type": "text",
+      "text": "лаборатория мудираси",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 19,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "лаборатория мудираси"
+     },
+     {
+      "id": "lg_16",
+      "x": 567,
+      "y": 805,
+      "w": 159,
+      "h": 26,
+      "type": "text",
+      "text": "{item.doctor}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 19,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "right",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "[vrach.\"name\"]"
+     },
+     {
+      "id": "lg_17",
+      "x": 215,
+      "y": 875,
+      "w": 340,
+      "h": 26,
+      "type": "text",
+      "text": "СИЗГА СОҒЛИК ТИЛАЙМИЗ !!!",
+      "style": {
+       "fontFamily": "sans",
+       "fontSize": 19,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "name": "СИЗГА СОҒЛИК ТИЛАЙМИЗ !!!"
+     },
+     {
+      "id": "lg_18",
+      "x": 215,
+      "y": 892,
+      "w": 277,
+      "h": 1,
+      "type": "rect",
+      "fill": "#000000"
+     },
+     {
+      "id": "lg_bakk_9g7qtf",
+      "type": "rect",
+      "x": 54,
+      "y": 378,
+      "w": 681,
+      "h": 1,
+      "fill": "#000000"
+     },
+     {
+      "id": "lg_bakk_vk2ntq",
+      "type": "rect",
+      "x": 54,
+      "y": 399,
+      "w": 681,
+      "h": 1,
+      "fill": "#000000"
+     },
+     {
+      "id": "lg_bakk_rfet7a",
+      "type": "rect",
+      "x": 53,
+      "y": 378,
+      "w": 1,
+      "h": 22,
+      "fill": "#000000"
+     },
+     {
+      "id": "lg_bakk_wzt7ex",
+      "type": "rect",
+      "x": 430,
+      "y": 378,
+      "w": 1,
+      "h": 22,
+      "fill": "#000000"
+     },
+     {
+      "id": "lg_bakk_sw9irg",
+      "type": "rect",
+      "x": 560,
+      "y": 378,
+      "w": 1,
+      "h": 22,
+      "fill": "#000000"
+     },
+     {
+      "id": "lg_bakk_2rw2ur",
+      "type": "rect",
+      "x": 734,
+      "y": 378,
+      "w": 1,
+      "h": 22,
+      "fill": "#000000"
+     },
+     {
+      "id": "lg_bakk_afi9lt",
+      "type": "text",
+      "x": 55,
+      "y": 381,
+      "w": 373,
+      "h": 22,
+      "text": "Текширилган микроорганизмлар",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 17,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_bakk_f13vzr",
+      "type": "text",
+      "x": 432,
+      "y": 381,
+      "w": 126,
+      "h": 22,
+      "text": "аниқланди",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 17,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_bakk_rl86lv",
+      "type": "text",
+      "x": 562,
+      "y": 381,
+      "w": 170,
+      "h": 22,
+      "text": "меъёр",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 17,
+       "fontWeight": 700,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_bakk_2clxf9",
+      "type": "rect",
+      "x": 53,
+      "y": 400,
+      "w": 1,
+      "h": 22,
+      "fill": "#000000",
+      "repeat": {
+       "fieldKey": "rows",
+       "step": 22
+      }
+     },
+     {
+      "id": "lg_bakk_cjm4nc",
+      "type": "rect",
+      "x": 430,
+      "y": 400,
+      "w": 1,
+      "h": 22,
+      "fill": "#000000",
+      "repeat": {
+       "fieldKey": "rows",
+       "step": 22
+      }
+     },
+     {
+      "id": "lg_bakk_gcd4vl",
+      "type": "rect",
+      "x": 560,
+      "y": 400,
+      "w": 1,
+      "h": 22,
+      "fill": "#000000",
+      "repeat": {
+       "fieldKey": "rows",
+       "step": 22
+      }
+     },
+     {
+      "id": "lg_bakk_6zqge2",
+      "type": "rect",
+      "x": 734,
+      "y": 400,
+      "w": 1,
+      "h": 22,
+      "fill": "#000000",
+      "repeat": {
+       "fieldKey": "rows",
+       "step": 22
+      }
+     },
+     {
+      "id": "lg_bakk_2y1x31",
+      "type": "rect",
+      "x": 54,
+      "y": 421,
+      "w": 681,
+      "h": 1,
+      "fill": "#000000",
+      "repeat": {
+       "fieldKey": "rows",
+       "step": 22
+      }
+     },
+     {
+      "id": "lg_bakk_wmg0gy",
+      "type": "rect",
+      "x": 431,
+      "y": 400,
+      "w": 129,
+      "h": 21,
+      "fill": "#a9c4f5",
+      "repeat": {
+       "fieldKey": "rows",
+       "step": 22
+      },
+      "showIf": "{row.natija}"
+     },
+     {
+      "id": "lg_bakk_3ra8qc",
+      "type": "text",
+      "x": 56,
+      "y": 403,
+      "w": 371,
+      "h": 22,
+      "text": "{i} {row.name}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 17,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "repeat": {
+       "fieldKey": "rows",
+       "step": 22
+      }
+     },
+     {
+      "id": "lg_bakk_g65cnl",
+      "type": "text",
+      "x": 433,
+      "y": 403,
+      "w": 124,
+      "h": 22,
+      "text": "{row.natija}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 17,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "repeat": {
+       "fieldKey": "rows",
+       "step": 22
+      }
+     },
+     {
+      "id": "lg_bakk_pdhdmv",
+      "type": "text",
+      "x": 563,
+      "y": 403,
+      "w": 168,
+      "h": 22,
+      "text": "{row.norma}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 17,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "left",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      },
+      "repeat": {
+       "fieldKey": "rows",
+       "step": 22
+      }
      }
     ]
    }

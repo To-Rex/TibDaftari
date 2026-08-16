@@ -17,6 +17,8 @@ const uz = {
     drawerHint: 'Kategoriya — xizmatlarni guruhlash va ish jarayonini belgilash uchun.',
     namePh: 'Masalan: Bakteriologiya',
     code: 'Kod',
+    phone: 'Bo‘lim telefoni',
+    phoneHint: 'Blankalarda {category.phone} orqali chiqadi (bo‘limning o‘z telefoni)',
     parent: 'Ota kategoriya',
     rootLevel: '— Yuqori daraja —',
     workflow: 'Ish jarayoni',
@@ -322,7 +324,7 @@ const ru: typeof uz = {
   tree: {
     heading: 'Категории', all: 'Все услуги', nextPhase: 'следующий этап', addChild: 'Добавить подкатегорию', moveUp: 'Вверх', moveDown: 'Вниз',
     newCategory: 'Новая категория', editCategory: 'Изменить категорию', drawerHint: 'Категория группирует услуги и задаёт рабочий процесс.',
-    namePh: 'Например: Бактериология', code: 'Код', parent: 'Родительская категория', rootLevel: '— Верхний уровень —',
+    namePh: 'Например: Бактериология', code: 'Код', phone: 'Телефон отдела', phoneHint: 'Печатается в бланках через {category.phone}', parent: 'Родительская категория', rootLevel: '— Верхний уровень —',
     workflow: 'Рабочий процесс', workflowHint: 'Лабораторный процесс: приём → ввод результата → подтверждение врача → документ.',
     wf: { lab: 'Лаборатория', consultation: 'Консультация', procedure: 'Процедура', inpatient: 'Стационар', pharmacy: 'Аптека' },
     icon: 'Иконка', color: 'Цвет', activeHint: 'Неактивная категория не видна на приёме', saved: 'Категория сохранена', deleted: 'Категория удалена',
@@ -408,7 +410,7 @@ const en: typeof uz = {
   tree: {
     heading: 'Categories', all: 'All services', nextPhase: 'next phase', addChild: 'Add subcategory', moveUp: 'Move up', moveDown: 'Move down',
     newCategory: 'New category', editCategory: 'Edit category', drawerHint: 'A category groups services and defines the workflow.',
-    namePh: 'e.g. Bacteriology', code: 'Code', parent: 'Parent category', rootLevel: '— Top level —',
+    namePh: 'e.g. Bacteriology', code: 'Code', phone: 'Department phone', phoneHint: 'Printed on documents via {category.phone}', parent: 'Parent category', rootLevel: '— Top level —',
     workflow: 'Workflow', workflowHint: 'Lab workflow: reception → result entry → doctor approval → document.',
     wf: { lab: 'Laboratory', consultation: 'Consultation', procedure: 'Procedure', inpatient: 'Inpatient', pharmacy: 'Pharmacy' },
     icon: 'Icon', color: 'Colour', activeHint: 'Inactive categories are hidden at reception', saved: 'Category saved', deleted: 'Category deleted',

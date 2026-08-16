@@ -226,6 +226,8 @@ export const STANDARD_PLACEHOLDERS: { group: string; items: { key: string; label
       { key: 'company.address', label: 'Tashkilot manzili' },
       { key: 'branch.name', label: 'Filial' },
       { key: 'branch.address', label: 'Filial manzili' },
+      { key: 'category.name', label: 'Bo‘lim (kategoriya)' },
+      { key: 'category.phone', label: 'Bo‘lim telefoni' },
       { key: 'today', label: 'Bugungi sana' },
     ],
   },

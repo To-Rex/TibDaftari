@@ -16,6 +16,8 @@ export interface Category extends AuditStamp {
   color?: string // hex, purely presentational
   order: number
   isActive: boolean
+  /** department phone printed on result documents ({category.phone}); legacy `category.tel_lab` */
+  phone?: string
   /** Which workflow this branch of the tree follows. New modules add kinds. */
   workflow: WorkflowKind
 }

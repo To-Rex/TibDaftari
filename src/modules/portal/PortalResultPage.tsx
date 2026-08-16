@@ -51,6 +51,7 @@ export default function PortalResultPage() {
             item: q.data.item,
             company: companyQ.data,
             branch,
+            category: q.data.category,
             schema: schemaQ.data ?? null,
             // order-scoped documents (several services on one sheet)
             items: q.data.template.scope === 'order'
