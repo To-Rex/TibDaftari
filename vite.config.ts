@@ -14,6 +14,16 @@ export default defineConfig({
     port: 5180,
     open: false,
   },
+  // Pre-bundle every runtime dependency up front so Vite never re-optimizes
+  // mid-session (which invalidates in-flight lazy route imports).
+  optimizeDeps: {
+    include: [
+      'react', 'react-dom', 'react-dom/client', 'react-router-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime',
+      '@tanstack/react-query', '@tanstack/react-table', '@tanstack/react-virtual', 'zustand',
+      'react-hook-form', 'zod', '@hookform/resolvers/zod', 'i18next', 'react-i18next', 'i18next-browser-languagedetector',
+      'motion/react', 'lucide-react', 'clsx', 'tailwind-merge', 'date-fns', 'date-fns/locale',
+    ],
+  },
   build: {
     target: 'es2022',
     sourcemap: false,

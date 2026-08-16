@@ -46,6 +46,25 @@ const SmsSettingsPage = lazy(() => import('@/modules/admin/settings/SmsSettingsP
 const PlatformPage = lazy(() => import('@/modules/admin/platform/PlatformPage'))
 
 const S = ({ children }: { children: ReactNode }) => <Suspense fallback={<PageSpinner />}>{children}</Suspense>
+
+/**
+ * If a lazy chunk fails to load (dev-server restart / HMR invalidation / new deploy),
+ * reload the page once instead of showing an error screen.
+ */
+if (typeof window !== 'undefined') {
+  const KEY = 'clinic.chunk-reload'
+  const reloadOnce = () => {
+    const last = Number(sessionStorage.getItem(KEY) ?? 0)
+    if (Date.now() - last < 10_000) return
+    sessionStorage.setItem(KEY, String(Date.now()))
+    window.location.reload()
+  }
+  window.addEventListener('vite:preloadError', (e) => { e.preventDefault(); reloadOnce() })
+  window.addEventListener('unhandledrejection', (e) => {
+    const msg = String((e.reason as { message?: string })?.message ?? e.reason ?? '')
+    if (/Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module/i.test(msg)) { e.preventDefault(); reloadOnce() }
+  })
+}
 const page = (el: ReactNode) => <S>{el}</S>
 
 export const router = createBrowserRouter([
