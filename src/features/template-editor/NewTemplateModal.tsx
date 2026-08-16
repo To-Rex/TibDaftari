@@ -7,8 +7,10 @@ import { BindingsFields, type Bindings } from './BindingsFields'
 
 export interface NewTemplateInput extends Bindings { name: string; doc: TemplateDoc }
 
-export function NewTemplateModal({ open, onClose, serviceTypes, categories, templates, onSubmit, saving }: {
+export function NewTemplateModal({ open, onClose, serviceTypes, categories, templates, onSubmit, saving, initial }: {
   open: boolean; onClose: () => void; serviceTypes: ServiceType[]; categories: Category[]; templates: ResultTemplate[]; onSubmit: (i: NewTemplateInput) => void; saving?: boolean
+  /** prefill (e.g. "create template for this service" from the catalog) */
+  initial?: Partial<Bindings> & { name?: string }
 }) {
   const { t } = useTranslation()
   const [name, setName] = useState('')
@@ -16,7 +18,13 @@ export function NewTemplateModal({ open, onClose, serviceTypes, categories, temp
   const [from, setFrom] = useState<'blank' | 'copy'>('blank')
   const [copyId, setCopyId] = useState('')
   const [touched, setTouched] = useState(false)
-  useEffect(() => { if (open) { setName(''); setB({ serviceTypeIds: [], categoryIds: [], scope: 'item', language: 'uz' }); setFrom('blank'); setCopyId(templates[0]?.id ?? ''); setTouched(false) } }, [open, templates])
+  useEffect(() => {
+    if (!open) return
+    setName(initial?.name ?? '')
+    setB({ serviceTypeIds: initial?.serviceTypeIds ?? [], categoryIds: initial?.categoryIds ?? [], scope: initial?.scope ?? 'item', language: initial?.language ?? 'uz' })
+    setFrom('blank'); setCopyId(templates[0]?.id ?? ''); setTouched(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, templates])
   const err = touched && !name.trim() ? t('common.required') : undefined
   const submit = () => {
     setTouched(true)

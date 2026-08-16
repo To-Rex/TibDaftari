@@ -1,14 +1,17 @@
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { ExternalLink, FlaskConical, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import { ExternalLink, FlaskConical, MoreHorizontal, Pencil, Trash2, Plus } from 'lucide-react'
 import type { AttributeSchema, Category, Id, ResultTemplate, ServiceType } from '@/domain'
 import { routes } from '@/shared/config/routes'
 import { fmtMoney } from '@/shared/lib/format'
+import { cn } from '@/shared/lib/cn'
 import { Badge, DataTable, EmptyState, Menu, Switch, type Column } from '@/shared/ui'
 
-export function ServiceTypeTable({ rows, loading, schemas, templates, categories = [], canWrite, onEdit, onDelete, onToggleActive, emptyAction }: {
+export function ServiceTypeTable({ rows, loading, schemas, templates, categories = [], canWrite, onEdit, onDelete, onToggleActive, emptyAction, onCreateTemplate }: {
   rows: ServiceType[]; loading: boolean; schemas: AttributeSchema[]; templates: ResultTemplate[]; categories?: Category[]; canWrite: boolean
+  /** create a template for a service that has none (opens the new-template flow) */
+  onCreateTemplate?: (s: ServiceType) => void
   onEdit: (s: ServiceType) => void; onDelete: (s: ServiceType) => void; onToggleActive: (s: ServiceType, v: boolean) => void; emptyAction?: ReactNode
 }) {
   const { t } = useTranslation()
@@ -21,7 +24,14 @@ export function ServiceTypeTable({ rows, loading, schemas, templates, categories
   }
   const tplLink = (s: ServiceType) => {
     const tp = tplOf(s.defaultTemplateId)
-    return tp ? <Link to={routes.admin.template(tp.id)} onClick={(e) => e.stopPropagation()} className="text-[13px] text-brand-ink hover:underline truncate max-w-full md:max-w-[140px] 2xl:max-w-[200px] 3xl:max-w-[280px] inline-block align-bottom">{tp.name}</Link> : <span className="text-ink-3">—</span>
+    if (tp) return <Link to={routes.admin.template(tp.id)} onClick={(e) => e.stopPropagation()} className="text-[13px] text-brand-ink hover:underline truncate max-w-full md:max-w-[140px] 2xl:max-w-[200px] 3xl:max-w-[280px] inline-block align-bottom">{tp.name}</Link>
+    if (canWrite && onCreateTemplate) return (
+      <button type="button" onClick={(e) => { e.stopPropagation(); onCreateTemplate(s) }} title={t('catalog.services.createTemplateHint')}
+        className="inline-flex h-7 max-w-full items-center gap-1 rounded-md border border-dashed border-line-strong px-2 text-[12.5px] text-ink-2 transition-colors hover:border-brand hover:bg-brand-soft/40 hover:text-brand-ink">
+        <Plus className="size-3.5 shrink-0" /><span className="truncate">{t('catalog.services.createTemplate')}</span>
+      </button>
+    )
+    return <span className="text-ink-3">—</span>
   }
   const columns: Column<ServiceType>[] = [
     { key: 'name', header: t('common.name'), card: 'title', cell: (s) => (
@@ -54,13 +64,21 @@ export function ServiceTypeTable({ rows, loading, schemas, templates, categories
     { key: 'tpl', header: t('catalog.services.defaultTemplateShort'), className: 'hidden', cell: (s) => tplLink(s) },
     { key: 'ordered', header: t('catalog.services.ordered30d'), align: 'right', hideBelow: 'md', className: 'max-2xl:hidden', cell: (s) => <span className="tabular text-ink-2">{s.stats?.ordered30d ?? 0}</span> },
     { key: 'active', header: t('common.status'), align: 'center', cell: (s) => (
-      <span onClick={(e) => e.stopPropagation()} className="inline-flex">
-        {canWrite ? <Switch size="sm" checked={s.isActive} onChange={(v) => onToggleActive(s, v)} /> : <Badge tone={s.isActive ? 'ok' : 'neutral'} dot>{s.isActive ? t('common.active') : t('common.inactive')}</Badge>}
+      <span onClick={(e) => e.stopPropagation()} className="catalog-status-cell inline-flex">
+        {canWrite ? (
+          <Switch
+            size="sm"
+            checked={s.isActive}
+            onChange={(v) => onToggleActive(s, v)}
+            className="catalog-status-switch"
+            ariaLabel={`${s.name} — ${s.isActive ? t('common.active') : t('common.inactive')}`}
+          />
+        ) : <Badge tone={s.isActive ? 'ok' : 'neutral'} dot>{s.isActive ? t('common.active') : t('common.inactive')}</Badge>}
       </span>
     ) },
     ...(canWrite ? [{ key: 'menu', header: '', width: '48px', card: 'actions' as const, cell: (s: ServiceType) => (
       <span onClick={(e) => e.stopPropagation()} className="inline-flex">
-        <Menu trigger={() => <span className="grid size-10 place-items-center rounded-lg border border-line text-ink-3 hover:bg-surface-2 hover:text-ink md:size-8 md:rounded-full md:border-0"><MoreHorizontal className="size-4" /></span>}
+        <Menu trigger={() => <span className="catalog-service-menu-trigger grid size-10 place-items-center rounded-lg border border-line text-ink-3 hover:bg-surface-2 hover:text-ink md:size-8 md:rounded-full md:border-0"><MoreHorizontal className="size-4" /></span>}
           items={[
             { key: 'edit', label: t('common.edit'), icon: <Pencil />, onSelect: () => onEdit(s) },
             { key: 'del', label: t('common.delete'), icon: <Trash2 />, danger: true, onSelect: () => onDelete(s), separatorBefore: true },
@@ -76,6 +94,8 @@ export function ServiceTypeTable({ rows, loading, schemas, templates, categories
       loading={loading}
       onRowClick={canWrite ? onEdit : undefined}
       empty={<EmptyState icon={<FlaskConical />} title={t('catalog.services.emptyTitle')} description={t('catalog.services.emptyHint')} action={emptyAction} />}
+      className="catalog-service-table"
+      rowClassName={(s) => cn('catalog-service-row', !s.isActive && 'catalog-service-row-inactive')}
     />
   )
 }

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQueryClient } from '@tanstack/react-query'
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import { ChevronDown, ChevronRight, FolderPlus, Plus } from 'lucide-react'
 import type { Category, ServiceType } from '@/domain'
 import { usePermissions } from '@/features/auth/store'
@@ -14,7 +14,10 @@ import { CategoryTree } from '@/features/catalog/CategoryTree'
 import { CategoryDrawer, draftFromCategory, type CategoryDraft } from '@/features/catalog/CategoryDrawer'
 import { ServiceTypeDrawer, draftFromServiceType, type ServiceTypeDraft } from '@/features/catalog/ServiceTypeDrawer'
 import { ServiceTypeTable } from '@/features/catalog/ServiceTypeTable'
-import { catalogKeys, useBranches, useCategories, useDeleteCategory, useDeleteServiceType, useSaveCategory, useSaveServiceType, useSchemas, useServiceTypes, useTemplates } from '@/features/catalog/queries'
+import { NewTemplateModal, type NewTemplateInput } from '@/features/template-editor/NewTemplateModal'
+import { useNavigate } from 'react-router-dom'
+import { routes } from '@/shared/config/routes'
+import { catalogKeys, useBranches, useCategories, useDeleteCategory, useDeleteServiceType, useSaveCategory, useSaveServiceType, useSaveTemplate, useSchemas, useServiceTypes, useTemplates } from '@/features/catalog/queries'
 import { categoryPath } from '@/features/catalog/tree'
 
 export default function CatalogPage() {
@@ -23,6 +26,7 @@ export default function CatalogPage() {
   const { can } = usePermissions()
   const canWrite = can('admin.catalog.write')
   const qc = useQueryClient()
+  const reduce = useReducedMotion()
 
   const [selected, setSelected] = useState<string | null>(null)
   const isDesktop = useMediaQuery('(min-width: 1280px)')
@@ -36,6 +40,20 @@ export default function CatalogPage() {
   const allServices = useServiceTypes(companyId, {})
   const schemas = useSchemas(companyId)
   const templates = useTemplates(companyId)
+  const nav = useNavigate()
+  const saveTemplate = useSaveTemplate(companyId)
+  const [tplFor, setTplFor] = useState<ServiceType | null>(null)
+  const createTemplateFor = async (input: NewTemplateInput) => {
+    if (!tplFor) return
+    try {
+      const tpl = await saveTemplate.mutateAsync({ name: input.name, doc: input.doc, serviceTypeIds: input.serviceTypeIds, categoryIds: input.categoryIds, scope: input.scope, language: input.language })
+      // bind as the service's default template so it is picked up immediately
+      await saveSt.mutateAsync({ id: tplFor.id, defaultTemplateId: tpl.id })
+      setTplFor(null)
+      toast.success(t('catalog.services.templateCreated'))
+      nav(routes.admin.template(tpl.id))
+    } catch (e) { toast.error(errorMessage(e)) }
+  }
   const branches = useBranches(companyId)
 
   const saveCat = useSaveCategory(companyId)
@@ -108,8 +126,9 @@ export default function CatalogPage() {
   )
 
   return (
-    <Page width="full">
+    <Page width="full" className="catalog-page">
       <PageHeader
+        className="catalog-page-header"
         title={t('catalog.title')}
         description={t('catalog.subtitle')}
         actions={canWrite && (
@@ -119,19 +138,26 @@ export default function CatalogPage() {
           </>
         )}
       />
-      <div className="grid gap-4 grid-cols-[minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)] 2xl:grid-cols-[300px_minmax(0,1fr)] 3xl:grid-cols-[340px_minmax(0,1fr)] items-start">
+      <div className="catalog-layout grid gap-4 grid-cols-[minmax(0,1fr)] items-start xl:grid-cols-[280px_minmax(0,1fr)] 2xl:grid-cols-[300px_minmax(0,1fr)] 3xl:grid-cols-[340px_minmax(0,1fr)]">
         {/* ≥xl: sticky tree pane. <xl: compact selector button that opens the tree in a sheet */}
         {isDesktop ? (
-          <Card padded={false} className="xl:sticky xl:top-20 max-h-[calc(100dvh-7rem)] overflow-y-auto">
-            <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+          <motion.aside
+            initial={reduce ? false : { opacity: 0, y: 10 }}
+            animate={reduce ? undefined : { opacity: 1, y: 0 }}
+            transition={{ duration: reduce ? 0.01 : 0.38, ease: [0.22, 1, 0.36, 1] }}
+            className="catalog-tree-panel xl:sticky xl:top-20"
+          >
+          <Card padded={false} className="catalog-tree-card max-h-[calc(100dvh-7rem)] overflow-y-auto">
+            <div className="catalog-tree-heading px-4 pt-4 pb-2 flex items-center justify-between">
               <h2 className="text-[13px] font-semibold uppercase tracking-[0.06em] text-ink-3">{t('catalog.tree.heading')}</h2>
               <span className="text-[12px] tabular text-ink-3">{cats.length}</span>
             </div>
             {tree}
           </Card>
+          </motion.aside>
         ) : (
           <button type="button" onClick={() => setTreeOpen(true)}
-            className="flex w-full min-w-0 items-center gap-2 rounded-[var(--radius)] border border-line bg-surface px-3 h-11 text-left shadow-1 hover:bg-surface-2 transition-colors">
+            className="catalog-category-trigger flex w-full min-w-0 items-center gap-2 rounded-[var(--radius)] border border-line bg-surface px-3 h-11 text-left shadow-1 hover:bg-surface-2 transition-colors">
             <span className="text-[11.5px] font-semibold uppercase tracking-[0.06em] text-ink-3 shrink-0">{t('catalog.tree.heading')}</span>
             <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium">{selectedCat?.name ?? t('catalog.tree.all')}</span>
             <span className="text-[12px] tabular text-ink-3">{services.data?.length ?? 0}</span>
@@ -139,25 +165,30 @@ export default function CatalogPage() {
           </button>
         )}
 
-        <motion.div layout className="min-w-0">
-          <Card padded={false}>
-            <div className="p-3 sm:p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-line">
+        <motion.section
+          initial={reduce ? false : { opacity: 0, y: 12 }}
+          animate={reduce ? undefined : { opacity: 1, y: 0 }}
+          transition={{ duration: reduce ? 0.01 : 0.42, delay: reduce ? 0 : 0.06, ease: [0.22, 1, 0.36, 1] }}
+          className="catalog-services-panel min-w-0"
+        >
+          <Card padded={false} className="catalog-services-card overflow-hidden">
+            <div className="catalog-services-header p-3 sm:p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-line">
               <div className="min-w-0">
-                <div className="flex items-center gap-1 text-[12.5px] text-ink-3 mb-0.5 flex-wrap">
+                <div className="catalog-breadcrumb flex items-center gap-1 text-[12.5px] text-ink-3 mb-0.5 flex-wrap">
                   <button className="hover:text-ink transition-colors" onClick={() => setSelected(null)}>{t('catalog.tree.all')}</button>
                   {path.map((c) => (
                     <span key={c.id} className="flex items-center gap-1 min-w-0"><ChevronRight className="size-3 shrink-0" /><button className="hover:text-ink transition-colors truncate" onClick={() => setSelected(c.id)}>{c.name}</button></span>
                   ))}
                 </div>
-                <h2 className="text-[16px] font-semibold flex items-center gap-2 flex-wrap">
+                <h2 className="catalog-services-title text-[16px] font-semibold flex items-center gap-2 flex-wrap">
                   <span className="min-w-0 break-words">{selectedCat?.name ?? t('catalog.services.allServices')}</span>
                   {selectedCat && <Badge size="sm" tone={selectedCat.isActive ? 'ok' : 'neutral'} dot>{selectedCat.isActive ? t('common.active') : t('common.inactive')}</Badge>}
                   <span className="text-[13px] font-normal text-ink-3 tabular">{services.data?.length ?? 0}</span>
                 </h2>
               </div>
-              <SearchInput value={search} onChange={setSearch} placeholder={t('catalog.services.searchPh')} className="w-full sm:w-64 sm:shrink-0" />
+              <SearchInput value={search} onChange={setSearch} placeholder={t('catalog.services.searchPh')} className="catalog-service-search w-full sm:w-64 sm:shrink-0" />
             </div>
-            <div className="max-md:p-3">
+            <div className="catalog-service-table-wrap max-md:p-3">
               <ServiceTypeTable
                 rows={services.data ?? []}
                 loading={services.isLoading}
@@ -168,11 +199,22 @@ export default function CatalogPage() {
                 onEdit={(s) => setStDraft(draftFromServiceType(s))}
                 onDelete={setStDel}
                 onToggleActive={toggleActive}
+                onCreateTemplate={(s) => setTplFor(s)}
                 emptyAction={canWrite && <Button size="sm" leftIcon={<Plus className="size-4" />} onClick={addService}>{t('catalog.services.add')}</Button>}
+              />
+              <NewTemplateModal
+                open={!!tplFor}
+                onClose={() => setTplFor(null)}
+                serviceTypes={services.data ?? []}
+                categories={cats}
+                templates={templates.data ?? []}
+                onSubmit={createTemplateFor}
+                saving={saveTemplate.isPending || saveSt.isPending}
+                initial={tplFor ? { name: `${tplFor.name} — blanka`, serviceTypeIds: [tplFor.id], categoryIds: [], scope: tplFor.documentScope, language: 'uz' } : undefined}
               />
             </div>
           </Card>
-        </motion.div>
+        </motion.section>
       </div>
 
       <Drawer open={!isDesktop && treeOpen} onClose={() => setTreeOpen(false)} side="left" width="max-w-full sm:max-w-sm" title={t('catalog.tree.heading')} description={`${cats.length}`} className="[&>div:nth-child(2)]:px-2 [&>div:nth-child(2)]:py-2">
