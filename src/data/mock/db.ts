@@ -229,7 +229,7 @@ function buildDb(): MockDb {
   return {
     companies: structuredClone(COMPANIES), branches: BRANCHES, roles: structuredClone(ROLES), employees: structuredClone(EMPLOYEES),
     regions: REGIONS, districts: DISTRICTS, patients, categories: structuredClone(CATEGORIES), serviceTypes: structuredClone(ALL_SERVICE_TYPES),
-    schemas: structuredClone(ALL_SCHEMAS), templates: structuredClone(ALL_TEMPLATES), assets: ASSETS, orders, items, payments, documents, outbox, notifications, credentials,
+    schemas: structuredClone(ALL_SCHEMAS), templates: structuredClone(ALL_TEMPLATES), assets: [...ASSETS, ...legacy.assets], orders, items, payments, documents, outbox, notifications, credentials,
   }
 }
 

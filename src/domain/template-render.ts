@@ -45,6 +45,7 @@ export function getPath(obj: unknown, path: string): unknown {
 /** Replace {a.b} placeholders. Unknown → empty string. Arrays joined with ", ". */
 export function interpolate(text: string, ctx: RenderContext, row?: Record<string, unknown>): string {
   return text.replace(PLACEHOLDER, (_, path: string) => {
+    if (row && path === 'i') return fmt(row.__i)
     if (row && path.startsWith('row.')) return fmt(row[path.slice(4)])
     if (path.startsWith('values.')) return fmt(formatValue(ctx, path.slice(7)))
     return fmt(getPath(ctx, path))

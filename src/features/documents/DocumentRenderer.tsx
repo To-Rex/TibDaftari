@@ -11,7 +11,7 @@ import { cn } from '@/shared/lib/cn'
 
 const FONT: Record<TextStyle['fontFamily'], string> = {
   sans: "'Onest Variable', system-ui, sans-serif",
-  serif: "Georgia, 'Times New Roman', serif",
+  serif: "'Times New Roman', Times, 'Liberation Serif', Georgia, serif",
   mono: "'JetBrains Mono Variable', ui-monospace, monospace",
 }
 
@@ -61,12 +61,16 @@ export const DocumentRenderer = memo(function DocumentRenderer({ doc, ctx, asset
       <div className="absolute left-0 top-0 origin-top-left" style={{ width: size.w, height: size.h, background: doc.background, transform: `scale(${scale})` }} data-paper>
         {doc.elements.map((el, z) => {
           if (el.hidden || hidden.has(el.id)) return null
-          if (!raw && el.showIf && !interpolate(el.showIf, ctx).trim()) return null
-          const nodes: TemplateElement[] = []
+          const nodes: (TemplateElement & { __row?: Record<string, unknown> })[] = []
           if (el.repeat && !raw) {
             const rows = tableRows(ctx, el.repeat.fieldKey)
-            rows.forEach((row, i) => nodes.push({ ...el, id: `${el.id}#${i}`, y: el.y + i * el.repeat!.step, ...( { __row: row } as object) }))
+            rows.forEach((row, i) => nodes.push({ ...el, id: `${el.id}#${i}`, y: el.y + i * el.repeat!.step, __row: { ...row, __i: i + 1 } }))
           } else nodes.push(el)
+          if (!raw && el.showIf) {
+            const keep = nodes.filter((nd) => interpolate(el.showIf!, ctx, nd.__row).trim())
+            nodes.length = 0
+            nodes.push(...keep)
+          }
           return nodes.map((n) => (
             <ElementView key={n.id} el={n} z={z} ctx={ctx} raw={!!raw} assetUrl={assetUrl} selected={selectedId === el.id} onClick={onElementClick ? () => onElementClick(el.id) : undefined} />
           ))
