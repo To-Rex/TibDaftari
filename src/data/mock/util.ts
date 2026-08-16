@@ -93,3 +93,10 @@ export const daysAgo = (d: number, hour = 9) => {
   return t.toISOString()
 }
 export const clone = <T>(v: T): T => structuredClone(v)
+
+/** Create inputs often arrive with `id: undefined` (drafts) — spreading them would erase the generated id. */
+export const withoutId = <T extends { id?: unknown }>(input: T): Omit<T, 'id'> => {
+  const { id: _id, ...rest } = input
+  void _id
+  return rest
+}

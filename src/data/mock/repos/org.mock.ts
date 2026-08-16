@@ -1,7 +1,7 @@
 import type { StaffRepository, TenantRepository, PatientRepository } from '../../repositories'
 import type { Branch, Company, Employee, Patient, Role } from '@/domain'
 import { db } from '../db'
-import { clone, latency, matches, MockError, nowIso, paginate, sortBy, uid } from '../util'
+import { clone, latency, matches, MockError, nowIso, paginate, sortBy, uid, withoutId } from '../util'
 
 const stamp = () => ({ createdAt: nowIso(), updatedAt: nowIso() })
 
@@ -29,7 +29,7 @@ export const tenantMock: TenantRepository = {
       d.companies[i] = { ...d.companies[i]!, ...input, updatedAt: nowIso() } as Company
       return clone(d.companies[i]!)
     }
-    const c: Company = { id: uid('c'), name: '', slug: '', locale: 'uz', isActive: true, sms: { provider: 'none', defaultPriority: 'transactional' }, branchCount: 0, employeeCount: 0, ...stamp(), ...input } as Company
+    const c: Company = { id: uid('c'), name: '', slug: '', locale: 'uz', isActive: true, sms: { provider: 'none', defaultPriority: 'transactional' }, branchCount: 0, employeeCount: 0, ...stamp(), ...withoutId(input) } as Company
     d.companies.push(c)
     return clone(c)
   },
@@ -45,7 +45,7 @@ export const tenantMock: TenantRepository = {
       d.branches[i] = { ...d.branches[i]!, ...input, updatedAt: nowIso() } as Branch
       return clone(d.branches[i]!)
     }
-    const b: Branch = { id: uid('b'), name: '', code: 'XX', timezone: 'Asia/Tashkent', isActive: true, orderSeq: 0, ...stamp(), ...input } as Branch
+    const b: Branch = { id: uid('b'), name: '', code: 'XX', timezone: 'Asia/Tashkent', isActive: true, orderSeq: 0, ...stamp(), ...withoutId(input) } as Branch
     d.branches.push(b)
     return clone(b)
   },
@@ -80,7 +80,7 @@ export const staffMock: StaffRepository = {
       return clone(d.employees[i]!)
     }
     if (d.employees.some((e) => e.login === rest.login)) throw new MockError(409, 'conflict', 'Bu login band')
-    const e: Employee = { id: uid('e'), branchIds: [], fullName: '', login: '', roleId: '', overrides: { allow: [], deny: [] }, categoryIds: [], status: 'active', avatarHue: Math.floor(Math.random() * 360), ...stamp(), ...rest } as Employee
+    const e: Employee = { id: uid('e'), branchIds: [], fullName: '', login: '', roleId: '', overrides: { allow: [], deny: [] }, categoryIds: [], status: 'active', avatarHue: Math.floor(Math.random() * 360), ...stamp(), ...withoutId(rest) } as Employee
     d.employees.push(e)
     d.credentials[e.login] = password ?? '123456'
     return clone(e)
@@ -105,7 +105,7 @@ export const staffMock: StaffRepository = {
       d.roles[i] = { ...d.roles[i]!, ...input } as Role
       return clone(d.roles[i]!)
     }
-    const r: Role = { id: uid('r'), key: uid('role'), name: '', permissions: [], isSystem: false, ...input } as Role
+    const r: Role = { id: uid('r'), key: uid('role'), name: '', permissions: [], isSystem: false, ...withoutId(input) } as Role
     d.roles.push(r)
     return clone(r)
   },

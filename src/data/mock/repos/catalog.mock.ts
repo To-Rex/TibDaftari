@@ -2,7 +2,7 @@ import type { CatalogRepository, TemplateRepository } from '../../repositories'
 import type { AttributeSchema, Category, ResultTemplate, ServiceType, TemplateAsset } from '@/domain'
 import { emptyDoc } from '@/domain'
 import { db } from '../db'
-import { clone, latency, matches, MockError, nowIso, uid } from '../util'
+import { clone, latency, matches, MockError, nowIso, uid, withoutId } from '../util'
 
 const stamp = () => ({ createdAt: nowIso(), updatedAt: nowIso() })
 
@@ -21,7 +21,7 @@ export const catalogMock: CatalogRepository = {
       return clone(d.categories[i]!)
     }
     const siblings = d.categories.filter((c) => c.parentId === (input.parentId ?? null))
-    const c: Category = { id: uid('cat'), parentId: null, name: '', order: siblings.length + 1, isActive: true, workflow: 'lab', ...stamp(), ...input } as Category
+    const c: Category = { id: uid('cat'), parentId: null, name: '', order: siblings.length + 1, isActive: true, workflow: 'lab', ...stamp(), ...withoutId(input) } as Category
     d.categories.push(c)
     return clone(c)
   },
@@ -66,7 +66,7 @@ export const catalogMock: CatalogRepository = {
       d.serviceTypes[i] = { ...d.serviceTypes[i]!, ...input, updatedAt: nowIso() } as ServiceType
       return clone(d.serviceTypes[i]!)
     }
-    const s: ServiceType = { id: uid('st'), categoryId: '', name: '', price: 0, branchPrices: {}, turnaroundDays: 1, order: 99, isActive: true, schemaId: null, documentScope: 'item', defaultTemplateId: null, ...stamp(), ...input } as ServiceType
+    const s: ServiceType = { id: uid('st'), categoryId: '', name: '', price: 0, branchPrices: {}, turnaroundDays: 1, order: 99, isActive: true, schemaId: null, documentScope: 'item', defaultTemplateId: null, ...stamp(), ...withoutId(input) } as ServiceType
     d.serviceTypes.push(s)
     return clone(s)
   },
@@ -99,7 +99,7 @@ export const catalogMock: CatalogRepository = {
       d.schemas[i] = next
       return clone(next)
     }
-    const s: AttributeSchema = { id: uid('sch'), name: '', version: 1, status: 'draft', fields: [], usedBy: 0, ...stamp(), ...input } as AttributeSchema
+    const s: AttributeSchema = { id: uid('sch'), name: '', version: 1, status: 'draft', fields: [], usedBy: 0, ...stamp(), ...withoutId(input) } as AttributeSchema
     d.schemas.push(s)
     return clone(s)
   },
@@ -139,7 +139,7 @@ export const templateMock: TemplateRepository = {
       d.templates[i] = { ...cur, ...input, version: input.doc && cur.status === 'active' ? cur.version + 1 : cur.version, updatedAt: nowIso() } as ResultTemplate
       return clone(d.templates[i]!)
     }
-    const t: ResultTemplate = { id: uid('tpl'), name: 'Yangi shablon', status: 'draft', version: 1, serviceTypeIds: [], categoryIds: [], scope: 'item', language: 'uz', doc: emptyDoc(), usage: 0, ...stamp(), ...input } as ResultTemplate
+    const t: ResultTemplate = { id: uid('tpl'), name: 'Yangi shablon', status: 'draft', version: 1, serviceTypeIds: [], categoryIds: [], scope: 'item', language: 'uz', doc: emptyDoc(), usage: 0, ...stamp(), ...withoutId(input) } as ResultTemplate
     d.templates.unshift(t)
     return clone(t)
   },
