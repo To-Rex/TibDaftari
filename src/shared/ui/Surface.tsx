@@ -7,9 +7,9 @@ export function Card({ className, padded = true, interactive, ...rest }: HTMLAtt
   return (
     <div
       className={cn(
-        'rounded-[var(--radius-lg)] border border-line bg-surface shadow-1',
+        'app-card rounded-[var(--radius-lg)] border border-line bg-surface shadow-1',
         padded && 'p-5',
-        interactive && 'transition-[box-shadow,transform,border-color] duration-250 ease-[var(--ease-out)] hover:shadow-2 hover:border-line-strong hover:-translate-y-px cursor-pointer',
+        interactive && 'app-card-interactive cursor-pointer',
         className,
       )}
       {...rest}
@@ -18,7 +18,7 @@ export function Card({ className, padded = true, interactive, ...rest }: HTMLAtt
 }
 export function CardHeader({ title, description, actions, className }: { title: ReactNode; description?: ReactNode; actions?: ReactNode; className?: string }) {
   return (
-    <div className={cn('flex flex-wrap items-start justify-between gap-x-4 gap-y-2 mb-4', className)}>
+    <div className={cn('app-card-header mb-4 flex flex-wrap items-start justify-between gap-x-4 gap-y-2', className)}>
       <div className="min-w-0 flex-1 basis-[200px]">
         <h3 className="text-[15px] font-semibold text-ink leading-6">{title}</h3>
         {description && <p className="text-[13px] text-ink-3 mt-0.5">{description}</p>}
@@ -41,7 +41,7 @@ const tones: Record<Tone, string> = {
 }
 export function Badge({ tone = 'neutral', dot, className, children, size = 'md' }: { tone?: Tone; dot?: boolean; className?: string; children: ReactNode; size?: 'sm' | 'md' }) {
   return (
-    <span className={cn('inline-flex items-center gap-1.5 rounded-full border font-medium whitespace-nowrap', size === 'sm' ? 'h-5 px-2 text-[11px]' : 'h-6 px-2.5 text-[12px]', tones[tone], className)}>
+    <span className={cn('app-badge inline-flex items-center gap-1.5 rounded-full border font-medium whitespace-nowrap', size === 'sm' ? 'h-5 px-2 text-[11px]' : 'h-6 px-2.5 text-[12px]', tones[tone], className)}>
       {dot && <span className="size-1.5 rounded-full bg-current opacity-80" />}
       {children}
     </span>
@@ -86,7 +86,7 @@ export function SkeletonRows({ rows = 5, className }: { rows?: number; className
 /* ---------- Empty state ---------- */
 export function EmptyState({ icon, title, description, action, className }: { icon?: ReactNode; title: ReactNode; description?: ReactNode; action?: ReactNode; className?: string }) {
   return (
-    <div className={cn('flex flex-col items-center justify-center text-center py-14 px-6', className)}>
+    <div className={cn('app-empty-state flex flex-col items-center justify-center px-6 py-14 text-center', className)}>
       {icon && <div className="mb-4 grid size-14 place-items-center rounded-2xl bg-surface-2 text-ink-3 [&>svg]:size-6">{icon}</div>}
       <p className="text-[15px] font-semibold text-ink">{title}</p>
       {description && <p className="mt-1 text-[13.5px] text-ink-3 max-w-sm">{description}</p>}
@@ -98,7 +98,7 @@ export function EmptyState({ icon, title, description, action, className }: { ic
 /* ---------- Stat tile ---------- */
 export function Stat({ label, value, sub, icon, tone = 'neutral', className, delta }: { label: ReactNode; value: ReactNode; sub?: ReactNode; icon?: ReactNode; tone?: Tone; className?: string; delta?: number }) {
   return (
-    <Card padded={false} className={cn('p-4 sm:p-5 flex flex-col gap-3', className)}>
+    <Card padded={false} className={cn('app-stat flex flex-col gap-3 p-4 sm:p-5', className)}>
       <div className="flex items-center justify-between gap-3">
         <span className="text-[12.5px] font-medium uppercase tracking-[0.06em] text-ink-3">{label}</span>
         {icon && <span className={cn('grid size-8 place-items-center rounded-lg [&>svg]:size-4', tones[tone])}>{icon}</span>}

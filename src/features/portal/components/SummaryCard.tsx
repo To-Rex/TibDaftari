@@ -16,7 +16,7 @@ const iconTone: Record<Tone, string> = {
 }
 
 const cls =
-  'group flex h-full min-w-0 items-start gap-3.5 rounded-[var(--radius-lg)] border border-line bg-surface p-4 shadow-1 2xl:p-5 transition-[box-shadow,transform,border-color] duration-250 ease-[var(--ease-out)]'
+  'portal-summary-card group flex h-full min-w-0 items-start gap-3.5 rounded-[var(--radius-lg)] border border-line bg-surface p-4 shadow-1 2xl:p-5 transition-[box-shadow,transform,border-color] duration-250 ease-[var(--ease-out)]'
 
 export function SummaryCard({
   icon,

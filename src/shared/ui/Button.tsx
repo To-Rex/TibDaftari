@@ -15,7 +15,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const base =
-  'relative inline-flex items-center justify-center gap-2 font-medium whitespace-nowrap select-none rounded-[var(--radius-sm)] transition-[background-color,color,box-shadow,transform,border-color] duration-200 ease-[var(--ease-out)] active:scale-[0.985] disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus'
+  'app-button relative inline-flex items-center justify-center gap-2 font-medium whitespace-nowrap select-none rounded-[var(--radius-sm)] transition-[background-color,color,box-shadow,transform,border-color] duration-200 ease-[var(--ease-out)] enabled:hover:-translate-y-px enabled:active:translate-y-0 active:scale-[0.985] disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus'
 
 const variants: Record<ButtonVariant, string> = {
   primary: 'bg-brand text-white shadow-[0_1px_0_rgb(0_0_0/0.08),inset_0_1px_0_rgb(255_255_255/0.18)] hover:bg-brand-strong',

@@ -195,6 +195,698 @@
     background-image: radial-gradient(var(--c-line-strong) 1px, transparent 1px);
     background-size: 20px 20px;
   }
+  .landing-noise {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.9'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+  }
+}
+
+.landing-nav-link {
+  position: relative;
+}
+
+.landing-cta {
+  isolation: isolate;
+  overflow: hidden;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .landing-nav-link::after {
+    position: absolute;
+    right: 0.75rem;
+    bottom: 0.35rem;
+    left: 0.75rem;
+    height: 1px;
+    content: '';
+    background: var(--c-brand);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.36s var(--ease-out);
+  }
+  .landing-nav-link:hover::after,
+  .landing-nav-link:focus-visible::after {
+    transform: scaleX(1);
+  }
+  .landing-footer-link::after {
+    right: 0;
+    bottom: -0.3rem;
+    left: 0;
+  }
+  .landing-cta::after {
+    position: absolute;
+    inset: -1px;
+    z-index: 0;
+    content: '';
+    pointer-events: none;
+    background: linear-gradient(112deg, transparent 34%, rgb(255 255 255 / 0.18) 49%, transparent 64%);
+    transform: translate3d(-118%, 0, 0);
+    transition: transform 0.62s var(--ease-out);
+  }
+  .landing-cta:hover::after,
+  .landing-cta:focus-visible::after {
+    transform: translate3d(118%, 0, 0);
+  }
+  .landing-cta > svg:last-child {
+    transition: transform 0.28s var(--ease-out);
+  }
+  .landing-cta:hover > svg:last-child,
+  .landing-cta:focus-visible > svg:last-child {
+    transform: translate3d(3px, 0, 0);
+  }
+}
+
+@media (max-width: 639px) {
+  .landing-page .landing-orb-c {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Application surfaces — deliberately scoped away from the marketing
+   landing page. These are static layers plus short transform/opacity
+   interactions, so dense work screens remain fast and predictable.
+------------------------------------------------------------------- */
+.app-shell,
+.portal-shell,
+.auth-shell {
+  background:
+    radial-gradient(circle at 100% -12%, color-mix(in oklab, var(--c-brand) 9%, transparent), transparent 34rem),
+    radial-gradient(circle at 0% 64%, color-mix(in oklab, var(--c-accent) 5%, transparent), transparent 30rem),
+    var(--c-bg);
+}
+
+.app-page {
+  isolation: isolate;
+  min-height: calc(100dvh - 3.5rem);
+  background: linear-gradient(180deg, color-mix(in oklab, var(--c-surface) 38%, transparent), transparent 15rem);
+}
+
+.app-page-header {
+  position: relative;
+  padding-bottom: 1.15rem;
+}
+
+.app-page-header::after {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: min(11rem, 42%);
+  height: 1px;
+  content: '';
+  opacity: 0.46;
+  background: linear-gradient(90deg, var(--c-brand), transparent);
+}
+
+.app-toolbar {
+  padding: 0.36rem 0.42rem;
+  border: 1px solid color-mix(in oklab, var(--c-line) 86%, var(--c-brand) 14%);
+  border-radius: var(--radius);
+  background: color-mix(in oklab, var(--c-surface) 78%, transparent);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1);
+}
+
+.app-card {
+  border-color: color-mix(in oklab, var(--c-line) 88%, var(--c-brand) 12%);
+  background:
+    linear-gradient(145deg, color-mix(in oklab, var(--c-bg-elevated) 72%, transparent), transparent 58%),
+    var(--c-surface);
+  box-shadow:
+    0 14px 34px -28px color-mix(in oklab, var(--c-ink) 38%, transparent),
+    inset 0 1px 0 rgb(255 255 255 / 0.11);
+}
+
+.app-card-header {
+  position: relative;
+}
+
+.app-badge {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12);
+}
+
+.app-stat {
+  background:
+    linear-gradient(140deg, color-mix(in oklab, var(--c-brand-soft) 26%, transparent), transparent 62%),
+    var(--c-surface);
+}
+
+.app-empty-state {
+  border: 1px dashed color-mix(in oklab, var(--c-line-strong) 78%, var(--c-brand) 22%);
+  border-radius: var(--radius-lg);
+  background: color-mix(in oklab, var(--c-surface) 76%, transparent);
+}
+
+.app-field-input {
+  transform: translateZ(0);
+}
+
+.app-field:focus-within > label,
+.app-field:focus-within > span:first-child {
+  color: var(--c-brand-ink);
+}
+
+.app-data-table-scroll {
+  border-radius: var(--radius-lg);
+  background: color-mix(in oklab, var(--c-surface) 74%, transparent);
+}
+
+.app-table-head {
+  box-shadow: inset 0 -1px 0 color-mix(in oklab, var(--c-line-strong) 72%, var(--c-brand) 28%);
+}
+
+.app-table-row:hover {
+  box-shadow: inset 3px 0 0 color-mix(in oklab, var(--c-brand) 65%, transparent);
+}
+
+.app-row-card {
+  transition: border-color 0.24s var(--ease-out), box-shadow 0.24s var(--ease-out), background-color 0.24s var(--ease-out);
+}
+
+.app-tabs {
+  gap: 0.15rem;
+  padding: 0.22rem;
+  border: 1px solid color-mix(in oklab, var(--c-line) 86%, var(--c-brand) 14%);
+  border-radius: var(--radius);
+  background: color-mix(in oklab, var(--c-surface-2) 72%, transparent);
+}
+
+.app-tab {
+  border-radius: calc(var(--radius-sm) - 1px);
+}
+
+.app-segmented {
+  padding: 0.18rem;
+  box-shadow: inset 0 1px 2px color-mix(in oklab, var(--c-ink) 9%, transparent);
+}
+
+.app-segment {
+  border-radius: calc(var(--radius-sm) - 1px);
+}
+
+.app-menu {
+  border-color: color-mix(in oklab, var(--c-line-strong) 84%, var(--c-brand) 16%);
+  box-shadow: var(--shadow-3), inset 0 1px 0 rgb(255 255 255 / 0.1);
+}
+
+.app-modal-backdrop {
+  background: color-mix(in oklab, var(--c-ink) 38%, transparent);
+}
+
+.app-modal-surface,
+.app-drawer-surface,
+.app-toast {
+  border-color: color-mix(in oklab, var(--c-line-strong) 82%, var(--c-brand) 18%);
+  box-shadow: var(--shadow-3), inset 0 1px 0 rgb(255 255 255 / 0.12);
+}
+
+.app-shell-sidebar,
+.app-mobile-sidebar {
+  border-right-color: color-mix(in oklab, var(--c-line) 80%, var(--c-brand) 20%);
+  box-shadow: 15px 0 34px -30px color-mix(in oklab, var(--c-ink) 64%, transparent);
+}
+
+.app-topbar,
+.portal-shell-header,
+.auth-shell-header {
+  box-shadow: 0 10px 28px -28px color-mix(in oklab, var(--c-ink) 70%, transparent), inset 0 -1px 0 color-mix(in oklab, var(--c-line) 84%, var(--c-brand) 16%);
+}
+
+.app-branch-switcher {
+  border-color: color-mix(in oklab, var(--c-line) 78%, var(--c-brand) 22%);
+}
+
+.portal-bottom-nav {
+  border-top-color: color-mix(in oklab, var(--c-line) 80%, var(--c-brand) 20%);
+  box-shadow: 0 -12px 26px -28px color-mix(in oklab, var(--c-ink) 78%, transparent);
+}
+
+.portal-bottom-link {
+  position: relative;
+}
+
+.portal-bottom-link::after {
+  position: absolute;
+  right: 32%;
+  bottom: 0.18rem;
+  left: 32%;
+  height: 2px;
+  content: '';
+  border-radius: 999px;
+  background: var(--c-brand);
+  opacity: 0;
+  transform: scaleX(0.35);
+}
+
+.portal-bottom-link[aria-current='page']::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.portal-summary-card,
+.app-quick-action,
+.app-link-card {
+  border-color: color-mix(in oklab, var(--c-line) 86%, var(--c-brand) 14%);
+  background:
+    linear-gradient(140deg, color-mix(in oklab, var(--c-brand-soft) 22%, transparent), transparent 66%),
+    var(--c-surface);
+}
+
+.portal-list-row {
+  position: relative;
+  overflow: hidden;
+}
+
+.portal-list-row::before {
+  position: absolute;
+  top: 0.7rem;
+  bottom: 0.7rem;
+  left: 0;
+  width: 2px;
+  content: '';
+  border-radius: 999px;
+  background: var(--c-brand);
+  opacity: 0;
+  transform: scaleY(0.35);
+}
+
+.auth-panel {
+  border-color: color-mix(in oklab, var(--c-line-strong) 82%, var(--c-brand) 18%);
+  background:
+    linear-gradient(145deg, color-mix(in oklab, var(--c-brand-soft) 18%, transparent), transparent 45%),
+    var(--c-bg-elevated);
+  box-shadow: var(--shadow-3), inset 0 1px 0 rgb(255 255 255 / 0.16);
+}
+
+.auth-aside > * {
+  border-color: color-mix(in oklab, var(--c-line) 82%, var(--c-brand) 18%);
+}
+
+/* ------------------------------------------------------------------
+   Catalog workspace — a compact, high-information work surface.
+   All accents stay local to this page so other admin flows retain their
+   own density and component behavior.
+------------------------------------------------------------------- */
+.catalog-page {
+  background:
+    radial-gradient(circle at 76% 0%, color-mix(in oklab, var(--c-brand) 8%, transparent), transparent 24rem),
+    linear-gradient(180deg, color-mix(in oklab, var(--c-surface) 36%, transparent), transparent 17rem);
+}
+
+.catalog-layout {
+  gap: 1.25rem;
+}
+
+.catalog-tree-card,
+.catalog-services-card {
+  border-color: color-mix(in oklab, var(--c-line-strong) 82%, var(--c-brand) 18%);
+}
+
+.catalog-tree-card {
+  position: relative;
+  background:
+    linear-gradient(180deg, color-mix(in oklab, var(--c-brand-soft) 18%, transparent), transparent 9rem),
+    var(--c-surface);
+}
+
+.catalog-tree-card::before {
+  position: absolute;
+  top: 0;
+  right: 1rem;
+  left: 1rem;
+  height: 2px;
+  content: '';
+  border-radius: 999px;
+  opacity: 0.7;
+  background: linear-gradient(90deg, transparent, var(--c-brand), transparent);
+}
+
+.catalog-tree-heading {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  border-bottom: 1px solid color-mix(in oklab, var(--c-line) 78%, var(--c-brand) 22%);
+  background: color-mix(in oklab, var(--c-surface) 92%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.catalog-category-tree {
+  padding-top: 0.58rem;
+}
+
+.catalog-tree-all,
+.catalog-tree-row-content {
+  position: relative;
+  border: 1px solid transparent;
+}
+
+.catalog-tree-all {
+  margin-bottom: 0.25rem;
+}
+
+.catalog-tree-row-content {
+  overflow: hidden;
+}
+
+.catalog-tree-row-selected {
+  border-color: color-mix(in oklab, var(--c-brand) 32%, var(--c-line));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14);
+}
+
+.catalog-tree-row-selected::before {
+  position: absolute;
+  top: 0.45rem;
+  bottom: 0.45rem;
+  left: 0;
+  width: 2px;
+  content: '';
+  border-radius: 999px;
+  background: var(--c-brand);
+}
+
+.catalog-tree-icon {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2);
+}
+
+.catalog-tree-count {
+  font-weight: 600;
+}
+
+.catalog-services-card {
+  background:
+    linear-gradient(145deg, color-mix(in oklab, var(--c-bg-elevated) 78%, transparent), transparent 50%),
+    var(--c-surface);
+}
+
+.catalog-services-header {
+  position: relative;
+  background:
+    linear-gradient(105deg, color-mix(in oklab, var(--c-brand-soft) 35%, transparent), transparent 48%),
+    color-mix(in oklab, var(--c-surface) 84%, transparent);
+}
+
+.catalog-breadcrumb > button {
+  border-radius: 5px;
+  padding: 0.08rem 0.2rem;
+}
+
+.catalog-services-title > span:last-child {
+  display: inline-grid;
+  min-width: 1.65rem;
+  height: 1.45rem;
+  place-items: center;
+  border: 1px solid color-mix(in oklab, var(--c-brand) 24%, var(--c-line));
+  border-radius: 7px;
+  background: color-mix(in oklab, var(--c-brand-soft) 56%, transparent);
+  color: var(--c-brand-ink);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.catalog-service-search {
+  border-color: color-mix(in oklab, var(--c-line-strong) 84%, var(--c-brand) 16%);
+  background: color-mix(in oklab, var(--c-bg-elevated) 88%, transparent);
+}
+
+.catalog-service-table-wrap {
+  background: linear-gradient(180deg, color-mix(in oklab, var(--c-surface-2) 26%, transparent), transparent 7rem);
+}
+
+.catalog-service-table .app-data-table-scroll {
+  border-radius: 0;
+  background: transparent;
+}
+
+.catalog-service-table .app-table-head {
+  background:
+    linear-gradient(90deg, color-mix(in oklab, var(--c-brand-soft) 38%, transparent), transparent 72%),
+    color-mix(in oklab, var(--c-surface-2) 78%, transparent);
+}
+
+.catalog-service-table .app-table-row {
+  background: color-mix(in oklab, var(--c-surface) 82%, transparent);
+}
+
+.catalog-service-table .catalog-service-row-inactive {
+  background: color-mix(in oklab, var(--c-surface-2) 56%, transparent);
+}
+
+.catalog-service-table .catalog-service-row-inactive > td:not(:last-child) {
+  color: color-mix(in oklab, var(--c-ink-2) 78%, transparent);
+}
+
+.catalog-service-table .app-row-card {
+  border-color: color-mix(in oklab, var(--c-line) 84%, var(--c-brand) 16%);
+  background:
+    linear-gradient(145deg, color-mix(in oklab, var(--c-brand-soft) 12%, transparent), transparent 65%),
+    var(--c-surface);
+}
+
+.catalog-service-menu-trigger {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14);
+}
+
+.catalog-status-cell {
+  min-width: 3.5rem;
+  justify-content: center;
+}
+
+.catalog-page .catalog-status-switch {
+  display: inline-grid;
+  min-width: 3.35rem;
+  min-height: 2rem;
+  place-items: center;
+  padding: 0.22rem;
+  border: 1px solid color-mix(in oklab, var(--c-line-strong) 80%, var(--c-brand) 20%);
+  border-radius: 0.72rem;
+  background: color-mix(in oklab, var(--c-surface-2) 75%, transparent);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.16), 0 3px 9px -8px color-mix(in oklab, var(--c-ink) 72%, transparent);
+}
+
+.catalog-page .catalog-status-switch > span {
+  width: 2.55rem;
+  height: 1.38rem;
+  border: 1px solid color-mix(in oklab, var(--c-line-strong) 82%, transparent);
+  border-radius: 0.47rem;
+  background: linear-gradient(145deg, var(--c-surface-3), var(--c-surface-2));
+  box-shadow: inset 0 1px 2px color-mix(in oklab, var(--c-ink) 13%, transparent);
+}
+
+.catalog-page .catalog-status-switch[data-state='on'] > span {
+  border-color: color-mix(in oklab, var(--c-brand-strong) 70%, var(--c-brand));
+  background: linear-gradient(135deg, var(--c-brand), var(--c-brand-strong));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22), 0 4px 10px -8px color-mix(in oklab, var(--c-brand-strong) 90%, transparent);
+}
+
+.catalog-page .catalog-status-switch > span::before {
+  position: absolute;
+  top: 50%;
+  right: 0.32rem;
+  z-index: 0;
+  content: '–';
+  color: var(--c-ink-3);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1;
+  transform: translateY(-50%);
+}
+
+.catalog-page .catalog-status-switch[data-state='on'] > span::before {
+  right: auto;
+  left: 0.32rem;
+  content: '✓';
+  color: white;
+}
+
+.catalog-page .catalog-status-switch > span::after {
+  top: 50% !important;
+  left: 0.18rem !important;
+  z-index: 1;
+  width: 1.02rem !important;
+  height: 1.02rem !important;
+  background: var(--c-bg-elevated) !important;
+  box-shadow: 0 2px 4px color-mix(in oklab, var(--c-ink) 24%, transparent), inset 0 1px 0 rgb(255 255 255 / 0.32) !important;
+  translate: 0 !important;
+  transform: translate3d(0, -50%, 0) !important;
+  transition: transform 0.22s var(--ease-out), box-shadow 0.2s var(--ease-out) !important;
+}
+
+.catalog-page .catalog-status-switch[data-state='on'] > span::after {
+  transform: translate3d(1.15rem, -50%, 0) !important;
+}
+
+.catalog-page .catalog-status-switch > input:focus-visible + span {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 3px;
+}
+
+@media (max-width: 1279px) {
+  .catalog-category-trigger {
+    border-color: color-mix(in oklab, var(--c-line-strong) 80%, var(--c-brand) 20%);
+    background:
+      linear-gradient(105deg, color-mix(in oklab, var(--c-brand-soft) 28%, transparent), transparent 62%),
+      var(--c-surface);
+    box-shadow: var(--shadow-1), inset 0 1px 0 rgb(255 255 255 / 0.14);
+  }
+
+  .catalog-category-trigger > span:nth-child(3) {
+    display: inline-grid;
+    min-width: 1.65rem;
+    height: 1.45rem;
+    place-items: center;
+    border-radius: 7px;
+    background: color-mix(in oklab, var(--c-brand-soft) 75%, transparent);
+    color: var(--c-brand-ink);
+    font-weight: 600;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .catalog-tree-all,
+  .catalog-tree-row-content,
+  .catalog-category-trigger,
+  .catalog-service-menu-trigger,
+  .catalog-page .catalog-status-switch,
+  .catalog-page .catalog-status-switch > span {
+    transition: transform 0.22s var(--ease-out), border-color 0.22s var(--ease-out), box-shadow 0.22s var(--ease-out), background-color 0.22s var(--ease-out), color 0.22s var(--ease-out);
+  }
+
+  .catalog-tree-all:hover,
+  .catalog-tree-row-content:hover {
+    border-color: color-mix(in oklab, var(--c-line-strong) 72%, var(--c-brand) 28%);
+  }
+
+  .catalog-tree-row-content:hover .catalog-tree-icon {
+    transform: scale(1.07);
+  }
+
+  .catalog-tree-icon {
+    transition: transform 0.22s var(--ease-out);
+  }
+
+  .catalog-category-trigger:hover {
+    transform: translate3d(0, -1px, 0);
+    border-color: color-mix(in oklab, var(--c-line-strong) 58%, var(--c-brand) 42%);
+    box-shadow: var(--shadow-2);
+  }
+
+  .catalog-service-table .app-table-row:hover {
+    background: color-mix(in oklab, var(--c-brand-soft) 28%, var(--c-surface));
+  }
+
+  .catalog-service-menu-trigger:hover {
+    transform: scale(1.08);
+    box-shadow: 0 5px 12px -9px color-mix(in oklab, var(--c-ink) 70%, transparent);
+  }
+
+  .catalog-page .catalog-status-switch:hover {
+    transform: translate3d(0, -1px, 0);
+    border-color: color-mix(in oklab, var(--c-line-strong) 52%, var(--c-brand) 48%);
+    box-shadow: var(--shadow-1), 0 6px 13px -11px color-mix(in oklab, var(--c-brand) 86%, transparent);
+  }
+
+  .catalog-page .catalog-status-switch:hover > span {
+    box-shadow: inset 0 1px 2px color-mix(in oklab, var(--c-ink) 11%, transparent), 0 2px 6px -5px color-mix(in oklab, var(--c-brand) 82%, transparent);
+  }
+}
+
+.catalog-page .catalog-status-switch:active > span {
+  transform: scale(0.96);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .app-card-interactive,
+  .app-row-card,
+  .app-sidebar-link,
+  .portal-nav-link,
+  .auth-home-link,
+  .app-branch-switcher {
+    transition: transform 0.26s var(--ease-out), border-color 0.26s var(--ease-out), box-shadow 0.26s var(--ease-out), background-color 0.26s var(--ease-out), color 0.26s var(--ease-out);
+  }
+
+  .app-card-interactive:hover {
+    transform: translate3d(0, -3px, 0);
+    border-color: color-mix(in oklab, var(--c-line-strong) 58%, var(--c-brand) 42%);
+    box-shadow: var(--shadow-2), inset 0 1px 0 rgb(255 255 255 / 0.14);
+  }
+
+  .app-row-card:hover {
+    border-color: color-mix(in oklab, var(--c-line-strong) 58%, var(--c-brand) 42%);
+    box-shadow: var(--shadow-2);
+  }
+
+  .app-sidebar-link:hover {
+    transform: translate3d(2px, 0, 0);
+  }
+
+  .app-sidebar-link:hover .app-nav-icon {
+    transform: translate3d(1px, 0, 0) scale(1.06);
+  }
+
+  .app-nav-icon {
+    transition: transform 0.24s var(--ease-out);
+  }
+
+  .portal-nav-link:hover,
+  .auth-home-link:hover,
+  .app-branch-switcher:hover {
+    transform: translate3d(0, -1px, 0);
+  }
+
+  .portal-bottom-link::after {
+    transition: transform 0.26s var(--ease-out), opacity 0.2s var(--ease-out);
+  }
+
+  .portal-summary-card,
+  .app-quick-action,
+  .app-link-card {
+    transition: transform 0.26s var(--ease-out), border-color 0.26s var(--ease-out), box-shadow 0.26s var(--ease-out), background-color 0.26s var(--ease-out);
+  }
+
+  .portal-summary-card:hover,
+  .app-quick-action:hover,
+  .app-link-card:hover {
+    transform: translate3d(0, -3px, 0);
+    border-color: color-mix(in oklab, var(--c-line-strong) 56%, var(--c-brand) 44%);
+    box-shadow: var(--shadow-2);
+  }
+
+  .portal-list-row::before {
+    transition: transform 0.26s var(--ease-out), opacity 0.22s var(--ease-out);
+  }
+
+  .portal-list-row:hover::before,
+  .portal-list-row:focus-visible::before {
+    opacity: 0.72;
+    transform: scaleY(1);
+  }
+
+  .app-shell .app-button,
+  .portal-shell .app-button,
+  .auth-shell .app-button {
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .app-shell .app-button::after,
+  .portal-shell .app-button::after,
+  .auth-shell .app-button::after {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    content: '';
+    pointer-events: none;
+    background: linear-gradient(112deg, transparent 32%, rgb(255 255 255 / 0.16) 49%, transparent 66%);
+    transform: translate3d(-122%, 0, 0);
+    transition: transform 0.62s var(--ease-out);
+  }
+
+  .app-shell .app-button:hover::after,
+  .app-shell .app-button:focus-visible::after,
+  .portal-shell .app-button:hover::after,
+  .portal-shell .app-button:focus-visible::after,
+  .auth-shell .app-button:hover::after,
+  .auth-shell .app-button:focus-visible::after {
+    transform: translate3d(122%, 0, 0);
+  }
 }
 
 /* Watches / very small phones (≤ 340px): compact rhythm, never overflow */
@@ -213,6 +905,11 @@ img, video, canvas { max-width: 100%; }
     animation-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+  .landing-page .landing-orb,
+  .landing-page .landing-ring,
+  .landing-page .animate-ping {
+    animation: none !important;
   }
 }
 

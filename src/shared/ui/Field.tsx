@@ -16,7 +16,7 @@ export interface FieldProps {
 export function Field({ label, hint, error, required, optionalText, className, children, inline }: FieldProps) {
   const id = useId()
   return (
-    <div className={cn('flex flex-col gap-1.5', inline && 'sm:flex-row sm:items-center sm:gap-4', className)}>
+    <div className={cn('app-field flex flex-col gap-1.5', inline && 'sm:flex-row sm:items-center sm:gap-4', className)}>
       {label && (
         <label htmlFor={id} className={cn('text-[13px] font-medium text-ink-2 leading-none flex items-center gap-1', inline && 'sm:w-44 sm:shrink-0')}>
           {label}
@@ -38,7 +38,7 @@ export function Field({ label, hint, error, required, optionalText, className, c
 
 /* ---------- Input ---------- */
 export const inputBase =
-  'w-full h-10 rounded-[var(--radius-sm)] border border-line bg-surface px-3 text-[14px] text-ink placeholder:text-ink-3 shadow-[inset_0_1px_0_rgb(0_0_0/0.02)] transition-[border-color,box-shadow,background-color] duration-200 hover:border-line-strong focus:border-brand focus:ring-4 focus:ring-brand/12 focus:outline-none disabled:opacity-60 disabled:bg-surface-2 aria-[invalid=true]:border-danger aria-[invalid=true]:focus:ring-danger/15'
+  'app-field-input h-10 w-full rounded-[var(--radius-sm)] border border-line bg-surface px-3 text-[14px] text-ink placeholder:text-ink-3 shadow-[inset_0_1px_0_rgb(0_0_0/0.02)] transition-[border-color,box-shadow,background-color,transform] duration-200 hover:border-line-strong focus:border-brand focus:ring-4 focus:ring-brand/12 focus:outline-none disabled:opacity-60 disabled:bg-surface-2 aria-[invalid=true]:border-danger aria-[invalid=true]:focus:ring-danger/15'
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   invalid?: boolean
@@ -111,11 +111,11 @@ export function Checkbox({ label, className, ...rest }: InputHTMLAttributes<HTML
   )
 }
 
-export function Switch({ checked, onChange, label, description, disabled, size = 'md' }: { checked: boolean; onChange: (v: boolean) => void; label?: ReactNode; description?: ReactNode; disabled?: boolean; size?: 'sm' | 'md' }) {
+export function Switch({ checked, onChange, label, description, disabled, size = 'md', className, ariaLabel }: { checked: boolean; onChange: (v: boolean) => void; label?: ReactNode; description?: ReactNode; disabled?: boolean; size?: 'sm' | 'md'; className?: string; ariaLabel?: string }) {
   const dims = size === 'sm' ? 'w-8 h-[18px] after:size-3.5 after:translate-x-[2px] peer-checked:after:translate-x-[16px]' : 'w-10 h-[22px] after:size-[18px] after:translate-x-[2px] peer-checked:after:translate-x-[20px]'
   return (
-    <label className={cn('relative flex items-start gap-3 cursor-pointer select-none', disabled && 'opacity-50 cursor-not-allowed')}>
-      <input type="checkbox" className="peer sr-only" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
+    <label data-state={checked ? 'on' : 'off'} title={ariaLabel} className={cn('relative flex items-start gap-3 cursor-pointer select-none', disabled && 'opacity-50 cursor-not-allowed', className)}>
+      <input type="checkbox" role="switch" aria-checked={checked} aria-label={ariaLabel} className="peer sr-only" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
       <span className={cn('relative shrink-0 rounded-full bg-line-strong transition-colors duration-200 peer-checked:bg-brand peer-focus-visible:ring-4 peer-focus-visible:ring-brand/20 after:absolute after:top-1/2 after:-translate-y-1/2 after:rounded-full after:bg-white after:shadow-[0_1px_2px_rgb(0_0_0/0.25)] after:transition-transform after:duration-200 after:ease-[var(--ease-spring)]', dims)} />
       {(label || description) && (
         <span className="flex flex-col -mt-0.5">

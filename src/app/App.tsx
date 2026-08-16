@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { RouterProvider } from 'react-router-dom'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import { router } from './router'
 import { QueryProvider } from './providers/QueryProvider'
 import { ThemeProvider } from '@/shared/theme/ThemeProvider'
@@ -23,12 +23,14 @@ export function App() {
   const hydrate = useAuth((s) => s.hydrate)
   useEffect(() => void hydrate(), [hydrate])
   return (
-    <ThemeProvider>
-      <QueryProvider>
-        <AnimatePresence>{!hydrated && <Splash />}</AnimatePresence>
-        {hydrated && <RouterProvider router={router} />}
-        <ToastViewport />
-      </QueryProvider>
-    </ThemeProvider>
+    <MotionConfig reducedMotion="user">
+      <ThemeProvider>
+        <QueryProvider>
+          <AnimatePresence>{!hydrated && <Splash />}</AnimatePresence>
+          {hydrated && <RouterProvider router={router} />}
+          <ToastViewport />
+        </QueryProvider>
+      </ThemeProvider>
+    </MotionConfig>
   )
 }

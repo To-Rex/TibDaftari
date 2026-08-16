@@ -30,7 +30,7 @@ export function ResultRow({
       <Link
         to={routes.portal.result(doc.id)}
         className={cn(
-          'group hover:bg-surface-2/70 flex items-center gap-3 px-3 py-3.5 transition-colors xs:gap-3.5 xs:px-4 sm:px-5',
+          'portal-list-row group hover:bg-surface-2/70 flex items-center gap-3 px-3 py-3.5 transition-colors xs:gap-3.5 xs:px-4 sm:px-5',
           className,
         )}
       >

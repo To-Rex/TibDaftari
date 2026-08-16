@@ -33,10 +33,10 @@ export function CategoryTree({ categories, loading, selectedId, onSelect, canWri
   if (loading) return <div className="p-3 space-y-2">{Array.from({ length: 7 }).map((_, i) => <div key={i} style={{ width: `${70 - (i % 3) * 12}%` }}><Skeleton className="h-8" /></div>)}</div>
 
   return (
-    <div className="p-2">
+    <div className="catalog-category-tree p-2">
       <button
         onClick={() => onSelect(null)}
-        className={cn('w-full flex items-center gap-2 h-10 lg:h-9 px-2.5 rounded-lg text-[13.5px] font-medium transition-colors', selectedId === null ? 'bg-brand-soft text-brand-ink' : 'text-ink-2 hover:bg-surface-2')}
+        className={cn('catalog-tree-all w-full flex items-center gap-2 h-10 lg:h-9 px-2.5 rounded-lg text-[13.5px] font-medium transition-colors', selectedId === null ? 'bg-brand-soft text-brand-ink' : 'text-ink-2 hover:bg-surface-2')}
       >
         <span className="size-5 grid place-items-center rounded-md bg-surface-2 text-ink-3 text-[11px]">∗</span>
         {t('catalog.tree.all')}
@@ -74,30 +74,30 @@ const TreeRow = memo(function TreeRow({ node, selected, expanded, onToggle, onSe
   const Icon = categoryIcon(cat.icon)
   const hasKids = children.length > 0
   return (
-    <motion.div initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -6 }} transition={{ duration: 0.18 }} className="group relative">
+    <motion.div initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -6 }} transition={{ duration: 0.18 }} className="catalog-tree-row group relative">
       <div
         role="button"
         tabIndex={0}
         onClick={onSelect}
         onKeyDown={(e) => { if (e.key === 'Enter') onSelect(); if (e.key === 'ArrowRight' && !expanded && hasKids) onToggle(); if (e.key === 'ArrowLeft' && expanded) onToggle() }}
-        className={cn('flex items-center gap-1.5 h-10 lg:h-9 pr-1.5 rounded-lg text-[13.5px] transition-colors cursor-pointer', selected ? 'bg-brand-soft text-brand-ink' : 'text-ink hover:bg-surface-2', !cat.isActive && 'opacity-55', canWrite && 'max-lg:pr-10')}
+        className={cn('catalog-tree-row-content flex items-center gap-1.5 h-10 lg:h-9 pr-1.5 rounded-lg text-[13.5px] transition-colors cursor-pointer', selected ? 'catalog-tree-row-selected bg-brand-soft text-brand-ink' : 'text-ink hover:bg-surface-2', !cat.isActive && 'catalog-tree-row-inactive opacity-55', canWrite && 'max-lg:pr-10')}
         style={{ paddingLeft: 6 + depth * 16 }}
       >
         <button
           onClick={(e) => { e.stopPropagation(); if (hasKids) onToggle() }}
-          className={cn('size-5 grid place-items-center rounded text-ink-3 transition-transform', hasKids ? 'hover:bg-surface-3 hover:text-ink' : 'opacity-0 pointer-events-none', expanded && 'rotate-90')}
+          className={cn('catalog-tree-chevron size-5 grid place-items-center rounded text-ink-3 transition-transform', hasKids ? 'hover:bg-surface-3 hover:text-ink' : 'opacity-0 pointer-events-none', expanded && 'rotate-90')}
           aria-label={expanded ? 'collapse' : 'expand'}
         >
           <ChevronRight className="size-3.5" />
         </button>
-        <span className="relative grid size-6 place-items-center rounded-md" style={{ background: `${cat.color ?? '#7c8b86'}1f`, color: cat.color ?? undefined }}>
+        <span className="catalog-tree-icon relative grid size-6 place-items-center rounded-md" style={{ background: `${cat.color ?? '#7c8b86'}1f`, color: cat.color ?? undefined }}>
           <Icon className="size-3.5" />
         </span>
         <span className="truncate flex-1 font-medium">{cat.name}</span>
         {cat.workflow !== 'lab' && <Badge size="sm" tone="neutral">{t('catalog.tree.nextPhase')}</Badge>}
-        {count != null && count > 0 && <span className="text-[12px] tabular text-ink-3 transition-opacity group-hover:opacity-0">{count}</span>}
+        {count != null && count > 0 && <span className="catalog-tree-count text-[12px] tabular text-ink-3 transition-opacity group-hover:opacity-0">{count}</span>}
         {canWrite && (
-          <span className="absolute right-1 flex items-center max-lg:opacity-100 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+          <span className="catalog-tree-menu absolute right-1 flex items-center max-lg:opacity-100 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
             <Menu
               align="end"
               trigger={() => <span className="grid size-8 lg:size-7 place-items-center rounded-md text-ink-3 hover:bg-surface-3 hover:text-ink"><MoreHorizontal className="size-4" /></span>}

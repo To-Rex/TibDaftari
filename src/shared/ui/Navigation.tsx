@@ -8,12 +8,12 @@ import { cn } from '@/shared/lib/cn'
 export interface TabItem<T extends string = string> { value: T; label: ReactNode; count?: number; icon?: ReactNode }
 export function Tabs<T extends string>({ items, value, onChange, className, size = 'md' }: { items: TabItem<T>[]; value: T; onChange: (v: T) => void; className?: string; size?: 'sm' | 'md' }) {
   return (
-    <div className={cn('relative flex gap-1 border-b border-line overflow-x-auto no-scrollbar', className)} role="tablist">
+    <div className={cn('app-tabs relative flex gap-1 overflow-x-auto border-b border-line no-scrollbar', className)} role="tablist">
       {items.map((it) => {
         const active = it.value === value
         return (
           <button key={it.value} role="tab" aria-selected={active} onClick={() => onChange(it.value)}
-            className={cn('relative flex items-center gap-2 whitespace-nowrap px-3 font-medium text-ink-3 transition-colors hover:text-ink', size === 'sm' ? 'h-9 text-[13px]' : 'h-11 text-[14px]', active && 'text-ink')}>
+            className={cn('app-tab relative flex items-center gap-2 whitespace-nowrap px-3 font-medium text-ink-3 transition-colors hover:text-ink', size === 'sm' ? 'h-9 text-[13px]' : 'h-11 text-[14px]', active && 'text-ink')}>
             {it.icon && <span className="[&>svg]:size-4">{it.icon}</span>}
             {it.label}
             {it.count != null && <span className={cn('rounded-full px-1.5 min-w-5 h-5 grid place-items-center text-[11px] tabular', active ? 'bg-brand-soft text-brand-ink' : 'bg-surface-2 text-ink-3')}>{it.count}</span>}
@@ -29,12 +29,12 @@ export function Tabs<T extends string>({ items, value, onChange, className, size
 export function Segmented<T extends string>({ items, value, onChange, className, size = 'md', wrap, block }: { items: { value: T; label: ReactNode; icon?: ReactNode }[]; value: T; onChange: (v: T) => void; className?: string; size?: 'sm' | 'md'; /** allow items to wrap onto several lines (small screens) */ wrap?: boolean; /** stretch to container width, equal buttons */ block?: boolean }) {
   const id = useRef(`seg-${Math.random().toString(36).slice(2)}`).current
   return (
-    <div className={cn('inline-flex items-center rounded-[10px] bg-surface-2 p-1 gap-0.5 max-w-full', wrap && 'flex-wrap', block && 'flex w-full', className)} role="radiogroup">
+    <div className={cn('app-segmented inline-flex max-w-full items-center gap-0.5 rounded-[10px] bg-surface-2 p-1', wrap && 'flex-wrap', block && 'flex w-full', className)} role="radiogroup">
       {items.map((it) => {
         const active = it.value === value
         return (
           <button key={it.value} role="radio" aria-checked={active} onClick={() => onChange(it.value)}
-            className={cn('relative rounded-[7px] font-medium transition-colors whitespace-nowrap flex items-center justify-center gap-1.5', size === 'sm' ? 'h-7 px-2.5 text-[12.5px]' : 'h-8 px-3 text-[13px]', block && 'flex-1', active ? 'text-ink' : 'text-ink-3 hover:text-ink-2')}>
+            className={cn('app-segment relative flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] font-medium transition-colors', size === 'sm' ? 'h-7 px-2.5 text-[12.5px]' : 'h-8 px-3 text-[13px]', block && 'flex-1', active ? 'text-ink' : 'text-ink-3 hover:text-ink-2')}>
             {active && <motion.span layoutId={id} className="absolute inset-0 rounded-[7px] bg-surface shadow-1 border border-line/70" transition={{ type: 'spring', stiffness: 500, damping: 38 }} />}
             <span className="relative flex items-center gap-1.5 [&>svg]:size-3.5">{it.icon}{it.label}</span>
           </button>
@@ -71,7 +71,7 @@ export function Menu({ trigger, items, align = 'end', className }: { trigger: (o
           {open && (
             <motion.div initial={{ opacity: 0, y: -4, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.98 }} transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
               style={{ position: 'fixed', top: pos.top, ...(align === 'end' ? { right: pos.right } : { left: pos.left }) }}
-              className="z-[90] min-w-48 rounded-[var(--radius)] border border-line bg-bg-elevated p-1.5 shadow-3" role="menu" onMouseDown={(e) => e.stopPropagation()}>
+              className="app-menu z-[90] min-w-48 rounded-[var(--radius)] border border-line bg-bg-elevated p-1.5 shadow-3" role="menu" onMouseDown={(e) => e.stopPropagation()}>
               {items.map((it) => (
                 <div key={it.key}>
                   {it.separatorBefore && <div className="my-1 h-px bg-line" />}

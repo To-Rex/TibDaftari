@@ -149,7 +149,7 @@ export default function AdminDashboardPage() {
             <MotionList variants={stagger} initial="hidden" animate="show" className="grid gap-3 grid-cols-[repeat(auto-fit,minmax(min(100%,240px),1fr))]">
               {links.map((l) => (
                 <MotionItem key={l.to} variants={fadeUp}>
-                  <Link to={l.to} className="group flex items-center gap-3.5 rounded-[var(--radius-lg)] border border-line bg-surface p-4 shadow-1 transition-[box-shadow,transform,border-color] duration-250 hover:-translate-y-px hover:shadow-2 hover:border-line-strong">
+                  <Link to={l.to} className="app-link-card group flex items-center gap-3.5 rounded-[var(--radius-lg)] border border-line bg-surface p-4 shadow-1 transition-[box-shadow,transform,border-color] duration-250 hover:-translate-y-px hover:shadow-2 hover:border-line-strong">
                     <span className="grid size-10 place-items-center rounded-xl bg-brand-soft text-brand-ink [&>svg]:size-5">{l.icon}</span>
                     <span className="min-w-0 flex-1">
                       <span className="block text-[14px] font-medium break-words">{l.title}</span>

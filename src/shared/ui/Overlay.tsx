@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { X } from 'lucide-react'
 import { cn } from '@/shared/lib/cn'
 import { IconButton } from './Button'
@@ -43,6 +43,7 @@ const sizes = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl'
 export function Modal({ open, onClose, title, description, children, footer, size = 'md', hideClose, className }: ModalProps) {
   useLockScroll(open)
   useEscape(open, onClose)
+  const reduce = useReducedMotion()
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (open) setTimeout(() => ref.current?.querySelector<HTMLElement>('input,textarea,select,button:not([aria-label])')?.focus(), 30)
@@ -51,14 +52,14 @@ export function Modal({ open, onClose, title, description, children, footer, siz
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-6" role="dialog" aria-modal>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="absolute inset-0 bg-ink/40 backdrop-blur-[2px] dark:bg-black/60" onClick={onClose} />
+          <motion.div initial={reduce ? false : { opacity: 0 }} animate={reduce ? undefined : { opacity: 1 }} exit={reduce ? undefined : { opacity: 0 }} transition={{ duration: reduce ? 0.01 : 0.2 }} className="app-modal-backdrop absolute inset-0 bg-ink/40 backdrop-blur-[2px] dark:bg-black/60" onClick={onClose} />
           <motion.div
             ref={ref}
-            initial={{ opacity: 0, y: 24, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 12, scale: 0.98 }}
-            transition={spring}
-            className={cn('relative w-full max-h-[92dvh] flex flex-col rounded-t-[var(--radius-lg)] sm:rounded-[var(--radius-lg)] bg-bg-elevated shadow-3 border border-line', sizes[size], className)}
+            initial={reduce ? false : { opacity: 0, y: 24, scale: 0.98 }}
+            animate={reduce ? undefined : { opacity: 1, y: 0, scale: 1 }}
+            exit={reduce ? undefined : { opacity: 0, y: 12, scale: 0.98 }}
+            transition={reduce ? { duration: 0.01 } : spring}
+            className={cn('app-modal-surface relative flex max-h-[92dvh] w-full flex-col rounded-t-[var(--radius-lg)] border border-line bg-bg-elevated shadow-3 sm:rounded-[var(--radius-lg)]', sizes[size], className)}
           >
             {(title || !hideClose) && (
               <div className="flex items-start gap-4 px-6 pt-5 pb-3">
@@ -83,13 +84,14 @@ export function Modal({ open, onClose, title, description, children, footer, siz
 export function Drawer({ open, onClose, title, description, children, footer, side = 'right', width = 'max-w-xl', className }: { open: boolean; onClose: () => void; title?: ReactNode; description?: ReactNode; children: ReactNode; footer?: ReactNode; side?: 'right' | 'left'; width?: string; className?: string }) {
   useLockScroll(open)
   useEscape(open, onClose)
+  const reduce = useReducedMotion()
   const x = side === 'right' ? 40 : -40
   return createPortal(
     <AnimatePresence>
       {open && (
         <div className={cn('fixed inset-0 z-[80] flex', side === 'right' ? 'justify-end' : 'justify-start')} role="dialog" aria-modal>
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="absolute inset-0 bg-ink/40 backdrop-blur-[2px] dark:bg-black/60" onClick={onClose} />
-          <motion.div initial={{ x, opacity: 0.6 }} animate={{ x: 0, opacity: 1 }} exit={{ x, opacity: 0 }} transition={spring} className={cn('relative h-full w-full flex flex-col bg-bg-elevated shadow-3 border-l border-line', width, className)}>
+          <motion.div initial={reduce ? false : { opacity: 0 }} animate={reduce ? undefined : { opacity: 1 }} exit={reduce ? undefined : { opacity: 0 }} transition={{ duration: reduce ? 0.01 : 0.2 }} className="app-modal-backdrop absolute inset-0 bg-ink/40 backdrop-blur-[2px] dark:bg-black/60" onClick={onClose} />
+          <motion.div initial={reduce ? false : { x, opacity: 0.6 }} animate={reduce ? undefined : { x: 0, opacity: 1 }} exit={reduce ? undefined : { x, opacity: 0 }} transition={reduce ? { duration: 0.01 } : spring} className={cn('app-drawer-surface relative flex h-full w-full flex-col border-l border-line bg-bg-elevated shadow-3', width, className)}>
             <div className="flex items-start gap-4 px-6 pt-5 pb-3 border-b border-line">
               <div className="min-w-0 flex-1">
                 {title && <h2 className="text-[17px] font-semibold leading-6">{title}</h2>}

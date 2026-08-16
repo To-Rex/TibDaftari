@@ -50,12 +50,12 @@ export function DataTable<T>({ columns, rows, rowKey, loading, skeletonRows = 8,
   const py = dense ? 'py-2' : 'py-3'
   const showSkeleton = loading && rows.length === 0
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn('app-data-table w-full', className)}>
       {/* ---------- table (≥ breakpoint) ---------- */}
-      <div className={cn('w-full overflow-x-auto', tableAt[cardBelow])}>
+      <div className={cn('app-data-table-scroll w-full overflow-x-auto', tableAt[cardBelow])}>
         <table className="w-full border-collapse text-[13.5px]">
           <thead className={cn(stickyHeader && 'sticky top-0 z-10')}>
-            <tr className="bg-surface-2/80 backdrop-blur text-left text-[12px] uppercase tracking-[0.05em] text-ink-3">
+            <tr className="app-table-head bg-surface-2/80 text-left text-[12px] uppercase tracking-[0.05em] text-ink-3">
               {columns.map((c) => (
                 <th key={c.key} style={{ width: c.width }} className={cn('px-4 py-2.5 font-medium first:rounded-tl-[var(--radius)] last:rounded-tr-[var(--radius)] whitespace-nowrap', c.align === 'right' && 'text-right', c.align === 'center' && 'text-center', c.hideBelow && hide[c.hideBelow], c.className)}>
                   {c.sortable && onSort ? (
@@ -83,7 +83,7 @@ export function DataTable<T>({ columns, rows, rowKey, loading, skeletonRows = 8,
                     const k = rowKey(r)
                     return (
                       <tr key={k} onClick={onRowClick ? () => onRowClick(r) : undefined}
-                        className={cn('border-b border-line/70 last:border-b-0 transition-colors', onRowClick && 'cursor-pointer hover:bg-surface-2/60', selectedKey === k && 'bg-brand-soft/40', loading && 'opacity-60', rowClassName?.(r))}>
+                        className={cn('app-table-row border-b border-line/70 last:border-b-0 transition-[background-color,box-shadow]', onRowClick && 'cursor-pointer hover:bg-surface-2/60', selectedKey === k && 'bg-brand-soft/40', loading && 'opacity-60', rowClassName?.(r))}>
                         {columns.map((c) => (
                           <td key={c.key} className={cn('px-4 align-middle', py, c.align === 'right' && 'text-right tabular', c.align === 'center' && 'text-center', c.hideBelow && hide[c.hideBelow], c.className)}>{c.cell(r, i)}</td>
                         ))}
@@ -121,7 +121,7 @@ function RowCard<T>({ row, index, columns, onClick, selected, loading, className
   return (
     <div
       onClick={onClick ? () => onClick(row) : undefined}
-      className={cn('rounded-[var(--radius)] border border-line bg-surface p-3.5 shadow-1 transition-colors', onClick && 'cursor-pointer active:bg-surface-2/70', selected && 'border-brand bg-brand-soft/30', loading && 'opacity-60', className)}
+      className={cn('app-row-card rounded-[var(--radius)] border border-line bg-surface p-3.5 shadow-1 transition-[background-color,border-color,box-shadow]', onClick && 'cursor-pointer active:bg-surface-2/70', selected && 'border-brand bg-brand-soft/30', loading && 'opacity-60', className)}
     >
       {title && <div className="text-[14px] font-medium leading-5 min-w-0 [&_*]:min-w-0">{title.cell(row, index)}</div>}
       {metas.length > 0 && <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-ink-3">{metas.map((c) => <span key={c.key} className="min-w-0">{c.cell(row, index)}</span>)}</div>}

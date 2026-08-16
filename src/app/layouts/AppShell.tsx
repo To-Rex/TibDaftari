@@ -92,18 +92,18 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
           <IconButton label="collapse" size="sm" onClick={() => setCollapsed(true)} className="max-lg:hidden"><PanelLeftClose /></IconButton>
         )}
       </div>
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+      <nav className="app-sidebar-nav flex-1 space-y-5 overflow-y-auto px-3 py-4">
         {visible.map((s, i) => (
           <div key={i}>
             {s.title && !collapsed && <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-3">{s.title}</p>}
             <ul className="space-y-0.5">
               {s.items.map((it) => (
                 <li key={it.to}>
-                  <NavLink to={it.to} end={it.end} className={({ isActive }) => cn('group relative flex items-center gap-3 rounded-[10px] px-3 h-10 text-[14px] font-medium transition-colors', collapsed && 'justify-center px-0', isActive ? 'bg-brand-soft text-brand-ink' : 'text-ink-2 hover:bg-surface-2 hover:text-ink')}>
+                  <NavLink to={it.to} end={it.end} className={({ isActive }) => cn('app-sidebar-link group relative flex h-10 items-center gap-3 rounded-[10px] px-3 text-[14px] font-medium transition-colors', collapsed && 'justify-center px-0', isActive ? 'bg-brand-soft text-brand-ink' : 'text-ink-2 hover:bg-surface-2 hover:text-ink')}>
                     {({ isActive }) => (
                       <>
                         {isActive && <motion.span layoutId={`nav-${module}`} className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-brand" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
-                        <span className={cn('[&>svg]:size-[18px] shrink-0', isActive ? 'text-brand' : 'text-ink-3 group-hover:text-ink-2')}>{it.icon}</span>
+                        <span className={cn('app-nav-icon shrink-0 [&>svg]:size-[18px]', isActive ? 'text-brand' : 'text-ink-3 group-hover:text-ink-2')}>{it.icon}</span>
                         {!collapsed && <span className="flex-1 truncate">{it.label}</span>}
                         {!!it.badge && (collapsed
                           ? <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-accent" />
@@ -120,12 +120,12 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
       </nav>
       <div className="border-t border-line p-3">
         {module === 'staff' && canAdmin && (
-          <NavLink to={routes.admin.root} className={cn('flex items-center gap-3 rounded-[10px] px-3 h-10 text-[13.5px] font-medium text-ink-2 hover:bg-surface-2 hover:text-ink', collapsed && 'justify-center px-0')}>
+          <NavLink to={routes.admin.root} className={cn('app-sidebar-link flex h-10 items-center gap-3 rounded-[10px] px-3 text-[13.5px] font-medium text-ink-2 hover:bg-surface-2 hover:text-ink', collapsed && 'justify-center px-0')}>
             <ArrowLeftRight className="size-[18px] text-ink-3" />{!collapsed && t('nav.admin')}
           </NavLink>
         )}
         {module === 'admin' && (
-          <NavLink to={routes.app.root} className={cn('flex items-center gap-3 rounded-[10px] px-3 h-10 text-[13.5px] font-medium text-ink-2 hover:bg-surface-2 hover:text-ink', collapsed && 'justify-center px-0')}>
+          <NavLink to={routes.app.root} className={cn('app-sidebar-link flex h-10 items-center gap-3 rounded-[10px] px-3 text-[13.5px] font-medium text-ink-2 hover:bg-surface-2 hover:text-ink', collapsed && 'justify-center px-0')}>
             <ArrowLeftRight className="size-[18px] text-ink-3" />{!collapsed && t('nav.staffApp')}
           </NavLink>
         )}
@@ -135,15 +135,15 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
   )
 
   return (
-    <div className="min-h-dvh bg-bg">
+    <div className="app-shell relative min-h-dvh overflow-x-clip bg-bg">
       {/* Desktop sidebar */}
-      <aside className={cn('fixed inset-y-0 left-0 z-40 hidden lg:block border-r border-line bg-bg-elevated transition-[width] duration-300 ease-[var(--ease-out)]', collapsed ? 'w-[72px]' : 'w-[248px]')}>{sidebar}</aside>
+      <aside className={cn('app-shell-sidebar fixed inset-y-0 left-0 z-40 hidden border-r border-line bg-bg-elevated/95 transition-[width] duration-300 ease-[var(--ease-out)] lg:block', collapsed ? 'w-[72px]' : 'w-[248px]')}>{sidebar}</aside>
       {/* Mobile drawer */}
       <AnimatePresence>
         {mobileOpen && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-ink/40 lg:hidden" onClick={() => setMobileOpen(false)} />
-            <motion.aside initial={{ x: -260 }} animate={{ x: 0 }} exit={{ x: -260 }} transition={{ type: 'spring', stiffness: 400, damping: 36 }} className="fixed inset-y-0 left-0 z-50 w-[min(260px,88vw)] bg-bg-elevated border-r border-line lg:hidden">
+            <motion.aside initial={{ x: -260 }} animate={{ x: 0 }} exit={{ x: -260 }} transition={{ type: 'spring', stiffness: 400, damping: 36 }} className="app-mobile-sidebar fixed inset-y-0 left-0 z-50 w-[min(260px,88vw)] border-r border-line bg-bg-elevated lg:hidden">
               <button onClick={() => setMobileOpen(false)} className="absolute right-3 top-4 grid size-8 place-items-center rounded-full hover:bg-surface-2"><X className="size-4" /></button>
               {sidebar}
             </motion.aside>
@@ -151,7 +151,7 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
         )}
       </AnimatePresence>
 
-      <div className={cn('transition-[padding] duration-300 ease-[var(--ease-out)]', collapsed ? 'lg:pl-[72px]' : 'lg:pl-[248px]')}>
+      <div className={cn('app-shell-content relative transition-[padding] duration-300 ease-[var(--ease-out)]', collapsed ? 'lg:pl-[72px]' : 'lg:pl-[248px]')}>
         <TopBar onMenu={() => setMobileOpen(true)} module={module} />
         <Outlet />
       </div>
@@ -172,7 +172,7 @@ function TopBar({ onMenu, module }: { onMenu: () => void; module: 'staff' | 'adm
   const canAll = s.isSuperAdmin || s.roleKey === 'admin' || s.roleKey === 'rahbar'
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 sm:h-16 items-center gap-1.5 xs:gap-2 sm:gap-3 border-b border-line bg-bg/80 px-2 xs:px-3 sm:px-6 backdrop-blur-md">
+    <header className="app-topbar sticky top-0 z-30 flex h-14 items-center gap-1.5 border-b border-line bg-bg/86 px-2 backdrop-blur-md xs:gap-2 xs:px-3 sm:h-16 sm:gap-3 sm:px-6">
       <IconButton label="menu" className="lg:hidden shrink-0" onClick={onMenu}><MenuIcon /></IconButton>
       <div className="lg:hidden max-xs:hidden shrink-0"><Logo compact /></div>
 
@@ -180,7 +180,7 @@ function TopBar({ onMenu, module }: { onMenu: () => void; module: 'staff' | 'adm
       <Menu
         align="start"
         trigger={(open) => (
-          <button title={current ? current.name : t('common.allBranches')} className={cn('inline-flex h-9 min-w-0 shrink items-center gap-1.5 sm:gap-2 rounded-full border border-line bg-surface px-2.5 sm:px-3 text-[13px] font-medium shadow-1 hover:border-line-strong transition-colors', open && 'border-brand')}>
+          <button title={current ? current.name : t('common.allBranches')} className={cn('app-branch-switcher inline-flex h-9 min-w-0 shrink items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 text-[13px] font-medium shadow-1 transition-colors sm:gap-2 sm:px-3 hover:border-line-strong', open && 'border-brand')}>
             <GitBranch className="size-4 shrink-0 text-brand" />
             <span className="max-sm:hidden max-w-[120px] md:max-w-[160px] 2xl:max-w-[240px] truncate">{current ? current.name : t('common.allBranches')}</span>
             <ChevronDown className="size-3.5 shrink-0 text-ink-3" />
