@@ -38,7 +38,8 @@ const uz = {
     latestResults: 'So‘nggi natijalar',
     latestVisits: 'So‘nggi tashriflar',
     noResultsTitle: 'Natijalar hali yo‘q',
-    noResultsText: 'Vrach tasdiqlashi bilan natija shu yerda paydo bo‘ladi va SMS orqali xabar beramiz.',
+    noResultsText:
+      'Vrach tasdiqlashi bilan natija shu yerda paydo bo‘ladi va SMS orqali xabar beramiz.',
     noVisitsTitle: 'Tashriflar yo‘q',
     noVisitsText: 'Klinikaga tashrif buyurganingizdan so‘ng cheklar shu yerda ko‘rinadi.',
     inProgress: '{{count}} ta natija tayyorlanmoqda',

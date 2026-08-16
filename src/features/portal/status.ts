@@ -32,7 +32,13 @@ export const orderActiveCount = (o: Order) => o.itemCount - o.progress.cancelled
 
 export const firstName = (fullName: string) => fullName.trim().split(/\s+/)[1] ?? fullName
 
-export const isRecent = (iso: string, days = 7) => Date.now() - new Date(iso).getTime() < days * 86_400_000
+export const isRecent = (iso: string, days = 7) =>
+  Date.now() - new Date(iso).getTime() < days * 86_400_000
 
 export const deliveredVia = (doc: ResultDocument, channel: 'sms' | 'portal') =>
-  doc.deliveries.some((d) => d.channel === channel && (d.status === 'sent' || d.status === 'delivered'))
+  doc.deliveries.some(
+    (d) => d.channel === channel && (d.status === 'sent' || d.status === 'delivered'),
+  )
+
+/** "Umumiy qon tahlili — natija" → "Umumiy qon tahlili". */
+export const documentTitle = (doc: ResultDocument) => doc.title.replace(/\s+—\s+natija$/i, '')

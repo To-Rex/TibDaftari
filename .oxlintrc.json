@@ -1,7 +1,28 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "import"],
-  "categories": { "correctness": "error", "suspicious": "warn" },
-  "rules": { "no-unused-vars": "warn", "react/exhaustive-deps": "warn" },
-  "ignorePatterns": ["dist", "node_modules"]
+  "plugins": [
+    "react",
+    "typescript",
+    "import"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "rules": {
+    "no-unused-vars": "warn",
+    "react/exhaustive-deps": "warn",
+    "react/react-in-jsx-scope": "off",
+    "react/no-unstable-nested-components": [
+      "warn",
+      {
+        "allowAsProps": true
+      }
+    ],
+    "import/no-unassigned-import": "off"
+  },
+  "ignorePatterns": [
+    "dist",
+    "node_modules"
+  ]
 }
