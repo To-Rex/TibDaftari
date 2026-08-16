@@ -1,32 +1,29 @@
-# React + TypeScript + Vite
+# Clinic-Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Ko‘p filialli klinika platformasining web ilovasi (React 19 + Vite + TypeScript). Uch modul bitta ilovada:
 
-Currently, two official plugins are available:
+| Zona | URL | Kim uchun |
+|---|---|---|
+| Landing + login | `/`, `/login`, `/staff/login` | hamma |
+| Bemor kabineti | `/me/*` | mijozlar (telefon + OTP; keyinroq Google/Apple) |
+| Xodimlar ilovasi | `/app/*` | registrator, laborant, vrach, rahbar |
+| Boshqaruv | `/admin/*` | kompaniya admini, superadmin |
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Hozircha **mock ma’lumotlar** bilan ishlaydi (`VITE_DATA_SOURCE=mock`). Backend (FastAPI) tayyor bo‘lganda `src/data/http/` yoziladi va faqat provider almashadi.
 
-## React Compiler
+## Ishga tushirish
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+cp .env.example .env
+npm run dev        # http://localhost:5180
+npm run build      # tsc + vite build
+npm run typecheck
+npm run lint
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Demo hisoblar (parol `123456`): `super`, `admin`, `umida` (registrator), `dilnoza` (laborant), `ahmed` (vrach). Bemor uchun login sahifasidagi demo raqam, OTP kod `1234`.
+
+## Arxitektura
+
+Qarang: [ARCHITECTURE.md](ARCHITECTURE.md). Qisqacha: `domain` (sof tiplar) ← `data` (repository kontraktlari + mock) ← `features` (hooklar/komponentlar) ← `modules` (sahifalar) ; `shared` (UI kit, i18n, theme) ; `app` (router, layout, guard).

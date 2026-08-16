@@ -7,6 +7,8 @@ import { en } from './locales/en'
 import { portalLocale } from './locales/portal'
 import { staffLocale } from './locales/staff'
 import { adminLocale } from './locales/admin'
+import { clinicalLocale } from './locales/clinical'
+import { catalogLocale } from './locales/catalog'
 import type { Locale } from '@/domain'
 
 export const LOCALES: { code: Locale; label: string; short: string }[] = [
@@ -22,9 +24,9 @@ void i18n
   .use(initReactI18next)
   .init({
     resources: {
-      uz: { translation: { ...uz, portal: portalLocale.uz, staff: staffLocale.uz, admin: adminLocale.uz } },
-      ru: { translation: { ...ru, portal: portalLocale.ru, staff: staffLocale.ru, admin: adminLocale.ru } },
-      en: { translation: { ...en, portal: portalLocale.en, staff: staffLocale.en, admin: adminLocale.en } },
+      uz: { translation: { ...uz, portal: portalLocale.uz, staff: staffLocale.uz, admin: adminLocale.uz, clinical: clinicalLocale.uz, catalog: catalogLocale.uz } },
+      ru: { translation: { ...ru, portal: portalLocale.ru, staff: staffLocale.ru, admin: adminLocale.ru, clinical: clinicalLocale.ru, catalog: catalogLocale.ru } },
+      en: { translation: { ...en, portal: portalLocale.en, staff: staffLocale.en, admin: adminLocale.en, clinical: clinicalLocale.en, catalog: catalogLocale.en } },
     },
     fallbackLng: 'uz',
     supportedLngs: ['uz', 'ru', 'en'],
