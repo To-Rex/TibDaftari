@@ -27,3 +27,12 @@ Demo hisoblar (parol `123456`): `super`, `admin`, `umida` (registrator), `dilnoz
 ## Arxitektura
 
 Qarang: [ARCHITECTURE.md](ARCHITECTURE.md). Qisqacha: `domain` (sof tiplar) ← `data` (repository kontraktlari + mock) ← `features` (hooklar/komponentlar) ← `modules` (sahifalar) ; `shared` (UI kit, i18n, theme) ; `app` (router, layout, guard).
+
+## Deploy (Dokploy + Railpack)
+
+Xabarchi-Web bilan bir xil usul: GitHub repo → Dokploy ilovasi (Build type: **Railpack**). Railpack `railpack.json` va `package.json` dan Node 22 + Vite SPA ekanini aniqlaydi, `npm ci` → `npm run build` bajaradi va `dist/` ni Caddy orqali (SPA fallback bilan, `/app/*`, `/admin/*`, `/me/*` marshrutlar ishlaydi) `PORT` da uzatadi. Alohida start-komanda kerak emas.
+
+Dokploy'da:
+- **Environment**: hozircha majburiy o‘zgaruvchi yo‘q (mock rejim). Backend chiqqanda: `VITE_DATA_SOURCE=http`, `VITE_API_URL=https://<backend>/api/v1` (Vite build-time o‘zgaruvchilar — o‘zgartirsangiz qayta build kerak).
+- **Health check**: `GET /` (200).
+- Git push → avtomatik deploy.
