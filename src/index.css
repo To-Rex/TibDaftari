@@ -1,0 +1,215 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/onest';
+@import '@fontsource-variable/jetbrains-mono';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ------------------------------------------------------------------
+   Design tokens — one calm, clinical palette. Light first, dark mirrored.
+   Every component reads tokens only; never raw hex in components.
+------------------------------------------------------------------- */
+:root {
+  --c-bg: #f5f7f6;
+  --c-bg-elevated: #ffffff;
+  --c-surface: #ffffff;
+  --c-surface-2: #eef2f0;
+  --c-surface-3: #e3e9e6;
+  --c-line: #dbe3df;
+  --c-line-strong: #c3cec9;
+  --c-ink: #14201d;
+  --c-ink-2: #4a5b56;
+  --c-ink-3: #7c8b86;
+  --c-brand: #0f7a6b;
+  --c-brand-strong: #0b5f53;
+  --c-brand-soft: #dcf1ec;
+  --c-brand-ink: #0b5f53;
+  --c-accent: #e6a23c;
+  --c-ok: #2f8a4c;
+  --c-ok-soft: #e2f3e7;
+  --c-warn: #b8741a;
+  --c-warn-soft: #fbf0dc;
+  --c-danger: #c2413f;
+  --c-danger-soft: #fbe6e5;
+  --c-info: #2f6fb8;
+  --c-info-soft: #e3edf9;
+  --c-focus: #0f7a6b;
+  --shadow-1: 0 1px 2px rgb(20 32 29 / 0.05), 0 1px 1px rgb(20 32 29 / 0.03);
+  --shadow-2: 0 4px 16px -4px rgb(20 32 29 / 0.10), 0 2px 4px rgb(20 32 29 / 0.04);
+  --shadow-3: 0 16px 40px -12px rgb(20 32 29 / 0.18), 0 4px 10px rgb(20 32 29 / 0.05);
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 18px;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  color-scheme: light;
+}
+.dark {
+  --c-bg: #0e1412;
+  --c-bg-elevated: #131b19;
+  --c-surface: #151d1b;
+  --c-surface-2: #1b2522;
+  --c-surface-3: #22302c;
+  --c-line: #26332f;
+  --c-line-strong: #34453f;
+  --c-ink: #e7edeb;
+  --c-ink-2: #a3b3ae;
+  --c-ink-3: #71827c;
+  --c-brand: #34b39f;
+  --c-brand-strong: #5cc9b8;
+  --c-brand-soft: #123f38;
+  --c-brand-ink: #7fdccb;
+  --c-accent: #e6b45f;
+  --c-ok: #5cc27a;
+  --c-ok-soft: #14301d;
+  --c-warn: #e0a24a;
+  --c-warn-soft: #302512;
+  --c-danger: #ef7674;
+  --c-danger-soft: #3a1918;
+  --c-info: #6ea3e6;
+  --c-info-soft: #14243a;
+  --c-focus: #34b39f;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-2: 0 4px 16px -4px rgb(0 0 0 / 0.5);
+  --shadow-3: 0 16px 40px -12px rgb(0 0 0 / 0.6);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: 'Onest Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, Consolas, monospace;
+
+  --color-bg: var(--c-bg);
+  --color-bg-elevated: var(--c-bg-elevated);
+  --color-surface: var(--c-surface);
+  --color-surface-2: var(--c-surface-2);
+  --color-surface-3: var(--c-surface-3);
+  --color-line: var(--c-line);
+  --color-line-strong: var(--c-line-strong);
+  --color-ink: var(--c-ink);
+  --color-ink-2: var(--c-ink-2);
+  --color-ink-3: var(--c-ink-3);
+  --color-brand: var(--c-brand);
+  --color-brand-strong: var(--c-brand-strong);
+  --color-brand-soft: var(--c-brand-soft);
+  --color-brand-ink: var(--c-brand-ink);
+  --color-accent: var(--c-accent);
+  --color-ok: var(--c-ok);
+  --color-ok-soft: var(--c-ok-soft);
+  --color-warn: var(--c-warn);
+  --color-warn-soft: var(--c-warn-soft);
+  --color-danger: var(--c-danger);
+  --color-danger-soft: var(--c-danger-soft);
+  --color-info: var(--c-info);
+  --color-info-soft: var(--c-info-soft);
+  --color-focus: var(--c-focus);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius-lg);
+  --shadow-1: var(--shadow-1);
+  --shadow-2: var(--shadow-2);
+  --shadow-3: var(--shadow-3);
+
+  --ease-out: var(--ease-out);
+  --ease-spring: var(--ease-spring);
+}
+
+@layer base {
+  * {
+    border-color: var(--c-line);
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-bg font-sans text-ink;
+    font-size: 15px;
+    line-height: 1.5;
+    font-feature-settings: 'ss01', 'cv11';
+    min-height: 100dvh;
+    transition:
+      background-color 0.35s var(--ease-out),
+      color 0.35s var(--ease-out);
+  }
+  h1, h2, h3, h4 {
+    text-wrap: balance;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--c-brand) 22%, transparent);
+  }
+  :focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  button, [role='button'] {
+    cursor: pointer;
+  }
+  input, textarea, select {
+    font: inherit;
+  }
+  input[type='number']::-webkit-inner-spin-button {
+    appearance: none;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--c-line-strong);
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .surface {
+    @apply bg-surface border border-line rounded-lg shadow-1;
+  }
+  .hairline {
+    box-shadow: inset 0 0 0 1px var(--c-line);
+  }
+  .fade-edge-b {
+    mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent);
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .grid-dots {
+    background-image: radial-gradient(var(--c-line-strong) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* View-transition theme reveal */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2;
+}
