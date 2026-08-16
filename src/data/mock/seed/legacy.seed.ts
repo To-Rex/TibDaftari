@@ -30,7 +30,7 @@ const ANDOZA_BINDINGS: Record<string, { serviceIds: number[]; categoryIds?: stri
   mikroflora: { serviceIds: [62], scope: 'item', status: 'active', note: 'natija_bak_ma.fr3' },
   virus_bio: { serviceIds: [97, 98, 99, 100, 101, 102, 103], scope: 'item', status: 'active', note: 'natija_virus.json (biokimyo)' },
   // Hepatitis panel: ONE document per order covering all bound hepatitis services (legacy request-level blanka).
-  virusologiya: { serviceIds: [85, 83, 84, 92, 86, 87, 88, 89, 90, 91], scope: 'order', status: 'active', note: 'natija_virus (gepatit paneli, chek darajasida)' },
+  virusologiya: { serviceIds: [85, 95, 83, 84, 92, 96, 86, 87, 104, 88, 89, 90, 91], scope: 'order', status: 'active', note: 'natija_virus.fr3 (gepatit paneli 6/3/4 qator, chek darajasida)' },
 }
 
 const stamp = (d = 320) => ({ createdAt: daysAgo(d), updatedAt: daysAgo(10) })

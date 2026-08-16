@@ -155,11 +155,80 @@ function fixRowOverlaps(elements) {
   })
 }
 
+
+/**
+ * Hepatitis panel (virusologiya): the exported andoza JSON is older than the production
+ * Delphi natija_virus.fr3 (ftasdiq_virus.pas maps a1..a7/b1..b7, c1,c2,c7, d1..d4).
+ * Rebuild the three tables to the real 6 / 3 / 4 rows:
+ *   T1: ИФА А IgM (85), ИФА А IgG (95), ИФА B (83), анти-HCV C (84), ИФА Д (92), Лямблия (96)
+ *   T2: HBV DNA (86), HCV RNA (87), HCV RNA — davolashdan keyingi nazorat (104)
+ *   T3: unchanged (88, 89, 90, 91)
+ * Everything below is shifted down accordingly. Pure geometry — bindings stay {svc.CODE.field}.
+ */
+function rebuildHepatitisTables(elements) {
+  const T1_TOP = 377, T1_HDR_BOTTOM = 407, T1_ROW0 = 409, STEP = 19, T2_TOP = 501, T3_TOP = 625
+  const rowTpl = elements.find((e) => e.type === 'text' && e.y === T1_ROW0 && String(e.text).includes('svc.LG-85.result'))
+  if (!rowTpl) return elements
+  const cellStyle = { ...rowTpl.style }
+  const mkText = (x, y, w, text, extra = {}) => ({ id: `lg_hep_${Math.random().toString(36).slice(2, 8)}`, type: 'text', x, y, w, h: 22, text, style: { ...cellStyle, ...extra } })
+  const mkHLine = (y) => ({ id: `lg_hep_${Math.random().toString(36).slice(2, 8)}`, type: 'rect', x: 54, y, w: 687, h: 1, fill: '#000000' })
+
+  // ---- table 1: rebuild rows
+  const T1_ROWS = [
+    ['ИФА ВГ “А”', 'IgM', 85], ['ИФА ВГ “А”', 'IgG', 95], ['ИФА ВГ “B”', 'HВs антиген', 83],
+    ['ИФА анти-HCV ВГ “C”', 'IgG, IgM', 84], ['ИФА ВГ “Д”', 'антитела', 92], ['ИФА Лямблия', 'антитела', 96],
+  ]
+  const t1Bottom0 = T1_ROW0 + T1_ROWS.length * STEP - 2
+  const t1Extra = t1Bottom0 - 482 // old bottom line was at 482 → +39
+  const t1Bottom = T1_ROW0 + T1_ROWS.length * STEP - 2 // 409 + 114 - 2 = 521 (old bottom 482 → +39, snap to grid)
+  const out = []
+  for (const e of elements) {
+    // header + everything above: keep; extend the vertical rules of table 1
+    if (e.y < T1_ROW0) {
+      if (e.type === 'rect' && e.h > 50 && e.y === T1_TOP) out.push({ ...e, h: t1Bottom - T1_TOP })
+      else out.push(e)
+      continue
+    }
+    // old table-1 data rows / separators: drop (regenerated below)
+    if (e.y >= T1_ROW0 && e.y < T2_TOP) continue
+    out.push(e) // handled in the shift pass
+  }
+  // ---- shift table 2 & 3 down by t1Extra; then insert 3rd row into table 2 (39px) and shift table 3 more
+  const T2_ROW3_H = 39
+  const res = []
+  for (const e of out) {
+    if (e.y < T2_TOP) { res.push(e); continue }
+    if (e.y < T3_TOP) {
+      const ne = { ...e, y: e.y + t1Extra }
+      if (e.type === 'rect' && e.h > 50) ne.h = e.h + T2_ROW3_H // vertical rules of table 2
+      // old bottom line of table 2 (y 606) moves down by the extra row
+      if (e.type === 'rect' && e.h === 1 && e.y === 606) ne.y = e.y + t1Extra + T2_ROW3_H
+      res.push(ne)
+      continue
+    }
+    res.push({ ...e, y: e.y + t1Extra + T2_ROW3_H })
+  }
+  // table-1 rows (added AFTER the shift pass so they keep their own y)
+  T1_ROWS.forEach(([name, kind, pid], i) => {
+    const y = T1_ROW0 + i * STEP
+    res.push(mkText(56, y, 195, name), mkText(251, y, 120, kind), mkText(371, y, 147, 'бўлмаслиги керак'),
+      mkText(522, y, 135, `{svc.LG-${pid}.result}`), mkText(658, y, 85, `{svc.LG-${pid}.od}`))
+    res.push(mkHLine(y + STEP - 2))
+  })
+  // new table-2 row (2-line name) right after old row 2 (old separator 606 → 606+t1Extra)
+  const y3 = 606 + t1Extra + 3
+  res.push(mkText(56, y3, 189, 'Вирусли гепатит С (РНК)'), mkText(56, y3 + 18, 189, 'Даволанишдан кейинги назорат', { fontSize: 13 }),
+    mkText(249, y3, 120, 'сифат'), mkText(249, y3 + 18, 120, '(качества)'), mkText(371, y3, 145, 'бўлмаслиги керак'),
+    mkText(520, y3, 221, '{svc.LG-104.result}'))
+  return res
+}
+
 const docs = {}
 for (const f of readdirSync(SRC).filter((x) => x.endsWith('.json'))) {
   const key = f.replace('.json', '')
   const src = JSON.parse(readFileSync(join(SRC, f), 'utf8'))
-  const elements = fixRowOverlaps(fixLetterhead((src.elements ?? []).map((e) => convert(e, key)).filter(Boolean)))
+  let elements = fixRowOverlaps(fixLetterhead((src.elements ?? []).map((e) => convert(e, key)).filter(Boolean)))
+  if (key === 'virusologiya') elements = rebuildHepatitisTables(elements)
   docs[key] = { name: src.name ?? key, doc: { paper: 'A4', orientation: src.orientation === 'landscape' ? 'landscape' : 'portrait', background: src.bg || '#ffffff', margin: 40, elements } }
   console.log(key, elements.length, 'elements')
 }

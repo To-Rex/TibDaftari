@@ -4115,47 +4115,11 @@
       "fill": "#000000"
      },
      {
-      "id": "lg_6l",
-      "x": 54,
-      "y": 426,
-      "w": 687,
-      "h": 1,
-      "type": "rect",
-      "fill": "#000000"
-     },
-     {
-      "id": "lg_6m",
-      "x": 54,
-      "y": 444,
-      "w": 687,
-      "h": 1,
-      "type": "rect",
-      "fill": "#000000"
-     },
-     {
-      "id": "lg_6n",
-      "x": 54,
-      "y": 463,
-      "w": 687,
-      "h": 1,
-      "type": "rect",
-      "fill": "#000000"
-     },
-     {
-      "id": "lg_6o",
-      "x": 54,
-      "y": 482,
-      "w": 687,
-      "h": 1,
-      "type": "rect",
-      "fill": "#000000"
-     },
-     {
       "id": "lg_6p",
       "x": 53,
       "y": 377,
       "w": 1,
-      "h": 105,
+      "h": 144,
       "type": "rect",
       "fill": "#000000"
      },
@@ -4164,7 +4128,7 @@
       "x": 249,
       "y": 377,
       "w": 1,
-      "h": 105,
+      "h": 144,
       "type": "rect",
       "fill": "#000000"
      },
@@ -4173,7 +4137,7 @@
       "x": 369,
       "y": 377,
       "w": 1,
-      "h": 105,
+      "h": 144,
       "type": "rect",
       "fill": "#000000"
      },
@@ -4182,7 +4146,7 @@
       "x": 520,
       "y": 377,
       "w": 1,
-      "h": 105,
+      "h": 144,
       "type": "rect",
       "fill": "#000000"
      },
@@ -4191,7 +4155,7 @@
       "x": 655,
       "y": 377,
       "w": 1,
-      "h": 105,
+      "h": 144,
       "type": "rect",
       "fill": "#000000"
      },
@@ -4200,7 +4164,7 @@
       "x": 741,
       "y": 377,
       "w": 1,
-      "h": 105,
+      "h": 144,
       "type": "rect",
       "fill": "#000000"
      },
@@ -4300,389 +4264,9 @@
       "name": "Опкрит"
      },
      {
-      "id": "lg_70",
-      "x": 56,
-      "y": 409,
-      "w": 195,
-      "h": 22,
-      "type": "text",
-      "text": "ИФА ВГ “А”",
-      "style": {
-       "fontFamily": "serif",
-       "fontSize": 16,
-       "fontWeight": 400,
-       "color": "#000000",
-       "align": "left",
-       "vAlign": "top",
-       "lineHeight": 1.1
-      },
-      "name": "ИФА ВГ “А”"
-     },
-     {
-      "id": "lg_71",
-      "x": 251,
-      "y": 409,
-      "w": 120,
-      "h": 22,
-      "type": "text",
-      "text": "IgM",
-      "style": {
-       "fontFamily": "serif",
-       "fontSize": 16,
-       "fontWeight": 400,
-       "color": "#000000",
-       "align": "center",
-       "vAlign": "top",
-       "lineHeight": 1.1
-      },
-      "name": "IgM"
-     },
-     {
-      "id": "lg_72",
-      "x": 371,
-      "y": 409,
-      "w": 147,
-      "h": 22,
-      "type": "text",
-      "text": "бўлмаслиги керак",
-      "style": {
-       "fontFamily": "serif",
-       "fontSize": 16,
-       "fontWeight": 400,
-       "color": "#000000",
-       "align": "left",
-       "vAlign": "top",
-       "lineHeight": 1.1
-      },
-      "name": "бўлмаслиги керак"
-     },
-     {
-      "id": "lg_73",
-      "x": 522,
-      "y": 409,
-      "w": 135,
-      "h": 22,
-      "type": "text",
-      "text": "{svc.LG-85.result}",
-      "style": {
-       "fontFamily": "serif",
-       "fontSize": 16,
-       "fontWeight": 400,
-       "color": "#000000",
-       "align": "center",
-       "vAlign": "top",
-       "lineHeight": 1.1
-      },
-      "name": "[a1]"
-     },
-     {
-      "id": "lg_74",
-      "x": 658,
-      "y": 409,
-      "w": 85,
-      "h": 22,
-      "type": "text",
-      "text": "{svc.LG-85.od}",
-      "style": {
-       "fontFamily": "serif",
-       "fontSize": 16,
-       "fontWeight": 400,
-       "color": "#000000",
-       "align": "center",
-       "vAlign": "top",
-       "lineHeight": 1.1
-      },
-      "name": "[b1]"
-     },
-     {
-      "id": "lg_75",
-      "x": 56,
-      "y": 429,
-      "w": 195,
-      "h": 22,
-      "type": "text",
-      "text": "ИФА ВГ “B”",
-      "style": {
-       "fontFamily": "serif",
-       "fontSize": 16,
-       "fontWeight": 400,
-       "color": "#000000",
-       "align": "left",
-       "vAlign": "top",
-       "lineHeight": 1.1
-      },
-      "name": "ИФА ВГ “B”"
-     },
-     {
-      "id": "lg_76",
-      "x": 251,
-      "y": 429,
-      "w": 120,
-      "h": 22,
-      "type": "text",
-      "text": "HВs антиген",
-      "style": {
-       "fontFamily": "serif",
-       "fontSize": 16,
-       "fontWeight": 400,
-       "color": "#000000",
-       "align": "center",
-       "vAlign": "top",
-       "lineHeight": 1.1
-      },
-      "name": "HВs антиген"
-     },
-     {
-      "id": "lg_77",
-      "x": 371,
-      "y": 429,
-      "w": 147,
-      "h": 22,
-      "type": "text",
-      "text": "бўлмаслиги керак",
-      "style": {
-       "fontFamily": "serif",
-       "fontSize": 16,
-       "fontWeight": 400,
-       "color": "#000000",
-       "align": "left",
-       "vAlign": "top",
-       "lineHeight": 1.1
-      },
-      "name": "бўлмаслиги керак"
-     },
-     {
-      "id": "lg_78",
-      "x": 522,
-      "y": 429,
-      "w": 135,
-      "h": 22,
-      "type": "text",
-      "text": "{svc.LG-83.result}",
-      "style": {
-       "fontFamily": "serif",
-       "fontSize": 16,
-       "fontWeight": 400,
-       "color": "#000000",
-       "align": "center",
-       "vAlign": "top",
-       "lineHeight": 1.1
-      },
-      "name": "[a2]"
-     },
-     {
-      "id": "lg_79",
-      "x": 658,
-      "y": 429,
-      "w": 85,
-      "h": 22,
-      "type": "text",
-      "text": "{svc.LG-83.od}",
-      "style": {
-       "fontFamily": "serif",
-       "fontSize": 16,
-       "fontWeight": 400,
-       "color": "#000000",
-       "align": "center",
-       "vAlign": "top",
-       "lineHeight": 1.1
-      },
-      "name": "[b2]"
-     },
-     {
-      "id": "lg_7a",
-      "x": 56,
-      "y": 448,
-      "w": 195,
-      "h": 22,
-      "type": "text",
-      "text": "ИФА анти-HCV ВГ “C”",
-      "style": {
-       "fontFamily": "serif",
-       "fontSize": 16,
-       "fontWeight": 400,
-       "color": "#000000",
-       "align": "left",
-       "vAlign": "top",
-       "lineHeight": 1.1
-      },
-      "name": "ИФА анти-HCV ВГ “C”"
-     },
-     {
-      "id": "lg_7b",
-      "x": 251,
-      "y": 448,
-      "w": 120,
-      "h": 22,
-      "type": "text",
-      "text": "IgG, IgM",
-      "style": {
-       "fontFamily": "serif",
-       "fontSize": 16,
-       "fontWeight": 400,
-       "color": "#000000",
-       "align": "center",
-       "vAlign": "top",
-       "lineHeight": 1.1
-      },
-      "name": "IgG, IgM"
-     },
-     {
-      "id": "lg_7c",
-      "x": 371,
-      "y": 448,
-      "w": 147,
-      "h": 22,
-      "type": "text",
-      "text": "бўлмаслиги керак",
-      "style": {
-       "fontFamily": "serif",
-       "fontSize": 16,
-       "fontWeight": 400,
-       "color": "#000000",
-       "align": "left",
-       "vAlign": "top",
-       "lineHeight": 1.1
-      },
-      "name": "бўлмаслиги керак"
-     },
-     {
-      "id": "lg_7d",
-      "x": 522,
-      "y": 448,
-      "w": 135,
-      "h": 22,
-      "type": "text",
-      "text": "{svc.LG-84.result}",
-      "style": {
-       "fontFamily": "serif",
-       "fontSize": 16,
-       "fontWeight": 400,
-       "color": "#000000",
-       "align": "center",
-       "vAlign": "top",
-       "lineHeight": 1.1
-      },
-      "name": "[a3]"
-     },
-     {
-      "id": "lg_7e",
-      "x": 658,
-      "y": 448,
-      "w": 85,
-      "h": 22,
-      "type": "text",
-      "text": "{svc.LG-84.od}",
-      "style": {
-       "fontFamily": "serif",
-       "fontSize": 16,
-       "fontWeight": 400,
-       "color": "#000000",
-       "align": "center",
-       "vAlign": "top",
-       "lineHeight": 1.1
-      },
-      "name": "[b3]"
-     },
-     {
-      "id": "lg_7f",
-      "x": 56,
-      "y": 467,
-      "w": 195,
-      "h": 22,
-      "type": "text",
-      "text": "ИФА ВГ “Д”",
-      "style": {
-       "fontFamily": "serif",
-       "fontSize": 16,
-       "fontWeight": 400,
-       "color": "#000000",
-       "align": "left",
-       "vAlign": "top",
-       "lineHeight": 1.1
-      },
-      "name": "ИФА ВГ “Д”"
-     },
-     {
-      "id": "lg_7g",
-      "x": 251,
-      "y": 467,
-      "w": 120,
-      "h": 22,
-      "type": "text",
-      "text": "антитела",
-      "style": {
-       "fontFamily": "serif",
-       "fontSize": 16,
-       "fontWeight": 400,
-       "color": "#000000",
-       "align": "center",
-       "vAlign": "top",
-       "lineHeight": 1.1
-      },
-      "name": "антитела"
-     },
-     {
-      "id": "lg_7h",
-      "x": 371,
-      "y": 467,
-      "w": 147,
-      "h": 22,
-      "type": "text",
-      "text": "бўлмаслиги керак",
-      "style": {
-       "fontFamily": "serif",
-       "fontSize": 16,
-       "fontWeight": 400,
-       "color": "#000000",
-       "align": "left",
-       "vAlign": "top",
-       "lineHeight": 1.1
-      },
-      "name": "бўлмаслиги керак"
-     },
-     {
-      "id": "lg_7i",
-      "x": 522,
-      "y": 467,
-      "w": 135,
-      "h": 22,
-      "type": "text",
-      "text": "{svc.LG-92.result}",
-      "style": {
-       "fontFamily": "serif",
-       "fontSize": 16,
-       "fontWeight": 400,
-       "color": "#000000",
-       "align": "center",
-       "vAlign": "top",
-       "lineHeight": 1.1
-      },
-      "name": "[a4]"
-     },
-     {
-      "id": "lg_7j",
-      "x": 658,
-      "y": 467,
-      "w": 85,
-      "h": 22,
-      "type": "text",
-      "text": "{svc.LG-92.od}",
-      "style": {
-       "fontFamily": "serif",
-       "fontSize": 16,
-       "fontWeight": 400,
-       "color": "#000000",
-       "align": "center",
-       "vAlign": "top",
-       "lineHeight": 1.1
-      },
-      "name": "[b4]"
-     },
-     {
       "id": "lg_7k",
       "x": 54,
-      "y": 501,
+      "y": 540,
       "w": 687,
       "h": 1,
       "type": "rect",
@@ -4691,7 +4275,7 @@
      {
       "id": "lg_7l",
       "x": 54,
-      "y": 528,
+      "y": 567,
       "w": 687,
       "h": 1,
       "type": "rect",
@@ -4700,7 +4284,7 @@
      {
       "id": "lg_7m",
       "x": 54,
-      "y": 567,
+      "y": 606,
       "w": 687,
       "h": 1,
       "type": "rect",
@@ -4709,7 +4293,7 @@
      {
       "id": "lg_7n",
       "x": 54,
-      "y": 606,
+      "y": 684,
       "w": 687,
       "h": 1,
       "type": "rect",
@@ -4718,52 +4302,52 @@
      {
       "id": "lg_7o",
       "x": 53,
-      "y": 502,
+      "y": 541,
       "w": 1,
-      "h": 105,
+      "h": 144,
       "type": "rect",
       "fill": "#000000"
      },
      {
       "id": "lg_7p",
       "x": 249,
-      "y": 502,
+      "y": 541,
       "w": 1,
-      "h": 105,
+      "h": 144,
       "type": "rect",
       "fill": "#000000"
      },
      {
       "id": "lg_7q",
       "x": 369,
-      "y": 502,
+      "y": 541,
       "w": 1,
-      "h": 105,
+      "h": 144,
       "type": "rect",
       "fill": "#000000"
      },
      {
       "id": "lg_7r",
       "x": 520,
-      "y": 502,
+      "y": 541,
       "w": 1,
-      "h": 105,
+      "h": 144,
       "type": "rect",
       "fill": "#000000"
      },
      {
       "id": "lg_7s",
       "x": 741,
-      "y": 502,
+      "y": 541,
       "w": 1,
-      "h": 105,
+      "h": 144,
       "type": "rect",
       "fill": "#000000"
      },
      {
       "id": "lg_7t",
       "x": 54,
-      "y": 508,
+      "y": 547,
       "w": 195,
       "h": 22,
       "type": "text",
@@ -4782,7 +4366,7 @@
      {
       "id": "lg_7u",
       "x": 249,
-      "y": 508,
+      "y": 547,
       "w": 120,
       "h": 22,
       "type": "text",
@@ -4801,7 +4385,7 @@
      {
       "id": "lg_7v",
       "x": 369,
-      "y": 508,
+      "y": 547,
       "w": 152,
       "h": 22,
       "type": "text",
@@ -4820,7 +4404,7 @@
      {
       "id": "lg_7w",
       "x": 520,
-      "y": 508,
+      "y": 547,
       "w": 221,
       "h": 22,
       "type": "text",
@@ -4839,7 +4423,7 @@
      {
       "id": "lg_7x",
       "x": 56,
-      "y": 531,
+      "y": 570,
       "w": 189,
       "h": 22,
       "type": "text",
@@ -4858,7 +4442,7 @@
      {
       "id": "lg_7y",
       "x": 249,
-      "y": 531,
+      "y": 570,
       "w": 120,
       "h": 22,
       "type": "text",
@@ -4877,7 +4461,7 @@
      {
       "id": "lg_7z",
       "x": 249,
-      "y": 549,
+      "y": 588,
       "w": 120,
       "h": 22,
       "type": "text",
@@ -4896,7 +4480,7 @@
      {
       "id": "lg_80",
       "x": 371,
-      "y": 531,
+      "y": 570,
       "w": 145,
       "h": 22,
       "type": "text",
@@ -4915,7 +4499,7 @@
      {
       "id": "lg_81",
       "x": 520,
-      "y": 531,
+      "y": 570,
       "w": 221,
       "h": 22,
       "type": "text",
@@ -4934,7 +4518,7 @@
      {
       "id": "lg_82",
       "x": 56,
-      "y": 570,
+      "y": 609,
       "w": 189,
       "h": 22,
       "type": "text",
@@ -4953,7 +4537,7 @@
      {
       "id": "lg_83",
       "x": 249,
-      "y": 570,
+      "y": 609,
       "w": 120,
       "h": 22,
       "type": "text",
@@ -4972,7 +4556,7 @@
      {
       "id": "lg_84",
       "x": 249,
-      "y": 588,
+      "y": 627,
       "w": 120,
       "h": 22,
       "type": "text",
@@ -4991,7 +4575,7 @@
      {
       "id": "lg_85",
       "x": 371,
-      "y": 570,
+      "y": 609,
       "w": 145,
       "h": 22,
       "type": "text",
@@ -5010,7 +4594,7 @@
      {
       "id": "lg_86",
       "x": 520,
-      "y": 570,
+      "y": 609,
       "w": 221,
       "h": 22,
       "type": "text",
@@ -5029,7 +4613,7 @@
      {
       "id": "lg_87",
       "x": 54,
-      "y": 625,
+      "y": 703,
       "w": 687,
       "h": 1,
       "type": "rect",
@@ -5038,7 +4622,7 @@
      {
       "id": "lg_88",
       "x": 54,
-      "y": 660,
+      "y": 738,
       "w": 687,
       "h": 1,
       "type": "rect",
@@ -5047,7 +4631,7 @@
      {
       "id": "lg_89",
       "x": 54,
-      "y": 698,
+      "y": 776,
       "w": 687,
       "h": 1,
       "type": "rect",
@@ -5056,7 +4640,7 @@
      {
       "id": "lg_8a",
       "x": 54,
-      "y": 739,
+      "y": 817,
       "w": 687,
       "h": 1,
       "type": "rect",
@@ -5065,7 +4649,7 @@
      {
       "id": "lg_8b",
       "x": 54,
-      "y": 776,
+      "y": 854,
       "w": 687,
       "h": 1,
       "type": "rect",
@@ -5074,7 +4658,7 @@
      {
       "id": "lg_8c",
       "x": 54,
-      "y": 816,
+      "y": 894,
       "w": 687,
       "h": 1,
       "type": "rect",
@@ -5083,7 +4667,7 @@
      {
       "id": "lg_8d",
       "x": 53,
-      "y": 625,
+      "y": 703,
       "w": 1,
       "h": 191,
       "type": "rect",
@@ -5092,7 +4676,7 @@
      {
       "id": "lg_8e",
       "x": 249,
-      "y": 625,
+      "y": 703,
       "w": 1,
       "h": 191,
       "type": "rect",
@@ -5101,7 +4685,7 @@
      {
       "id": "lg_8f",
       "x": 369,
-      "y": 625,
+      "y": 703,
       "w": 1,
       "h": 191,
       "type": "rect",
@@ -5110,7 +4694,7 @@
      {
       "id": "lg_8g",
       "x": 520,
-      "y": 625,
+      "y": 703,
       "w": 1,
       "h": 191,
       "type": "rect",
@@ -5119,7 +4703,7 @@
      {
       "id": "lg_8h",
       "x": 655,
-      "y": 625,
+      "y": 703,
       "w": 1,
       "h": 191,
       "type": "rect",
@@ -5128,7 +4712,7 @@
      {
       "id": "lg_8i",
       "x": 741,
-      "y": 625,
+      "y": 703,
       "w": 1,
       "h": 191,
       "type": "rect",
@@ -5137,7 +4721,7 @@
      {
       "id": "lg_8j",
       "x": 54,
-      "y": 635,
+      "y": 713,
       "w": 195,
       "h": 22,
       "type": "text",
@@ -5156,7 +4740,7 @@
      {
       "id": "lg_8k",
       "x": 249,
-      "y": 635,
+      "y": 713,
       "w": 120,
       "h": 22,
       "type": "text",
@@ -5175,7 +4759,7 @@
      {
       "id": "lg_8l",
       "x": 369,
-      "y": 635,
+      "y": 713,
       "w": 152,
       "h": 22,
       "type": "text",
@@ -5194,7 +4778,7 @@
      {
       "id": "lg_8m",
       "x": 520,
-      "y": 635,
+      "y": 713,
       "w": 135,
       "h": 22,
       "type": "text",
@@ -5213,7 +4797,7 @@
      {
       "id": "lg_8n",
       "x": 656,
-      "y": 626,
+      "y": 704,
       "w": 85,
       "h": 22,
       "type": "text",
@@ -5232,7 +4816,7 @@
      {
       "id": "lg_8o",
       "x": 656,
-      "y": 644,
+      "y": 722,
       "w": 85,
       "h": 22,
       "type": "text",
@@ -5251,7 +4835,7 @@
      {
       "id": "lg_8p",
       "x": 54,
-      "y": 672,
+      "y": 750,
       "w": 195,
       "h": 22,
       "type": "text",
@@ -5270,7 +4854,7 @@
      {
       "id": "lg_8q",
       "x": 249,
-      "y": 663,
+      "y": 741,
       "w": 120,
       "h": 22,
       "type": "text",
@@ -5289,7 +4873,7 @@
      {
       "id": "lg_8r",
       "x": 249,
-      "y": 681,
+      "y": 759,
       "w": 120,
       "h": 22,
       "type": "text",
@@ -5308,7 +4892,7 @@
      {
       "id": "lg_8s",
       "x": 371,
-      "y": 672,
+      "y": 750,
       "w": 145,
       "h": 22,
       "type": "text",
@@ -5327,7 +4911,7 @@
      {
       "id": "lg_8t",
       "x": 520,
-      "y": 672,
+      "y": 750,
       "w": 135,
       "h": 22,
       "type": "text",
@@ -5346,7 +4930,7 @@
      {
       "id": "lg_8u",
       "x": 656,
-      "y": 672,
+      "y": 750,
       "w": 85,
       "h": 22,
       "type": "text",
@@ -5365,7 +4949,7 @@
      {
       "id": "lg_8v",
       "x": 54,
-      "y": 712,
+      "y": 790,
       "w": 195,
       "h": 22,
       "type": "text",
@@ -5384,7 +4968,7 @@
      {
       "id": "lg_8w",
       "x": 249,
-      "y": 703,
+      "y": 781,
       "w": 120,
       "h": 22,
       "type": "text",
@@ -5403,7 +4987,7 @@
      {
       "id": "lg_8x",
       "x": 249,
-      "y": 721,
+      "y": 799,
       "w": 120,
       "h": 22,
       "type": "text",
@@ -5422,7 +5006,7 @@
      {
       "id": "lg_8y",
       "x": 371,
-      "y": 712,
+      "y": 790,
       "w": 145,
       "h": 22,
       "type": "text",
@@ -5441,7 +5025,7 @@
      {
       "id": "lg_8z",
       "x": 520,
-      "y": 712,
+      "y": 790,
       "w": 135,
       "h": 22,
       "type": "text",
@@ -5460,7 +5044,7 @@
      {
       "id": "lg_90",
       "x": 656,
-      "y": 712,
+      "y": 790,
       "w": 85,
       "h": 22,
       "type": "text",
@@ -5479,7 +5063,7 @@
      {
       "id": "lg_91",
       "x": 54,
-      "y": 751,
+      "y": 829,
       "w": 195,
       "h": 22,
       "type": "text",
@@ -5498,7 +5082,7 @@
      {
       "id": "lg_92",
       "x": 249,
-      "y": 742,
+      "y": 820,
       "w": 120,
       "h": 22,
       "type": "text",
@@ -5517,7 +5101,7 @@
      {
       "id": "lg_93",
       "x": 249,
-      "y": 760,
+      "y": 838,
       "w": 120,
       "h": 22,
       "type": "text",
@@ -5536,7 +5120,7 @@
      {
       "id": "lg_94",
       "x": 371,
-      "y": 751,
+      "y": 829,
       "w": 145,
       "h": 22,
       "type": "text",
@@ -5555,7 +5139,7 @@
      {
       "id": "lg_95",
       "x": 520,
-      "y": 751,
+      "y": 829,
       "w": 135,
       "h": 22,
       "type": "text",
@@ -5574,7 +5158,7 @@
      {
       "id": "lg_96",
       "x": 656,
-      "y": 751,
+      "y": 829,
       "w": 85,
       "h": 22,
       "type": "text",
@@ -5593,7 +5177,7 @@
      {
       "id": "lg_97",
       "x": 54,
-      "y": 780,
+      "y": 858,
       "w": 195,
       "h": 22,
       "type": "text",
@@ -5612,7 +5196,7 @@
      {
       "id": "lg_98",
       "x": 54,
-      "y": 798,
+      "y": 876,
       "w": 195,
       "h": 22,
       "type": "text",
@@ -5631,7 +5215,7 @@
      {
       "id": "lg_99",
       "x": 249,
-      "y": 789,
+      "y": 867,
       "w": 120,
       "h": 22,
       "type": "text",
@@ -5650,7 +5234,7 @@
      {
       "id": "lg_9a",
       "x": 371,
-      "y": 789,
+      "y": 867,
       "w": 145,
       "h": 22,
       "type": "text",
@@ -5669,7 +5253,7 @@
      {
       "id": "lg_9b",
       "x": 520,
-      "y": 789,
+      "y": 867,
       "w": 135,
       "h": 22,
       "type": "text",
@@ -5688,7 +5272,7 @@
      {
       "id": "lg_9c",
       "x": 656,
-      "y": 789,
+      "y": 867,
       "w": 85,
       "h": 22,
       "type": "text",
@@ -5707,7 +5291,7 @@
      {
       "id": "lg_9d",
       "x": 375,
-      "y": 831,
+      "y": 909,
       "w": 185,
       "h": 117,
       "type": "image",
@@ -5717,7 +5301,7 @@
      {
       "id": "lg_9e",
       "x": 515,
-      "y": 831,
+      "y": 909,
       "w": 83,
       "h": 45,
       "type": "image",
@@ -5727,7 +5311,7 @@
      {
       "id": "lg_9f",
       "x": 522,
-      "y": 888,
+      "y": 966,
       "w": 53,
       "h": 45,
       "type": "image",
@@ -5737,7 +5321,7 @@
      {
       "id": "lg_9g",
       "x": 56,
-      "y": 844,
+      "y": 922,
       "w": 507,
       "h": 26,
       "type": "text",
@@ -5756,7 +5340,7 @@
      {
       "id": "lg_9h",
       "x": 567,
-      "y": 844,
+      "y": 922,
       "w": 159,
       "h": 26,
       "type": "text",
@@ -5775,7 +5359,7 @@
      {
       "id": "lg_9i",
       "x": 56,
-      "y": 906,
+      "y": 984,
       "w": 507,
       "h": 26,
       "type": "text",
@@ -5794,7 +5378,7 @@
      {
       "id": "lg_9j",
       "x": 567,
-      "y": 906,
+      "y": 984,
       "w": 159,
       "h": 26,
       "type": "text",
@@ -5813,7 +5397,7 @@
      {
       "id": "lg_9k",
       "x": 38,
-      "y": 985,
+      "y": 1063,
       "w": 718,
       "h": 26,
       "type": "text",
@@ -5832,11 +5416,713 @@
      {
       "id": "lg_9l",
       "x": 254,
-      "y": 1002,
+      "y": 1080,
       "w": 286,
       "h": 1,
       "type": "rect",
       "fill": "#000000"
+     },
+     {
+      "id": "lg_hep_ngbkmj",
+      "type": "text",
+      "x": 56,
+      "y": 409,
+      "w": 195,
+      "h": 22,
+      "text": "ИФА ВГ “А”",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_rta9aw",
+      "type": "text",
+      "x": 251,
+      "y": 409,
+      "w": 120,
+      "h": 22,
+      "text": "IgM",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_8ncckm",
+      "type": "text",
+      "x": 371,
+      "y": 409,
+      "w": 147,
+      "h": 22,
+      "text": "бўлмаслиги керак",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_iuf4d4",
+      "type": "text",
+      "x": 522,
+      "y": 409,
+      "w": 135,
+      "h": 22,
+      "text": "{svc.LG-85.result}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_4r7f6e",
+      "type": "text",
+      "x": 658,
+      "y": 409,
+      "w": 85,
+      "h": 22,
+      "text": "{svc.LG-85.od}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_2zbieu",
+      "type": "rect",
+      "x": 54,
+      "y": 426,
+      "w": 687,
+      "h": 1,
+      "fill": "#000000"
+     },
+     {
+      "id": "lg_hep_k10k9w",
+      "type": "text",
+      "x": 56,
+      "y": 428,
+      "w": 195,
+      "h": 22,
+      "text": "ИФА ВГ “А”",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_6f09ev",
+      "type": "text",
+      "x": 251,
+      "y": 428,
+      "w": 120,
+      "h": 22,
+      "text": "IgG",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_xuzmao",
+      "type": "text",
+      "x": 371,
+      "y": 428,
+      "w": 147,
+      "h": 22,
+      "text": "бўлмаслиги керак",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_3rtrap",
+      "type": "text",
+      "x": 522,
+      "y": 428,
+      "w": 135,
+      "h": 22,
+      "text": "{svc.LG-95.result}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_fkviy9",
+      "type": "text",
+      "x": 658,
+      "y": 428,
+      "w": 85,
+      "h": 22,
+      "text": "{svc.LG-95.od}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_g6zwsf",
+      "type": "rect",
+      "x": 54,
+      "y": 445,
+      "w": 687,
+      "h": 1,
+      "fill": "#000000"
+     },
+     {
+      "id": "lg_hep_3dq8xt",
+      "type": "text",
+      "x": 56,
+      "y": 447,
+      "w": 195,
+      "h": 22,
+      "text": "ИФА ВГ “B”",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_8t2cxh",
+      "type": "text",
+      "x": 251,
+      "y": 447,
+      "w": 120,
+      "h": 22,
+      "text": "HВs антиген",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_mg7uqn",
+      "type": "text",
+      "x": 371,
+      "y": 447,
+      "w": 147,
+      "h": 22,
+      "text": "бўлмаслиги керак",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_03qisd",
+      "type": "text",
+      "x": 522,
+      "y": 447,
+      "w": 135,
+      "h": 22,
+      "text": "{svc.LG-83.result}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_yay6n9",
+      "type": "text",
+      "x": 658,
+      "y": 447,
+      "w": 85,
+      "h": 22,
+      "text": "{svc.LG-83.od}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_qjtwts",
+      "type": "rect",
+      "x": 54,
+      "y": 464,
+      "w": 687,
+      "h": 1,
+      "fill": "#000000"
+     },
+     {
+      "id": "lg_hep_cdfd41",
+      "type": "text",
+      "x": 56,
+      "y": 466,
+      "w": 195,
+      "h": 22,
+      "text": "ИФА анти-HCV ВГ “C”",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_d10niq",
+      "type": "text",
+      "x": 251,
+      "y": 466,
+      "w": 120,
+      "h": 22,
+      "text": "IgG, IgM",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_61ij69",
+      "type": "text",
+      "x": 371,
+      "y": 466,
+      "w": 147,
+      "h": 22,
+      "text": "бўлмаслиги керак",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_q6mzfv",
+      "type": "text",
+      "x": 522,
+      "y": 466,
+      "w": 135,
+      "h": 22,
+      "text": "{svc.LG-84.result}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_ut7ff1",
+      "type": "text",
+      "x": 658,
+      "y": 466,
+      "w": 85,
+      "h": 22,
+      "text": "{svc.LG-84.od}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_kf667i",
+      "type": "rect",
+      "x": 54,
+      "y": 483,
+      "w": 687,
+      "h": 1,
+      "fill": "#000000"
+     },
+     {
+      "id": "lg_hep_nstm0o",
+      "type": "text",
+      "x": 56,
+      "y": 485,
+      "w": 195,
+      "h": 22,
+      "text": "ИФА ВГ “Д”",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_c3nc32",
+      "type": "text",
+      "x": 251,
+      "y": 485,
+      "w": 120,
+      "h": 22,
+      "text": "антитела",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_rukbbk",
+      "type": "text",
+      "x": 371,
+      "y": 485,
+      "w": 147,
+      "h": 22,
+      "text": "бўлмаслиги керак",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_dcgu2p",
+      "type": "text",
+      "x": 522,
+      "y": 485,
+      "w": 135,
+      "h": 22,
+      "text": "{svc.LG-92.result}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_f54fm1",
+      "type": "text",
+      "x": 658,
+      "y": 485,
+      "w": 85,
+      "h": 22,
+      "text": "{svc.LG-92.od}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_6w5lje",
+      "type": "rect",
+      "x": 54,
+      "y": 502,
+      "w": 687,
+      "h": 1,
+      "fill": "#000000"
+     },
+     {
+      "id": "lg_hep_siyp96",
+      "type": "text",
+      "x": 56,
+      "y": 504,
+      "w": 195,
+      "h": 22,
+      "text": "ИФА Лямблия",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_46hjju",
+      "type": "text",
+      "x": 251,
+      "y": 504,
+      "w": 120,
+      "h": 22,
+      "text": "антитела",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_bwcs8p",
+      "type": "text",
+      "x": 371,
+      "y": 504,
+      "w": 147,
+      "h": 22,
+      "text": "бўлмаслиги керак",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_03x8sj",
+      "type": "text",
+      "x": 522,
+      "y": 504,
+      "w": 135,
+      "h": 22,
+      "text": "{svc.LG-96.result}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_l0mhj3",
+      "type": "text",
+      "x": 658,
+      "y": 504,
+      "w": 85,
+      "h": 22,
+      "text": "{svc.LG-96.od}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_47tff7",
+      "type": "rect",
+      "x": 54,
+      "y": 521,
+      "w": 687,
+      "h": 1,
+      "fill": "#000000"
+     },
+     {
+      "id": "lg_hep_v8rsku",
+      "type": "text",
+      "x": 56,
+      "y": 648,
+      "w": 189,
+      "h": 22,
+      "text": "Вирусли гепатит С (РНК)",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_6zf83n",
+      "type": "text",
+      "x": 56,
+      "y": 666,
+      "w": 189,
+      "h": 22,
+      "text": "Даволанишдан кейинги назорат",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 13,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_h1mbgo",
+      "type": "text",
+      "x": 249,
+      "y": 648,
+      "w": 120,
+      "h": 22,
+      "text": "сифат",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_or191m",
+      "type": "text",
+      "x": 249,
+      "y": 666,
+      "w": 120,
+      "h": 22,
+      "text": "(качества)",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_rozzr4",
+      "type": "text",
+      "x": 371,
+      "y": 648,
+      "w": 145,
+      "h": 22,
+      "text": "бўлмаслиги керак",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
+     },
+     {
+      "id": "lg_hep_9pyd6e",
+      "type": "text",
+      "x": 520,
+      "y": 648,
+      "w": 221,
+      "h": 22,
+      "text": "{svc.LG-104.result}",
+      "style": {
+       "fontFamily": "serif",
+       "fontSize": 16,
+       "fontWeight": 400,
+       "color": "#000000",
+       "align": "center",
+       "vAlign": "top",
+       "lineHeight": 1.1
+      }
      }
     ]
    }
