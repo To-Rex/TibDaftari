@@ -4,6 +4,9 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 import { uz } from './locales/uz'
 import { ru } from './locales/ru'
 import { en } from './locales/en'
+import { portalLocale } from './locales/portal'
+import { staffLocale } from './locales/staff'
+import { adminLocale } from './locales/admin'
 import type { Locale } from '@/domain'
 
 export const LOCALES: { code: Locale; label: string; short: string }[] = [
@@ -18,7 +21,11 @@ void i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    resources: { uz: { translation: uz }, ru: { translation: ru }, en: { translation: en } },
+    resources: {
+      uz: { translation: { ...uz, portal: portalLocale.uz, staff: staffLocale.uz, admin: adminLocale.uz } },
+      ru: { translation: { ...ru, portal: portalLocale.ru, staff: staffLocale.ru, admin: adminLocale.ru } },
+      en: { translation: { ...en, portal: portalLocale.en, staff: staffLocale.en, admin: adminLocale.en } },
+    },
     fallbackLng: 'uz',
     supportedLngs: ['uz', 'ru', 'en'],
     interpolation: { escapeValue: false },
