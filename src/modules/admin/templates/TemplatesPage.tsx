@@ -7,6 +7,11 @@ import { usePermissions } from '@/features/auth/store'
 import { useStaffSession } from '@/features/session/useSession'
 import { useCategories, useDeleteTemplate, useDuplicateTemplate, useSaveTemplate, useServiceTypes, useTemplateStatus, useTemplates } from '@/features/catalog/queries'
 import { NewTemplateModal, type NewTemplateInput } from '@/features/template-editor/NewTemplateModal'
+import { buildTemplateFile, downloadTemplateFile, importTemplateFile, parseTemplateFile, TemplateFileError } from '@/features/template-editor/transfer'
+import { useRef } from 'react'
+import { Upload } from 'lucide-react'
+import { useTemplateAssets } from '@/features/catalog/queries'
+import { useQueryClient } from '@tanstack/react-query'
 import { TemplateCard } from '@/features/template-editor/TemplateCard'
 import { routes } from '@/shared/config/routes'
 import { useDebounce } from '@/shared/hooks/useDebounce'
@@ -39,6 +44,33 @@ export default function TemplatesPage() {
   const del = useDeleteTemplate()
 
   const [creating, setCreating] = useState(false)
+  const assets = useTemplateAssets(companyId)
+  const qc = useQueryClient()
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [importing, setImporting] = useState(false)
+  const exportTpl = async (tpl: ResultTemplate) => {
+    try {
+      const file = await buildTemplateFile(tpl, assets.data ?? [], serviceTypes.data ?? [], categories.data ?? [])
+      downloadTemplateFile(file)
+      toast.success(t('catalog.templates.exported'))
+    } catch (e) { toast.error(errorMessage(e)) }
+  }
+  const onImportFile = async (f: File | undefined) => {
+    if (!f) return
+    setImporting(true)
+    try {
+      const parsed = await parseTemplateFile(f)
+      const res = await importTemplateFile(companyId, parsed, { assets: assets.data ?? [], serviceTypes: serviceTypes.data ?? [], categories: categories.data ?? [], existingNames: (all.data ?? []).map((x) => x.name) })
+      await qc.invalidateQueries({ queryKey: ['templates'] })
+      await qc.invalidateQueries({ queryKey: ['template-assets'] })
+      await qc.invalidateQueries({ queryKey: ['templateAssets'] })
+      const unresolved = [...res.unresolvedServiceCodes, ...res.unresolvedCategoryCodes]
+      toast.success(t('catalog.templates.imported'), unresolved.length ? t('catalog.templates.importUnresolved', { codes: unresolved.join(', ') }) : undefined)
+      nav(routes.admin.template(res.template.id))
+    } catch (e) {
+      toast.error(e instanceof TemplateFileError ? t(e.message === 'invalid_json' ? 'catalog.templates.importInvalidJson' : 'catalog.templates.importInvalid') : errorMessage(e))
+    } finally { setImporting(false); if (fileRef.current) fileRef.current.value = '' }
+  }
   const [toDelete, setToDelete] = useState<ResultTemplate | null>(null)
   const [toActivate, setToActivate] = useState<ResultTemplate | null>(null)
 
@@ -60,7 +92,13 @@ export default function TemplatesPage() {
   return (
     <Page>
       <PageHeader title={t('catalog.templates.title')} description={t('catalog.templates.subtitle')}
-        actions={canWrite && <Button leftIcon={<Plus className="size-4" />} onClick={() => setCreating(true)}>{t('catalog.templates.new')}</Button>} />
+        actions={canWrite && (
+          <>
+            <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={(e) => void onImportFile(e.target.files?.[0])} />
+            <Button variant="secondary" leftIcon={<Upload className="size-4" />} loading={importing} onClick={() => fileRef.current?.click()} title={t('catalog.templates.importHint')}>{t('catalog.templates.import')}</Button>
+            <Button leftIcon={<Plus className="size-4" />} onClick={() => setCreating(true)}>{t('catalog.templates.new')}</Button>
+          </>
+        )} />
       <Toolbar actions={<Segmented size="sm" className="max-w-full overflow-x-auto no-scrollbar" value={status} onChange={setStatus} items={(['all', 'draft', 'active', 'archived'] as const).map((s) => ({ value: s, label: `${s === 'all' ? t('common.all') : t(`catalog.templates.status.${s}`)} · ${counts[s]}` }))} />}>
         <SearchInput value={search} onChange={setSearch} placeholder={t('catalog.templates.searchPh')} className="w-full sm:w-72" />
       </Toolbar>
@@ -74,7 +112,7 @@ export default function TemplatesPage() {
         <MotionList variants={stagger} initial="hidden" animate="show" className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,270px),1fr))]">
           {list.map((tpl) => (
             <TemplateCard key={tpl.id} tpl={tpl} companyId={companyId} serviceTypes={serviceTypes.data ?? []} categories={categories.data ?? []} canWrite={canWrite} canPublish={canPublish}
-              onOpen={() => nav(routes.admin.template(tpl.id))} onDuplicate={() => void duplicate(tpl)} onDelete={() => setToDelete(tpl)}
+              onOpen={() => nav(routes.admin.template(tpl.id))} onDuplicate={() => void duplicate(tpl)} onDelete={() => setToDelete(tpl)} onExport={() => void exportTpl(tpl)}
               onSetStatus={(s) => (s === 'active' ? setToActivate(tpl) : void setSt(tpl, s))} />
           ))}
         </MotionList>

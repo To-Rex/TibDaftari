@@ -12,6 +12,7 @@ import { AssetPickerModal } from '@/features/template-editor/AssetPickerModal'
 import { BindingsFields, type Bindings } from '@/features/template-editor/BindingsFields'
 import { EditorCanvas } from '@/features/template-editor/EditorCanvas'
 import { EditorTopBar, PreviewAsSelect } from '@/features/template-editor/EditorTopBar'
+import { buildTemplateFile, downloadTemplateFile } from '@/features/template-editor/transfer'
 import { LayersPanel } from '@/features/template-editor/LayersPanel'
 import { PlaceholderPalette } from '@/features/template-editor/PlaceholderPalette'
 import { PrintPortal } from '@/features/template-editor/PrintPortal'
@@ -120,6 +121,15 @@ export default function TemplateEditorPage() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-[calc(100dvh-4rem)] flex flex-col overflow-hidden">
       <EditorTopBar serviceTypes={serviceTypes.data ?? []} canWrite={canWrite} canPublish={canPublish} saving={save.isPending}
+        onExport={async () => {
+          const st = useEditorStore.getState()
+          if (!st.template) return
+          try {
+            const file = await buildTemplateFile({ ...st.template, ...st.meta, doc: st.doc }, assets, serviceTypes.data ?? [], categories.data ?? [])
+            downloadTemplateFile(file)
+            toast.success(t('catalog.templates.exported'))
+          } catch (e) { toast.error(errorMessage(e)) }
+        }}
         onBack={() => nav(routes.admin.templates)} onSave={() => void doSave()} onActivate={() => setActivateAsk(true)}
         onBindings={() => { setBindDraft({ ...useEditorStore.getState().meta }); setBindingsOpen(true) }} onPrint={() => setPrinting(true)} />
 

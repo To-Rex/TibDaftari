@@ -1,7 +1,7 @@
 import { memo, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
-import { Archive, CheckCircle2, Copy, ExternalLink, MoreHorizontal, Trash2 } from 'lucide-react'
+import { Archive, CheckCircle2, Copy, Download, ExternalLink, MoreHorizontal, Trash2 } from 'lucide-react'
 import type { Category, ResultTemplate, ServiceType } from '@/domain'
 import { paperSize } from '@/domain'
 import { DocumentRenderer } from '@/features/documents/DocumentRenderer'
@@ -12,9 +12,9 @@ import { useTemplateSchema } from './useTemplateSchema'
 
 const TONE = { draft: 'warn', active: 'ok', archived: 'neutral' } as const
 
-export const TemplateCard = memo(function TemplateCard({ tpl, companyId, serviceTypes, categories, canWrite, canPublish, onOpen, onDuplicate, onSetStatus, onDelete }: {
+export const TemplateCard = memo(function TemplateCard({ tpl, companyId, serviceTypes, categories, canWrite, canPublish, onOpen, onDuplicate, onSetStatus, onDelete, onExport }: {
   tpl: ResultTemplate; companyId: string; serviceTypes: ServiceType[]; categories: Category[]; canWrite: boolean; canPublish: boolean
-  onOpen: () => void; onDuplicate: () => void; onSetStatus: (s: ResultTemplate['status']) => void; onDelete: () => void
+  onOpen: () => void; onDuplicate: () => void; onSetStatus: (s: ResultTemplate['status']) => void; onDelete: () => void; onExport?: () => void
 }) {
   const { t } = useTranslation()
   const bound = tpl.serviceTypeIds.map((id) => serviceTypes.find((s) => s.id === id)).filter(Boolean) as ServiceType[]
@@ -35,6 +35,7 @@ export const TemplateCard = memo(function TemplateCard({ tpl, companyId, service
                 items={[
                   { key: 'open', label: t('catalog.templates.open'), icon: <ExternalLink />, onSelect: onOpen },
                   { key: 'dup', label: t('catalog.templates.duplicate'), icon: <Copy />, onSelect: onDuplicate, disabled: !canWrite },
+                  { key: 'export', label: t('catalog.templates.export'), icon: <Download />, onSelect: onExport },
                   ...(tpl.status === 'active'
                     ? [{ key: 'arch', label: t('catalog.templates.archive'), icon: <Archive />, onSelect: () => onSetStatus('archived'), disabled: !canPublish, separatorBefore: true }]
                     : [{ key: 'act', label: t('catalog.templates.activate'), icon: <CheckCircle2 />, onSelect: () => onSetStatus('active'), disabled: !canPublish, separatorBefore: true }]),
