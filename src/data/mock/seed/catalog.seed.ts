@@ -181,42 +181,12 @@ export const SCHEMAS: AttributeSchema[] = [
   },
 ]
 
+/** Categories — identical to the NavbatApp `category` table (ids 1/2/3, original spelling). */
 export const CATEGORIES: Category[] = [
-  { id: 'cat_lab', companyId: 'c1', parentId: null, name: 'Laboratoriya', code: 'LAB', icon: 'FlaskConical', color: '#0f7a6b', order: 1, isActive: true, workflow: 'lab', ...stamp(300) },
-  { id: 'cat_paraz', companyId: 'c1', parentId: 'cat_lab', name: 'Parazitologiya', code: 'PAR', icon: 'Bug', color: '#5b8def', order: 1, isActive: true, workflow: 'lab', ...stamp(300) },
-  { id: 'cat_bak', companyId: 'c1', parentId: 'cat_lab', name: 'Bakteriologiya', code: 'BAK', icon: 'Microscope', color: '#e6a23c', order: 2, isActive: true, workflow: 'lab', ...stamp(300) },
-  { id: 'cat_vir', companyId: 'c1', parentId: 'cat_lab', name: 'Virusologiya', code: 'VIR', icon: 'Dna', color: '#c2413f', order: 3, isActive: true, workflow: 'lab', ...stamp(300) },
-  { id: 'cat_bio', companyId: 'c1', parentId: 'cat_lab', name: 'Bioximiya', code: 'BIO', icon: 'TestTubes', color: '#8b5cf6', order: 4, isActive: true, workflow: 'lab', ...stamp(200) },
-  { id: 'cat_dent', companyId: 'c1', parentId: null, name: 'Stomatologiya', code: 'DENT', icon: 'Smile', color: '#0ea5e9', order: 2, isActive: true, workflow: 'lab', ...stamp(60) },
-  { id: 'cat_caries', companyId: 'c1', parentId: 'cat_dent', name: 'Karies', code: 'CAR', icon: 'CircleDot', order: 1, isActive: true, workflow: 'lab', ...stamp(60) },
+  { id: 'cat_paraz', companyId: 'c1', parentId: null, name: 'Parozitologiya', code: 'PAR', icon: 'Bug', color: '#5b8def', order: 1, isActive: true, workflow: 'lab', ...stamp(300) },
+  { id: 'cat_bak', companyId: 'c1', parentId: null, name: 'Bakteriologiya', code: 'BAK', icon: 'Microscope', color: '#e6a23c', order: 2, isActive: true, workflow: 'lab', ...stamp(300) },
+  { id: 'cat_vir', companyId: 'c1', parentId: null, name: 'Virusalogiya', code: 'VIR', icon: 'Dna', color: '#c2413f', order: 3, isActive: true, workflow: 'lab', ...stamp(300) },
 ]
 
-const svc = (id: string, categoryId: string, name: string, price: number, days: number, schemaId: string | null, order: number, extra: Partial<ServiceType> = {}): ServiceType => ({
-  id, companyId: 'c1', categoryId, name, price, branchPrices: {}, turnaroundDays: days, order, isActive: true, schemaId,
-  documentScope: 'item', defaultTemplateId: null, ...stamp(250), ...extra,
-})
-
-export const SERVICE_TYPES: ServiceType[] = [
-  svc('st_paraz', 'cat_paraz', 'Parazitologik tahlil', 52000, 1, 'sch_paraz', 1, { code: 'PAR-01', defaultTemplateId: 'tpl_paraz' }),
-  svc('st_milk', 'cat_bak', 'Ko‘krak suti tozaligi tahlili', 110000, 5, 'sch_bak', 1),
-  svc('st_blood_ster', 'cat_bak', 'Qon tozaligi (sterillik) tahlili', 130000, 7, 'sch_bak', 2),
-  svc('st_hemo', 'cat_bak', 'Gemokultura', 120000, 8, 'sch_bak', 3),
-  svc('st_bacteriuria', 'cat_bak', 'Simptomsiz bakteriuriya (siydik)', 100000, 5, 'sch_bak', 4),
-  svc('st_diph', 'cat_bak', 'Difteriya qo‘zg‘atuvchisini aniqlash', 87000, 5, 'sch_bak', 5),
-  svc('st_staph', 'cat_bak', 'Patogen stafilokokk tashuvchanligi', 84000, 5, 'sch_bak', 6),
-  svc('st_dysb', 'cat_bak', 'Ichak disbakteriozi tahlili', 250000, 5, 'sch_dysb', 7, { defaultTemplateId: 'tpl_table' }),
-  svc('st_abg', 'cat_bak', 'Mikroflora va antibiotikogramma', 160000, 4, 'sch_abg', 8, { defaultTemplateId: 'tpl_table' }),
-  svc('st_abg12', 'cat_bak', 'Antibiotik sezuvchanligi (12 disk)', 120000, 4, 'sch_abg', 9),
-  svc('st_hbsag', 'cat_vir', 'IFA VG "B" (HBsAg)', 41000, 1, 'sch_ifa', 1),
-  svc('st_hcv', 'cat_vir', 'IFA anti-HCV VG "C"', 41000, 1, 'sch_ifa', 2),
-  svc('st_hav', 'cat_vir', 'IFA VG "A"', 42000, 1, 'sch_ifa', 3),
-  svc('st_hdv', 'cat_vir', 'IFA VG "D"', 43000, 1, 'sch_ifa', 4),
-  svc('st_hbv_q', 'cat_vir', 'Virusli gepatit B (DNK) miqdor', 304000, 6, 'sch_pcr_q', 5),
-  svc('st_hcv_q', 'cat_vir', 'Virusli gepatit C (RNK) miqdor', 363000, 6, 'sch_pcr_q', 6),
-  svc('st_hcv_geno', 'cat_vir', 'Gepatit C genotip', 361000, 6, 'sch_pcr_q', 7),
-  svc('st_covid', 'cat_vir', 'PCR SARS-CoV-2', 112000, 1, 'sch_ifa', 8),
-  svc('st_draw', 'cat_vir', 'Qon olish', 10000, 0, null, 9),
-  svc('st_bio', 'cat_bio', 'Bioximiyaviy qon tahlili (panel)', 90000, 1, 'sch_bio', 1, { defaultTemplateId: 'tpl_bio' }),
-  svc('st_caries', 'cat_caries', 'Karies bo‘yicha ko‘rik va xulosa', 80000, 0, 'sch_dental', 1, { defaultTemplateId: 'tpl_dental' }),
-  svc('st_caries_tx', 'cat_caries', 'Karies davolash (1 tish)', 250000, 0, 'sch_dental', 2, { branchPrices: { b2: 230000 } }),
-]
+/** Service types come exclusively from the NavbatApp `product` table (see legacy.seed.ts). */
+export const SERVICE_TYPES: ServiceType[] = []

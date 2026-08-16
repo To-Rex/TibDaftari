@@ -163,7 +163,7 @@ export function buildLegacyCatalog(): { serviceTypes: ServiceType[]; schemas: At
         if (QUALITATIVE.has(p.id)) { qualIds.push(st.id); defaultTemplateId = 'tpl_lg_qual' }
         else if (QUANTITATIVE.has(p.id)) { quantIds.push(st.id); defaultTemplateId = 'tpl_lg_quant' }
         else { genoIds.push(st.id); defaultTemplateId = 'tpl_lg_geno' }
-      } else if (BIOCHEM.has(p.id)) { schemaId = 'sch_bio'; defaultTemplateId = 'tpl_bio' }
+      } else if (BIOCHEM.has(p.id)) { schemaId = 'sch_bio' } // template: imported SES virus_bio andoza (bound below)
       else schemaId = null // e.g. "Забор кров" — no result document
     }
     st.schemaId = schemaId
@@ -180,7 +180,6 @@ export function buildLegacyCatalog(): { serviceTypes: ServiceType[]; schemas: At
     const src = importedTemplates.docs[key]
     if (!src) continue
     const ids = b.serviceIds.map((n) => `st_lg_${n}`).filter((id) => serviceTypes.some((s) => s.id === id))
-    if (key === 'virus_bio') ids.push('st_bio')
     const tpl: ResultTemplate = {
       id: `tpl_andoza_${key}`, companyId: 'c1', name: `${src.name} (SES andoza)`, description: `NavbatApp andoza: ${b.note}`,
       status: b.status, version: 1, serviceTypeIds: ids, categoryIds: b.categoryIds ?? [], scope: b.scope, language: 'uz', doc: src.doc, usage: 0, ...stamp(400),

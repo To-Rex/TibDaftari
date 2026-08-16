@@ -45,7 +45,7 @@ export const EMPLOYEES: Employee[] = [
   emp('e_admin', 'Nasiba Matmuratova', 'admin', 'r_admin', ['b1', 'b2'], 210, { email: 'admin@shifomed.uz' }),
   emp('e_reg1', 'Umida Qodirova', 'umida', 'r_reg', ['b1'], 20),
   emp('e_reg2', 'Sevara Ismailova', 'sevara', 'r_reg', ['b2'], 300),
-  emp('e_lab1', 'Muhammad Isaqov', 'muhammad', 'r_lab', ['b1'], 120, { categoryIds: ['cat_vir', 'cat_bio'] }),
+  emp('e_lab1', 'Muhammad Isaqov', 'muhammad', 'r_lab', ['b1'], 120, { categoryIds: ['cat_vir'] }),
   emp('e_lab2', 'Dilnoza Rahimova', 'dilnoza', 'r_lab', ['b1', 'b2'], 260, { categoryIds: ['cat_paraz', 'cat_bak'] }),
   emp('e_doc1', 'Ahmed Jumaniyazov', 'ahmed', 'r_doc', ['b1', 'b2'], 40, { overrides: { allow: ['reports.operations.read'], deny: [] } }),
   emp('e_doc2', 'Nodir Salayev', 'nodir', 'r_doc', ['b1'], 90, { categoryIds: ['cat_paraz'], overrides: { allow: [], deny: ['confirm.result.resend'] } }),
