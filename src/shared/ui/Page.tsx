@@ -6,9 +6,10 @@ import { cn } from '@/shared/lib/cn'
 
 /** Page-level container with a soft entrance animation. */
 export function Page({ children, className, width = 'wide' }: { children: ReactNode; className?: string; width?: 'narrow' | 'medium' | 'wide' | 'full' }) {
-  const w = { narrow: 'max-w-3xl', medium: 'max-w-5xl', wide: 'max-w-[1400px]', full: 'max-w-none' }[width]
+  // wide/full stretch to the viewport (no dead space on large monitors); padding scales with the screen
+  const w = { narrow: 'max-w-3xl', medium: 'max-w-5xl', wide: 'max-w-none 2xl:px-10 3xl:px-14', full: 'max-w-none' }[width]
   return (
-    <motion.main initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }} className={cn('mx-auto w-full px-4 sm:px-6 lg:px-8 py-6', w, className)}>
+    <motion.main initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }} className={cn('mx-auto w-full px-3 xs:px-4 sm:px-6 lg:px-8 py-4 sm:py-6', w, className)}>
       {children}
     </motion.main>
   )

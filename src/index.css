@@ -75,6 +75,9 @@
 }
 
 @theme inline {
+  --breakpoint-xs: 26rem;   /* 416px  — large phones */
+  --breakpoint-3xl: 112rem; /* 1792px — large monitors */
+  --breakpoint-4xl: 140rem; /* 2240px — ultra-wide */
   --font-sans: 'Onest Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono Variable', ui-monospace, Consolas, monospace;
 
@@ -127,6 +130,7 @@
   body {
     @apply bg-bg font-sans text-ink;
     font-size: 15px;
+    overflow-x: hidden;
     line-height: 1.5;
     font-feature-settings: 'ss01', 'cv11';
     min-height: 100dvh;
@@ -192,6 +196,17 @@
     background-size: 20px 20px;
   }
 }
+
+/* Watches / very small phones (≤ 340px): compact rhythm, never overflow */
+@media (max-width: 340px) {
+  body { font-size: 13.5px; }
+  h1 { font-size: 20px !important; }
+}
+/* Large monitors: slightly larger base so layouts don't look tiny */
+@media (min-width: 2240px) {
+  body { font-size: 16px; }
+}
+img, video, canvas { max-width: 100%; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
