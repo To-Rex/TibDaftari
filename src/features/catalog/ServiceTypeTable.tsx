@@ -23,7 +23,7 @@ export function ServiceTypeTable({ rows, loading, schemas, templates, canWrite, 
     ) },
     { key: 'price', header: t('common.price'), align: 'right', cell: (s) => {
       const n = Object.keys(s.branchPrices).length
-      return <div><span className="tabular font-medium">{fmtMoney(s.price)}</span>{n > 0 && <p className="text-[11.5px] text-ink-3">{t('catalog.services.overrides', { n })}</p>}</div>
+      return <div><span className="tabular font-medium whitespace-nowrap">{fmtMoney(s.price)}</span>{n > 0 && <p className="text-[11.5px] text-ink-3">{t('catalog.services.overrides', { n })}</p>}</div>
     } },
     { key: 'tat', header: t('catalog.services.turnaroundShort'), align: 'center', hideBelow: 'md', cell: (s) => <span className="tabular text-ink-2">{s.turnaroundDays} {t('common.days')}</span> },
     { key: 'schema', header: t('catalog.services.schema'), hideBelow: 'lg', cell: (s) => {

@@ -10,6 +10,7 @@ import type {
 import { COMPANIES, BRANCHES, ROLES, EMPLOYEES, REGIONS, DISTRICTS } from './seed/org.seed'
 import { CATEGORIES, SERVICE_TYPES, SCHEMAS } from './seed/catalog.seed'
 import { TEMPLATES, ASSETS } from './seed/template.seed'
+import { buildLegacyCatalog } from './seed/legacy.seed'
 import { rng, daysAgo, uid } from './util'
 
 export interface MockDb {
@@ -99,6 +100,7 @@ function genValue(r: ReturnType<typeof rng>, f: FieldDef, filled = true): unknow
           if (c.type === 'select' && f.key === 'parasites') o[c.key] = r.chance(0.9) ? 'none' : r.pick(['light', 'medium', 'heavy'])
           if (c.type === 'select' && f.key === 'antibiotics') o[c.key] = r.pick(['S', 'S', 'S', 'I', 'R'])
           if (c.type === 'text' && c.key === 'found') o[c.key] = r.pick(['10⁸', '10⁹', 'Bo‘lmadi', '10⁵', '3 %'])
+          if (c.type === 'text' && f.key === 'rows' && (c.key === 'natija' || c.key === 'natija2')) o[c.key] = r.chance(0.85) ? '' : r.pick(['+', '++', 'аниқланди', 'кўп'])
         }
         return o
       })
@@ -111,6 +113,10 @@ const after = (base: string, hours: number) => new Date(Math.min(Date.now() - 60
 
 function buildDb(): MockDb {
   const r = rng(20260816)
+  const legacy = buildLegacyCatalog()
+  const ALL_SERVICE_TYPES = [...SERVICE_TYPES, ...legacy.serviceTypes]
+  const ALL_SCHEMAS = [...SCHEMAS, ...legacy.schemas]
+  const ALL_TEMPLATES = [...TEMPLATES, ...legacy.templates]
   const patients = genPatients(r, 640, 'c1')
   const orders: Order[] = []
   const items: OrderItem[] = []
@@ -120,7 +126,7 @@ function buildDb(): MockDb {
   const regs = EMPLOYEES.filter((e) => e.roleId === 'r_reg')
   const labs = EMPLOYEES.filter((e) => e.roleId === 'r_lab')
   const docs = EMPLOYEES.filter((e) => e.roleId === 'r_doc')
-  const active = SERVICE_TYPES.filter((s) => s.isActive)
+  const active = ALL_SERVICE_TYPES.filter((s) => s.isActive)
   const seq: Record<string, number> = { b1: 0, b2: 0 }
   const catName = (id: string) => CATEGORIES.find((c) => c.id === id)?.name ?? ''
 
@@ -146,7 +152,7 @@ function buildDb(): MockDb {
     const progress: Record<ItemStatus, number> = { pending: 0, entered: 0, submitted: 0, approved: 0, rejected: 0, cancelled: 0 }
 
     for (const st of chosen) {
-      const schema = SCHEMAS.find((s) => s.id === st.schemaId) ?? null
+      const schema = ALL_SCHEMAS.find((s) => s.id === st.schemaId) ?? null
       let status: ItemStatus = 'pending'
       if (paid) {
         if (daysBack > 6) status = r.chance(0.94) ? 'approved' : r.chance(0.6) ? 'submitted' : 'entered'
@@ -170,7 +176,7 @@ function buildDb(): MockDb {
         ...(r.chance(0.2) && filled ? { labNote: 'Namuna sifati qoniqarli' } : {}),
       }
       if (status === 'approved') {
-        const tpl = TEMPLATES.find((t) => t.serviceTypeIds.includes(st.id)) ?? TEMPLATES.find((t) => t.categoryIds.includes(st.categoryId))
+        const tpl = ALL_TEMPLATES.find((t) => t.id === st.defaultTemplateId) ?? ALL_TEMPLATES.find((t) => t.serviceTypeIds.includes(st.id)) ?? ALL_TEMPLATES.find((t) => t.categoryIds.includes(st.categoryId))
         if (tpl) {
           const d: ResultDocument = {
             id: uid('doc'), companyId: 'c1', orderId, orderItemId: itemId, templateId: tpl.id, templateVersion: tpl.version, title: `${st.name} — natija`,
@@ -222,8 +228,8 @@ function buildDb(): MockDb {
 
   return {
     companies: structuredClone(COMPANIES), branches: BRANCHES, roles: structuredClone(ROLES), employees: structuredClone(EMPLOYEES),
-    regions: REGIONS, districts: DISTRICTS, patients, categories: structuredClone(CATEGORIES), serviceTypes: structuredClone(SERVICE_TYPES),
-    schemas: structuredClone(SCHEMAS), templates: structuredClone(TEMPLATES), assets: ASSETS, orders, items, payments, documents, outbox, notifications, credentials,
+    regions: REGIONS, districts: DISTRICTS, patients, categories: structuredClone(CATEGORIES), serviceTypes: structuredClone(ALL_SERVICE_TYPES),
+    schemas: structuredClone(ALL_SCHEMAS), templates: structuredClone(ALL_TEMPLATES), assets: ASSETS, orders, items, payments, documents, outbox, notifications, credentials,
   }
 }
 

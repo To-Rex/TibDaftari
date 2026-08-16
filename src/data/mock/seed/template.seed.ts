@@ -29,7 +29,7 @@ const MUTED = '#5c6b66'
 const BRAND = '#0f7a6b'
 
 /** Common letterhead: logo, organisation block, patient block, hairlines. */
-function letterhead(title: string): TemplateElement[] {
+export function letterhead(title: string): TemplateElement[] {
   return [
     el({ type: 'image', x: 40, y: 36, w: 56, h: 56, assetId: 'as_logo', fit: 'contain', name: 'Logo' }),
     el({ type: 'text', x: 108, y: 34, w: 420, h: 24, text: '{company.name}', style: defaultTextStyle({ fontSize: 18, fontWeight: 700, color: INK }), name: 'Tashkilot' }),
@@ -47,7 +47,7 @@ function letterhead(title: string): TemplateElement[] {
   ]
 }
 
-function footer(): TemplateElement[] {
+export function footer(): TemplateElement[] {
   return [
     el({ type: 'text', x: 40, y: 1000, w: 300, h: 18, text: 'Vrach: {item.doctor}', style: defaultTextStyle({ fontSize: 11 }) }),
     el({ type: 'image', x: 200, y: 972, w: 110, h: 40, assetId: 'as_sign_1', fit: 'contain', name: 'Imzo' }),
@@ -56,8 +56,9 @@ function footer(): TemplateElement[] {
   ]
 }
 
-const cell = defaultTextStyle({ fontSize: 10.5 })
-const head = defaultTextStyle({ fontSize: 10, fontWeight: 600, color: MUTED })
+export const cell = defaultTextStyle({ fontSize: 10.5 })
+export const head = defaultTextStyle({ fontSize: 10, fontWeight: 600, color: MUTED })
+export const mkEl = el
 
 const parazDoc: TemplateDoc = {
   paper: 'A4', orientation: 'portrait', background: '#ffffff', margin: 40,
