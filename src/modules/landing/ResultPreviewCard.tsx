@@ -44,7 +44,7 @@ export function ResultPreviewCard() {
         </div>
       </div>
       {/* floating SMS bubble */}
-      <motion.div initial={{ opacity: 0, y: 12, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 1.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }} className="absolute -bottom-5 -left-3 flex max-w-[260px] items-start gap-3 rounded-2xl border border-line bg-bg-elevated p-3.5 shadow-3 sm:-left-8">
+      <motion.div initial={{ opacity: 0, y: 12, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 1.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }} className="absolute -bottom-10 -left-3 flex max-w-[260px] items-start gap-3 rounded-2xl border border-line bg-bg-elevated p-3.5 shadow-3 sm:-left-8">
         <span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand-soft text-brand-ink"><MessageSquareText className="size-4" /></span>
         <div>
           <p className="text-[12px] font-semibold">SMS · Shifo Med</p>

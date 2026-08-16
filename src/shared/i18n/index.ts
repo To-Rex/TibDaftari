@@ -31,7 +31,7 @@ void i18n
     fallbackLng: 'uz',
     supportedLngs: ['uz', 'ru', 'en'],
     interpolation: { escapeValue: false },
-    detection: { order: ['localStorage', 'navigator'], lookupLocalStorage: 'clinic.lang', caches: ['localStorage'] },
+    detection: { order: ['localStorage'], lookupLocalStorage: 'clinic.lang', caches: ['localStorage'] },
     returnNull: false,
   })
 

@@ -106,6 +106,9 @@ function genValue(r: ReturnType<typeof rng>, f: FieldDef, filled = true): unknow
   }
 }
 
+/** base + hours, clamped to now */
+const after = (base: string, hours: number) => new Date(Math.min(Date.now() - 60_000, new Date(base).getTime() + hours * 3600_000)).toISOString()
+
 function buildDb(): MockDb {
   const r = rng(20260816)
   const patients = genPatients(r, 640, 'c1')
@@ -129,7 +132,8 @@ function buildDb(): MockDb {
     seq[branchId] = (seq[branchId] ?? 0) + 1
     // skew towards recent days
     const daysBack = Math.floor(Math.pow(r.next(), 1.8) * 120)
-    const createdAt = daysAgo(daysBack, r.int(8, 18))
+    let createdAt = daysAgo(daysBack, r.int(8, 18))
+    if (createdAt > new Date().toISOString()) createdAt = new Date(Date.now() - r.int(5, 300) * 60_000).toISOString()
     const reg = r.pick(regs.filter((e) => e.branchIds.includes(branchId)) .length ? regs.filter((e) => e.branchIds.includes(branchId)) : regs)
     const chosen = r.shuffle(active).slice(0, r.chance(0.6) ? 1 : r.int(2, 4))
     const orderId = uid('o')
@@ -160,9 +164,9 @@ function buildDb(): MockDb {
         id: itemId, orderId, companyId: 'c1', branchId, serviceTypeId: st.id, serviceName: st.name, categoryId: st.categoryId, categoryName: catName(st.categoryId),
         price, finalPrice: Math.round(price - (price * disc) / 100), status, schemaId: st.schemaId, schemaVersion: schema?.version, values,
         createdAt, updatedAt: createdAt,
-        ...(filled ? { technicianId: lab.id, technicianName: lab.fullName, enteredAt: daysAgo(Math.max(0, daysBack - 1), 11) } : {}),
-        ...(status === 'submitted' || status === 'approved' ? { submittedAt: daysAgo(Math.max(0, daysBack - 1), 15) } : {}),
-        ...(status === 'approved' ? { doctorId: doc.id, doctorName: doc.fullName, approvedAt: daysAgo(Math.max(0, daysBack - 2), 16) } : {}),
+        ...(filled ? { technicianId: lab.id, technicianName: lab.fullName, enteredAt: after(createdAt, r.int(1, 20)) } : {}),
+        ...(status === 'submitted' || status === 'approved' ? { submittedAt: after(createdAt, r.int(21, 30)) } : {}),
+        ...(status === 'approved' ? { doctorId: doc.id, doctorName: doc.fullName, approvedAt: after(createdAt, r.int(31, 60)) } : {}),
         ...(r.chance(0.2) && filled ? { labNote: 'Namuna sifati qoniqarli' } : {}),
       }
       if (status === 'approved') {

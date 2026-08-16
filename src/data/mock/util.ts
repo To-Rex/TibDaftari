@@ -27,7 +27,10 @@ export function rng(seed: number) {
 }
 
 let counter = 1000
+/** Deterministic ids so seeded URLs survive reloads. */
 export const uid = (prefix = 'id') => `${prefix}_${(counter++).toString(36)}`
+/** Unique per boot — for tokens/challenges only. */
+export const token = (prefix = 'tok') => `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`
 
 const LATENCY = Number(import.meta.env.VITE_MOCK_LATENCY_MS ?? 250)
 export const latency = (ms = LATENCY) =>
