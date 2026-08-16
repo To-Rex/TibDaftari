@@ -6,6 +6,7 @@ import type { Patient, ResultDocument } from '@/domain'
 import { Badge, Card, EmptyState, Skeleton, fadeUp, stagger } from '@/shared/ui'
 import { fmtDate, fmtDateTime, fmtPhone } from '@/shared/lib/format'
 import { routes } from '@/shared/config/routes'
+import { cn } from '@/shared/lib/cn'
 import { useDistricts, useRegions } from './queries'
 
 /** "Ma’lumot" tab — read-only profile facts. */
@@ -32,11 +33,11 @@ export function PatientDetails({ patient }: { patient: Patient }) {
   ]
   return (
     <Card>
-      <dl className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
+      <dl className="grid gap-x-8 gap-y-3 sm:grid-cols-2 2xl:grid-cols-3">
         {rows.map(([k, v]) => (
           <div key={k} className="flex flex-col gap-0.5 border-b border-line/60 pb-3 last:border-0">
             <dt className="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-3">{k}</dt>
-            <dd className={v ? 'text-[14px] tabular' : 'text-[14px] text-ink-3'}>{v ?? '—'}</dd>
+            <dd className={cn('break-words', v ? 'text-[14px] tabular' : 'text-[14px] text-ink-3')}>{v ?? '—'}</dd>
           </div>
         ))}
       </dl>
@@ -54,8 +55,8 @@ export function PatientDocuments({ docs, loading }: { docs?: ResultDocument[]; l
       <motion.ul variants={stagger} initial="hidden" animate="show" className="divide-y divide-line/70">
         {docs.map((d) => (
           <motion.li key={d.id} variants={fadeUp}>
-            <Link to={routes.app.order(d.orderId)} className="group flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-surface-2/60">
-              <span className="grid size-10 place-items-center rounded-xl bg-brand-soft text-brand-ink"><FileText className="size-5" /></span>
+            <Link to={routes.app.order(d.orderId)} className="group flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-surface-2/60 sm:gap-4 sm:px-5">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-ink max-xs:hidden"><FileText className="size-5" /></span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[14px] font-medium">{d.title}</span>
                 <span className="mt-0.5 flex flex-wrap items-center gap-2 text-[12px] text-ink-3 tabular">
@@ -63,8 +64,8 @@ export function PatientDocuments({ docs, loading }: { docs?: ResultDocument[]; l
                   {d.deliveries.map((dl, i) => <Badge key={i} size="sm" tone={dl.status === 'delivered' || dl.status === 'sent' ? 'ok' : dl.status === 'failed' ? 'danger' : 'neutral'}>{dl.channel} · {dl.status}</Badge>)}
                 </span>
               </span>
-              <Badge tone={d.status === 'final' ? 'ok' : 'neutral'} size="sm">{d.status === 'final' ? t('staff.patients.docFinal') : t('common.draft')}</Badge>
-              <ExternalLink className="size-4 text-ink-3 opacity-0 transition-opacity group-hover:opacity-100" />
+              <Badge tone={d.status === 'final' ? 'ok' : 'neutral'} size="sm" className="shrink-0">{d.status === 'final' ? t('staff.patients.docFinal') : t('common.draft')}</Badge>
+              <ExternalLink className="size-4 shrink-0 text-ink-3 opacity-0 transition-opacity group-hover:opacity-100 max-sm:hidden" />
             </Link>
           </motion.li>
         ))}

@@ -30,19 +30,19 @@ const LayerRow = memo(function LayerRow({ el, selected, isTop, isBottom }: { el:
   const { t } = useTranslation()
   const { select, toggleSelect, patchElements, reorder } = useEditorStore.getState()
   const I = ELEMENT_ICONS[el.type]
-  const ib = 'grid size-6 place-items-center rounded text-ink-3 hover:bg-surface-3 hover:text-ink [&>svg]:size-3.5 disabled:opacity-30'
+  const ib = 'grid size-8 lg:size-6 place-items-center rounded text-ink-3 hover:bg-surface-3 hover:text-ink [&>svg]:size-3.5 disabled:opacity-30'
   return (
     <div
       onClick={(e) => (e.shiftKey ? toggleSelect(el.id) : select([el.id]))}
-      className={cn('group flex items-center gap-2 h-8 px-2 rounded-lg text-[12.5px] cursor-pointer transition-colors', selected ? 'bg-brand-soft text-brand-ink' : 'hover:bg-surface-2', el.hidden && 'opacity-50')}
+      className={cn('group flex items-center gap-2 h-10 lg:h-8 px-2 rounded-lg text-[12.5px] cursor-pointer transition-colors', selected ? 'bg-brand-soft text-brand-ink' : 'hover:bg-surface-2', el.hidden && 'opacity-50')}
     >
       <I className="size-3.5 shrink-0" />
       <span className="truncate flex-1">{elementLabel(el)}</span>
-      <span className="hidden group-hover:flex items-center" onClick={(e) => e.stopPropagation()}>
+      <span className="flex lg:hidden lg:group-hover:flex items-center" onClick={(e) => e.stopPropagation()}>
         <button className={ib} disabled={isTop} onClick={() => reorder(el.id, 'up')} title={t('catalog.editor.bringForward')}><ArrowUp /></button>
         <button className={ib} disabled={isBottom} onClick={() => reorder(el.id, 'down')} title={t('catalog.editor.sendBackward')}><ArrowDown /></button>
       </span>
-      <span className={cn('flex items-center', !(el.hidden || el.locked) && 'opacity-0 group-hover:opacity-100')} onClick={(e) => e.stopPropagation()}>
+      <span className={cn('flex items-center', !(el.hidden || el.locked) && 'lg:opacity-0 lg:group-hover:opacity-100')} onClick={(e) => e.stopPropagation()}>
         <button className={ib} onClick={() => patchElements([el.id], (x) => ({ ...x, hidden: !x.hidden }))} title={t('catalog.editor.hidden')}>{el.hidden ? <EyeOff /> : <Eye />}</button>
         <button className={ib} onClick={() => patchElements([el.id], (x) => ({ ...x, locked: !x.locked }))} title={t('catalog.editor.locked')}>{el.locked ? <Lock /> : <Unlock />}</button>
       </span>

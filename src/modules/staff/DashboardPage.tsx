@@ -48,12 +48,12 @@ export default function DashboardPage() {
     <Page>
       <PageHeader
         eyebrow={fmtDate(new Date().toISOString(), 'EEEE, d MMMM')}
-        title={`${greet}, ${firstName}`}
+        title={<span className="break-words">{`${greet}, ${firstName}`}</span>}
         description={t('staff.dashboard.subtitle', { role: staff.roleKey })}
-        actions={<Segmented<Preset> value={preset} onChange={setPreset} items={[{ value: 'today', label: t('common.today') }, { value: 'last7', label: t('common.last7') }, { value: 'last30', label: t('common.last30') }]} />}
+        actions={<Segmented<Preset> value={preset} onChange={setPreset} className="max-w-full overflow-x-auto no-scrollbar" items={[{ value: 'today', label: t('common.today') }, { value: 'last7', label: t('common.last7') }, { value: 'last30', label: t('common.last30') }]} />}
       />
 
-      <motion.div variants={stagger} initial="hidden" animate="show" className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+      <motion.div variants={stagger} initial="hidden" animate="show" className="grid gap-3 grid-cols-[repeat(auto-fit,minmax(min(100%,165px),1fr))] 3xl:gap-4">
         {stats.map((s) => (
           <motion.div key={s.key} variants={fadeUp}>
             {s.value == null ? (
@@ -67,15 +67,15 @@ export default function DashboardPage() {
 
       <div className="mt-6"><QuickActions pendingLab={d?.pendingLab} pendingApproval={d?.pendingApproval} /></div>
 
-      <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-        <Card>
-          <CardHeader title={t('staff.dashboard.trendTitle')} description={`${fmtDate(range.from)} – ${fmtDate(range.to)} · ${metric === 'revenue' ? fmtMoney(periodSum) : `${fmtNumber(periodSum)} ${t('staff.dashboard.ordersUnit')}`}`}
+      <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] 3xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <Card className="min-w-0">
+          <CardHeader className="max-xs:flex-col max-xs:items-stretch" title={t('staff.dashboard.trendTitle')} description={<span className="break-words">{`${fmtDate(range.from)} – ${fmtDate(range.to)} · ${metric === 'revenue' ? fmtMoney(periodSum) : `${fmtNumber(periodSum)} ${t('staff.dashboard.ordersUnit')}`}`}</span>}
             actions={<Segmented<Metric> size="sm" value={metric} onChange={setMetric} items={[{ value: 'revenue', label: t('staff.dashboard.metricRevenue') }, { value: 'orders', label: t('staff.dashboard.metricOrders') }]} />} />
           {q.isLoading ? <Skeleton className="h-[200px]" /> : (
             <TrendChart data={trend} label={t('staff.dashboard.trendTitle')} className="text-brand" format={(v) => (metric === 'revenue' ? fmtMoney(v, false) : fmtNumber(v))} />
           )}
         </Card>
-        <Card>
+        <Card className="min-w-0">
           <CardHeader title={t('staff.dashboard.byCategory')} description={t('staff.dashboard.byCategoryHint')} />
           {q.isLoading ? <div className="flex flex-col gap-4">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-8" />)}</div> : <CategoryBars rows={d?.byCategory ?? []} />}
         </Card>

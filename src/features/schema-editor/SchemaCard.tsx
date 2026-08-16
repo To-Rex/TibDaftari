@@ -22,7 +22,7 @@ export const SchemaCard = memo(function SchemaCard({ schema, onOpen, onDuplicate
             <h3 className="text-[15px] font-semibold leading-5 truncate">{schema.name}</h3>
             <p className="text-[12.5px] text-ink-3 truncate">{schema.description || t('catalog.schemas.noDescription')}</p>
           </div>
-          <span onClick={(e) => e.stopPropagation()} className="opacity-0 group-hover:opacity-100 transition-opacity -mr-2 -mt-1">
+          <span onClick={(e) => e.stopPropagation()} className="max-lg:opacity-100 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity -mr-2 -mt-1">
             <Menu trigger={() => <span className="grid size-8 place-items-center rounded-full text-ink-3 hover:bg-surface-2 hover:text-ink"><MoreHorizontal className="size-4" /></span>}
               items={[
                 { key: 'open', label: t('catalog.schemas.open'), icon: <Pencil />, onSelect: onOpen },
@@ -38,7 +38,7 @@ export const SchemaCard = memo(function SchemaCard({ schema, onOpen, onDuplicate
         <div className="flex items-center gap-1 text-ink-3">
           {types.map((ty) => { const I = FIELD_TYPE_ICONS[ty]; return <span key={ty} title={t(`catalog.schemas.types.${ty}`)} className="grid size-6 place-items-center rounded-md bg-surface-2"><I className="size-3.5" /></span> })}
         </div>
-        <div className="mt-auto pt-2 border-t border-line flex items-center justify-between text-[12px] text-ink-3">
+        <div className="mt-auto pt-2 border-t border-line flex items-center justify-between gap-2 flex-wrap text-[12px] text-ink-3">
           <span>{t('catalog.schemas.usedBy', { n: schema.usedBy })}</span>
           <span>{fmtRelative(schema.updatedAt)}</span>
         </div>

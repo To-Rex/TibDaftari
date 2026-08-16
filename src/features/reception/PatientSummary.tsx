@@ -18,8 +18,8 @@ export function PatientSummary({ companyId, patient, onNewOrder, creating, canCr
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }} className="flex h-full min-h-0 flex-col gap-4">
       <Card className="relative overflow-hidden">
         <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full bg-brand/10 blur-2xl" />
-        <div className="flex items-start gap-4">
-          <Avatar name={patient.fullName} size="xl" />
+        <div className="flex items-start gap-3 sm:gap-4">
+          <Avatar name={patient.fullName} size="xl" className="max-xs:size-12 max-xs:text-[16px]" />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <Link to={routes.app.patient(patient.id)} className="group inline-flex items-center gap-1 text-[18px] font-semibold tracking-tight hover:text-brand-ink">
@@ -36,7 +36,7 @@ export function PatientSummary({ companyId, patient, onNewOrder, creating, canCr
           </div>
           {canEdit && <IconButton label={t('common.edit')} onClick={onEdit}><Pencil /></IconButton>}
         </div>
-        <div className="mt-5 grid grid-cols-3 gap-2">
+        <div className="mt-5 grid gap-2 grid-cols-[repeat(auto-fit,minmax(min(100%,120px),1fr))]">
           {[
             { label: t('staff.reception.statOrders'), value: patient.stats.orders, icon: <Receipt /> },
             { label: t('staff.reception.statSpent'), value: fmtMoney(patient.stats.totalSpent, false), icon: <Wallet /> },
@@ -44,7 +44,7 @@ export function PatientSummary({ companyId, patient, onNewOrder, creating, canCr
           ].map((s) => (
             <div key={s.label} className="rounded-[var(--radius)] bg-surface-2/70 px-3 py-2.5">
               <div className="text-[11px] font-medium uppercase tracking-[0.06em] text-ink-3">{s.label}</div>
-              <div className="mt-0.5 text-[16px] font-semibold tabular">{s.value}</div>
+              <div className="mt-0.5 text-[16px] font-semibold tabular break-words">{s.value}</div>
             </div>
           ))}
         </div>
@@ -54,7 +54,7 @@ export function PatientSummary({ companyId, patient, onNewOrder, creating, canCr
       </Card>
 
       <Card padded={false} className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3.5">
+        <div className="flex items-center justify-between px-4 py-3.5 sm:px-5">
           <h3 className="text-[14px] font-semibold">{t('staff.reception.recentOrders')}</h3>
           <Link to={routes.app.patient(patient.id)} className="text-[12.5px] font-medium text-brand-ink hover:underline">{t('common.seeAll')}</Link>
         </div>
@@ -70,12 +70,12 @@ export function PatientSummary({ companyId, patient, onNewOrder, creating, canCr
                 const pay = paymentStatusMeta(o.payment)
                 return (
                   <motion.li key={o.id} variants={fadeUp}>
-                    <Link to={routes.app.order(o.id)} className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-surface-2/60">
+                    <Link to={routes.app.order(o.id)} className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-2/60 sm:px-5">
                       <span className="min-w-0 flex-1">
-                        <span className="flex items-center gap-2 text-[13.5px]"><span className="font-mono font-medium">{o.number}</span><Badge size="sm" tone={st.tone}>{st.label}</Badge></span>
+                        <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[13.5px]"><span className="font-mono font-medium">{o.number}</span><Badge size="sm" tone={st.tone}>{st.label}</Badge></span>
                         <span className="text-[12px] text-ink-3 tabular">{fmtDateTime(o.createdAt)} · {o.itemCount} {t('staff.reception.itemsShort')}</span>
                       </span>
-                      <span className="text-right">
+                      <span className="shrink-0 text-right">
                         <span className="block text-[13.5px] font-semibold tabular">{fmtMoney(o.total)}</span>
                         <Badge size="sm" tone={pay.tone}>{pay.label}</Badge>
                       </span>

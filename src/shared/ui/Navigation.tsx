@@ -26,15 +26,15 @@ export function Tabs<T extends string>({ items, value, onChange, className, size
 }
 
 /* ---------- Segmented control ---------- */
-export function Segmented<T extends string>({ items, value, onChange, className, size = 'md' }: { items: { value: T; label: ReactNode; icon?: ReactNode }[]; value: T; onChange: (v: T) => void; className?: string; size?: 'sm' | 'md' }) {
+export function Segmented<T extends string>({ items, value, onChange, className, size = 'md', wrap, block }: { items: { value: T; label: ReactNode; icon?: ReactNode }[]; value: T; onChange: (v: T) => void; className?: string; size?: 'sm' | 'md'; /** allow items to wrap onto several lines (small screens) */ wrap?: boolean; /** stretch to container width, equal buttons */ block?: boolean }) {
   const id = useRef(`seg-${Math.random().toString(36).slice(2)}`).current
   return (
-    <div className={cn('inline-flex items-center rounded-[10px] bg-surface-2 p-1 gap-0.5', className)} role="radiogroup">
+    <div className={cn('inline-flex items-center rounded-[10px] bg-surface-2 p-1 gap-0.5 max-w-full', wrap && 'flex-wrap', block && 'flex w-full', className)} role="radiogroup">
       {items.map((it) => {
         const active = it.value === value
         return (
           <button key={it.value} role="radio" aria-checked={active} onClick={() => onChange(it.value)}
-            className={cn('relative rounded-[7px] font-medium transition-colors whitespace-nowrap flex items-center gap-1.5', size === 'sm' ? 'h-7 px-2.5 text-[12.5px]' : 'h-8 px-3 text-[13px]', active ? 'text-ink' : 'text-ink-3 hover:text-ink-2')}>
+            className={cn('relative rounded-[7px] font-medium transition-colors whitespace-nowrap flex items-center justify-center gap-1.5', size === 'sm' ? 'h-7 px-2.5 text-[12.5px]' : 'h-8 px-3 text-[13px]', block && 'flex-1', active ? 'text-ink' : 'text-ink-3 hover:text-ink-2')}>
             {active && <motion.span layoutId={id} className="absolute inset-0 rounded-[7px] bg-surface shadow-1 border border-line/70" transition={{ type: 'spring', stiffness: 500, damping: 38 }} />}
             <span className="relative flex items-center gap-1.5 [&>svg]:size-3.5">{it.icon}{it.label}</span>
           </button>
@@ -95,9 +95,9 @@ export function Pagination({ page, totalPages, total, pageSize, onPage, onPageSi
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1
   const to = Math.min(total, page * pageSize)
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 text-[13px] text-ink-3">
-      <div className="flex items-center gap-3">
-        <span className="tabular">{from}–{to} {labels.of} {total} {labels.rows}</span>
+    <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 text-[13px] text-ink-3">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        <span className="tabular truncate">{from}–{to} {labels.of} {total} <span className="max-xs:hidden">{labels.rows}</span></span>
         {onPageSize && (
           <select value={pageSize} onChange={(e) => onPageSize(Number(e.target.value))} className="h-7 rounded-md border border-line bg-surface px-1.5 text-[12.5px]">
             {[10, 20, 50, 100].map((n) => <option key={n} value={n}>{n} / {labels.perPage.toLowerCase()}</option>)}
@@ -105,13 +105,15 @@ export function Pagination({ page, totalPages, total, pageSize, onPage, onPageSi
         )}
       </div>
       <div className="flex items-center gap-1">
-        <button disabled={page <= 1} onClick={() => onPage(page - 1)} className="grid size-8 place-items-center rounded-lg hover:bg-surface-2 disabled:opacity-30"><ChevronLeft className="size-4" /></button>
+        <button disabled={page <= 1} onClick={() => onPage(page - 1)} className="grid size-9 sm:size-8 place-items-center rounded-lg hover:bg-surface-2 disabled:opacity-30"><ChevronLeft className="size-4" /></button>
+        {/* compact "3 / 12" on phones */}
+        <span className="sm:hidden tabular px-1 text-ink-2 font-medium">{page} / {totalPages}</span>
         {pageNumbers(page, totalPages).map((p, i) =>
-          p === '…' ? <span key={`e${i}`} className="px-1">…</span> : (
-            <button key={p} onClick={() => onPage(p)} className={cn('h-8 min-w-8 px-2 rounded-lg tabular text-[13px] font-medium', p === page ? 'bg-brand text-white' : 'hover:bg-surface-2 text-ink-2')}>{p}</button>
+          p === '…' ? <span key={`e${i}`} className="px-1 max-sm:hidden">…</span> : (
+            <button key={p} onClick={() => onPage(p)} className={cn('h-8 min-w-8 px-2 rounded-lg tabular text-[13px] font-medium max-sm:hidden', p === page ? 'bg-brand text-white' : 'hover:bg-surface-2 text-ink-2')}>{p}</button>
           ),
         )}
-        <button disabled={page >= totalPages} onClick={() => onPage(page + 1)} className="grid size-8 place-items-center rounded-lg hover:bg-surface-2 disabled:opacity-30"><ChevronRight className="size-4" /></button>
+        <button disabled={page >= totalPages} onClick={() => onPage(page + 1)} className="grid size-9 sm:size-8 place-items-center rounded-lg hover:bg-surface-2 disabled:opacity-30"><ChevronRight className="size-4" /></button>
       </div>
     </div>
   )

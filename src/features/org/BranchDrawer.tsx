@@ -52,7 +52,7 @@ export function BranchDrawer({ open, onClose, companyId, branch }: { open: boole
         <Field label={t('admin.branches.name')} required error={errors.name && t('common.required')}>
           {(id) => <Input id={id} autoFocus {...register('name')} invalid={!!errors.name} />}
         </Field>
-        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] gap-4">
           <Field label={t('admin.branches.code')} required hint={t('admin.branches.codeHint')} error={errors.code && t('admin.branches.invalidCode')}>
             {(id) => <Input id={id} mono maxLength={4} placeholder="UR" {...register('code', { onChange: (e) => setValue('code', String(e.target.value).toUpperCase().replace(/[^A-Z]/g, '')) })} invalid={!!errors.code} />}
           </Field>

@@ -47,17 +47,17 @@ export default function MessagesPage() {
   const countOf = useMemo(() => Object.fromEntries(MESSAGE_STATUSES.map((s, i) => [s, counts[i]?.data])) as Record<MessageStatus, number | undefined>, [counts])
 
   const columns: Column<OutboxMessage>[] = [
-    { key: 'to', header: t('common.phone'), width: '170px', cell: (m) => <span className="font-mono text-[13px] tabular">{fmtPhone(m.to)}</span> },
-    { key: 'text', header: t('clinical.messages.text'), cell: (m) => <div className="max-w-[560px] truncate text-ink-2" title={m.text}>{m.text}</div> },
-    { key: 'kind', header: t('clinical.messages.kind'), hideBelow: 'lg', width: '140px', cell: (m) => <Badge size="sm">{t(`clinical.messages.kind_${m.kind}`)}</Badge> },
-    { key: 'status', header: t('common.status'), width: '150px', cell: (m) => (
-      <div className="flex flex-col gap-0.5">
+    { key: 'to', header: t('common.phone'), width: '170px', card: 'title', cell: (m) => <span className="font-mono text-[13px] tabular">{fmtPhone(m.to)}</span> },
+    { key: 'text', header: t('clinical.messages.text'), card: 'field', cell: (m) => <div className="max-w-[560px] truncate text-ink-2 max-md:line-clamp-3 max-md:whitespace-normal max-md:break-words" title={m.text}>{m.text}</div> },
+    { key: 'kind', header: t('clinical.messages.kind'), hideBelow: 'lg', width: '140px', card: 'meta', cell: (m) => <Badge size="sm">{t(`clinical.messages.kind_${m.kind}`)}</Badge> },
+    { key: 'status', header: t('common.status'), width: '150px', card: 'meta', cell: (m) => (
+      <div className="flex min-w-0 flex-col gap-0.5">
         <MessageStatusBadge status={m.status} />
         {m.error && <span className="truncate text-[11.5px] text-danger" title={m.error}>{m.error}</span>}
       </div>
     ) },
-    { key: 'time', header: t('common.date'), hideBelow: 'md', width: '160px', align: 'right', cell: (m) => (
-      <div className="text-[12.5px] tabular leading-5">
+    { key: 'time', header: t('common.date'), hideBelow: 'md', width: '160px', align: 'right', card: 'meta', cell: (m) => (
+      <div className="text-[12.5px] tabular leading-5 max-md:flex max-md:flex-wrap max-md:gap-x-2">
         <div className="text-ink-2">{m.status === 'scheduled' && m.scheduledAt ? fmtDateTime(m.scheduledAt) : fmtDateTime(m.sentAt ?? m.createdAt)}</div>
         <div className="text-ink-3">{fmtRelative(m.sentAt ?? m.createdAt)}</div>
       </div>
@@ -73,9 +73,9 @@ export default function MessagesPage() {
         actions={can(['messaging.send', 'messaging.broadcast']) && <Button leftIcon={<Plus className="size-4" />} onClick={() => setCompose(true)}>{t('clinical.messages.newMessage')}</Button>}
       />
 
-      <div className="mb-4 flex items-start gap-3 rounded-[var(--radius)] border border-info/25 bg-info-soft/60 px-4 py-3 text-[13px] text-ink-2">
+      <div className="mb-4 flex flex-wrap items-start gap-x-3 gap-y-2 rounded-[var(--radius)] border border-info/25 bg-info-soft/60 px-4 py-3 text-[13px] text-ink-2">
         <Info className="mt-0.5 size-4 shrink-0 text-info" />
-        <span className="flex-1">{t('clinical.messages.providerBanner')}</span>
+        <span className="min-w-0 flex-1 basis-40 break-words">{t('clinical.messages.providerBanner')}</span>
         {can('admin.settings.write') && <Link to={routes.admin.sms} className="inline-flex items-center gap-1 whitespace-nowrap font-medium text-info hover:underline"><Settings2 className="size-3.5" />{t('clinical.messages.openSettings')}</Link>}
       </div>
 
@@ -96,7 +96,7 @@ export default function MessagesPage() {
         <DataTable columns={columns} rows={rows} rowKey={(m) => m.id} loading={list.isLoading}
           empty={<EmptyState icon={<MessageSquare />} title={t('clinical.messages.empty')} description={t('common.emptyHint')} />} />
         {data && data.total > 0 && (
-          <div className="border-t border-line px-4 py-3">
+          <div className="overflow-x-auto no-scrollbar border-t border-line px-3 py-3 sm:px-4">
             <Pagination page={data.page} totalPages={data.totalPages} total={data.total} pageSize={data.pageSize} onPage={setPage} onPageSize={setPageSize} labels={{ perPage: t('common.perPage'), of: t('common.of'), rows: t('common.rows') }} />
           </div>
         )}

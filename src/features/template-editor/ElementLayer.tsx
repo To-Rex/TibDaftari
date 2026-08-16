@@ -25,7 +25,7 @@ export function ElementLayer({ elements, selectedIds, zoom, marquee, onElementPo
         <div className="absolute pointer-events-none" style={{ left: single.x * zoom, top: single.y * zoom, width: single.w * zoom, height: single.h * zoom }}>
           {HANDLES.map((d) => (
             <span key={d} onPointerDown={(e) => onHandlePointerDown(e, single.id, d)} style={{ cursor: CURSORS[d], ...handlePos(d) }}
-              className="pointer-events-auto absolute size-[9px] rounded-[2px] bg-white border-[1.5px] border-brand shadow-[0_0_0_1px_rgb(0_0_0/0.06)] -translate-x-1/2 -translate-y-1/2" />
+              className="pointer-events-auto touch-none absolute size-[9px] pointer-coarse:size-4 rounded-[2px] bg-white border-[1.5px] border-brand shadow-[0_0_0_1px_rgb(0_0_0/0.06)] -translate-x-1/2 -translate-y-1/2" />
           ))}
         </div>
       )}
@@ -50,7 +50,7 @@ const ElementBox = memo(function ElementBox({ el, selected, zoom, onPointerDown,
       data-el-box={el.id}
       onPointerDown={(e) => onPointerDown(e, el.id)}
       onDoubleClick={() => { if (el.type === 'text' && !el.locked) setEditing(el.id) }}
-      className={cn('absolute group', el.locked ? 'cursor-not-allowed' : 'cursor-move', selected ? 'outline outline-[1.5px] outline-brand' : 'hover:outline hover:outline-1 hover:outline-brand/50', el.type === 'line' && el.h < 6 && '-my-1')}
+      className={cn('absolute group', el.locked ? 'cursor-not-allowed' : 'cursor-move touch-none', selected ? 'outline outline-[1.5px] outline-brand' : 'hover:outline hover:outline-1 hover:outline-brand/50', el.type === 'line' && el.h < 6 && '-my-1')}
       style={{ left: el.x * zoom, top: el.y * zoom, width: Math.max(el.w * zoom, 4), height: Math.max(el.h * zoom, el.type === 'line' ? 8 : 4), outlineOffset: 1, transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined }}
     >
       {el.locked && selected && <span className="absolute -top-2 -right-2 grid size-4 place-items-center rounded-full bg-surface border border-line text-ink-3"><Lock className="size-2.5" /></span>}

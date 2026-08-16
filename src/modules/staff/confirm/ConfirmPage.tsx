@@ -10,6 +10,7 @@ import { useApproveItem, useLabCategories, useRejectItem, useWorklist } from '@/
 import { ConfirmList } from '@/features/confirm/ConfirmList'
 import { ConfirmDetail } from '@/features/confirm/ConfirmDetail'
 import { useDebounce } from '@/shared/hooks/useDebounce'
+import { cn } from '@/shared/lib/cn'
 import { errorMessage } from '@/shared/lib/errors'
 import { Button, Card, ConfirmDialog, Field, Modal, Page, PageHeader, Pagination, SearchInput, Segmented, Textarea, Toolbar, toast } from '@/shared/ui'
 
@@ -96,30 +97,45 @@ export default function ConfirmPage() {
     return () => window.removeEventListener('keydown', h)
   }, [moveSelection, selectedId, queue, can, rejectOpen, approveOpen])
 
+  // < lg: opening a detail replaces the list — start it from the top
+  useEffect(() => {
+    if (selectedId && window.matchMedia('(max-width: 1023px)').matches) window.scrollTo({ top: 0 })
+  }, [selectedId])
+
   const data = list.data
 
   return (
-    <Page width="full">
-      <PageHeader title={t('clinical.confirm.title')} description={t('clinical.confirm.subtitle')} />
-      <div className="mb-4"><CategoryTabs roots={cats.data?.roots} loading={cats.isLoading} value={cat} onChange={setCat} /></div>
-      <Toolbar actions={<DateRangeFilter value={range} onChange={setRange} size="sm" />}>
-        <SearchInput value={search} onChange={setSearch} placeholder={t('clinical.lab.searchPlaceholder')} className="h-9 w-full sm:w-64" />
-        <Segmented<Queue> size="sm" value={queue} onChange={setQueue} items={[
-          { value: 'submitted', label: t('clinical.confirm.queueSubmitted') },
-          { value: 'approved', label: t('clinical.confirm.queueApproved') },
-        ]} />
-      </Toolbar>
+    <Page width="full" className={cn(selectedId && queue === 'submitted' && 'max-lg:pb-24')}>
+      <PageHeader title={t('clinical.confirm.title')} description={t('clinical.confirm.subtitle')} className={cn(selectedId && 'max-lg:hidden')} />
+      {/* < lg: master OR detail (detail opens full-width with a back button) */}
+      <div className={cn(selectedId && 'max-lg:hidden')}>
+        <div className="mb-4"><CategoryTabs roots={cats.data?.roots} loading={cats.isLoading} value={cat} onChange={setCat} /></div>
+        <Toolbar
+          className="md:flex-wrap"
+          actions={<DateRangeFilter value={range} onChange={setRange} size="sm" />}
+        >
+          <SearchInput value={search} onChange={setSearch} placeholder={t('clinical.lab.searchPlaceholder')} className="h-9 w-full sm:w-64" />
+          <div className="min-w-0 max-w-full overflow-x-auto no-scrollbar">
+            <Segmented<Queue> size="sm" value={queue} onChange={setQueue} className="shrink-0" items={[
+              { value: 'submitted', label: t('clinical.confirm.queueSubmitted') },
+              { value: 'approved', label: t('clinical.confirm.queueApproved') },
+            ]} />
+          </div>
+        </Toolbar>
+      </div>
 
-      <div className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
-        <Card padded={false} className="overflow-hidden lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:self-start lg:overflow-y-auto">
+      <div className="grid gap-5 lg:grid-cols-[340px_minmax(0,1fr)] xl:grid-cols-[360px_minmax(0,1fr)]">
+        <Card padded={false} className={cn('min-w-0 overflow-hidden lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:self-start lg:overflow-y-auto', selectedId && 'max-lg:hidden')}>
           <ConfirmList rows={rows} loading={list.isLoading || cats.isLoading} selectedId={selectedId} onSelect={select} categoryColor={(id) => cats.data?.colors[id]} />
           {data && data.totalPages > 1 && (
-            <div className="border-t border-line px-3 py-2.5">
+            <div className="overflow-x-auto no-scrollbar border-t border-line px-3 py-2.5">
               <Pagination page={data.page} totalPages={data.totalPages} total={data.total} pageSize={data.pageSize} onPage={setPage} labels={{ perPage: t('common.perPage'), of: t('common.of'), rows: t('common.rows') }} />
             </div>
           )}
         </Card>
-        <ConfirmDetail companyId={companyId} itemId={selectedId} onApprove={(tid) => setApproveOpen({ templateId: tid })} onReject={() => setRejectOpen(true)} approving={approve.isPending} justApproved={justApproved} />
+        <div className={cn('min-w-0', !selectedId && 'max-lg:hidden')}>
+          <ConfirmDetail companyId={companyId} itemId={selectedId} onBack={() => select(null)} onApprove={(tid) => setApproveOpen({ templateId: tid })} onReject={() => setRejectOpen(true)} approving={approve.isPending} justApproved={justApproved} />
+        </div>
       </div>
 
       <ConfirmDialog open={!!approveOpen} onClose={() => setApproveOpen(null)} onConfirm={() => void doApprove(approveOpen?.templateId)} loading={approve.isPending} title={t('clinical.confirm.approveTitle')} description={t('clinical.confirm.approveHint')} confirmText={t('clinical.confirm.approve')} cancelText={t('common.cancel')} />

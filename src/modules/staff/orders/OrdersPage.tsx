@@ -39,12 +39,12 @@ export default function OrdersPage() {
   return (
     <Page>
       <PageHeader title={t('staff.orders.title')} description={q.data ? t('staff.orders.count', { n: fmtNumber(q.data.total) }) : t('staff.orders.subtitle')} />
-      <Toolbar
+      <Toolbar className="min-w-0 [&>div]:min-w-0 [&>div]:max-w-full"
         actions={
-          <Segmented<Range> size="sm" value={range} onChange={reset(setRange)} items={[{ value: 'all', label: t('common.all') }, { value: 'today', label: t('common.today') }, { value: 'yesterday', label: t('common.yesterday') }, { value: 'last7', label: t('common.last7') }, { value: 'last30', label: t('common.last30') }, { value: 'thisMonth', label: t('common.thisMonth') }]} />
+          <Segmented<Range> size="sm" value={range} onChange={reset(setRange)} className="max-w-full flex-wrap" items={[{ value: 'all', label: t('common.all') }, { value: 'today', label: t('common.today') }, { value: 'yesterday', label: t('common.yesterday') }, { value: 'last7', label: t('common.last7') }, { value: 'last30', label: t('common.last30') }, { value: 'thisMonth', label: t('common.thisMonth') }]} />
         }>
-        <SearchInput value={search} onChange={reset(setSearch)} placeholder={t('staff.orders.searchPh')} className="w-full sm:w-72" />
-        <Segmented<'all' | OrderStatus> size="sm" value={status} onChange={reset(setStatus)} items={[{ value: 'all', label: t('common.all') }, ...ORDER_STATUSES.filter((s) => s !== 'draft').map((s) => ({ value: s, label: orderStatusMeta(s).label }))]} />
+        <SearchInput value={search} onChange={reset(setSearch)} placeholder={t('staff.orders.searchPh')} className="w-full sm:w-72 3xl:w-96" />
+        <Segmented<'all' | OrderStatus> size="sm" value={status} onChange={reset(setStatus)} className="max-w-full flex-wrap" items={[{ value: 'all', label: t('common.all') }, ...ORDER_STATUSES.filter((s) => s !== 'draft').map((s) => ({ value: s, label: orderStatusMeta(s).label }))]} />
         <Select value={payment} onChange={(e) => reset(setPayment)(e.target.value as 'all' | PaymentStatus)} className="h-8 w-auto text-[13px]">
           <option value="all">{t('staff.orders.allPayments')}</option>
           {PAYMENT_STATUSES.map((p) => <option key={p} value={p}>{paymentStatusMeta(p).label}</option>)}

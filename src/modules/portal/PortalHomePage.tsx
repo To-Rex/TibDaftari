@@ -43,13 +43,13 @@ export default function PortalHomePage() {
   const last = orders[0]
 
   return (
-    <Page width="medium">
+    <Page width="medium" className="3xl:max-w-[1600px] 2xl:max-w-6xl">
       <header className="mb-6">
         <motion.h1
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="text-[26px] font-semibold tracking-tight sm:text-[30px]"
+          className="xs:text-[26px] text-[24px] font-semibold tracking-tight sm:text-[30px]"
         >
           {t(`portal.greeting.${greetingKey(new Date().getHours())}`, {
             name: firstName(session.fullName),
@@ -66,7 +66,7 @@ export default function PortalHomePage() {
       </header>
 
       {q.isPending ? (
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3">
           {[0, 1, 2].map((i) => (
             <Skeleton key={i} className="h-[92px] rounded-[var(--radius-lg)]" />
           ))}
@@ -76,7 +76,7 @@ export default function PortalHomePage() {
           variants={stagger}
           initial="hidden"
           animate="show"
-          className="grid gap-3 sm:grid-cols-3"
+          className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3 2xl:gap-4"
         >
           <SummaryCard
             icon={<FileCheck2 />}
@@ -123,79 +123,82 @@ export default function PortalHomePage() {
         </MotionList>
       )}
 
-      <section className="mt-8">
-        <SectionHeader
-          title={t('portal.home.latestResults')}
-          to={docs.length > 5 ? routes.portal.results : undefined}
-          linkLabel={t('portal.common.seeAll')}
-        />
-        <Card padded={false} className="overflow-hidden">
-          {q.isPending ? (
-            <SkeletonRows rows={4} className="p-4" />
-          ) : docs.length === 0 ? (
-            <EmptyState
-              icon={<FolderOpen />}
-              title={t('portal.home.noResultsTitle')}
-              description={t('portal.home.noResultsText')}
-              className="py-10"
-            />
-          ) : (
-            <MotionList
-              variants={stagger}
-              initial="hidden"
-              animate="show"
-              className="divide-line divide-y"
-            >
-              {docs.slice(0, 5).map((d) => (
-                <ResultRow
-                  key={d.id}
-                  doc={d}
-                  clinic={clinicName(d.companyId)}
-                  orderNumber={orderOf(d.orderId)?.number}
-                />
-              ))}
-            </MotionList>
-          )}
-        </Card>
-      </section>
+      {/* Two side-by-side sections on very large monitors so the page fills the width */}
+      <div className="3xl:grid 3xl:grid-cols-2 3xl:gap-6 3xl:items-start">
+        <section className="mt-8">
+          <SectionHeader
+            title={t('portal.home.latestResults')}
+            to={docs.length > 5 ? routes.portal.results : undefined}
+            linkLabel={t('portal.common.seeAll')}
+          />
+          <Card padded={false} className="overflow-hidden">
+            {q.isPending ? (
+              <SkeletonRows rows={4} className="p-4" />
+            ) : docs.length === 0 ? (
+              <EmptyState
+                icon={<FolderOpen />}
+                title={t('portal.home.noResultsTitle')}
+                description={t('portal.home.noResultsText')}
+                className="py-10"
+              />
+            ) : (
+              <MotionList
+                variants={stagger}
+                initial="hidden"
+                animate="show"
+                className="divide-line divide-y"
+              >
+                {docs.slice(0, 5).map((d) => (
+                  <ResultRow
+                    key={d.id}
+                    doc={d}
+                    clinic={clinicName(d.companyId)}
+                    orderNumber={orderOf(d.orderId)?.number}
+                  />
+                ))}
+              </MotionList>
+            )}
+          </Card>
+        </section>
 
-      <section className="mt-8">
-        <SectionHeader
-          title={t('portal.home.latestVisits')}
-          to={orders.length > 3 ? routes.portal.visits : undefined}
-          linkLabel={t('portal.common.seeAll')}
-        />
-        <Card padded={false} className="overflow-hidden">
-          {q.isPending ? (
-            <SkeletonRows rows={3} className="p-4" />
-          ) : orders.length === 0 ? (
-            <EmptyState
-              icon={<CalendarDays />}
-              title={t('portal.home.noVisitsTitle')}
-              description={t('portal.home.noVisitsText')}
-              className="py-10"
-            />
-          ) : (
-            <MotionList
-              variants={stagger}
-              initial="hidden"
-              animate="show"
-              className="divide-line divide-y"
-            >
-              {orders.slice(0, 3).map((o) => (
-                <VisitRow
-                  key={o.id}
-                  order={o}
-                  compact
-                  place={[clinicName(o.companyId), branchNames.get(o.branchId)]
-                    .filter(Boolean)
-                    .join(' · ')}
-                />
-              ))}
-            </MotionList>
-          )}
-        </Card>
-      </section>
+        <section className="mt-8">
+          <SectionHeader
+            title={t('portal.home.latestVisits')}
+            to={orders.length > 3 ? routes.portal.visits : undefined}
+            linkLabel={t('portal.common.seeAll')}
+          />
+          <Card padded={false} className="overflow-hidden">
+            {q.isPending ? (
+              <SkeletonRows rows={3} className="p-4" />
+            ) : orders.length === 0 ? (
+              <EmptyState
+                icon={<CalendarDays />}
+                title={t('portal.home.noVisitsTitle')}
+                description={t('portal.home.noVisitsText')}
+                className="py-10"
+              />
+            ) : (
+              <MotionList
+                variants={stagger}
+                initial="hidden"
+                animate="show"
+                className="divide-line divide-y"
+              >
+                {orders.slice(0, 3).map((o) => (
+                  <VisitRow
+                    key={o.id}
+                    order={o}
+                    compact
+                    place={[clinicName(o.companyId), branchNames.get(o.branchId)]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  />
+                ))}
+              </MotionList>
+            )}
+          </Card>
+        </section>
+      </div>
     </Page>
   )
 }

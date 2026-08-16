@@ -61,17 +61,17 @@ export default function TemplatesPage() {
     <Page>
       <PageHeader title={t('catalog.templates.title')} description={t('catalog.templates.subtitle')}
         actions={canWrite && <Button leftIcon={<Plus className="size-4" />} onClick={() => setCreating(true)}>{t('catalog.templates.new')}</Button>} />
-      <Toolbar actions={<Segmented size="sm" value={status} onChange={setStatus} items={(['all', 'draft', 'active', 'archived'] as const).map((s) => ({ value: s, label: `${s === 'all' ? t('common.all') : t(`catalog.templates.status.${s}`)} · ${counts[s]}` }))} />}>
-        <SearchInput value={search} onChange={setSearch} placeholder={t('catalog.templates.searchPh')} className="md:w-72" />
+      <Toolbar actions={<Segmented size="sm" className="max-w-full overflow-x-auto no-scrollbar" value={status} onChange={setStatus} items={(['all', 'draft', 'active', 'archived'] as const).map((s) => ({ value: s, label: `${s === 'all' ? t('common.all') : t(`catalog.templates.status.${s}`)} · ${counts[s]}` }))} />}>
+        <SearchInput value={search} onChange={setSearch} placeholder={t('catalog.templates.searchPh')} className="w-full sm:w-72" />
       </Toolbar>
 
       {templates.isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-80 rounded-[var(--radius-lg)]" />)}</div>
+        <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,270px),1fr))]">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-80 rounded-[var(--radius-lg)]" />)}</div>
       ) : list.length === 0 ? (
         <EmptyState icon={<LayoutTemplate />} title={t('catalog.templates.emptyTitle')} description={search || status !== 'all' ? t('common.emptyHint') : t('catalog.templates.emptyHint')}
           action={canWrite && !search && status === 'all' && <Button leftIcon={<Plus className="size-4" />} onClick={() => setCreating(true)}>{t('catalog.templates.new')}</Button>} />
       ) : (
-        <MotionList variants={stagger} initial="hidden" animate="show" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <MotionList variants={stagger} initial="hidden" animate="show" className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,270px),1fr))]">
           {list.map((tpl) => (
             <TemplateCard key={tpl.id} tpl={tpl} companyId={companyId} serviceTypes={serviceTypes.data ?? []} categories={categories.data ?? []} canWrite={canWrite} canPublish={canPublish}
               onOpen={() => nav(routes.admin.template(tpl.id))} onDuplicate={() => void duplicate(tpl)} onDelete={() => setToDelete(tpl)}

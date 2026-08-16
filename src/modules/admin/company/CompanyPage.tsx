@@ -80,8 +80,8 @@ export default function CompanyPage() {
           {/* Header with logo */}
           <Card className="relative overflow-hidden">
             <div aria-hidden className="pointer-events-none absolute -left-16 -top-24 size-64 rounded-full bg-brand/8 blur-3xl" />
-            <div className="flex flex-col sm:flex-row sm:items-center gap-5">
-              <div className="relative shrink-0">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
+              <div className="relative shrink-0 self-start">
                 <Avatar name={name || c.name} src={logoUrl || undefined} size="xl" className="rounded-2xl size-20 text-[26px]" />
                 {canWrite && (
                   <button type="button" onClick={() => fileRef.current?.click()} className="absolute -bottom-1.5 -right-1.5 grid size-8 place-items-center rounded-full border border-line bg-bg-elevated text-ink-2 shadow-2 hover:text-ink transition-colors" aria-label={t('admin.company.upload')}>
@@ -92,12 +92,12 @@ export default function CompanyPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-[20px] font-semibold tracking-tight truncate">{name || c.name}</h2>
+                  <h2 className="text-[20px] font-semibold tracking-tight break-words min-w-0">{name || c.name}</h2>
                   <Badge tone={c.isActive ? 'ok' : 'neutral'} dot>{c.isActive ? t('common.active') : t('common.inactive')}</Badge>
                 </div>
                 <p className="text-[13px] text-ink-3 mt-1">{t('admin.company.logoHint')}</p>
                 {canWrite && (
-                  <div className="mt-2 flex gap-2">
+                  <div className="mt-2 flex flex-wrap gap-2">
                     <Button type="button" size="xs" variant="secondary" leftIcon={<ImagePlus className="size-3.5" />} onClick={() => fileRef.current?.click()}>{t('admin.company.upload')}</Button>
                     {logoUrl && <Button type="button" size="xs" variant="ghost" leftIcon={<Trash2 className="size-3.5" />} onClick={() => setValue('logoUrl', '', { shouldDirty: true })}>{t('admin.company.removeLogo')}</Button>}
                   </div>
@@ -147,8 +147,8 @@ export default function CompanyPage() {
 
           <Card className="bg-surface-2/40">
             <CardHeader title={t('admin.company.readonly')} />
-            <dl className="grid gap-x-8 gap-y-3 sm:grid-cols-3 text-[13.5px]">
-              <div><dt className="text-ink-3 text-[12.5px]">{t('admin.company.id')}</dt><dd className="font-mono mt-0.5">{c.id}</dd></div>
+            <dl className="grid gap-x-8 gap-y-3 grid-cols-[repeat(auto-fit,minmax(min(100%,180px),1fr))] text-[13.5px]">
+              <div><dt className="text-ink-3 text-[12.5px]">{t('admin.company.id')}</dt><dd className="font-mono mt-0.5 break-all">{c.id}</dd></div>
               <div><dt className="text-ink-3 text-[12.5px]">{t('admin.company.createdAt')}</dt><dd className="tabular mt-0.5">{fmtDateTime(c.createdAt)}</dd></div>
               <div><dt className="text-ink-3 text-[12.5px]">{t('admin.company.updatedAt')}</dt><dd className="tabular mt-0.5">{fmtDateTime(c.updatedAt)}</dd></div>
             </dl>

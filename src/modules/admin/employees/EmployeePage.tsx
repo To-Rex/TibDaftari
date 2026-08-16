@@ -74,11 +74,11 @@ export default function EmployeePage() {
     <Page width="medium">
       <PageHeader breadcrumbs={[{ label: t('admin.employees.backToList'), to: routes.admin.employees }, { label: e?.fullName ?? '…' }]}
         title={e ? (
-          <span className="flex items-center gap-4">
-            <Avatar name={e.fullName} hue={e.avatarHue} size="lg" />
-            <span className="flex flex-col">
-              <span className="flex items-center gap-2 flex-wrap">{e.fullName}<Badge tone={e.status === 'active' ? 'ok' : 'neutral'} dot>{e.status === 'active' ? t('common.active') : t('common.inactive')}</Badge>{e.id === meId && <Badge tone="brand">{t('admin.employees.self')}</Badge>}</span>
-              <span className="text-[13.5px] font-normal text-ink-3 tracking-normal mt-0.5">
+          <span className="flex items-center gap-3 sm:gap-4 min-w-0">
+            <Avatar name={e.fullName} hue={e.avatarHue} size="lg" className="shrink-0" />
+            <span className="flex flex-col min-w-0">
+              <span className="flex items-center gap-2 flex-wrap break-words">{e.fullName}<Badge tone={e.status === 'active' ? 'ok' : 'neutral'} dot>{e.status === 'active' ? t('common.active') : t('common.inactive')}</Badge>{e.id === meId && <Badge tone="brand">{t('admin.employees.self')}</Badge>}</span>
+              <span className="text-[13.5px] font-normal text-ink-3 tracking-normal mt-0.5 break-words">
                 <span className="font-mono">@{e.login}</span> · {role?.name ?? '—'} · {t('admin.employees.lastLogin')}: {e.lastLoginAt ? fmtRelative(e.lastLoginAt) : t('admin.employees.never')}
               </span>
             </span>
@@ -96,11 +96,11 @@ export default function EmployeePage() {
                 {editing ? (
                   <EmployeeForm companyId={companyId} employee={e} onCancel={() => setEditing(false)} onSaved={() => setEditing(false)} />
                 ) : (
-                  <dl className="grid gap-x-8 gap-y-4 sm:grid-cols-2 text-[14px]">
+                  <dl className="grid gap-x-8 gap-y-4 grid-cols-[repeat(auto-fit,minmax(min(100%,220px),1fr))] text-[14px]">
                     <Item label={t('admin.employees.fullName')}>{e.fullName}</Item>
                     <Item label={t('admin.employees.login')}><span className="font-mono">{e.login}</span></Item>
                     <Item label={t('admin.employees.phone')}><span className="tabular">{e.phone || '—'}</span></Item>
-                    <Item label={t('admin.employees.email')}>{e.email || '—'}</Item>
+                    <Item label={t('admin.employees.email')}><span className="break-all">{e.email || '—'}</span></Item>
                     <Item label={t('admin.employees.role')}><Badge tone={role?.isSystem ? 'brand' : 'neutral'}>{role?.name ?? '—'}</Badge></Item>
                     <Item label={t('admin.employees.branches')}>
                       <span className="flex flex-wrap gap-1">{e.branchIds.length ? e.branchIds.map((id) => <Badge key={id}>{branches.data?.find((b) => b.id === id)?.name ?? id}</Badge>) : <span className="text-warn">{t('admin.employees.noBranch')}</span>}</span>
@@ -114,13 +114,13 @@ export default function EmployeePage() {
                 <Card className="border-danger/30">
                   <CardHeader title={<span className="text-danger">{t('admin.employees.danger')}</span>} />
                   <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-[14px] font-medium">{e.status === 'active' ? t('admin.employees.deactivate') : t('admin.employees.activate')}</p>
                       <p className="text-[13px] text-ink-3">{e.status === 'active' ? t('admin.employees.deactivateHint') : t('admin.employees.activateHint')}</p>
                     </div>
                     {e.status === 'active'
-                      ? <Button variant="danger" leftIcon={<UserX className="size-4" />} onClick={() => setConfirm(true)}>{t('admin.employees.deactivate')}</Button>
-                      : <Button variant="secondary" leftIcon={<UserCheck className="size-4" />} loading={save.isPending} onClick={toggleStatus}>{t('admin.employees.activate')}</Button>}
+                      ? <Button variant="danger" className="max-sm:w-full" leftIcon={<UserX className="size-4" />} onClick={() => setConfirm(true)}>{t('admin.employees.deactivate')}</Button>
+                      : <Button variant="secondary" className="max-sm:w-full" leftIcon={<UserCheck className="size-4" />} loading={save.isPending} onClick={toggleStatus}>{t('admin.employees.activate')}</Button>}
                   </div>
                 </Card>
               )}
@@ -129,7 +129,7 @@ export default function EmployeePage() {
             <div className="flex flex-col gap-4">
               <Card>
                 <div className="flex flex-col md:flex-row md:items-center gap-3 justify-between">
-                  <div>
+                  <div className="min-w-0">
                     <h3 className="text-[15px] font-semibold">{t('admin.employees.permsTitle')}</h3>
                     <p className="text-[13px] text-ink-3">{t('admin.employees.permsSub')}</p>
                   </div>
@@ -143,22 +143,24 @@ export default function EmployeePage() {
                     )}
                   </div>
                 </div>
-                <SearchInput value={search} onChange={setSearch} placeholder={t('admin.roles.search')} className="mt-4 sm:max-w-sm" />
-              </Card>
+                </Card>
+              <div className="sticky top-16 z-20 -mx-1 px-1 py-2 bg-bg/90 backdrop-blur-md">
+                <SearchInput value={search} onChange={setSearch} placeholder={t('admin.roles.search')} className="sm:max-w-sm" />
+              </div>
               <PermissionMatrix mode="override" rolePermissions={role?.permissions ?? []} overrides={draft} onChange={setDraft} search={search} readOnly={!canWrite} />
             </div>
           ) : (
             <Card>
-              <CardHeader title={t('admin.employees.activityTitle')} actions={<Badge tone="brand">{t('admin.employees.activitySoon')}</Badge>} />
-              <div className="grid gap-3 sm:grid-cols-3">
+              <CardHeader className="max-xs:flex-col max-xs:items-start" title={t('admin.employees.activityTitle')} actions={<Badge tone="brand">{t('admin.employees.activitySoon')}</Badge>} />
+              <div className="grid gap-3 grid-cols-[repeat(auto-fit,minmax(min(100%,200px),1fr))]">
                 {[
                   { icon: <LogIn />, label: t('admin.employees.activityLogin') },
                   { icon: <Pencil />, label: t('admin.employees.activityChanges') },
                   { icon: <KeyRound />, label: t('admin.employees.activityActions') },
                 ].map((x, i) => (
                   <div key={i} className="flex items-center gap-3 rounded-[var(--radius)] border border-dashed border-line bg-surface-2/40 p-4">
-                    <span className="grid size-9 place-items-center rounded-lg bg-surface text-ink-3 [&>svg]:size-4">{x.icon}</span>
-                    <span className="text-[13.5px] text-ink-2">{x.label}</span>
+                    <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-surface text-ink-3 [&>svg]:size-4">{x.icon}</span>
+                    <span className="text-[13.5px] text-ink-2 break-words min-w-0">{x.label}</span>
                   </div>
                 ))}
               </div>

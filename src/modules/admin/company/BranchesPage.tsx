@@ -21,26 +21,26 @@ export default function BranchesPage() {
   const openEdit = (b: Branch) => setDrawer({ open: true, branch: b })
 
   return (
-    <Page width="medium">
+    <Page>
       <PageHeader title={t('admin.branches.title')} description={t('admin.branches.subtitle')}
         actions={canWrite && <Button leftIcon={<Plus className="size-4" />} onClick={openNew}>{t('admin.branches.add')}</Button>} />
 
       {branches.isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2">{[0, 1].map((i) => <Skeleton key={i} className="h-48 rounded-[var(--radius-lg)]" />)}</div>
+        <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))]">{[0, 1].map((i) => <Skeleton key={i} className="h-48 rounded-[var(--radius-lg)]" />)}</div>
       ) : !branches.data?.length ? (
         <Card><EmptyState icon={<GitBranch />} title={t('admin.branches.empty')} description={t('admin.branches.emptyHint')} action={canWrite && <Button onClick={openNew} leftIcon={<Plus className="size-4" />}>{t('admin.branches.add')}</Button>} /></Card>
       ) : (
         <>
           <p className="mb-3 text-[13px] text-ink-3 tabular">{t('admin.branches.count', { count: branches.data.length })}</p>
-          <MotionList variants={stagger} initial="hidden" animate="show" className="grid gap-4 sm:grid-cols-2">
+          <MotionList variants={stagger} initial="hidden" animate="show" className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))]">
             {branches.data.map((b) => (
               <MotionItem key={b.id} variants={fadeUp}>
                 <Card interactive={canWrite} onClick={canWrite ? () => openEdit(b) : undefined} className="h-full flex flex-col gap-4">
                   <div className="flex items-start gap-3">
                     <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-soft font-mono text-[14px] font-semibold text-brand-ink">{b.code}</span>
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-[15.5px] font-semibold truncate">{b.name}</h3>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0">
+                        <h3 className="text-[15.5px] font-semibold break-words min-w-0">{b.name}</h3>
                         <Badge tone={b.isActive ? 'ok' : 'neutral'} size="sm" dot>{b.isActive ? t('common.active') : t('common.inactive')}</Badge>
                       </div>
                       <p className="text-[12.5px] text-ink-3 mt-0.5 font-mono">{orderNumberExample(b.code, b.orderSeq)}</p>
@@ -48,11 +48,11 @@ export default function BranchesPage() {
                     {canWrite && <IconButton label={t('common.edit')} size="sm" onClick={(e) => { e.stopPropagation(); openEdit(b) }}><Pencil /></IconButton>}
                   </div>
                   <ul className="flex flex-col gap-1.5 text-[13.5px] text-ink-2">
-                    <li className="flex items-center gap-2"><MapPin className="size-4 text-ink-3 shrink-0" /><span className="truncate">{b.address || t('common.notSet')}</span></li>
+                    <li className="flex items-start gap-2 min-w-0"><MapPin className="size-4 text-ink-3 shrink-0 mt-0.5" /><span className="break-words min-w-0">{b.address || t('common.notSet')}</span></li>
                     <li className="flex items-center gap-2"><Phone className="size-4 text-ink-3 shrink-0" /><span className="tabular">{b.phone || t('common.notSet')}</span></li>
                     <li className="flex items-center gap-2"><Clock className="size-4 text-ink-3 shrink-0" /><span>{b.timezone}</span></li>
                   </ul>
-                  <div className="mt-auto flex items-center justify-between rounded-[var(--radius-sm)] bg-surface-2/70 px-3 py-2 text-[12.5px]">
+                  <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-[var(--radius-sm)] bg-surface-2/70 px-3 py-2 text-[12.5px]">
                     <span className="text-ink-3">{t('admin.branches.lastSeq')}</span>
                     <span className="font-mono tabular font-medium">{b.code}-{String(b.orderSeq).padStart(6, '0')} <span className="text-ink-3 font-sans">({fmtNumber(b.orderSeq)})</span></span>
                   </div>

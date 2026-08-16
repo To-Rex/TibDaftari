@@ -44,13 +44,13 @@ export function FieldPropertyEditor({ field, siblings, onChange, allowTable = tr
 
   return (
     <fieldset disabled={readOnly} className="flex flex-col gap-4 disabled:opacity-70">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
         <Field label={t('catalog.schemas.label')} required>{(id) => <Input id={id} value={field.label} onChange={(e) => setLabel(e.target.value)} />}</Field>
         <Field label={t('catalog.schemas.key')} error={keyDup ? t('catalog.schemas.keyDup') : keyBad ? t('catalog.schemas.keyBad') : undefined} hint={!keyDup && !keyBad ? t('catalog.schemas.keyHint') : undefined}>
           {(id) => <Input id={id} mono value={field.key} invalid={keyDup || keyBad} onChange={(e) => { setKeyTouched(true); patch({ key: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_') }) }} />}
         </Field>
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
         <Field label={t('catalog.schemas.type')}>{(id) => (
           <Select id={id} value={field.type} onChange={(e) => requestType(e.target.value as FieldType)}>
             {(allowTable ? FIELD_TYPES : COLUMN_TYPES).map((ft) => <option key={ft} value={ft}>{t(`catalog.schemas.types.${ft}`)}</option>)}
@@ -58,7 +58,7 @@ export function FieldPropertyEditor({ field, siblings, onChange, allowTable = tr
         )}</Field>
         <Field label={t('catalog.schemas.unit')}>{(id) => <Input id={id} value={field.unit ?? ''} onChange={(e) => patch({ unit: e.target.value || undefined })} placeholder="g/l, %, mm/soat" />}</Field>
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
         <Field label={t('catalog.schemas.group')} hint={t('catalog.schemas.groupHint')}>{(id) => <Input id={id} value={field.group ?? ''} onChange={(e) => patch({ group: e.target.value || undefined })} list={`groups-${field.key}`} />}</Field>
         <datalist id={`groups-${field.key}`}>{[...new Set(siblings.map((f) => f.group).filter(Boolean))].map((g) => <option key={g} value={g} />)}</datalist>
         <div className="flex items-end pb-1"><Switch checked={field.required} onChange={(v) => patch({ required: v })} label={t('catalog.schemas.required')} /></div>
@@ -68,7 +68,7 @@ export function FieldPropertyEditor({ field, siblings, onChange, allowTable = tr
       {/* visibleIf */}
       {visibleCandidates.length > 0 && (
         <Field label={t('catalog.schemas.visibleIf')} hint={t('catalog.schemas.visibleIfHint')}>{(id) => (
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 xs:grid-cols-2 gap-2">
             <Select id={id} value={field.visibleIf?.key ?? ''} onChange={(e) => { const k = e.target.value; if (!k) return patch({ visibleIf: undefined }); const tgt = others.find((f) => f.key === k)!; patch({ visibleIf: { key: k, equals: tgt.type === 'boolean' ? true : (tgt.type === 'select' || tgt.type === 'multiselect' ? (tgt.options[0]?.value ?? '') : '') } }) }}>
               <option value="">{t('catalog.schemas.always')}</option>
               {visibleCandidates.map((f) => <option key={f.key} value={f.key}>{f.label}</option>)}
@@ -112,7 +112,7 @@ function TypeSpecific({ field, onChange }: { field: FieldDef; onChange: (f: Fiel
     case 'text':
     case 'longtext':
       return (
-        <div className="grid grid-cols-[1fr_120px] gap-3">
+        <div className="grid grid-cols-1 xs:grid-cols-[1fr_120px] gap-3">
           <Field label={t('catalog.schemas.placeholder')}>{(id) => <Input id={id} value={field.placeholder ?? ''} onChange={(e) => onChange({ ...field, placeholder: e.target.value || undefined })} />}</Field>
           <Field label={t('catalog.schemas.maxLength')}>{(id) => <Input id={id} type="number" min={1} mono value={field.maxLength ?? ''} onChange={(e) => onChange({ ...field, maxLength: numOrUndef(e.target.value) })} />}</Field>
         </div>
@@ -120,7 +120,7 @@ function TypeSpecific({ field, onChange }: { field: FieldDef; onChange: (f: Fiel
     case 'number':
       return (
         <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 xs:grid-cols-3 gap-3">
             <Field label={t('catalog.schemas.decimals')}>{(id) => <Input id={id} type="number" min={0} max={4} mono value={field.decimals ?? ''} onChange={(e) => onChange({ ...field, decimals: numOrUndef(e.target.value) })} />}</Field>
             <Field label={t('catalog.schemas.min')}>{(id) => <Input id={id} type="number" step="any" mono value={field.min ?? ''} onChange={(e) => onChange({ ...field, min: numOrUndef(e.target.value) })} />}</Field>
             <Field label={t('catalog.schemas.max')}>{(id) => <Input id={id} type="number" step="any" mono value={field.max ?? ''} onChange={(e) => onChange({ ...field, max: numOrUndef(e.target.value) })} />}</Field>
@@ -138,7 +138,7 @@ function TypeSpecific({ field, onChange }: { field: FieldDef; onChange: (f: Fiel
       )
     case 'boolean':
       return (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
           <Field label={t('catalog.schemas.trueLabel')}>{(id) => <Input id={id} value={field.trueLabel ?? ''} placeholder={t('common.yes')} onChange={(e) => onChange({ ...field, trueLabel: e.target.value || undefined })} />}</Field>
           <Field label={t('catalog.schemas.falseLabel')}>{(id) => <Input id={id} value={field.falseLabel ?? ''} placeholder={t('common.no')} onChange={(e) => onChange({ ...field, falseLabel: e.target.value || undefined })} />}</Field>
         </div>
@@ -150,7 +150,7 @@ function TypeSpecific({ field, onChange }: { field: FieldDef; onChange: (f: Fiel
         <div className="flex flex-col gap-4">
           <Field label={t('catalog.schemas.columns')} hint={t('catalog.schemas.columnsHint')}>{() => <TableColumnsEditor field={field} onChange={onChange} />}</Field>
           <Field label={t('catalog.schemas.presetRows')} hint={t('catalog.schemas.presetRowsHint')}>{() => <PresetRowsEditor field={field} onChange={onChange} />}</Field>
-          <div className="grid grid-cols-3 gap-3 items-end">
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-3 items-end">
             <Switch checked={field.allowAddRows} onChange={(v) => onChange({ ...field, allowAddRows: v })} label={t('catalog.schemas.allowAddRows')} />
             <Switch checked={field.allowRemoveRows} onChange={(v) => onChange({ ...field, allowRemoveRows: v })} label={t('catalog.schemas.allowRemoveRows')} />
             <Field label={t('catalog.schemas.minRows')}>{(id) => <Input id={id} type="number" min={0} mono className="h-9" value={field.minRows ?? ''} onChange={(e) => onChange({ ...field, minRows: numOrUndef(e.target.value) })} />}</Field>

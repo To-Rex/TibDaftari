@@ -27,11 +27,11 @@ export function WorklistTable({ rows, loading, onOpen, categoryColor, emptyHint 
       header: t('clinical.lab.colPatient'),
       cell: (r) => (
         <div className="flex items-center gap-3">
-          <span className={cn('absolute inset-y-0 left-0 w-[3px]', itemStatusStripe[r.status])} aria-hidden />
-          <Avatar name={r.patientName} size="sm" />
+          <span className={cn('absolute inset-y-0 left-0 w-[3px] max-md:hidden', itemStatusStripe[r.status])} aria-hidden />
+          <Avatar name={r.patientName} size="sm" className="shrink-0" />
           <div className="min-w-0">
             <div className="truncate font-medium text-ink">{r.patientName}</div>
-            <div className="flex items-center gap-1.5 text-[12px] text-ink-3 tabular">
+            <div className="flex flex-wrap items-center gap-x-1.5 text-[12px] font-normal text-ink-3 tabular">
               <span>{fmtPhone(r.patientPhone)}</span>
               {(r.patientGender || r.patientBirthDate) && (
                 <>
@@ -44,8 +44,9 @@ export function WorklistTable({ rows, loading, onOpen, categoryColor, emptyHint 
         </div>
       ),
       className: 'relative',
+      card: 'title',
     },
-    { key: 'order', header: t('clinical.lab.colOrder'), cell: (r) => <span className="font-mono text-[12.5px] tabular text-ink-2">{r.orderNumber}</span>, width: '120px', hideBelow: 'md' },
+    { key: 'order', header: t('clinical.lab.colOrder'), cell: (r) => <span className="font-mono text-[12.5px] tabular text-ink-2">{r.orderNumber}</span>, width: '120px', hideBelow: 'md', card: 'meta' },
     {
       key: 'service',
       header: t('clinical.lab.colService'),
@@ -53,13 +54,14 @@ export function WorklistTable({ rows, loading, onOpen, categoryColor, emptyHint 
         <div className="flex min-w-0 items-center gap-2">
           <span className="size-2 shrink-0 rounded-full" style={{ background: categoryColor(r.categoryId) ?? 'var(--c-line-strong)' }} />
           <div className="min-w-0">
-            <div className="truncate font-medium">{r.serviceName}</div>
+            <div className="truncate font-medium max-md:text-ink">{r.serviceName}</div>
             <div className="truncate text-[12px] text-ink-3">{r.categoryName}</div>
           </div>
         </div>
       ),
+      card: 'meta',
     },
-    { key: 'status', header: t('common.status'), cell: (r) => <ItemStatusBadge status={r.status} />, width: '140px' },
+    { key: 'status', header: t('common.status'), cell: (r) => <ItemStatusBadge status={r.status} />, width: '140px', card: 'meta' },
     { key: 'tech', header: t('clinical.lab.colTechnician'), cell: (r) => <span className="text-ink-2">{r.technicianName ?? <span className="text-ink-3">—</span>}</span>, hideBelow: 'lg' },
     {
       key: 'times',

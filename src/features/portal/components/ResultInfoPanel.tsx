@@ -14,9 +14,9 @@ import { abnormalEntries, checkedCount } from '../abnormal'
 function Row({ label, value }: { label: ReactNode; value: ReactNode }) {
   if (!value) return null
   return (
-    <div className="flex items-baseline justify-between gap-4 py-2 text-[13.5px]">
+    <div className="flex items-baseline justify-between gap-3 py-2 text-[13.5px]">
       <dt className="text-ink-3 shrink-0">{label}</dt>
-      <dd className="text-ink min-w-0 truncate text-right font-medium">{value}</dd>
+      <dd className="text-ink min-w-0 break-words text-right font-medium">{value}</dd>
     </div>
   )
 }
@@ -42,7 +42,7 @@ export function ResultInfoPanel({
 
   return (
     <div className={cn('flex flex-col gap-4', className)}>
-      <Card padded={false} className="px-5 py-3">
+      <Card padded={false} className="px-4 py-3 xs:px-5">
         <h3 className="text-ink-3 py-2 text-[13px] font-semibold tracking-[0.06em] uppercase">
           {t('portal.result.about')}
         </h3>
@@ -92,7 +92,7 @@ export function ResultInfoPanel({
             </Card>
           ) : (
             <Card padded={false} className="overflow-hidden">
-              <div className="border-line bg-warn-soft/40 flex items-start gap-3 border-b px-5 py-4">
+              <div className="border-line bg-warn-soft/40 flex items-start gap-3 border-b px-4 py-4 xs:px-5">
                 <AlertCircle className="text-warn mt-0.5 size-5 shrink-0" />
                 <div>
                   <p className="text-ink text-[14px] font-semibold">
@@ -113,9 +113,9 @@ export function ResultInfoPanel({
                   <MotionItem
                     key={a.key}
                     variants={fadeUp}
-                    className="flex items-baseline justify-between gap-3 px-5 py-2.5 text-[13.5px]"
+                    className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 px-4 py-2.5 text-[13.5px] xs:px-5"
                   >
-                    <span className="text-ink min-w-0 truncate">{a.label}</span>
+                    <span className="text-ink min-w-0 break-words">{a.label}</span>
                     <span className="shrink-0 text-right">
                       <span
                         className={cn(

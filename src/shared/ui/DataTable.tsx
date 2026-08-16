@@ -95,7 +95,7 @@ export function DataTable<T>({ columns, rows, rowKey, loading, skeletonRows = 8,
       </div>
 
       {/* ---------- cards (< breakpoint) ---------- */}
-      <div className={cn('flex flex-col gap-2.5', cardsAt[cardBelow])}>
+      <div className={cn('grid grid-cols-1 gap-2.5', cardBelow === 'lg' && 'sm:grid-cols-2', cardsAt[cardBelow])}>
         {showSkeleton
           ? Array.from({ length: Math.min(skeletonRows, 5) }).map((_, i) => (
               <div key={i} className="rounded-[var(--radius)] border border-line bg-surface p-3.5 space-y-2.5">

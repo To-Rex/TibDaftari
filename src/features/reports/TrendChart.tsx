@@ -1,5 +1,5 @@
 /** Inline-SVG area/line trend chart with crosshair tooltip. Single series, one axis. */
-import { useId, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { motion } from 'motion/react'
 import { cn } from '@/shared/lib/cn'
 import { fmtDate } from '@/shared/lib/format'
@@ -17,6 +17,15 @@ export function TrendChart({ points, format, color = 'var(--c-brand)', height = 
   const gid = useId()
   const [hover, setHover] = useState<number | null>(null)
   const svgRef = useRef<SVGSVGElement>(null)
+  // measured plot width → how many x labels fit without overlapping (≈ 56px each)
+  const [plotW, setPlotW] = useState(800)
+  useEffect(() => {
+    const el = svgRef.current
+    if (!el) return
+    const ro = new ResizeObserver(([e]) => { const w = e?.contentRect.width ?? 0; if (w > 0) setPlotW(w) })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
   const W = 800, H = height, PL = 8, PR = 8, PT = 16, PB = 28
   const max = Math.max(1, ...points.map((p) => p.value))
   const niceMax = niceCeil(max)
@@ -39,7 +48,11 @@ export function TrendChart({ points, format, color = 'var(--c-brand)', height = 
   }, [points, niceMax, H])
 
   const ticks = [0, 0.25, 0.5, 0.75, 1].map((f) => f * niceMax)
-  const labelEvery = Math.max(1, Math.ceil(n / 8))
+  // narrow plots: compact tick labels ("8.5M") so the y axis never clips
+  const longestTick = Math.max(...ticks.map((tv) => format(tv).length))
+  const tickFmt = plotW < 480 || longestTick > 7 ? (v: number) => (v === 0 ? '0' : compactNumber.format(v)) : format
+  const maxLabels = Math.max(2, Math.min(8, Math.floor(plotW / 56)))
+  const labelEvery = Math.max(1, Math.ceil(n / maxLabels))
   const onMove = (e: React.MouseEvent<SVGSVGElement>) => {
     const rect = svgRef.current?.getBoundingClientRect()
     if (!rect || !n) return
@@ -51,10 +64,10 @@ export function TrendChart({ points, format, color = 'var(--c-brand)', height = 
   const hp = hover != null ? points[hover] : undefined
 
   return (
-    <div className={cn('relative w-full pl-12', className)}>
+    <div className={cn('relative w-full min-w-0 pl-12', className)}>
       {/* y labels (HTML so they don't stretch) */}
       <div className="pointer-events-none absolute left-0 flex w-11 flex-col items-end justify-between text-[10.5px] tabular text-ink-3" style={{ top: PT - 7, bottom: PB - 7 }}>
-        {[...ticks].reverse().map((tv) => <span key={tv}>{format(tv)}</span>)}
+        {[...ticks].reverse().map((tv) => <span key={tv}>{tickFmt(tv)}</span>)}
       </div>
       <div className="relative">
       <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height }} preserveAspectRatio="none" onMouseMove={onMove} onMouseLeave={() => setHover(null)} role="img" aria-label={label}>
@@ -80,8 +93,8 @@ export function TrendChart({ points, format, color = 'var(--c-brand)', height = 
           </>
         )}
       </svg>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-between px-1 text-[10.5px] tabular text-ink-3">
-        {points.map((p, i) => (i % labelEvery === 0 || i === n - 1 ? <span key={p.date}>{fmtDate(p.date, 'dd.MM')}</span> : null))}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-between gap-2 overflow-hidden px-1 text-[10.5px] tabular text-ink-3">
+        {points.map((p, i) => (i % labelEvery === 0 || (i === n - 1 && (n - 1) % labelEvery >= labelEvery / 2) ? <span key={p.date} className="whitespace-nowrap">{fmtDate(p.date, 'dd.MM')}</span> : null))}
       </div>
       {hp && hover != null && (
         <div className="pointer-events-none absolute -translate-x-1/2 rounded-md border border-line bg-bg-elevated px-2.5 py-1.5 text-[12px] shadow-2" style={{ left: `${(x(hover) / W) * 100}%`, top: Math.max(0, y(hp.value) - 52) }}>
@@ -93,6 +106,8 @@ export function TrendChart({ points, format, color = 'var(--c-brand)', height = 
     </div>
   )
 }
+
+const compactNumber = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 })
 
 function niceCeil(v: number) {
   const p = Math.pow(10, Math.floor(Math.log10(v)))

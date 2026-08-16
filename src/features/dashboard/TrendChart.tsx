@@ -3,14 +3,14 @@
  * monotone path, faint grid, gradient fill from currentColor, hover crosshair
  * + tooltip. Colour comes from the parent via `text-brand`/`text-*` (currentColor).
  */
-import { useId, useMemo, useRef, useState, type MouseEvent } from 'react'
+import { useEffect, useId, useMemo, useRef, useState, type PointerEvent } from 'react'
 import { motion } from 'motion/react'
 import { fmtDate } from '@/shared/lib/format'
 
 export interface TrendPoint { date: string; value: number }
 
-const W = 600
-const H = 200
+/** the SVG is drawn in CSS pixels: width follows the container (ResizeObserver), height grows gently with it — text never scales */
+const heightFor = (w: number) => Math.round(Math.min(320, Math.max(190, w * 0.28)))
 const PAD = { top: 12, right: 12, bottom: 24, left: 8 }
 
 function monotonePath(pts: { x: number; y: number }[]): string {
@@ -46,6 +46,16 @@ export function TrendChart({ data, format, className, label }: { data: TrendPoin
   const gid = useId()
   const [hover, setHover] = useState<number | null>(null)
   const svgRef = useRef<SVGSVGElement>(null)
+  const boxRef = useRef<HTMLDivElement>(null)
+  const [W, setW] = useState(600)
+  const H = heightFor(W)
+  useEffect(() => {
+    const el = boxRef.current
+    if (!el) return
+    const ro = new ResizeObserver(([e]) => { const w = Math.round(e?.contentRect.width ?? 0); if (w > 0) setW(Math.max(200, w)) })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
 
   const geo = useMemo(() => {
     const max = nice(Math.max(0, ...data.map((d) => d.value)))
@@ -56,13 +66,13 @@ export function TrendChart({ data, format, className, label }: { data: TrendPoin
     const line = monotonePath(pts)
     const area = pts.length ? `${line} L${pts[pts.length - 1]!.x},${PAD.top + ih} L${pts[0]!.x},${PAD.top + ih} Z` : ''
     const ticks = [0, 0.5, 1].map((f) => ({ y: PAD.top + ih - f * ih, v: max * f }))
-    const every = Math.max(1, Math.ceil(data.length / 7))
+    const every = Math.max(1, Math.ceil(data.length / Math.max(2, Math.floor(iw / 56))))
     const xLabels = data.map((d, i) => ({ x: pts[i]!.x, label: fmtDate(d.date, 'dd.MM'), show: i % every === 0 || i === data.length - 1 }))
     return { pts, area, line, ticks, xLabels }
-  }, [data])
+  }, [data, W, H])
   const { pts, area, line, ticks, xLabels } = geo
 
-  const onMove = (e: MouseEvent<SVGSVGElement>) => {
+  const onMove = (e: PointerEvent<SVGSVGElement>) => {
     const r = svgRef.current?.getBoundingClientRect()
     if (!r || !pts.length) return
     const x = ((e.clientX - r.left) / r.width) * W
@@ -76,8 +86,8 @@ export function TrendChart({ data, format, className, label }: { data: TrendPoin
 
   return (
     <div className={className}>
-      <div className="relative">
-        <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full overflow-visible" role="img" aria-label={label} onMouseMove={onMove} onMouseLeave={() => setHover(null)}>
+      <div ref={boxRef} className="relative w-full min-w-0">
+        <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} width={W} height={H} className="block max-w-full overflow-visible touch-pan-y" role="img" aria-label={label} onPointerMove={onMove} onPointerDown={onMove} onPointerLeave={() => setHover(null)}>
           <defs>
             <linearGradient id={gid} x1="0" x2="0" y1="0" y2="1">
               <stop offset="0%" stopColor="currentColor" stopOpacity="0.28" />

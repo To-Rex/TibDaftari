@@ -36,7 +36,7 @@ export default function PlatformPage() {
   }
 
   const columns: Column<Company>[] = [
-    { key: 'name', header: t('admin.platform.colCompany'), cell: (c) => (
+    { key: 'name', header: t('admin.platform.colCompany'), card: 'title', cell: (c) => (
       <div className="flex items-center gap-3 min-w-0">
         <Avatar name={c.name} src={c.logoUrl} size="sm" className="rounded-lg" />
         <div className="min-w-0">
@@ -47,15 +47,15 @@ export default function PlatformPage() {
     ) },
     { key: 'branchCount', header: t('admin.platform.colBranches'), align: 'right', hideBelow: 'sm', cell: (c) => <span className="tabular">{c.branchCount}</span> },
     { key: 'employeeCount', header: t('admin.platform.colEmployees'), align: 'right', hideBelow: 'sm', cell: (c) => <span className="tabular">{c.employeeCount}</span> },
-    { key: 'sms', header: t('admin.platform.colSms'), hideBelow: 'md', cell: (c) => <Badge tone={c.sms.provider === 'xabarchi' && c.sms.apiKeyMasked ? 'ok' : 'neutral'} dot>{c.sms.provider === 'xabarchi' ? t('admin.sms.providerXabarchi') : t('admin.sms.providerNone')}</Badge> },
+    { key: 'sms', header: t('admin.platform.colSms'), hideBelow: 'md', card: 'meta', cell: (c) => <Badge tone={c.sms.provider === 'xabarchi' && c.sms.apiKeyMasked ? 'ok' : 'neutral'} dot>{c.sms.provider === 'xabarchi' ? t('admin.sms.providerXabarchi') : t('admin.sms.providerNone')}</Badge> },
     { key: 'createdAt', header: t('admin.platform.colCreated'), hideBelow: 'lg', cell: (c) => <span className="tabular text-ink-3">{fmtDate(c.createdAt)}</span> },
-    { key: 'isActive', header: t('admin.platform.colStatus'), cell: (c) => (
+    { key: 'isActive', header: t('admin.platform.colStatus'), card: 'field', cell: (c) => (
       <div onClick={(e) => e.stopPropagation()}>
         <Switch size="sm" checked={c.isActive} disabled={!canManage || save.isPending} onChange={(v) => (v ? void toggleActive(c, true) : setConfirm(c))} label={<span className="text-[13px] text-ink-2">{c.isActive ? t('admin.platform.active') : t('admin.platform.inactive')}</span>} />
       </div>
     ) },
-    { key: 'actions', header: '', align: 'right', cell: (c) => (
-      <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+    { key: 'actions', header: '', align: 'right', card: 'actions', cell: (c) => (
+      <div className="flex flex-wrap items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
         <Button size="xs" variant="soft" leftIcon={<LogIn className="size-3.5" />} onClick={() => toast.info(t('admin.platform.impersonateSoon'))}>{t('admin.platform.impersonate')}</Button>
         {canManage && <IconButton label={t('common.edit')} size="sm" onClick={() => setDrawer({ open: true, company: c })}><Pencil /></IconButton>}
       </div>

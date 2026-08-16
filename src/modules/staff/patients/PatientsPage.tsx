@@ -38,11 +38,11 @@ export default function PatientsPage() {
   const onSort = (key: string) => { if (key === sortBy) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc')); else { setSortBy(key); setSortDir(key === 'fullName' ? 'asc' : 'desc') }; setPage(1) }
 
   const cols: Column<Patient>[] = [
-    { key: 'fullName', header: t('common.fullName'), sortable: true, cell: (p) => (
-      <span className="flex items-center gap-3"><Avatar name={p.fullName} size="sm" /><span className="flex min-w-0 flex-col"><span className="flex items-center gap-2 font-medium"><span className="truncate">{p.fullName}</span>{p.tags.map((tg) => <Badge key={tg} size="sm" tone={tg === 'VIP' ? 'accent' : 'brand'}>{tg}</Badge>)}</span><span className="text-[12px] text-ink-3 tabular">{fmtPhone(p.phone)}</span></span></span>
+    { key: 'fullName', header: t('common.fullName'), sortable: true, card: 'title', cell: (p) => (
+      <span className="flex min-w-0 items-center gap-3"><Avatar name={p.fullName} size="sm" /><span className="flex min-w-0 flex-col"><span className="flex flex-wrap items-center gap-x-2 gap-y-0.5 font-medium"><span className="min-w-0 break-words">{p.fullName}</span>{p.tags.map((tg) => <Badge key={tg} size="sm" tone={tg === 'VIP' ? 'accent' : 'brand'}>{tg}</Badge>)}</span><span className="text-[12px] text-ink-3 tabular">{fmtPhone(p.phone)}</span></span></span>
     ) },
     { key: 'birthDate', header: t('staff.patients.colAge'), cell: (p) => <span className="tabular text-ink-2">{p.birthDate ? `${ageFrom(p.birthDate)} · ${fmtDate(p.birthDate)}` : '—'}</span>, hideBelow: 'lg' },
-    { key: 'stats.lastVisitAt', sortable: true, header: t('staff.patients.colLastVisit'), cell: (p) => <span className="text-ink-2">{p.stats.lastVisitAt ? fmtRelative(p.stats.lastVisitAt) : '—'}</span>, hideBelow: 'md' },
+    { key: 'stats.lastVisitAt', sortable: true, header: t('staff.patients.colLastVisit'), cell: (p) => <span className="text-ink-2"><span className="md:hidden">{t('staff.patients.colLastVisit')}: </span>{p.stats.lastVisitAt ? fmtRelative(p.stats.lastVisitAt) : '—'}</span>, hideBelow: 'md', card: 'meta' },
     { key: 'stats.orders', sortable: true, header: t('staff.patients.colOrders'), align: 'center', cell: (p) => <span className="tabular">{p.stats.orders}</span>, hideBelow: 'sm', width: '90px' },
     { key: 'stats.totalSpent', sortable: true, header: t('staff.patients.colSpent'), align: 'right', cell: (p) => <span className="font-medium">{fmtMoney(p.stats.totalSpent, false)}</span> },
     { key: 'discountPercent', header: t('staff.patients.colDiscount'), align: 'center', cell: (p) => (p.discountPercent ? <Badge size="sm" tone="ok">{p.discountPercent}%</Badge> : <span className="text-ink-3">—</span>), hideBelow: 'lg', width: '90px' },
@@ -54,10 +54,10 @@ export default function PatientsPage() {
       <PageHeader title={t('staff.patients.title')} description={q.data ? t('staff.patients.count', { n: fmtNumber(q.data.total) }) : t('staff.patients.subtitle')}
         actions={can('reception.patient.write') && <Button leftIcon={<UserPlus className="size-4" />} onClick={() => setDrawer(true)}>{t('staff.patients.new')}</Button>} />
       <Toolbar>
-        <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1) }} placeholder={t('staff.patients.searchPh')} className="w-full sm:w-80" />
+        <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1) }} placeholder={t('staff.patients.searchPh')} className="w-full sm:w-80 3xl:w-96" />
         <div className="flex flex-wrap items-center gap-1.5">
           {TAGS.map((tg) => (
-            <button key={tg} onClick={() => { setTag(tag === tg ? undefined : tg); setPage(1) }} className={cn('h-8 rounded-full border px-3 text-[12.5px] font-medium transition-colors', tag === tg ? 'border-brand bg-brand-soft text-brand-ink' : 'border-line text-ink-2 hover:bg-surface-2')}>{tg}</button>
+            <button key={tg} onClick={() => { setTag(tag === tg ? undefined : tg); setPage(1) }} className={cn('h-9 rounded-full border px-3 text-[12.5px] font-medium transition-colors md:h-8', tag === tg ? 'border-brand bg-brand-soft text-brand-ink' : 'border-line text-ink-2 hover:bg-surface-2')}>{tg}</button>
           ))}
         </div>
       </Toolbar>

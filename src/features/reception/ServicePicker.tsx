@@ -77,13 +77,14 @@ export function ServicePicker({ companyId, branchId, inOrder, onAdd, adding, dis
                     className={cn('group flex w-full items-center gap-3 rounded-[var(--radius)] border px-3 py-2.5 text-left transition-[background-color,border-color,box-shadow,transform] active:scale-[0.995] disabled:opacity-60',
                       added ? 'border-ok/30 bg-ok-soft/40' : 'border-line bg-surface hover:border-brand/40 hover:shadow-1')}>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[14px] font-medium">{s.name}</span>
-                      <span className="mt-0.5 flex items-center gap-2 text-[12px] text-ink-3">
+                      <span className="block text-[14px] font-medium max-xs:break-words xs:truncate">{s.name}</span>
+                      <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12px] text-ink-3">
                         <span className="truncate">{catName(s.categoryId)}</span>
                         {s.turnaroundDays > 0 && <span className="inline-flex items-center gap-1 tabular"><Clock className="size-3" />{s.turnaroundDays} {t('common.days')}</span>}
+                        <span className="font-semibold text-ink tabular xs:hidden">{fmtMoney(branchPrice(s, branchId))}</span>
                       </span>
                     </span>
-                    <span className="text-[14px] font-semibold tabular">{fmtMoney(branchPrice(s, branchId))}</span>
+                    <span className="shrink-0 text-[14px] font-semibold tabular max-xs:hidden">{fmtMoney(branchPrice(s, branchId))}</span>
                     <span className={cn('grid size-8 shrink-0 place-items-center rounded-full transition-colors', added ? 'bg-ok text-white' : 'bg-brand-soft text-brand-ink group-hover:bg-brand group-hover:text-white')}>
                       {added ? <Check className="size-4" /> : <Plus className="size-4" />}
                     </span>
@@ -94,14 +95,14 @@ export function ServicePicker({ companyId, branchId, inOrder, onAdd, adding, dis
           </ul>
         )}
       </div>
-      {list.length > 0 && <div className="mt-2 text-right text-[12px] text-ink-3 tabular">{list.length} {t('staff.reception.servicesCount')} {inOrder.size > 0 && <Badge size="sm" tone="ok" className="ml-2">{inOrder.size} {t('staff.reception.inOrder')}</Badge>}</div>}
+      {list.length > 0 && <div className="mt-2 flex flex-wrap items-center justify-end gap-x-2 gap-y-1 text-[12px] text-ink-3 tabular">{list.length} {t('staff.reception.servicesCount')} {inOrder.size > 0 && <Badge size="sm" tone="ok">{inOrder.size} {t('staff.reception.inOrder')}</Badge>}</div>}
     </div>
   )
 }
 
 function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
   return (
-    <button type="button" onClick={onClick} className={cn('h-7 rounded-full border px-3 text-[12.5px] font-medium transition-colors', active ? 'border-brand bg-brand-soft text-brand-ink' : 'border-line text-ink-2 hover:bg-surface-2')}>{children}</button>
+    <button type="button" onClick={onClick} className={cn('h-8 rounded-full border px-3 text-[12.5px] font-medium transition-colors md:h-7', active ? 'border-brand bg-brand-soft text-brand-ink' : 'border-line text-ink-2 hover:bg-surface-2')}>{children}</button>
   )
 }
 

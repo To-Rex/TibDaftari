@@ -36,7 +36,7 @@ export function CategoryTree({ categories, loading, selectedId, onSelect, canWri
     <div className="p-2">
       <button
         onClick={() => onSelect(null)}
-        className={cn('w-full flex items-center gap-2 h-9 px-2.5 rounded-lg text-[13.5px] font-medium transition-colors', selectedId === null ? 'bg-brand-soft text-brand-ink' : 'text-ink-2 hover:bg-surface-2')}
+        className={cn('w-full flex items-center gap-2 h-10 lg:h-9 px-2.5 rounded-lg text-[13.5px] font-medium transition-colors', selectedId === null ? 'bg-brand-soft text-brand-ink' : 'text-ink-2 hover:bg-surface-2')}
       >
         <span className="size-5 grid place-items-center rounded-md bg-surface-2 text-ink-3 text-[11px]">∗</span>
         {t('catalog.tree.all')}
@@ -80,7 +80,7 @@ const TreeRow = memo(function TreeRow({ node, selected, expanded, onToggle, onSe
         tabIndex={0}
         onClick={onSelect}
         onKeyDown={(e) => { if (e.key === 'Enter') onSelect(); if (e.key === 'ArrowRight' && !expanded && hasKids) onToggle(); if (e.key === 'ArrowLeft' && expanded) onToggle() }}
-        className={cn('flex items-center gap-1.5 h-9 pr-1.5 rounded-lg text-[13.5px] transition-colors cursor-pointer', selected ? 'bg-brand-soft text-brand-ink' : 'text-ink hover:bg-surface-2', !cat.isActive && 'opacity-55')}
+        className={cn('flex items-center gap-1.5 h-10 lg:h-9 pr-1.5 rounded-lg text-[13.5px] transition-colors cursor-pointer', selected ? 'bg-brand-soft text-brand-ink' : 'text-ink hover:bg-surface-2', !cat.isActive && 'opacity-55', canWrite && 'max-lg:pr-10')}
         style={{ paddingLeft: 6 + depth * 16 }}
       >
         <button
@@ -95,12 +95,12 @@ const TreeRow = memo(function TreeRow({ node, selected, expanded, onToggle, onSe
         </span>
         <span className="truncate flex-1 font-medium">{cat.name}</span>
         {cat.workflow !== 'lab' && <Badge size="sm" tone="neutral">{t('catalog.tree.nextPhase')}</Badge>}
-        {count != null && count > 0 && <span className="text-[12px] tabular text-ink-3 group-hover:opacity-0 transition-opacity">{count}</span>}
+        {count != null && count > 0 && <span className="text-[12px] tabular text-ink-3 transition-opacity group-hover:opacity-0">{count}</span>}
         {canWrite && (
-          <span className="absolute right-1 flex items-center opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+          <span className="absolute right-1 flex items-center max-lg:opacity-100 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
             <Menu
               align="end"
-              trigger={() => <span className="grid size-7 place-items-center rounded-md text-ink-3 hover:bg-surface-3 hover:text-ink"><MoreHorizontal className="size-4" /></span>}
+              trigger={() => <span className="grid size-8 lg:size-7 place-items-center rounded-md text-ink-3 hover:bg-surface-3 hover:text-ink"><MoreHorizontal className="size-4" /></span>}
               items={[
                 { key: 'add', label: t('catalog.tree.addChild'), icon: <Plus />, onSelect: onAddChild },
                 { key: 'edit', label: t('common.edit'), icon: <Pencil />, onSelect: onEdit },

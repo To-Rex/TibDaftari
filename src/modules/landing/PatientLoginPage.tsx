@@ -92,9 +92,9 @@ export default function PatientLoginPage() {
   return (
     <AuthLayout
       aside={
-        <div className="rounded-[var(--radius-lg)] border border-line bg-surface/60 p-6 backdrop-blur">
+        <div className="rounded-[var(--radius-lg)] border border-line bg-surface/60 p-4 xs:p-5 sm:p-6 backdrop-blur">
           <p className="inline-flex items-center gap-2 text-[13px] font-medium text-brand-ink"><ShieldCheck className="size-4" />{t('landing.demoBadge')}</p>
-          <p className="mt-2 text-[13.5px] text-ink-3">Demo bemor: <button className="font-mono text-ink underline-offset-2 hover:underline" onClick={() => setPhone(formatLocal(demoPhone?.slice(3) ?? ''))}>{fmtPhone(demoPhone)}</button></p>
+          <p className="mt-2 text-[13.5px] text-ink-3 break-words">Demo bemor: <button className="font-mono text-ink underline-offset-2 hover:underline min-h-[40px] py-1" onClick={() => setPhone(formatLocal(demoPhone?.slice(3) ?? ''))}>{fmtPhone(demoPhone)}</button></p>
         </div>
       }
     >
@@ -107,14 +107,14 @@ export default function PatientLoginPage() {
             <Field label={t('auth.phone')}>
               {(id) => (
                 <div className="flex items-stretch gap-2">
-                  <span className="grid h-10 shrink-0 place-items-center rounded-[var(--radius-sm)] border border-line bg-surface-2 px-3 font-mono text-[14px] text-ink-2">+998</span>
+                  <span className="grid h-10 shrink-0 place-items-center rounded-[var(--radius-sm)] border border-line bg-surface-2 px-2 xs:px-3 font-mono text-[13px] xs:text-[14px] text-ink-2">+998</span>
                   <Input id={id} inputMode="numeric" autoFocus autoComplete="tel-national" placeholder="90 123 45 67" value={phone} onChange={(e) => setPhone(formatLocal(e.target.value))} mono leftIcon={<Phone />} />
                 </div>
               )}
             </Field>
             <Button type="submit" size="lg" block loading={busy} disabled={digits.length !== 9} className="mt-2">{t('auth.sendCode')}</Button>
             <div className="relative my-2 text-center text-[12px] text-ink-3"><span className="relative z-10 bg-bg-elevated px-3">{t('auth.orContinueWith')}</span><span className="absolute inset-x-0 top-1/2 h-px bg-line" /></div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2 xs:grid-cols-2">
               <Button type="button" variant="secondary" disabled title={t('auth.soon')} leftIcon={<GoogleIcon />}>{t('auth.google')}</Button>
               <Button type="button" variant="secondary" disabled title={t('auth.soon')} leftIcon={<AppleIcon />}>{t('auth.apple')}</Button>
             </div>
@@ -122,18 +122,18 @@ export default function PatientLoginPage() {
         ) : (
           <motion.div key="code" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }} transition={{ duration: 0.25 }} className="mt-7">
             <p className="text-[14px] text-ink-2">{t('auth.enterCode', { phone: fmtPhone(`998${digits}`) })}</p>
-            <div className="mt-5 flex justify-between gap-3">
+            <div className="mt-5 flex justify-between gap-2 xs:gap-3">
               {code.map((c, i) => (
                 <input key={i} ref={(el) => { inputs.current[i] = el }} inputMode="numeric" maxLength={4} value={c} disabled={busy}
                   onChange={(e) => onDigit(i, e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Backspace' && !code[i] && i > 0) inputs.current[i - 1]?.focus() }}
-                  className="h-16 w-full rounded-[var(--radius)] border border-line bg-surface text-center font-mono text-[26px] font-semibold tabular shadow-1 transition-all focus:border-brand focus:ring-4 focus:ring-brand/12 focus:outline-none" />
+                  className="h-14 min-w-0 w-full rounded-[var(--radius)] border border-line bg-surface text-center font-mono text-[22px] font-semibold xs:h-16 xs:text-[26px] tabular shadow-1 transition-all focus:border-brand focus:ring-4 focus:ring-brand/12 focus:outline-none" />
               ))}
             </div>
             {challenge?.devCode && <p className="mt-3 text-center text-[12.5px] text-ink-3">{t('auth.devHint', { code: challenge.devCode })}</p>}
-            <div className="mt-6 flex items-center justify-between text-[13px]">
-              <button className="text-ink-3 hover:text-ink" onClick={() => setStep('phone')}>{t('auth.changePhone')}</button>
-              <button disabled={left > 0 || busy} onClick={() => void send()} className="font-medium text-brand-ink disabled:text-ink-3">{left > 0 ? t('auth.resendIn', { s: left }) : t('auth.resend')}</button>
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-2 text-[13px]">
+              <button className="min-h-[40px] text-ink-3 hover:text-ink" onClick={() => setStep('phone')}>{t('auth.changePhone')}</button>
+              <button disabled={left > 0 || busy} onClick={() => void send()} className="min-h-[40px] font-medium text-brand-ink disabled:text-ink-3">{left > 0 ? t('auth.resendIn', { s: left }) : t('auth.resend')}</button>
             </div>
           </motion.div>
         )}

@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
 import { Archive, CheckCircle2, Copy, ExternalLink, MoreHorizontal, Trash2 } from 'lucide-react'
@@ -49,7 +49,7 @@ export const TemplateCard = memo(function TemplateCard({ tpl, companyId, service
             <Badge size="sm">{tpl.scope === 'item' ? t('catalog.services.scopeItem') : t('catalog.services.scopeOrder')}</Badge>
           </div>
           <div className="mt-auto flex items-center gap-1 flex-wrap">
-            {chips.length === 0 ? <span className="text-[12px] text-ink-3">{t('catalog.services.generic')}</span> : chips.slice(0, 3).map((c) => <span key={c} className="h-6 rounded-full bg-surface-2 px-2 text-[11.5px] text-ink-2 truncate max-w-[140px] leading-6">{c}</span>)}
+            {chips.length === 0 ? <span className="text-[12px] text-ink-3">{t('catalog.services.generic')}</span> : chips.slice(0, 3).map((c) => <span key={c} className="h-6 rounded-full bg-surface-2 px-2 text-[11.5px] text-ink-2 truncate max-w-full sm:max-w-[140px] leading-6">{c}</span>)}
             {chips.length > 3 && <span className="text-[11.5px] text-ink-3">+{chips.length - 3}</span>}
           </div>
         </div>
@@ -58,13 +58,23 @@ export const TemplateCard = memo(function TemplateCard({ tpl, companyId, service
   )
 })
 
-/** Live mini thumbnail rendered via DocumentRenderer at small scale. */
+/** Live mini thumbnail rendered via DocumentRenderer — scaled to the card width (phones → big monitors). */
 function Thumb({ tpl, companyId }: { tpl: ResultTemplate; companyId: string }) {
   const { ctx, assets, loading } = useTemplateSchema(tpl.serviceTypeIds[0], companyId)
   const size = paperSize(tpl.doc)
-  const scale = 240 / size.w
+  const ref = useRef<HTMLDivElement>(null)
+  const [width, setWidth] = useState(240)
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const ro = new ResizeObserver(([e]) => { if (e) setWidth(e.contentRect.width) })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  const scale = Math.max(0.12, (width - 32) / size.w)
+  const h = Math.round(Math.max(120, Math.min(260, width * 0.62)))
   return (
-    <div className="relative h-44 overflow-hidden bg-surface-2/70 border-b border-line">
+    <div ref={ref} className="relative overflow-hidden bg-surface-2/70 border-b border-line" style={{ height: h }}>
       {loading ? <Skeleton className="absolute inset-4 rounded-md" /> : (
         <div className="absolute left-1/2 top-4 -translate-x-1/2 shadow-2 ring-1 ring-black/5 transition-transform duration-300 group-hover:-translate-y-1 pointer-events-none">
           <DocumentRenderer doc={tpl.doc} ctx={ctx} assets={assets} scale={scale} />

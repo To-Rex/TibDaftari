@@ -18,12 +18,12 @@ export function Card({ className, padded = true, interactive, ...rest }: HTMLAtt
 }
 export function CardHeader({ title, description, actions, className }: { title: ReactNode; description?: ReactNode; actions?: ReactNode; className?: string }) {
   return (
-    <div className={cn('flex items-start justify-between gap-4 mb-4', className)}>
-      <div className="min-w-0">
+    <div className={cn('flex flex-wrap items-start justify-between gap-x-4 gap-y-2 mb-4', className)}>
+      <div className="min-w-0 flex-1 basis-[200px]">
         <h3 className="text-[15px] font-semibold text-ink leading-6">{title}</h3>
         {description && <p className="text-[13px] text-ink-3 mt-0.5">{description}</p>}
       </div>
-      {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
+      {actions && <div className="flex flex-wrap items-center gap-2 max-w-full">{actions}</div>}
     </div>
   )
 }

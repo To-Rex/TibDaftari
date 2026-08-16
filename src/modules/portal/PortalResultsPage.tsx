@@ -58,7 +58,7 @@ export default function PortalResultsPage() {
   ]
 
   return (
-    <Page width="medium">
+    <Page width="medium" className="2xl:max-w-6xl 3xl:max-w-[1600px]">
       <PageHeader title={t('portal.results.title')} description={t('portal.results.subtitle')} />
       {!q.isPending && (data?.documents.length ?? 0) > 0 && (
         <FilterChips items={chips} value={filter} onChange={setFilter} className="mb-5" />
@@ -86,11 +86,11 @@ export default function PortalResultsPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.25 }}
-            className="flex flex-col gap-6"
+            className="flex flex-col gap-6 3xl:grid 3xl:grid-cols-2 3xl:items-start"
           >
             {groups.map((g) => (
               <section key={g.key}>
-                <div className="mb-2 flex items-baseline justify-between px-1">
+                <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3 px-1">
                   <h2 className="text-ink-3 text-[13px] font-semibold tracking-[0.06em] uppercase first-letter:uppercase">
                     {g.label}
                   </h2>

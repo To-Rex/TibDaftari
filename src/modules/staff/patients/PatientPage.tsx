@@ -44,11 +44,11 @@ export default function PatientPage() {
     <Page>
       <PageHeader breadcrumbs={[{ label: t('nav.patients'), to: routes.app.patients }, { label: p?.fullName ?? '…' }]}
         title={p ? (
-          <span className="flex items-center gap-4">
-            <Avatar name={p.fullName} size="xl" />
+          <span className="flex items-center gap-4 max-xs:flex-col max-xs:items-start max-xs:gap-3">
+            <Avatar name={p.fullName} size="xl" className="max-xs:size-12 max-xs:text-[16px]" />
             <span className="min-w-0">
               <span className="flex flex-wrap items-center gap-2">
-                <span>{p.fullName}</span>
+                <span className="break-words">{p.fullName}</span>
                 {p.tags.map((tg) => <Badge key={tg} size="sm" tone={tg === 'VIP' ? 'accent' : 'brand'}>{tg}</Badge>)}
                 {p.discountPercent > 0 && <Badge size="sm" tone="ok"><Percent className="size-3" />{p.discountPercent}%</Badge>}
               </span>
@@ -69,7 +69,7 @@ export default function PatientPage() {
       />
 
       {p && (
-        <motion.div variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }} initial="hidden" animate="show" className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+        <motion.div variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }} initial="hidden" animate="show" className="mb-6 grid gap-3 grid-cols-[repeat(auto-fit,minmax(min(100%,150px),1fr))]">
           {[
             { label: t('staff.reception.statOrders'), value: p.stats.orders },
             { label: t('staff.reception.statSpent'), value: fmtMoney(p.stats.totalSpent, false), sub: t('common.sum') },
@@ -79,14 +79,14 @@ export default function PatientPage() {
             <motion.div key={s.label} variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0 } }}>
               <Card className="p-4">
                 <div className="text-[11.5px] font-medium uppercase tracking-[0.06em] text-ink-3">{s.label}</div>
-                <div className="mt-1 text-[20px] font-semibold tabular tracking-tight">{s.value}{s.sub && <span className="ml-1 text-[12px] font-normal text-ink-3">{s.sub}</span>}</div>
+                <div className="mt-1 text-[20px] font-semibold tabular tracking-tight break-words">{s.value}{s.sub && <span className="ml-1 text-[12px] font-normal text-ink-3">{s.sub}</span>}</div>
               </Card>
             </motion.div>
           ))}
         </motion.div>
       )}
 
-      <Tabs<Tab> value={tab} onChange={setTab} className="mb-4" items={[
+      <Tabs<Tab> value={tab} onChange={setTab} className="mb-4 -mx-3 px-3 xs:-mx-4 xs:px-4 sm:mx-0 sm:px-0" items={[
         { value: 'orders', label: t('staff.patients.tabOrders'), icon: <Receipt />, count: orders.data?.total },
         { value: 'results', label: t('staff.patients.tabResults'), icon: <FileText />, count: docs.data?.length },
         { value: 'info', label: t('staff.patients.tabInfo'), icon: <Info /> },

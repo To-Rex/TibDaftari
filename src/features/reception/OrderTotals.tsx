@@ -38,15 +38,15 @@ export function OrderTotals({ order, payments, onPay, onPrint, onCancel, canPay,
         </div>
         <div className="mt-5 flex flex-col gap-2">
           {payable && <Button size="lg" block leftIcon={<Wallet className="size-4" />} onClick={onPay}>{t('staff.reception.pay')}</Button>}
-          <div className="grid grid-cols-2 gap-2">
+          <div className={cn('grid gap-2', cancellable && 'xs:grid-cols-2')}>
             <Button variant="secondary" leftIcon={<Printer className="size-4" />} onClick={onPrint} disabled={order.itemCount === 0}>{t('common.print')}</Button>
-            {cancellable ? <Button variant="ghost" className="text-danger hover:bg-danger-soft hover:text-danger" leftIcon={<XCircle className="size-4" />} onClick={onCancel}>{t('staff.reception.cancelOrder')}</Button> : <span />}
+            {cancellable && <Button variant="ghost" className="text-danger hover:bg-danger-soft hover:text-danger" leftIcon={<XCircle className="size-4" />} onClick={onCancel}>{t('staff.reception.cancelOrder')}</Button>}
           </div>
         </div>
       </Card>
 
       <Card padded={false}>
-        <div className="px-5 py-3.5 flex items-center justify-between"><h3 className="text-[14px] font-semibold">{t('staff.reception.payments')}</h3><span className="text-[12px] text-ink-3 tabular">{payments.length}</span></div>
+        <div className="px-4 sm:px-5 py-3.5 flex items-center justify-between"><h3 className="text-[14px] font-semibold">{t('staff.reception.payments')}</h3><span className="text-[12px] text-ink-3 tabular">{payments.length}</span></div>
         <div className="border-t border-line">
           {payments.length === 0 ? (
             <p className="px-5 py-6 text-center text-[13px] text-ink-3">{t('staff.reception.noPayments')}</p>
@@ -55,7 +55,7 @@ export function OrderTotals({ order, payments, onPay, onPrint, onCancel, canPay,
               {[...payments].reverse().map((p, i) => {
                 const Icon = METHOD_ICON[p.method]
                 return (
-                  <motion.li key={p.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }} className="flex items-center gap-3 px-5 py-3">
+                  <motion.li key={p.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }} className="flex items-center gap-3 px-4 sm:px-5 py-3">
                     <span className="grid size-8 place-items-center rounded-lg bg-ok-soft text-ok"><Icon className="size-4" /></span>
                     <span className="min-w-0 flex-1">
                       <span className="block text-[13.5px] font-medium">{paymentMethodLabel(p.method)}</span>

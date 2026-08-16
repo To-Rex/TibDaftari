@@ -49,7 +49,7 @@ export function ComposeDrawer({ open, onClose, companyId, canBroadcast }: { open
         <Field label={t('clinical.messages.recipients')} required hint={t('clinical.messages.recipientsHint')} error={tooMany ? t('clinical.messages.noBroadcastPerm') : rec.invalid.length ? t('clinical.messages.invalidPhones', { list: rec.invalid.slice(0, 3).join(', ') }) : undefined}>
           {(id) => (
             <div className="relative">
-              <Textarea id={id} value={to} onChange={(e) => setTo(e.target.value)} placeholder="+998 90 123-45-67, 998911234567" rows={3} className="min-h-[76px] pr-24 font-mono text-[13px]" />
+              <Textarea id={id} value={to} onChange={(e) => setTo(e.target.value)} placeholder="+998 90 123-45-67, 998911234567" rows={3} className="min-h-[76px] pr-16 font-mono text-[13px]" />
               <span className={cn('pointer-events-none absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11.5px] font-medium tabular', rec.valid.length ? 'bg-brand-soft text-brand-ink' : 'bg-surface-2 text-ink-3')}>
                 <Users className="size-3" />{rec.valid.length}
               </span>
@@ -72,7 +72,7 @@ export function ComposeDrawer({ open, onClose, companyId, canBroadcast }: { open
           {(id) => (
             <div>
               <Textarea id={id} value={text} onChange={(e) => setText(e.target.value)} rows={5} placeholder={t('clinical.messages.textPlaceholder')} className="min-h-[120px]" />
-              <div className="mt-1.5 flex items-center justify-between text-[12px] tabular text-ink-3">
+              <div className="mt-1.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[12px] tabular text-ink-3">
                 <span className={cn('inline-flex items-center gap-1.5', info.encoding === 'ucs2' && 'text-warn')}>
                   <span className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-ink-2">{info.encoding === 'gsm' ? 'GSM-7' : 'UCS-2'}</span>
                   {t('clinical.messages.perSegment', { n: info.perSegment })}
@@ -88,7 +88,7 @@ export function ComposeDrawer({ open, onClose, companyId, canBroadcast }: { open
           <AnimatePresence initial={false}>
             {schedule && (
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                <Input type="datetime-local" value={when} min={new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)} onChange={(e) => setWhen(e.target.value)} className="mt-3 w-64 tabular" />
+                <Input type="datetime-local" value={when} min={new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)} onChange={(e) => setWhen(e.target.value)} className="mt-3 w-64 max-w-full tabular" />
               </motion.div>
             )}
           </AnimatePresence>

@@ -122,7 +122,7 @@ export function EmployeeForm({ companyId, employee, onSaved, onCancel, formId = 
                 const on = field.value.includes(b.id)
                 return (
                   <button type="button" key={b.id} onClick={() => field.onChange(on ? field.value.filter((x) => x !== b.id) : [...field.value, b.id])}
-                    className={cn('h-9 rounded-full border px-3.5 text-[13px] font-medium transition-all', on ? 'border-brand bg-brand-soft text-brand-ink' : 'border-line bg-surface text-ink-2 hover:border-line-strong')}>
+                    className={cn('min-h-10 rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-all text-left break-words max-w-full', on ? 'border-brand bg-brand-soft text-brand-ink' : 'border-line bg-surface text-ink-2 hover:border-line-strong')}>
                     <span className="font-mono text-[11.5px] mr-1.5 opacity-70">{b.code}</span>{b.name}
                   </button>
                 )
@@ -162,7 +162,7 @@ export function EmployeeForm({ companyId, employee, onSaved, onCancel, formId = 
       )} />
 
       {onCancel && (
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="flex flex-wrap justify-end gap-2 pt-2">
           <Button type="button" variant="ghost" onClick={onCancel}>{t('common.cancel')}</Button>
           <Button type="submit" loading={isSubmitting || save.isPending}>{t('common.save')}</Button>
         </div>

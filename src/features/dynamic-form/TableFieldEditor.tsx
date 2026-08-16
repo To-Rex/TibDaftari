@@ -41,7 +41,9 @@ export function TableFieldEditor({ field, value, onChange, patient, readOnly, er
   const removeRow = (ri: number) => onChange(rows.filter((_, i) => i !== ri) as FieldValue)
 
   const focusCell = useCallback((ri: number, ci: number) => {
-    const td = wrapRef.current?.querySelector<HTMLElement>(`[data-cell="${ri}:${ci}"]`)
+    // the same cell exists twice (table ≥ md, card list < md) — focus the one that is actually rendered
+    const cells = Array.from(wrapRef.current?.querySelectorAll<HTMLElement>(`[data-cell="${ri}:${ci}"]`) ?? [])
+    const td = cells.find((c) => c.offsetParent !== null) ?? cells[0]
     const el = td?.querySelector<HTMLElement>('input:not([type=checkbox]),select,textarea,button,[tabindex]')
     el?.focus()
     if (el instanceof HTMLInputElement) el.select()
@@ -61,8 +63,44 @@ export function TableFieldEditor({ field, value, onChange, patient, readOnly, er
 
   return (
     <div className={cn('overflow-hidden rounded-[var(--radius)] border bg-surface', error ? 'border-danger/60' : 'border-line')}>
-      <div ref={wrapRef} onKeyDown={onKeyDown} className="max-h-[560px] overflow-auto">
-        <table className="w-full border-collapse text-[13px]">
+      <div ref={wrapRef} onKeyDown={onKeyDown} className="max-h-[70dvh] overflow-auto md:max-h-[560px]">
+        {/* ---------- cards (< md): one card per row, columns as labelled inputs ---------- */}
+        <div className="flex flex-col divide-y divide-line/70 md:hidden">
+          {rows.map((row, ri) => (
+            <div key={ri} className="relative p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <span className="grid size-6 place-items-center rounded-full bg-surface-2 text-[11.5px] font-medium tabular text-ink-3">{ri + 1}</span>
+                {canRemove && (
+                  <IconButton label={t('common.delete')} size="sm" onClick={() => removeRow(ri)} className="text-ink-3 hover:text-danger">
+                    <Trash2 />
+                  </IconButton>
+                )}
+              </div>
+              <div className="grid gap-2.5 xs:grid-cols-2 [&>*]:min-w-0">
+                {cols.map((c, ci) => {
+                  const v = row[c.key] as FieldValue | undefined
+                  const flag = fieldValueFlag(c, v, patient)
+                  const abnormal = flag === 'abnormal' || flag === 'critical'
+                  const missing = !readOnly && c.required && isEmptyValue(v) && !!error
+                  const span = c.type === 'longtext' || c.type === 'multiselect' || (c.type === 'select' && c.options.length > 1 && c.options.length <= 3)
+                  return (
+                    <div key={c.key} data-cell={`${ri}:${ci}`} className={cn('rounded-lg', span && 'xs:col-span-2', abnormal && (flag === 'critical' ? 'bg-danger-soft/50' : 'bg-warn-soft/40'), missing && 'bg-danger-soft/30', (abnormal || missing) && 'p-1.5 -m-1.5')}>
+                      <div className="mb-1 truncate text-[11.5px] uppercase tracking-[0.05em] text-ink-3">
+                        {c.label}{c.required && !readOnly && <span className="ml-0.5 text-danger">*</span>}
+                        {c.unit && <span className="ml-1 normal-case tracking-normal text-ink-3/80">({c.unit})</span>}
+                      </div>
+                      <FieldRenderer field={c} value={v} onChange={(nv) => setCell(ri, c.key, nv)} patient={patient} readOnly={readOnly} compact />
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+          {rows.length === 0 && <div className="px-4 py-6 text-center text-[13px] text-ink-3">{t('clinical.form.noRows')}</div>}
+        </div>
+
+        {/* ---------- grid (≥ md) ---------- */}
+        <table className="w-full border-collapse text-[13px] max-md:hidden">
           <thead className="sticky top-0 z-10">
             <tr className="bg-surface-2/90 text-left text-[11.5px] uppercase tracking-[0.05em] text-ink-3 backdrop-blur">
               <th className="w-10 px-3 py-2 text-center font-medium">№</th>

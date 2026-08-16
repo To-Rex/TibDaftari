@@ -46,29 +46,29 @@ export default function EmployeesPage() {
   const reset = <T,>(set: (v: T) => void) => (v: T) => { set(v); setPage(1) }
 
   const columns: Column<Employee>[] = [
-    { key: 'fullName', header: t('admin.employees.colEmployee'), sortable: true, cell: (e) => (
+    { key: 'fullName', header: t('admin.employees.colEmployee'), sortable: true, card: 'title', cell: (e) => (
       <div className="flex items-center gap-3 min-w-0">
         <Avatar name={e.fullName} hue={e.avatarHue} size="sm" />
         <div className="min-w-0">
-          <p className="font-medium truncate flex items-center gap-1.5">{e.fullName}{e.id === employeeId && <Badge tone="brand" size="sm">{t('admin.employees.self')}</Badge>}</p>
+          <p className="font-medium flex flex-wrap items-center gap-1.5 min-w-0"><span className="truncate">{e.fullName}</span>{e.id === employeeId && <Badge tone="brand" size="sm">{t('admin.employees.self')}</Badge>}</p>
           <p className="text-[12px] text-ink-3 font-mono truncate">@{e.login}</p>
         </div>
       </div>
     ) },
-    { key: 'role', header: t('admin.employees.colRole'), cell: (e) => {
+    { key: 'role', header: t('admin.employees.colRole'), card: 'meta', cell: (e) => {
       const r = roleById.get(e.roleId)
       return <Badge tone={r?.key === 'superadmin' ? 'accent' : r?.isSystem ? 'brand' : 'neutral'}>{r?.name ?? '—'}</Badge>
     } },
-    { key: 'branches', header: t('admin.employees.colBranches'), hideBelow: 'md', cell: (e) => (
+    { key: 'branches', header: t('admin.employees.colBranches'), hideBelow: 'md', card: 'field', cell: (e) => (
       <div className="flex flex-wrap gap-1">
         {e.branchIds.length ? e.branchIds.map((id) => <span key={id} className="inline-flex h-6 items-center rounded-full bg-surface-2 px-2 text-[12px] font-medium text-ink-2"><span className="font-mono mr-1 text-ink-3">{branchById.get(id)?.code}</span>{branchById.get(id)?.name ?? id}</span>) : <span className="text-[12.5px] text-warn">{t('admin.employees.noBranch')}</span>}
       </div>
     ) },
     { key: 'categories', header: t('admin.employees.colCategories'), hideBelow: 'lg', cell: (e) => (
-      <span className="text-[13px] text-ink-2 line-clamp-1">{e.categoryIds.length ? e.categoryIds.map((id) => catById.get(id)?.name ?? id).join(', ') : <span className="text-ink-3">{t('admin.employees.allCategories')}</span>}</span>
+      <span className="text-[13px] text-ink-2 line-clamp-1 max-md:line-clamp-none max-md:break-words">{e.categoryIds.length ? e.categoryIds.map((id) => catById.get(id)?.name ?? id).join(', ') : <span className="text-ink-3">{t('admin.employees.allCategories')}</span>}</span>
     ) },
-    { key: 'status', header: t('admin.employees.colStatus'), cell: (e) => <Badge tone={e.status === 'active' ? 'ok' : 'neutral'} dot>{e.status === 'active' ? t('common.active') : t('common.inactive')}</Badge> },
-    { key: 'lastLoginAt', header: t('admin.employees.colLastLogin'), hideBelow: 'sm', sortable: true, cell: (e) => <span className="text-[13px] text-ink-3 tabular">{e.lastLoginAt ? fmtRelative(e.lastLoginAt) : t('admin.employees.never')}</span> },
+    { key: 'status', header: t('admin.employees.colStatus'), card: 'field', cell: (e) => <Badge tone={e.status === 'active' ? 'ok' : 'neutral'} dot>{e.status === 'active' ? t('common.active') : t('common.inactive')}</Badge> },
+    { key: 'lastLoginAt', header: t('admin.employees.colLastLogin'), hideBelow: 'sm', sortable: true, card: 'field', cell: (e) => <span className="text-[13px] text-ink-3 tabular">{e.lastLoginAt ? fmtRelative(e.lastLoginAt) : t('admin.employees.never')}</span> },
   ]
 
   const data = employees.data
@@ -80,15 +80,15 @@ export default function EmployeesPage() {
 
       <Toolbar>
         <SearchInput value={search} onChange={reset(setSearch)} placeholder={t('admin.employees.searchPlaceholder')} className="w-full sm:w-72" />
-        <Select value={roleId} onChange={(e) => reset(setRoleId)(e.target.value)} className="w-auto min-w-40">
+        <Select value={roleId} onChange={(e) => reset(setRoleId)(e.target.value)} className="w-full sm:w-auto sm:min-w-40">
           <option value="">{t('admin.employees.allRoles')}</option>
           {(roles.data ?? []).map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
         </Select>
-        <Select value={branchId} onChange={(e) => reset(setBranchId)(e.target.value)} className="w-auto min-w-40">
+        <Select value={branchId} onChange={(e) => reset(setBranchId)(e.target.value)} className="w-full sm:w-auto sm:min-w-40">
           <option value="">{t('admin.employees.allBranches')}</option>
           {(branches.data ?? []).map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
         </Select>
-        <Select value={status} onChange={(e) => reset(setStatus)(e.target.value)} className="w-auto min-w-36">
+        <Select value={status} onChange={(e) => reset(setStatus)(e.target.value)} className="w-full sm:w-auto sm:min-w-36">
           <option value="">{t('admin.employees.allStatuses')}</option>
           <option value="active">{t('common.active')}</option>
           <option value="inactive">{t('common.inactive')}</option>

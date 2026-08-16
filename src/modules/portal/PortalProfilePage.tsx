@@ -30,9 +30,9 @@ import {
 function InfoRow({ label, value }: { label: ReactNode; value?: ReactNode }) {
   if (!value) return null
   return (
-    <div className="flex items-baseline justify-between gap-4 py-2.5 text-[13.5px]">
+    <div className="flex items-baseline justify-between gap-3 py-2.5 text-[13.5px]">
       <dt className="text-ink-3 shrink-0">{label}</dt>
-      <dd className="text-ink min-w-0 truncate text-right font-medium">{value}</dd>
+      <dd className="text-ink min-w-0 break-words text-right font-medium">{value}</dd>
     </div>
   )
 }
@@ -66,7 +66,7 @@ export default function PortalProfilePage() {
   }
 
   return (
-    <Page width="narrow">
+    <Page width="narrow" className="2xl:max-w-4xl">
       <PageHeader title={t('portal.profile.title')} description={t('portal.profile.subtitle')} />
       <MotionList
         variants={stagger}
@@ -75,10 +75,10 @@ export default function PortalProfilePage() {
         className="flex flex-col gap-4"
       >
         <MotionItem variants={fadeUp}>
-          <Card className="flex items-center gap-4">
+          <Card className="flex items-center gap-4 max-xs:flex-col max-xs:items-start max-xs:gap-3">
             <Avatar name={session.fullName} size="xl" />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[18px] font-semibold tracking-tight">
+              <p className="break-words text-[18px] font-semibold tracking-tight">
                 {session.fullName}
               </p>
               <p className="tabular text-ink-3 mt-0.5 text-[13.5px]">{fmtPhone(session.phone)}</p>
@@ -108,7 +108,7 @@ export default function PortalProfilePage() {
         </MotionItem>
 
         <MotionItem variants={fadeUp}>
-          <Card padded={false} className="px-5 py-3">
+          <Card padded={false} className="px-4 py-3 xs:px-5">
             <h2 className="text-ink-3 py-2 text-[13px] font-semibold tracking-[0.06em] uppercase">
               {t('portal.profile.info')}
             </h2>
@@ -145,15 +145,15 @@ export default function PortalProfilePage() {
         </MotionItem>
 
         <MotionItem variants={fadeUp}>
-          <Card padded={false} className="px-5 py-3">
+          <Card padded={false} className="px-4 py-3 xs:px-5">
             <h2 className="text-ink-3 py-2 text-[13px] font-semibold tracking-[0.06em] uppercase">
               {t('portal.profile.login')}
             </h2>
-            <div className="flex items-center gap-3 py-2">
+            <div className="flex flex-wrap items-center gap-3 py-2">
               <span className="bg-brand-soft text-brand-ink grid size-10 place-items-center rounded-xl">
                 <Smartphone className="size-[18px]" />
               </span>
-              <div className="min-w-0 flex-1">
+              <div className="min-w-[150px] flex-1">
                 <p className="text-[14px] font-medium">{t('portal.profile.loginPhone')}</p>
                 <p className="tabular text-ink-3 text-[12.5px]">{fmtPhone(session.phone)}</p>
               </div>
@@ -165,7 +165,7 @@ export default function PortalProfilePage() {
         </MotionItem>
 
         <MotionItem variants={fadeUp}>
-          <Card padded={false} className="px-5 py-3">
+          <Card padded={false} className="px-4 py-3 xs:px-5">
             <h2 className="text-ink-3 py-2 text-[13px] font-semibold tracking-[0.06em] uppercase">
               {t('portal.profile.preferences')}
             </h2>
@@ -176,6 +176,7 @@ export default function PortalProfilePage() {
                 </span>
                 <Segmented
                   size="sm"
+                  className="max-w-full"
                   value={cur}
                   onChange={(v) => void i18n.changeLanguage(v)}
                   items={LOCALES.map((l) => ({ value: l.code, label: l.short }))}
@@ -187,6 +188,7 @@ export default function PortalProfilePage() {
                 </span>
                 <Segmented<ThemeMode>
                   size="sm"
+                  className="max-w-full max-xs:w-full max-xs:[&>button]:flex-1 max-xs:[&>button]:justify-center max-xs:[&>button]:px-1.5"
                   value={mode}
                   onChange={(v) => setMode(v)}
                   items={[

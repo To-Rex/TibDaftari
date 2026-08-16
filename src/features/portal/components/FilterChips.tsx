@@ -17,7 +17,7 @@ export function FilterChips<T extends string>({
   return (
     <div
       className={cn(
-        'no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0',
+        'no-scrollbar -mx-3 flex gap-2 overflow-x-auto px-3 xs:-mx-4 xs:px-4 sm:mx-0 sm:flex-wrap sm:px-0',
         className,
       )}
       role="radiogroup"
@@ -31,7 +31,7 @@ export function FilterChips<T extends string>({
             aria-checked={active}
             onClick={() => onChange(it.value)}
             className={cn(
-              'relative inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-medium transition-colors',
+              'relative inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-medium transition-colors',
               active
                 ? 'text-brand-ink border-transparent'
                 : 'border-line bg-surface text-ink-2 hover:border-line-strong hover:text-ink',

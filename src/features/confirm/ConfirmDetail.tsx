@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
-import { BadgeCheck, Check, FileText, ListChecks, Undo2 } from 'lucide-react'
+import { ArrowLeft, BadgeCheck, Check, FileText, ListChecks, Undo2 } from 'lucide-react'
 import type { Id } from '@/domain'
 import { DynamicForm } from '@/features/dynamic-form'
 import { usePermissions } from '@/features/auth/store'
@@ -18,9 +18,11 @@ import { useTemplate } from './queries'
 import { useQuery } from '@tanstack/react-query'
 import { repos } from '@/data'
 
-export function ConfirmDetail({ companyId, itemId, onApprove, onReject, approving, justApproved }: {
+export function ConfirmDetail({ companyId, itemId, onBack, onApprove, onReject, approving, justApproved }: {
   companyId: Id
   itemId: Id | null
+  /** < lg: return to the list (detail is shown full-width instead of the list) */
+  onBack?: () => void
   onApprove: (templateId: string | undefined) => void
   onReject: () => void
   approving?: boolean
@@ -62,6 +64,11 @@ export function ConfirmDetail({ companyId, itemId, onApprove, onReject, approvin
         )}
       </AnimatePresence>
 
+      {onBack && (
+        <button type="button" onClick={onBack} className="inline-flex h-9 w-fit items-center gap-1.5 rounded-lg text-[13px] text-ink-3 transition-colors hover:text-ink lg:hidden">
+          <ArrowLeft className="size-4" />{t('clinical.lab.backToList')}
+        </button>
+      )}
       <Card className="flex flex-col gap-4">
         {loading || !it ? (
           <div className="space-y-3"><Skeleton className="h-6 w-64" /><Skeleton className="h-4 w-48" /><Skeleton className="h-4 w-80" /></div>
@@ -79,7 +86,7 @@ export function ConfirmDetail({ companyId, itemId, onApprove, onReject, approvin
                   {it.technicianName && <span>{t('clinical.confirm.technician')}: <span className="text-ink-2">{it.technicianName}</span></span>}
                 </div>
               </div>
-              <div className="flex shrink-0 items-center gap-2">
+              <div className={cn('flex shrink-0 flex-wrap items-center gap-2', canApprove && 'max-lg:hidden')}>
                 {canApprove ? (
                   <>
                     <Button variant="secondary" leftIcon={<Undo2 className="size-4" />} onClick={onReject}>{t('clinical.confirm.reject')}</Button>
@@ -99,15 +106,23 @@ export function ConfirmDetail({ companyId, itemId, onApprove, onReject, approvin
         )}
       </Card>
 
+      {/* < lg: approve / reject live in a sticky bottom bar */}
+      {it && canApprove && (
+        <div className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-2 border-t border-line bg-bg-elevated/95 px-3 pb-[max(env(safe-area-inset-bottom),0.625rem)] pt-2.5 backdrop-blur lg:hidden">
+          <Button variant="secondary" leftIcon={<Undo2 className="size-4" />} onClick={onReject} className="min-w-0 flex-1 max-xs:px-2"><span className="truncate">{t('clinical.confirm.reject')}</span></Button>
+          <Button leftIcon={<BadgeCheck className="size-4" />} loading={approving} onClick={() => onApprove(templateId)} className="min-w-0 flex-1 max-xs:px-2"><span className="truncate">{t('clinical.confirm.approve')}</span></Button>
+        </div>
+      )}
+
       {it && (
         <Card padded={false} className="overflow-hidden">
-          <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
+          <div className="flex items-center justify-between border-b border-line px-3 py-2.5 sm:px-4">
             <Segmented<'values' | 'document'> size="sm" value={view} onChange={setView} items={[
               { value: 'document', label: t('clinical.confirm.document'), icon: <FileText /> },
               { value: 'values', label: t('clinical.confirm.values'), icon: <ListChecks /> },
             ]} />
           </div>
-          <div className={cn('p-4 sm:p-5', view === 'document' && 'bg-surface-2/50')}>
+          <div className={cn('p-3 sm:p-5', view === 'document' && 'bg-surface-2/50')}>
             <AnimatePresence mode="wait" initial={false}>
               {view === 'values' ? (
                 <motion.div key="v" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>

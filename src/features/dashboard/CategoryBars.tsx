@@ -17,9 +17,9 @@ export function CategoryBars({ rows }: { rows: DashboardSummary['byCategory'] })
         const pct = total ? Math.round((r.revenue / total) * 100) : 0
         return (
           <li key={r.name} className="group">
-            <div className="mb-1.5 flex items-baseline justify-between gap-3 text-[13px]">
-              <span className="truncate font-medium">{r.name}</span>
-              <span className="shrink-0 text-ink-3 tabular">{fmtNumber(r.count)} · <span className="text-ink font-medium">{fmtMoney(r.revenue, false)}</span> <span className="opacity-70">({pct}%)</span></span>
+            <div className="mb-1.5 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 text-[13px]">
+              <span className="min-w-0 truncate font-medium">{r.name}</span>
+              <span className="ml-auto shrink-0 text-ink-3 tabular">{fmtNumber(r.count)} · <span className="text-ink font-medium">{fmtMoney(r.revenue, false)}</span> <span className="opacity-70">({pct}%)</span></span>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-surface-2">
               <motion.div className="h-full rounded-full bg-brand group-hover:bg-brand-strong transition-colors" initial={{ width: 0 }} animate={{ width: `${(r.revenue / max) * 100}%` }} transition={{ duration: 0.7, delay: 0.1 + i * 0.05, ease: [0.22, 1, 0.36, 1] }} />

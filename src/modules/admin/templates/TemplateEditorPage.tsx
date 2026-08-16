@@ -11,7 +11,7 @@ import { useLeavePrompt } from '@/features/schema-editor/useLeavePrompt'
 import { AssetPickerModal } from '@/features/template-editor/AssetPickerModal'
 import { BindingsFields, type Bindings } from '@/features/template-editor/BindingsFields'
 import { EditorCanvas } from '@/features/template-editor/EditorCanvas'
-import { EditorTopBar } from '@/features/template-editor/EditorTopBar'
+import { EditorTopBar, PreviewAsSelect } from '@/features/template-editor/EditorTopBar'
 import { LayersPanel } from '@/features/template-editor/LayersPanel'
 import { PlaceholderPalette } from '@/features/template-editor/PlaceholderPalette'
 import { PrintPortal } from '@/features/template-editor/PrintPortal'
@@ -26,7 +26,8 @@ import { routes } from '@/shared/config/routes'
 import { cn } from '@/shared/lib/cn'
 import { errorMessage } from '@/shared/lib/errors'
 import { storage } from '@/shared/lib/storage'
-import { Button, ConfirmDialog, EmptyState, Modal, Skeleton, Tabs, toast } from '@/shared/ui'
+import { useMediaQuery } from '@/shared/hooks/useMediaQuery'
+import { Button, ConfirmDialog, Drawer, EmptyState, Modal, Skeleton, Tabs, toast } from '@/shared/ui'
 
 export default function TemplateEditorPage() {
   const { t } = useTranslation()
@@ -57,6 +58,10 @@ export default function TemplateEditorPage() {
   useEffect(() => () => useEditorStore.getState().reset(), [])
 
   const [leftOpen, setLeftOpen] = useState(() => storage.get('clinic.tpl.left', true))
+  const isDesktop = useMediaQuery('(min-width: 1280px)')
+  // <xl: side panels become sheets opened from the tool strip (the app sidebar leaves too little room for 3 panes below that)
+  const [panelsSheet, setPanelsSheet] = useState(false)
+  const [propsSheet, setPropsSheet] = useState(false)
   const [leftTab, setLeftTab] = useState<'layers' | 'placeholders'>('layers')
   const [fitSignal, setFitSignal] = useState(0)
   const [assetPick, setAssetPick] = useState<null | 'new' | string>(null)
@@ -118,34 +123,61 @@ export default function TemplateEditorPage() {
         onBack={() => nav(routes.admin.templates)} onSave={() => void doSave()} onActivate={() => setActivateAsk(true)}
         onBindings={() => { setBindDraft({ ...useEditorStore.getState().meta }); setBindingsOpen(true) }} onPrint={() => setPrinting(true)} />
 
-      <div className="flex-1 min-h-0 flex">
-        {!preview && <Toolbar onPickImage={() => setAssetPick('new')} onFit={() => setFitSignal((n) => n + 1)} />}
+      {(() => {
+        const insertPlaceholder = (key: string) => { const s = useEditorStore.getState(); const isV = key.startsWith('values.'); s.addElement(isV ? createElement('field', s.doc.margin, s.doc.margin + 120, { fieldKey: key.slice(7) }) : createElement('text', s.doc.margin, s.doc.margin + 120, { text: `{${key}}` })); setPanelsSheet(false) }
+        const panelTabs = <Tabs size="sm" value={leftTab} onChange={setLeftTab} className="px-2" items={[{ value: 'layers', label: t('catalog.editor.layers'), icon: <Layers /> }, { value: 'placeholders', label: t('catalog.editor.placeholders'), icon: <Braces /> }]} />
+        const panelBody = leftTab === 'layers' ? <LayersPanel /> : <PlaceholderPalette schema={schema} onInsert={insertPlaceholder} />
+        const propsPanel = <PropertiesPanel schema={schema} assets={assets} onPickImage={() => { const id = useEditorStore.getState().selectedIds[0]; if (id) setAssetPick(id) }} />
+        const canvas = <EditorCanvas ctx={ctx} assets={assets} fitSignal={fitSignal} />
 
-        {/* left panel */}
-        <AnimatePresence initial={false}>
-          {leftOpen && !preview && (
-            <motion.aside initial={{ width: 0, opacity: 0 }} animate={{ width: 260, opacity: 1 }} exit={{ width: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="shrink-0 border-r border-line bg-surface overflow-hidden flex flex-col">
-              <div className="w-[260px] flex flex-col h-full min-h-0">
-                <Tabs size="sm" value={leftTab} onChange={setLeftTab} className="px-2" items={[{ value: 'layers', label: t('catalog.editor.layers'), icon: <Layers /> }, { value: 'placeholders', label: t('catalog.editor.placeholders'), icon: <Braces /> }]} />
-                <div className="flex-1 min-h-0">{leftTab === 'layers' ? <LayersPanel /> : <PlaceholderPalette schema={schema} onInsert={(key) => { const s = useEditorStore.getState(); const isV = key.startsWith('values.'); s.addElement(isV ? createElement('field', s.doc.margin, s.doc.margin + 120, { fieldKey: key.slice(7) }) : createElement('text', s.doc.margin, s.doc.margin + 120, { text: `{${key}}` })) }} />}</div>
-              </div>
-            </motion.aside>
-          )}
-        </AnimatePresence>
-        {!preview && (
-          <button onClick={() => setLeftOpen((o) => !o)} className={cn('self-start mt-2 -ml-px z-10 grid size-6 place-items-center rounded-r-md border border-l-0 border-line bg-surface text-ink-3 hover:text-ink')} title={t('catalog.editor.togglePanel')}>
-            {leftOpen ? <PanelLeftClose className="size-3.5" /> : <PanelLeftOpen className="size-3.5" />}
-          </button>
-        )}
+        if (!isDesktop) {
+          return (
+            <div className="flex-1 min-h-0 flex flex-col">
+              {!preview && <Toolbar onPickImage={() => setAssetPick('new')} onFit={() => setFitSignal((n) => n + 1)} onOpenPanels={() => setPanelsSheet(true)} onOpenProps={() => setPropsSheet(true)} />}
+              {canvas}
+              <Drawer open={panelsSheet && !preview} onClose={() => setPanelsSheet(false)} side="left" width="max-w-full sm:max-w-sm" title={leftTab === 'layers' ? t('catalog.editor.layers') : t('catalog.editor.placeholders')} className="[&>div:nth-child(2)]:p-0 [&>div:nth-child(2)]:flex [&>div:nth-child(2)]:flex-col">
+                <div className="px-3 pt-3"><PreviewAsSelect serviceTypes={serviceTypes.data ?? []} /></div>
+                {panelTabs}
+                <div className="flex-1 min-h-0 flex flex-col">{panelBody}</div>
+              </Drawer>
+              <Drawer open={propsSheet && !preview} onClose={() => setPropsSheet(false)} side="right" width="max-w-full sm:max-w-sm" title={t('catalog.editor.properties')} className="[&>div:nth-child(2)]:p-0">
+                {propsPanel}
+              </Drawer>
+            </div>
+          )
+        }
 
-        <EditorCanvas ctx={ctx} assets={assets} fitSignal={fitSignal} />
+        return (
+          <div className="flex-1 min-h-0 flex">
+            {!preview && <Toolbar onPickImage={() => setAssetPick('new')} onFit={() => setFitSignal((n) => n + 1)} />}
 
-        {!preview && (
-          <aside className="w-[300px] xl:w-[320px] shrink-0 border-l border-line bg-surface min-h-0 flex flex-col">
-            <PropertiesPanel schema={schema} assets={assets} onPickImage={() => { const id = useEditorStore.getState().selectedIds[0]; if (id) setAssetPick(id) }} />
-          </aside>
-        )}
-      </div>
+            {/* left panel */}
+            <AnimatePresence initial={false}>
+              {leftOpen && !preview && (
+                <motion.aside initial={{ width: 0, opacity: 0 }} animate={{ width: 260, opacity: 1 }} exit={{ width: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="shrink-0 border-r border-line bg-surface overflow-hidden flex flex-col">
+                  <div className="w-[260px] flex flex-col h-full min-h-0">
+                    {panelTabs}
+                    <div className="flex-1 min-h-0">{panelBody}</div>
+                  </div>
+                </motion.aside>
+              )}
+            </AnimatePresence>
+            {!preview && (
+              <button onClick={() => setLeftOpen((o) => !o)} className={cn('self-start mt-2 -ml-px z-10 grid size-6 place-items-center rounded-r-md border border-l-0 border-line bg-surface text-ink-3 hover:text-ink')} title={t('catalog.editor.togglePanel')}>
+                {leftOpen ? <PanelLeftClose className="size-3.5" /> : <PanelLeftOpen className="size-3.5" />}
+              </button>
+            )}
+
+            {canvas}
+
+            {!preview && (
+              <aside className="w-[300px] xl:w-[320px] shrink-0 border-l border-line bg-surface min-h-0 flex flex-col">
+                {propsPanel}
+              </aside>
+            )}
+          </div>
+        )
+      })()}
 
       <AssetPickerModal open={!!assetPick} onClose={() => setAssetPick(null)} assets={assets} companyId={companyId} onPick={pickAsset} />
 

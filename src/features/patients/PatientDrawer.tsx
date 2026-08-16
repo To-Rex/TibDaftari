@@ -77,13 +77,13 @@ export function PatientDrawer({ open, onClose, companyId, patient, onSaved, onPi
   const busy = create.isPending || update.isPending || checking
 
   return (
-    <Drawer open={open} onClose={onClose} width="max-w-2xl"
+    <Drawer open={open} onClose={onClose} width="w-full max-w-2xl"
       title={editing ? t('staff.patients.form.titleEdit') : t('staff.patients.form.titleNew')}
       description={editing ? patient?.fullName : t('staff.patients.form.subtitleNew')}
       footer={
         <>
-          <Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button>
-          <Button type="submit" form={FORM_ID} loading={busy} size="lg" className="min-w-40">
+          <Button variant="ghost" onClick={onClose} className="max-sm:px-2">{t('common.cancel')}</Button>
+          <Button type="submit" form={FORM_ID} loading={busy} size="lg" className="min-w-40 max-sm:min-w-0 max-sm:flex-1 max-sm:px-3">
             {editing ? t('common.save') : dupes.length ? t('staff.patients.form.createAnyway') : t('staff.patients.form.create')}
           </Button>
         </>
@@ -106,7 +106,7 @@ export function PatientDrawer({ open, onClose, companyId, patient, onSaved, onPi
                         <span className="block truncate text-[13.5px] font-medium">{p.fullName}</span>
                         <span className="block text-[12px] text-ink-3 tabular">{fmtPhone(p.phone)}{p.passportNumber ? ` · ${p.passportNumber}` : ''}</span>
                       </span>
-                      <span className="flex items-center gap-1 text-[12.5px] font-medium text-brand-ink opacity-0 transition-opacity group-hover:opacity-100">{t('staff.patients.form.openExisting')} <ArrowRight className="size-3.5" /></span>
+                      <span className="flex shrink-0 items-center gap-1 text-[12.5px] font-medium text-brand-ink opacity-0 transition-opacity group-hover:opacity-100 max-sm:hidden">{t('staff.patients.form.openExisting')} <ArrowRight className="size-3.5" /></span>
                     </button>
                   </li>
                 ))}

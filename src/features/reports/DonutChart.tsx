@@ -25,8 +25,8 @@ export function DonutChart({ slices, centerLabel, centerValue, format = fmtNumbe
   })
   const active = hover != null ? arcs[hover] : null
   return (
-    <div className={cn('flex items-center gap-6', className)}>
-      <div className="relative shrink-0">
+    <div className={cn('flex flex-col items-center gap-5 sm:flex-row sm:gap-6', className)}>
+      <div className="relative shrink-0 self-center">
         <svg viewBox="0 0 140 140" className="size-[150px]" role="img" aria-label={centerLabel}>
           <circle cx="70" cy="70" r={R} fill="none" stroke="var(--c-surface-2)" strokeWidth={R - r} />
           {arcs.map((a) => (
@@ -53,13 +53,13 @@ export function DonutChart({ slices, centerLabel, centerValue, format = fmtNumbe
           <span className="max-w-[80px] truncate text-[11px] text-ink-3">{active ? active.name : centerLabel}</span>
         </div>
       </div>
-      <ul className="flex min-w-0 flex-1 flex-col gap-1.5">
+      <ul className="flex w-full min-w-0 flex-1 flex-col gap-1.5">
         {arcs.map((a) => (
           <li key={a.name} onMouseEnter={() => setHover(a.i)} onMouseLeave={() => setHover(null)} className={cn('flex items-center gap-2 rounded-md px-1.5 py-0.5 text-[12.5px] transition-colors', hover === a.i && 'bg-surface-2')}>
             <span className="size-2.5 shrink-0 rounded-sm" style={{ background: a.color }} />
             <span className="min-w-0 flex-1 truncate text-ink-2">{a.name}</span>
             <span className="tabular text-ink-3">{Math.round(a.frac * 100)}%</span>
-            <span className="w-24 text-right tabular font-medium text-ink">{format(a.value)}</span>
+            <span className="min-w-16 shrink-0 text-right tabular font-medium text-ink sm:min-w-24">{format(a.value)}</span>
           </li>
         ))}
       </ul>

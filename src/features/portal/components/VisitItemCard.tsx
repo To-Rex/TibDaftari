@@ -18,16 +18,16 @@ export function VisitItemCard({ item }: { item: OrderItem }) {
   return (
     <motion.article
       variants={fadeUp}
-      className={cn('px-4 py-4 sm:px-5', cancelled && 'opacity-60')}
+      className={cn('px-3 py-4 xs:px-4 sm:px-5', cancelled && 'opacity-60')}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 flex-1 basis-[180px]">
           <p className="text-ink-3 text-[12px] font-medium tracking-[0.05em] uppercase">
             {item.categoryName}
           </p>
-          <h3 className="text-ink mt-0.5 text-[15px] font-semibold">{item.serviceName}</h3>
+          <h3 className="text-ink mt-0.5 break-words text-[15px] font-semibold">{item.serviceName}</h3>
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-1">
+        <div className="flex shrink-0 flex-col items-end gap-1 max-xs:flex-row max-xs:items-center max-xs:gap-2">
           <Badge tone={itemTone[item.status]} dot={!cancelled}>
             {t(`portal.status.${item.status}`)}
           </Badge>

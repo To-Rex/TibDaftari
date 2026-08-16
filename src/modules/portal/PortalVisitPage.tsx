@@ -34,14 +34,14 @@ function MoneyRow({
   return (
     <div
       className={cn(
-        'flex items-baseline justify-between gap-4 py-2 text-[13.5px]',
+        'flex items-baseline justify-between gap-3 py-2 text-[13.5px]',
         strong && 'text-[15px] font-semibold',
       )}
     >
-      <span className={strong ? 'text-ink' : 'text-ink-3'}>{label}</span>
+      <span className={cn('min-w-0 break-words', strong ? 'text-ink' : 'text-ink-3')}>{label}</span>
       <span
         className={cn(
-          'tabular',
+          'tabular shrink-0 whitespace-nowrap',
           tone === 'ok' && 'text-ok',
           tone === 'warn' && 'text-warn',
           tone === 'danger' && 'text-danger',
@@ -91,7 +91,7 @@ export default function PortalVisitPage() {
   const remaining = order ? Math.max(0, order.total - order.paidAmount) : 0
 
   return (
-    <Page width="medium">
+    <Page width="medium" className="2xl:max-w-6xl 3xl:max-w-[1600px]">
       <Link
         to={routes.portal.visits}
         className="text-ink-3 hover:text-ink mb-3 inline-flex items-center gap-1.5 text-[13px] font-medium transition-colors"
@@ -109,7 +109,7 @@ export default function PortalVisitPage() {
               <span className="tabular">{fmtDateTime(order.createdAt)}</span>
             </p>
             <div className="mt-0.5 flex flex-wrap items-center gap-3">
-              <h1 className="tabular text-[22px] font-semibold tracking-tight sm:text-[26px]">
+              <h1 className="tabular text-[20px] font-semibold tracking-tight xs:text-[22px] sm:text-[26px]">
                 {t('portal.visit.title', { number: order.number })}
               </h1>
               <Badge tone={paymentTone[order.payment]} dot>
@@ -128,9 +128,9 @@ export default function PortalVisitPage() {
         )}
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
-        <Card padded={false} className="overflow-hidden">
-          <div className="border-line flex items-baseline justify-between border-b px-4 py-3 sm:px-5">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start 2xl:grid-cols-[minmax(0,1fr)_340px] 2xl:gap-8">
+        <Card padded={false} className="min-w-0 overflow-hidden">
+          <div className="border-line flex flex-wrap items-baseline justify-between gap-x-3 border-b px-3 py-3 xs:px-4 sm:px-5">
             <h2 className="text-[14px] font-semibold">{t('portal.visit.items')}</h2>
             {order && (
               <span className="tabular text-ink-3 text-[12.5px]">
@@ -154,8 +154,8 @@ export default function PortalVisitPage() {
           )}
         </Card>
 
-        <aside className="flex flex-col gap-4 lg:sticky lg:top-20">
-          <Card padded={false} className="px-5 py-3">
+        <aside className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-20">
+          <Card padded={false} className="px-4 py-3 xs:px-5">
             <h2 className="text-ink-3 py-2 text-[13px] font-semibold tracking-[0.06em] uppercase">
               {t('portal.visit.payment')}
             </h2>

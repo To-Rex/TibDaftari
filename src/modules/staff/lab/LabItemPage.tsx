@@ -93,7 +93,7 @@ export default function LabItemPage() {
   }
 
   return (
-    <Page width="full">
+    <Page width="full" className={cn(!approved && (canWrite || canSubmit) && 'max-lg:pb-28')}>
       {/* Header */}
       <div className="mb-5 flex flex-col gap-3">
         <Link to={routes.app.lab} className="inline-flex w-fit items-center gap-1.5 text-[13px] text-ink-3 transition-colors hover:text-ink"><ArrowLeft className="size-3.5" />{t('clinical.lab.backToList')}</Link>
@@ -129,7 +129,7 @@ export default function LabItemPage() {
             <ShieldCheck className="size-4 shrink-0 text-ok" />
             <span className="font-semibold text-ok">{t('clinical.lab.approvedBanner')}</span>
             <span className="text-ink-2">{it.doctorName}</span>
-            <span className="ml-auto flex items-center gap-2">
+            <span className="ml-auto flex flex-wrap items-center gap-2">
               {it.documentId && <Button size="sm" variant="secondary" leftIcon={<FileText className="size-4" />} onClick={() => setDocOpen(true)}>{t('clinical.lab.viewDocument')}</Button>}
               <Link to={routes.app.order(it.orderId)}><Button size="sm" variant="ghost">{t('clinical.lab.openOrder')}</Button></Link>
             </span>
@@ -137,9 +137,9 @@ export default function LabItemPage() {
         )}
       </AnimatePresence>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_340px]">
         {/* Form */}
-        <Card className={cn('p-5 sm:p-6', readOnly && 'bg-surface/70')}>
+        <Card className={cn('min-w-0 p-4 sm:p-6', readOnly && 'bg-surface/70')}>
           {loading || !it ? (
             <div className="space-y-5">{Array.from({ length: 6 }).map((_, i) => <div key={i} className="grid gap-2 sm:grid-cols-[220px_1fr]"><Skeleton className="h-4 w-40" /><Skeleton className="h-10 w-full max-w-md" /></div>)}</div>
           ) : !schema.data ? (
@@ -150,7 +150,7 @@ export default function LabItemPage() {
         </Card>
 
         {/* Side panel */}
-        <div className="lg:sticky lg:top-20 lg:self-start">
+        <div className="min-w-0 lg:sticky lg:top-20 lg:self-start">
           <Card className="flex flex-col gap-5">
             <PatientCard patient={patient.data} loading={patient.isLoading || order.isLoading} />
             <Field label={t('clinical.lab.labNote')} optionalText={t('common.optional')}>
@@ -160,7 +160,7 @@ export default function LabItemPage() {
               <div className="text-[12.5px] text-ink-3">{t('clinical.lab.enteredBy', { name: it.technicianName ?? '—' })}</div>
             )}
             {!approved && (
-              <div className="flex flex-col gap-2 border-t border-line pt-4">
+              <div className="flex flex-col gap-2 border-t border-line pt-4 max-lg:hidden">
                 {canWrite && (
                   <Button onClick={() => void doSave()} loading={save.isPending} disabled={!dirty} leftIcon={<Save className="size-4" />} block>
                     <span className="flex-1 text-left">{t('common.save')}</span>
@@ -178,12 +178,34 @@ export default function LabItemPage() {
                 </AnimatePresence>
               </div>
             )}
+            {!approved && !canWrite && !canSubmit && <p className="text-[12.5px] text-ink-3 lg:hidden">{t('common.noAccess')}</p>}
             {approved && it && (
               <div className="flex items-center gap-2 rounded-lg bg-ok-soft/60 px-3 py-2 text-[13px] text-ok"><FileCheck2 className="size-4" />{t('clinical.lab.readOnlyApproved')}</div>
             )}
           </Card>
         </div>
       </div>
+
+      {/* Mobile / tablet: sticky bottom action bar (side panel is stacked below the form on < lg) */}
+      {it && !approved && (canWrite || canSubmit) && (
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg-elevated/95 px-3 pb-[max(env(safe-area-inset-bottom),0.625rem)] pt-2.5 backdrop-blur lg:hidden">
+          <div className="flex items-center gap-2">
+            {canWrite && (
+              <Button onClick={() => void doSave()} loading={save.isPending} disabled={!dirty} leftIcon={<Save className="size-4" />} className="min-w-0 flex-1 max-xs:px-2">
+                <span className="truncate">{t('common.save')}</span>
+              </Button>
+            )}
+            {canSubmit && (
+              <Button variant={submitted ? 'secondary' : 'soft'} onClick={() => void doSubmit()} loading={submit.isPending} disabled={!it || (it.status === 'pending' && !dirty)} leftIcon={submitted ? <Undo2 className="size-4" /> : <Send className="size-4" />} className="min-w-0 flex-1 max-xs:px-2">
+                <span className="truncate">{submitted ? t('clinical.lab.unsubmit') : t('clinical.lab.submit')}</span>
+              </Button>
+            )}
+          </div>
+          <AnimatePresence>
+            {dirty && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="mt-1.5 text-center text-[12px] text-warn">{t('common.unsaved')}</motion.p>}
+          </AnimatePresence>
+        </div>
+      )}
 
       <ConfirmDialog open={guard.blocked} onClose={guard.reset} onConfirm={guard.proceed} title={t('common.unsaved')} description={t('common.leaveConfirm')} confirmText={t('clinical.lab.leave')} cancelText={t('clinical.lab.stay')} danger />
 

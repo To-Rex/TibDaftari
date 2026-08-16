@@ -96,9 +96,9 @@ export default function SmsSettingsPage() {
         <div className="flex flex-col gap-5">
           <form id="sms-form" onSubmit={submit}>
             <Card>
-              <CardHeader title={t('admin.sms.providerTitle')} description={t('admin.sms.providerText')}
+              <CardHeader className="max-xs:flex-col max-xs:items-start" title={t('admin.sms.providerTitle')} description={t('admin.sms.providerText')}
                 actions={<Badge tone={connected ? 'ok' : 'neutral'} dot>{connected ? t('admin.sms.connected') : t('admin.sms.notConnected')}</Badge>} />
-              <fieldset disabled={!canWrite} className="flex flex-col gap-5">
+              <fieldset disabled={!canWrite} className="flex flex-col gap-5 min-w-0">
                 <Field label={t('admin.sms.provider')}>
                   {() => (
                     <Controller control={control} name="provider" render={({ field }) => (
@@ -106,13 +106,13 @@ export default function SmsSettingsPage() {
                         {(['none', 'xabarchi'] as const).map((p) => {
                           const on = field.value === p
                           return (
-                            <button key={p} type="button" onClick={() => field.onChange(p)} className={`flex items-center gap-3 rounded-[var(--radius)] border p-3.5 text-left transition-all ${on ? 'border-brand bg-brand-soft/60 shadow-1' : 'border-line bg-surface hover:border-line-strong'}`}>
-                              <span className={`grid size-9 place-items-center rounded-lg [&>svg]:size-4 ${on ? 'bg-brand text-white' : 'bg-surface-2 text-ink-3'}`}>{p === 'none' ? <ShieldCheck /> : <Send />}</span>
-                              <span className="flex flex-col">
-                                <span className="text-[14px] font-medium">{p === 'none' ? t('admin.sms.providerNone') : t('admin.sms.providerXabarchi')}</span>
-                                {p === 'xabarchi' && <span className="text-[12px] text-ink-3 font-mono">api/v1/public/messages</span>}
+                            <button key={p} type="button" onClick={() => field.onChange(p)} className={`flex items-center gap-3 rounded-[var(--radius)] border p-3.5 text-left transition-all min-w-0 ${on ? 'border-brand bg-brand-soft/60 shadow-1' : 'border-line bg-surface hover:border-line-strong'}`}>
+                              <span className={`grid size-9 shrink-0 place-items-center rounded-lg [&>svg]:size-4 ${on ? 'bg-brand text-white' : 'bg-surface-2 text-ink-3'}`}>{p === 'none' ? <ShieldCheck /> : <Send />}</span>
+                              <span className="flex flex-col min-w-0">
+                                <span className="text-[14px] font-medium break-words">{p === 'none' ? t('admin.sms.providerNone') : t('admin.sms.providerXabarchi')}</span>
+                                {p === 'xabarchi' && <span className="text-[12px] text-ink-3 font-mono break-all">api/v1/public/messages</span>}
                               </span>
-                              {on && <Check className="ml-auto size-4 text-brand" />}
+                              {on && <Check className="ml-auto size-4 shrink-0 text-brand" />}
                             </button>
                           )
                         })}
@@ -130,13 +130,13 @@ export default function SmsSettingsPage() {
                       )}
                     </Field>
                     <Field label={t('admin.sms.priority')} hint={t('admin.sms.priorityHint')}>
-                      {() => <Controller control={control} name="defaultPriority" render={({ field }) => <Segmented items={priorities} value={field.value} onChange={field.onChange} />} />}
+                      {() => <Controller control={control} name="defaultPriority" render={({ field }) => <Segmented items={priorities} value={field.value} onChange={field.onChange} className="max-w-full flex-wrap" />} />}
                     </Field>
                     <Field label={t('admin.sms.senderNote')} hint={t('admin.sms.senderNoteHint')} optionalText={t('common.optional')}>
                       {(id) => <Input id={id} maxLength={40} {...register('senderNote')} />}
                     </Field>
                     <div className="flex justify-end">
-                      <Button type="button" variant="secondary" leftIcon={<PlugZap className="size-4" />} loading={testing} onClick={testConnection}>{t('admin.sms.test')}</Button>
+                      <Button type="button" variant="secondary" className="max-sm:w-full" leftIcon={<PlugZap className="size-4" />} loading={testing} onClick={testConnection}>{t('admin.sms.test')}</Button>
                     </div>
                   </>
                 )}
@@ -147,9 +147,11 @@ export default function SmsSettingsPage() {
           <SmsTemplatesCard companyId={companyId} companyName={c.name} readOnly={!canWrite} />
 
           <Card>
-            <CardHeader title={t('admin.sms.docsTitle')} description={t('admin.sms.docsText')}
+            <CardHeader className="max-xs:flex-col max-xs:items-start" title={t('admin.sms.docsTitle')} description={t('admin.sms.docsText')}
               actions={<Button size="sm" variant="ghost" leftIcon={copied ? <Check className="size-3.5 text-ok" /> : <Copy className="size-3.5" />} onClick={copyCurl}>{t('admin.sms.copyCurl')}</Button>} />
-            <Textarea readOnly value={CURL} rows={4} className="font-mono text-[12.5px] leading-relaxed bg-surface-2/60 resize-none" />
+            <div className="w-full min-w-0 overflow-x-auto rounded-[var(--radius-sm)] border border-line bg-surface-2/60">
+              <Textarea readOnly wrap="off" value={CURL} rows={4} className="font-mono text-[12.5px] leading-relaxed bg-transparent border-0 resize-none whitespace-pre overflow-x-auto min-w-[34rem]" />
+            </div>
           </Card>
         </div>
       )}

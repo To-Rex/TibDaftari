@@ -39,8 +39,8 @@ export function PayModal({ open, onClose, order, employeeId, onPaid }: { open: b
     <Modal open={open} onClose={onClose} size="sm" title={t('staff.reception.payTitle')} description={`${order.number} · ${t('staff.reception.remaining')}: ${fmtMoney(remaining)}`}
       footer={!done && (
         <>
-          <Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button>
-          <Button size="lg" onClick={() => void submit()} loading={pay.isPending} disabled={!valid} className="min-w-44">{t('staff.reception.payConfirm', { amount: fmtMoney(amount) })}</Button>
+          <Button variant="ghost" onClick={onClose} className="max-sm:px-2">{t('common.cancel')}</Button>
+          <Button size="lg" onClick={() => void submit()} loading={pay.isPending} disabled={!valid} className="min-w-44 max-sm:min-w-0 max-sm:flex-1 max-sm:px-3">{t('staff.reception.payConfirm', { amount: fmtMoney(amount) })}</Button>
         </>
       )}
     >

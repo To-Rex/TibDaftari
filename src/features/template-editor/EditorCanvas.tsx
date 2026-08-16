@@ -4,6 +4,7 @@ import type { RenderContext, TemplateAsset } from '@/domain'
 import { paperSize } from '@/domain'
 import { DocumentRenderer } from '@/features/documents/DocumentRenderer'
 import { cn } from '@/shared/lib/cn'
+import { useMediaQuery } from '@/shared/hooks/useMediaQuery'
 import { ElementLayer } from './ElementLayer'
 import { createElement } from './elementDefaults'
 import { useCanvasInteraction } from './useCanvasInteraction'
@@ -23,15 +24,35 @@ export function EditorCanvas({ ctx, assets, fitSignal, className }: { ctx: Rende
   const pageRef = useRef<HTMLDivElement>(null)
   const { marquee, onElementPointerDown, onHandlePointerDown, onPagePointerDown, toDoc } = useCanvasInteraction(pageRef)
   const size = paperSize(doc)
+  const lg = useMediaQuery('(min-width: 1280px)')
+  const pad = lg ? 64 : 24
 
-  // fit to container width
+  // fit: ≥xl → whole page visible; <xl → fit to width (the page then scrolls vertically)
   useEffect(() => {
     if (!fitSignal) return
     const c = scrollRef.current
     if (!c) return
-    const z = Math.min((c.clientWidth - 64) / size.w, (c.clientHeight - 64) / size.h)
+    const small = window.matchMedia('(max-width: 1279px)').matches
+    const pad = small ? 24 : 64
+    const z = small ? (c.clientWidth - pad) / size.w : Math.min((c.clientWidth - pad) / size.w, (c.clientHeight - pad) / size.h)
     setZoom(Math.max(0.25, Math.min(2, z)))
   }, [fitSignal, size.w, size.h, setZoom])
+
+  // re-fit when the container is resized on small screens (orientation change, sheet open/close)
+  useEffect(() => {
+    const c = scrollRef.current
+    if (!c || typeof ResizeObserver === 'undefined') return
+    let last = c.clientWidth
+    const ro = new ResizeObserver(() => {
+      if (!window.matchMedia('(max-width: 1279px)').matches) return
+      const w = c.clientWidth
+      if (Math.abs(w - last) < 8) return
+      last = w
+      setZoom(Math.max(0.25, Math.min(2, (w - 24) / size.w)))
+    })
+    ro.observe(c)
+    return () => ro.disconnect()
+  }, [size.w, setZoom])
 
   // ctrl+wheel zoom
   useEffect(() => {
@@ -51,10 +72,10 @@ export function EditorCanvas({ ctx, assets, fitSignal, className }: { ctx: Rende
 
   return (
     <div ref={scrollRef} className={cn('relative flex-1 min-w-0 overflow-auto bg-surface-2/60 dark:bg-bg [background-image:radial-gradient(rgb(0_0_0/0.06)_1px,transparent_1px)] [background-size:16px_16px] dark:[background-image:radial-gradient(rgb(255_255_255/0.05)_1px,transparent_1px)]', className)}>
-      <div className="min-w-full min-h-full grid place-items-center p-8" style={{ width: size.w * zoom + 64, height: size.h * zoom + 64 }}>
+      <div className="min-w-full min-h-full grid place-items-center p-3 xl:p-8" style={{ width: size.w * zoom + pad, height: size.h * zoom + pad }}>
         <div
           ref={pageRef}
-          className="relative shadow-3 ring-1 ring-black/10 select-none"
+          className="relative shadow-3 ring-1 ring-black/10 select-none touch-pan-y"
           style={{ width: size.w * zoom, height: size.h * zoom, background: doc.background }}
           onPointerDown={onPagePointerDown}
           onDragOver={(e) => { if (e.dataTransfer.types.includes(PLACEHOLDER_MIME)) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy' } }}

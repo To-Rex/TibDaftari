@@ -16,7 +16,7 @@ const iconTone: Record<Tone, string> = {
 }
 
 const cls =
-  'group flex h-full items-start gap-3.5 rounded-[var(--radius-lg)] border border-line bg-surface p-4 shadow-1 transition-[box-shadow,transform,border-color] duration-250 ease-[var(--ease-out)]'
+  'group flex h-full min-w-0 items-start gap-3.5 rounded-[var(--radius-lg)] border border-line bg-surface p-4 shadow-1 2xl:p-5 transition-[box-shadow,transform,border-color] duration-250 ease-[var(--ease-out)]'
 
 export function SummaryCard({
   icon,
@@ -45,7 +45,7 @@ export function SummaryCard({
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-ink-3 text-[12.5px] font-medium">{label}</p>
-        <p className="tabular mt-0.5 truncate text-[20px] leading-tight font-semibold tracking-tight">
+        <p className="tabular mt-0.5 truncate text-[20px] leading-tight font-semibold tracking-tight 2xl:text-[24px]">
           {value}
         </p>
         {sub && <p className="text-ink-3 mt-1 truncate text-[12.5px]">{sub}</p>}

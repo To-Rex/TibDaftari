@@ -58,7 +58,7 @@ export default function ReportsPage() {
       />
       <div className="mb-5"><DateRangeFilter value={range} onChange={setRange} allowCustom /></div>
 
-      <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="mb-5 grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3 max-xs:grid-cols-1">
         {stat(t('clinical.reports.kpiOrders'), d && fmtNumber(totals.orders), <Receipt />, 'brand', t('clinical.reports.inRange'))}
         {finance && stat(t('clinical.reports.kpiRevenue'), d && fmtMoney(totals.revenue, false), <Wallet />, 'ok', t('common.sum'))}
         {stat(t('clinical.reports.kpiToday'), d && fmtNumber(d.todayOrders), <Receipt />, 'neutral', finance && d ? fmtMoney(d.todayRevenue) : undefined)}
@@ -67,8 +67,9 @@ export default function ReportsPage() {
         {stat(t('clinical.reports.kpiPatients'), d && fmtNumber(d.patients), <Users />, 'neutral', d ? t('clinical.reports.smsQueued', { n: d.smsQueued }) : undefined)}
       </div>
 
-      <Card className="mb-5">
+      <Card className="mb-5 min-w-0">
         <CardHeader
+          className="max-sm:flex-col max-sm:items-stretch max-sm:gap-3"
           title={t('clinical.reports.trend')}
           description={t('clinical.reports.trendHint')}
           actions={finance && <Segmented<'revenue' | 'orders'> size="sm" value={trendMetric} onChange={setTrendMetric} items={[{ value: 'revenue', label: t('clinical.reports.revenue') }, { value: 'orders', label: t('clinical.reports.orders') }]} />}
@@ -78,12 +79,16 @@ export default function ReportsPage() {
         )}
       </Card>
 
-      <Card padded={false}>
-        <div className="flex flex-col gap-3 border-b border-line px-5 pt-3 sm:flex-row sm:items-center sm:justify-between">
-          <Tabs<BreakdownBy> size="sm" className="border-b-0" value={by} onChange={setBy} items={BYS.map((b) => ({ value: b, label: t(`clinical.reports.by_${b}`) }))} />
-          {finance && <Segmented<'revenue' | 'count'> size="sm" className="mb-2 sm:mb-0" value={metric} onChange={setMetric} items={[{ value: 'revenue', label: t('clinical.reports.revenue') }, { value: 'count', label: t('clinical.reports.count') }]} />}
+      <Card padded={false} className="min-w-0 overflow-hidden">
+        <div className="flex flex-col gap-3 border-b border-line px-3 pt-3 sm:px-5 md:flex-row md:items-center md:justify-between">
+          <Tabs<BreakdownBy> size="sm" className="min-w-0 border-b-0" value={by} onChange={setBy} items={BYS.map((b) => ({ value: b, label: t(`clinical.reports.by_${b}`) }))} />
+          {finance && (
+            <div className="min-w-0 max-w-full overflow-x-auto no-scrollbar mb-2 md:mb-0">
+              <Segmented<'revenue' | 'count'> size="sm" value={metric} onChange={setMetric} items={[{ value: 'revenue', label: t('clinical.reports.revenue') }, { value: 'count', label: t('clinical.reports.count') }]} />
+            </div>
+          )}
         </div>
-        <div className="p-5">
+        <div className="p-3 sm:p-5">
           <BreakdownTable rows={bd.data} loading={bd.isLoading} metric={metric} showRevenue={finance} />
         </div>
       </Card>

@@ -101,7 +101,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
 /* ---------- Checkbox / Switch ---------- */
 export function Checkbox({ label, className, ...rest }: InputHTMLAttributes<HTMLInputElement> & { label?: ReactNode }) {
   return (
-    <label className={cn('inline-flex items-center gap-2.5 cursor-pointer select-none text-[14px]', rest.disabled && 'opacity-50 cursor-not-allowed', className)}>
+    <label className={cn('relative inline-flex items-center gap-2.5 cursor-pointer select-none text-[14px]', rest.disabled && 'opacity-50 cursor-not-allowed', className)}>
       <input type="checkbox" className="peer sr-only" {...rest} />
       <span className="grid size-[18px] place-items-center rounded-[5px] border border-line-strong bg-surface transition-all peer-checked:border-brand peer-checked:bg-brand peer-focus-visible:ring-4 peer-focus-visible:ring-brand/20 [&>svg]:scale-0 [&>svg]:transition-transform peer-checked:[&>svg]:scale-100">
         <svg viewBox="0 0 12 12" className="size-3 text-white" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2.5 6.5l2.5 2.5 4.5-5" /></svg>
@@ -114,7 +114,7 @@ export function Checkbox({ label, className, ...rest }: InputHTMLAttributes<HTML
 export function Switch({ checked, onChange, label, description, disabled, size = 'md' }: { checked: boolean; onChange: (v: boolean) => void; label?: ReactNode; description?: ReactNode; disabled?: boolean; size?: 'sm' | 'md' }) {
   const dims = size === 'sm' ? 'w-8 h-[18px] after:size-3.5 after:translate-x-[2px] peer-checked:after:translate-x-[16px]' : 'w-10 h-[22px] after:size-[18px] after:translate-x-[2px] peer-checked:after:translate-x-[20px]'
   return (
-    <label className={cn('flex items-start gap-3 cursor-pointer select-none', disabled && 'opacity-50 cursor-not-allowed')}>
+    <label className={cn('relative flex items-start gap-3 cursor-pointer select-none', disabled && 'opacity-50 cursor-not-allowed')}>
       <input type="checkbox" className="peer sr-only" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
       <span className={cn('relative shrink-0 rounded-full bg-line-strong transition-colors duration-200 peer-checked:bg-brand peer-focus-visible:ring-4 peer-focus-visible:ring-brand/20 after:absolute after:top-1/2 after:-translate-y-1/2 after:rounded-full after:bg-white after:shadow-[0_1px_2px_rgb(0_0_0/0.25)] after:transition-transform after:duration-200 after:ease-[var(--ease-spring)]', dims)} />
       {(label || description) && (

@@ -43,13 +43,13 @@ export default function StaffLoginPage() {
   return (
     <AuthLayout
       aside={
-        <div className="rounded-[var(--radius-lg)] border border-dashed border-line-strong p-6">
+        <div className="rounded-[var(--radius-lg)] border border-dashed border-line-strong p-4 xs:p-5 sm:p-6">
           <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-3">{t('auth.demoAccounts')}</p>
           <p className="mt-1 text-[13px] text-ink-3">{t('auth.demoPassword')}</p>
-          <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+          <ul className="mt-4 grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-2 2xl:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
             {DEMO.map((d) => (
               <li key={d.login}>
-                <button type="button" onClick={() => { setValue('login', d.login); setValue('password', '123456') }} className="flex w-full items-center justify-between rounded-xl border border-line bg-surface px-3.5 py-2.5 text-left transition-colors hover:border-brand hover:bg-brand-soft/40">
+                <button type="button" onClick={() => { setValue('login', d.login); setValue('password', '123456') }} className="flex min-h-[44px] w-full flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-xl border border-line bg-surface px-3.5 py-2.5 text-left transition-colors hover:border-brand hover:bg-brand-soft/40">
                   <span className="font-mono text-[13px]">{d.login}</span>
                   <Badge size="sm">{d.role}</Badge>
                 </button>

@@ -14,18 +14,18 @@ export function PresetRowsEditor({ field, onChange }: { field: TableField; onCha
   return (
     <div className="rounded-[var(--radius)] border border-line overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-[12.5px]">
+        <table className="w-full min-w-max text-[12.5px]">
           <thead><tr className="bg-surface-2/70 text-[11px] uppercase tracking-[0.05em] text-ink-3">
-            <th className="px-2 py-1.5 text-left w-8">#</th>
+            <th className="px-2 py-1.5 text-left w-8 sticky left-0 bg-surface-2/95 backdrop-blur">#</th>
             {cols.map((c) => <th key={c.key} className="px-2 py-1.5 text-left font-medium whitespace-nowrap">{c.label}</th>)}
             <th className="w-8" />
           </tr></thead>
           <tbody className="divide-y divide-line">
             {rows.map((r, i) => (
               <tr key={i}>
-                <td className="px-2 text-ink-3 tabular">{i + 1}</td>
+                <td className="px-2 text-ink-3 tabular sticky left-0 bg-surface">{i + 1}</td>
                 {cols.map((c) => (
-                  <td key={c.key} className="px-1 py-1 min-w-[120px]">
+                  <td key={c.key} className="px-1 py-1 min-w-[140px] max-w-[260px]">
                     {c.type === 'select' ? (
                       <Select value={String(r[c.key] ?? '')} onChange={(e) => setCell(i, c.key, e.target.value)} className="h-8 text-[12.5px] px-2 pr-6">
                         <option value="">—</option>{c.options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}

@@ -77,23 +77,27 @@ export default function LabPage() {
       </div>
 
       <Toolbar
+        className="md:flex-wrap"
         actions={<DateRangeFilter value={range} onChange={setRange} size="sm" />}
       >
         <SearchInput value={search} onChange={setSearch} placeholder={t('clinical.lab.searchPlaceholder')} className="h-9 w-full sm:w-72" />
-        <Segmented<StatusFilter>
-          size="sm"
-          value={status}
-          onChange={setStatus}
-          items={STATUS_FILTERS.map((s) => ({
-            value: s,
-            label: (
-              <span className="flex items-center gap-1.5">
-                {s === 'all' ? t('common.all') : t(`clinical.status.${s}`)}
-                {counts[s] != null && <span className={cn('rounded-full px-1.5 text-[11px] tabular', status === s ? 'bg-brand-soft text-brand-ink' : 'bg-surface-3/70 text-ink-3')}>{counts[s]}</span>}
-              </span>
-            ),
-          }))}
-        />
+        <div className="min-w-0 max-w-full overflow-x-auto no-scrollbar">
+          <Segmented<StatusFilter>
+            size="sm"
+            value={status}
+            onChange={setStatus}
+            className="shrink-0"
+            items={STATUS_FILTERS.map((s) => ({
+              value: s,
+              label: (
+                <span className="flex items-center gap-1.5">
+                  {s === 'all' ? t('common.all') : t(`clinical.status.${s}`)}
+                  {counts[s] != null && <span className={cn('rounded-full px-1.5 text-[11px] tabular', status === s ? 'bg-brand-soft text-brand-ink' : 'bg-surface-3/70 text-ink-3')}>{counts[s]}</span>}
+                </span>
+              ),
+            }))}
+          />
+        </div>
       </Toolbar>
 
       <Card padded={false} className="overflow-hidden">
@@ -105,7 +109,7 @@ export default function LabPage() {
           emptyHint={restrictedHint}
         />
         {data && data.total > 0 && (
-          <div className="border-t border-line px-4 py-3">
+          <div className="overflow-x-auto no-scrollbar border-t border-line px-3 py-3 sm:px-4">
             <Pagination page={data.page} totalPages={data.totalPages} total={data.total} pageSize={data.pageSize} onPage={setPage} onPageSize={setPageSize} labels={{ perPage: t('common.perPage'), of: t('common.of'), rows: t('common.rows') }} />
           </div>
         )}

@@ -23,13 +23,13 @@ export function QuickActions({ pendingLab, pendingApproval }: { pendingLab?: num
   const actions = all.filter((a) => can(a.perm))
   if (!actions.length) return null
   return (
-    <motion.div variants={stagger} initial="hidden" animate="show" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <motion.div variants={stagger} initial="hidden" animate="show" className="grid gap-3 grid-cols-[repeat(auto-fit,minmax(min(100%,250px),1fr))]">
       {actions.map((a) => (
         <motion.div key={a.key} variants={fadeUp}>
           <Link to={a.to} className="group flex items-center gap-3 rounded-[var(--radius-lg)] border border-line bg-surface p-4 shadow-1 transition-[transform,box-shadow,border-color] duration-250 ease-[var(--ease-out)] hover:-translate-y-0.5 hover:border-line-strong hover:shadow-2">
             <span className={cn('grid size-11 shrink-0 place-items-center rounded-xl [&>svg]:size-5', a.tone)}>{a.icon}</span>
             <span className="min-w-0 flex-1">
-              <span className="flex items-center gap-2 text-[14px] font-semibold">{a.label}{!!a.badge && <span className="rounded-full bg-accent/15 px-1.5 h-5 min-w-5 grid place-items-center text-[11px] font-semibold text-accent tabular">{a.badge}</span>}</span>
+              <span className="flex flex-wrap items-center gap-2 text-[14px] font-semibold break-words">{a.label}{!!a.badge && <span className="rounded-full bg-accent/15 px-1.5 h-5 min-w-5 grid place-items-center text-[11px] font-semibold text-accent tabular">{a.badge}</span>}</span>
               <span className="block truncate text-[12.5px] text-ink-3">{a.hint}</span>
             </span>
             <ArrowRight className="size-4 text-ink-3 transition-transform group-hover:translate-x-0.5" />

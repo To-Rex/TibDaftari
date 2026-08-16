@@ -76,19 +76,19 @@ export default function AdminDashboardPage() {
       <Card className="mb-6 relative overflow-hidden">
         <div aria-hidden className="pointer-events-none absolute -right-20 -top-24 size-72 rounded-full bg-brand/8 blur-3xl" />
         {c ? (
-          <div className="flex flex-col sm:flex-row sm:items-center gap-5">
-            <Avatar name={c.name} src={c.logoUrl} size="xl" className="rounded-2xl" />
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
+            <Avatar name={c.name} src={c.logoUrl} size="xl" className="rounded-2xl shrink-0" />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-[20px] font-semibold tracking-tight truncate">{c.name}</h2>
+                <h2 className="text-[20px] font-semibold tracking-tight break-words min-w-0">{c.name}</h2>
                 <Badge tone={c.isActive ? 'ok' : 'neutral'} dot>{c.isActive ? t('common.active') : t('common.inactive')}</Badge>
               </div>
               {c.legalName && <p className="text-[13.5px] text-ink-3 mt-0.5">{c.legalName}</p>}
-              <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[13px] text-ink-2">
-                {c.address && <span>{c.address}</span>}
+              <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[13px] text-ink-2 min-w-0">
+                {c.address && <span className="break-words min-w-0">{c.address}</span>}
                 {c.phone && <span className="tabular">{c.phone}</span>}
                 <span className="text-ink-3">{t('admin.dashboard.since')}: {fmtDate(c.createdAt)}</span>
-                <span className="font-mono text-ink-3">{t('admin.dashboard.companyId')}: {c.id}</span>
+                <span className="font-mono text-ink-3 break-all">{t('admin.dashboard.companyId')}: {c.id}</span>
               </div>
             </div>
             <Link to={routes.admin.company} className="inline-flex items-center gap-1.5 text-[13.5px] font-medium text-brand-ink hover:underline underline-offset-4 shrink-0">
@@ -101,7 +101,7 @@ export default function AdminDashboardPage() {
       </Card>
 
       {/* Stats */}
-      <MotionList variants={stagger} initial="hidden" animate="show" className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4 mb-6">
+      <MotionList variants={stagger} initial="hidden" animate="show" className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,150px),1fr))] gap-3 sm:gap-4 mb-6">
         {[
           { label: t('admin.dashboard.branches'), value: o?.branches.length, sub: o && t('admin.dashboard.ofTotal', { active: o.branches.filter((b) => b.isActive).length, total: o.branches.length }), icon: <GitBranch />, tone: 'brand' as const },
           { label: t('admin.dashboard.employees'), value: o?.employees.length, sub: o && t('admin.dashboard.ofTotal', { active: activeEmp, total: o.employees.length }), icon: <UserCog />, tone: 'info' as const },
@@ -114,11 +114,11 @@ export default function AdminDashboardPage() {
         ))}
       </MotionList>
 
-      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] 3xl:grid-cols-[1.2fr_0.8fr]">
         <div className="flex flex-col gap-6">
           {/* Health */}
           <Card>
-            <CardHeader title={t('admin.dashboard.health')} description={t('admin.dashboard.healthSub')}
+            <CardHeader className="max-xs:flex-col max-xs:items-start" title={t('admin.dashboard.health')} description={t('admin.dashboard.healthSub')}
               actions={checks.length ? <Badge tone={done === checks.length ? 'ok' : 'warn'}>{t('admin.dashboard.healthScore', { done, total: checks.length })}</Badge> : null} />
             {checks.length ? (
               <>
@@ -127,10 +127,10 @@ export default function AdminDashboardPage() {
                 </div>
                 <MotionList variants={stagger} initial="hidden" animate="show" className="flex flex-col divide-y divide-line/70">
                   {checks.map((ch) => (
-                    <MotionItem key={ch.key} variants={fadeUp} className="flex items-center gap-3 py-3">
+                    <MotionItem key={ch.key} variants={fadeUp} className="flex items-center gap-3 py-3 min-w-0">
                       {ch.ok ? <CheckCircle2 className="size-5 text-ok shrink-0" /> : <CircleAlert className="size-5 text-warn shrink-0" />}
                       <div className="min-w-0 flex-1">
-                        <p className={cn('text-[14px] leading-5', ch.ok ? 'text-ink' : 'text-ink font-medium')}>{ch.label}</p>
+                        <p className={cn('text-[14px] leading-5 break-words', ch.ok ? 'text-ink' : 'text-ink font-medium')}>{ch.label}</p>
                         {!ch.ok && <p className="text-[12.5px] text-ink-3">{ch.fail}</p>}
                       </div>
                       {!ch.ok && <Link to={ch.to} className="text-[13px] font-medium text-brand-ink hover:underline underline-offset-4 shrink-0">{t('admin.dashboard.fix')}</Link>}
@@ -146,13 +146,13 @@ export default function AdminDashboardPage() {
           {/* Quick links */}
           <div>
             <h3 className="mb-3 text-[12.5px] font-semibold uppercase tracking-[0.06em] text-ink-3">{t('admin.dashboard.quickLinks')}</h3>
-            <MotionList variants={stagger} initial="hidden" animate="show" className="grid gap-3 sm:grid-cols-2">
+            <MotionList variants={stagger} initial="hidden" animate="show" className="grid gap-3 grid-cols-[repeat(auto-fit,minmax(min(100%,240px),1fr))]">
               {links.map((l) => (
                 <MotionItem key={l.to} variants={fadeUp}>
                   <Link to={l.to} className="group flex items-center gap-3.5 rounded-[var(--radius-lg)] border border-line bg-surface p-4 shadow-1 transition-[box-shadow,transform,border-color] duration-250 hover:-translate-y-px hover:shadow-2 hover:border-line-strong">
                     <span className="grid size-10 place-items-center rounded-xl bg-brand-soft text-brand-ink [&>svg]:size-5">{l.icon}</span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-[14px] font-medium">{l.title}</span>
+                      <span className="block text-[14px] font-medium break-words">{l.title}</span>
                       <span className="block text-[12.5px] text-ink-3 truncate">{l.sub}</span>
                     </span>
                     <ArrowRight className="size-4 text-ink-3 transition-transform group-hover:translate-x-0.5" />
@@ -174,8 +174,8 @@ export default function AdminDashboardPage() {
                 <MotionItem key={n.id} variants={fadeUp} className="flex items-start gap-3 py-3">
                   <span className={cn('mt-0.5 grid size-8 place-items-center rounded-lg shrink-0 [&>svg]:size-4', n.kind === 'warning' ? 'bg-warn-soft text-warn' : n.kind === 'success' ? 'bg-ok-soft text-ok' : 'bg-info-soft text-info')}><Bell /></span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[14px] font-medium leading-5 truncate">{n.title}</p>
-                    <p className="text-[13px] text-ink-3 leading-5">{n.body}</p>
+                    <p className="text-[14px] font-medium leading-5 break-words">{n.title}</p>
+                    <p className="text-[13px] text-ink-3 leading-5 break-words">{n.body}</p>
                     <p className="text-[12px] text-ink-3 mt-1">{fmtRelative(n.createdAt)}</p>
                   </div>
                   {!n.read && <span className="mt-2 size-2 rounded-full bg-accent shrink-0" />}

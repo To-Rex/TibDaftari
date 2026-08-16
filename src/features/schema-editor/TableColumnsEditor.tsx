@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowDown, ArrowUp, Pencil, Plus, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
 import type { FieldDef, TableField } from '@/domain'
 import { Button, Drawer, IconButton, Menu } from '@/shared/ui'
 import { COLUMN_TYPES, FIELD_TYPE_ICONS, newField, slugify, uniqueKey } from './fieldDefaults'
@@ -31,11 +31,20 @@ export function TableColumnsEditor({ field, onChange }: { field: TableField; onC
           <div key={c.key} className="flex items-center gap-2 px-2 py-1.5 hover:bg-surface-2/60 cursor-pointer" onClick={() => setEditing(c.key)}>
             <span className="grid size-7 place-items-center rounded-md bg-surface-2 text-ink-2"><I className="size-3.5" /></span>
             <span className="flex-1 min-w-0"><span className="block truncate text-[13px] font-medium">{c.label}{c.required && <span className="text-danger"> *</span>}</span><span className="block truncate text-[11.5px] font-mono text-ink-3">{c.key}{c.unit ? ` · ${c.unit}` : ''}</span></span>
-            <span onClick={(e) => e.stopPropagation()} className="flex items-center">
+            <span onClick={(e) => e.stopPropagation()} className="hidden sm:flex items-center">
               <IconButton size="sm" label={t('catalog.tree.moveUp')} onClick={() => move(i, -1)} disabled={i === 0}><ArrowUp /></IconButton>
               <IconButton size="sm" label={t('catalog.tree.moveDown')} onClick={() => move(i, 1)} disabled={i === cols.length - 1}><ArrowDown /></IconButton>
               <IconButton size="sm" label={t('common.edit')} onClick={() => setEditing(c.key)}><Pencil /></IconButton>
               <IconButton size="sm" label={t('common.delete')} onClick={() => setCols(cols.filter((_, j) => j !== i))} className="text-ink-3 hover:text-danger"><Trash2 /></IconButton>
+            </span>
+            <span onClick={(e) => e.stopPropagation()} className="flex sm:hidden items-center">
+              <Menu trigger={() => <span className="grid size-9 place-items-center rounded-md text-ink-3 hover:bg-surface-3 hover:text-ink"><MoreHorizontal className="size-4" /></span>}
+                items={[
+                  { key: 'edit', label: t('common.edit'), icon: <Pencil />, onSelect: () => setEditing(c.key) },
+                  { key: 'up', label: t('catalog.tree.moveUp'), icon: <ArrowUp />, disabled: i === 0, onSelect: () => move(i, -1), separatorBefore: true },
+                  { key: 'down', label: t('catalog.tree.moveDown'), icon: <ArrowDown />, disabled: i === cols.length - 1, onSelect: () => move(i, 1) },
+                  { key: 'del', label: t('common.delete'), icon: <Trash2 />, danger: true, onSelect: () => setCols(cols.filter((_, j) => j !== i)), separatorBefore: true },
+                ]} />
             </span>
           </div>
         ) })}
@@ -46,7 +55,7 @@ export function TableColumnsEditor({ field, onChange }: { field: TableField; onC
           items={COLUMN_TYPES.map((ft) => { const I = FIELD_TYPE_ICONS[ft]; return { key: ft, label: t(`catalog.schemas.types.${ft}`), icon: <I />, onSelect: () => add(ft) } })} />
       </div>
 
-      <Drawer open={!!editingCol} onClose={() => setEditing(null)} title={t('catalog.schemas.columnEditor')} description={editingCol ? `${field.label} → ${editingCol.label}` : undefined} width="max-w-xl"
+      <Drawer open={!!editingCol} onClose={() => setEditing(null)} title={t('catalog.schemas.columnEditor')} description={editingCol ? `${field.label} → ${editingCol.label}` : undefined} width="max-w-full sm:max-w-xl"
         footer={<Button onClick={() => setEditing(null)}>{t('common.done')}</Button>}>
         {editingCol && (
           <FieldPropertyEditor

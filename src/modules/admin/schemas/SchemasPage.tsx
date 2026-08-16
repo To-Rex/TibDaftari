@@ -57,17 +57,17 @@ export default function SchemasPage() {
     <Page>
       <PageHeader title={t('catalog.schemas.title')} description={t('catalog.schemas.subtitle')}
         actions={canWrite && <Button leftIcon={<Plus className="size-4" />} onClick={createNew} loading={save.isPending}>{t('catalog.schemas.new')}</Button>} />
-      <Toolbar actions={<Segmented size="sm" value={status} onChange={setStatus} items={(['all', 'draft', 'published', 'archived'] as const).map((s) => ({ value: s, label: `${s === 'all' ? t('common.all') : t(`common.${s}`)} · ${counts[s]}` }))} />}>
-        <SearchInput value={search} onChange={setSearch} placeholder={t('catalog.schemas.searchPh')} className="md:w-72" />
+      <Toolbar actions={<Segmented size="sm" className="max-w-full overflow-x-auto no-scrollbar" value={status} onChange={setStatus} items={(['all', 'draft', 'published', 'archived'] as const).map((s) => ({ value: s, label: `${s === 'all' ? t('common.all') : t(`common.${s}`)} · ${counts[s]}` }))} />}>
+        <SearchInput value={search} onChange={setSearch} placeholder={t('catalog.schemas.searchPh')} className="w-full sm:w-72" />
       </Toolbar>
 
       {schemas.isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-44 rounded-[var(--radius-lg)]" />)}</div>
+        <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))]">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-44 rounded-[var(--radius-lg)]" />)}</div>
       ) : list.length === 0 ? (
         <EmptyState icon={<Layers />} title={t('catalog.schemas.emptyTitle')} description={search || status !== 'all' ? t('common.emptyHint') : t('catalog.schemas.emptyHint')}
           action={canWrite && !search && status === 'all' && <Button leftIcon={<Plus className="size-4" />} onClick={createNew}>{t('catalog.schemas.new')}</Button>} />
       ) : (
-        <MotionList variants={stagger} initial="hidden" animate="show" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <MotionList variants={stagger} initial="hidden" animate="show" className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))]">
           {list.map((s) => <SchemaCard key={s.id} schema={s} canWrite={canWrite} onOpen={() => nav(routes.admin.schema(s.id))} onDuplicate={() => void duplicate(s)} />)}
         </MotionList>
       )}

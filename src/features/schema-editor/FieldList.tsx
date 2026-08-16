@@ -18,7 +18,7 @@ export function FieldList({ fields, selectedKey, onSelect, onAdd, onMove, onDupl
   )
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-4 pt-4 pb-2">
+      <div className="flex items-center justify-between gap-2 flex-wrap px-3 sm:px-4 pt-4 pb-2">
         <h3 className="text-[13px] font-semibold uppercase tracking-[0.06em] text-ink-3">{t('catalog.schemas.fields')} <span className="tabular font-normal">{fields.length}</span></h3>
         {addMenu}
       </div>
@@ -59,8 +59,8 @@ const FieldRow = memo(function FieldRow({ field, index, last, selected, onSelect
       </div>
       {field.group && <Badge size="sm">{field.group}</Badge>}
       {!readOnly && (
-        <span className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
-          <Menu trigger={() => <span className="grid size-7 place-items-center rounded-md text-ink-3 hover:bg-surface-3 hover:text-ink"><MoreHorizontal className="size-4" /></span>}
+        <span className="max-lg:opacity-100 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+          <Menu trigger={() => <span className="grid size-9 lg:size-7 place-items-center rounded-md text-ink-3 hover:bg-surface-3 hover:text-ink"><MoreHorizontal className="size-4" /></span>}
             items={[
               { key: 'up', label: t('catalog.tree.moveUp'), icon: <ArrowUp />, disabled: index === 0, onSelect: () => onMove(-1) },
               { key: 'down', label: t('catalog.tree.moveDown'), icon: <ArrowDown />, disabled: last, onSelect: () => onMove(1) },

@@ -44,15 +44,15 @@ export function SmsTemplatesCard({ companyId, companyName, readOnly }: { company
 
   return (
     <Card>
-      <CardHeader title={t('admin.sms.templatesTitle')} description={t('admin.sms.templatesSub')}
+      <CardHeader className="max-sm:flex-col max-sm:items-start" title={t('admin.sms.templatesTitle')} description={t('admin.sms.templatesSub')}
         actions={!readOnly && (
-          <>
+          <div className="flex flex-wrap items-center gap-2 max-w-full">
             <Button size="sm" variant="ghost" leftIcon={<RotateCcw className="size-3.5" />} onClick={() => setDraft(defaults)}>{t('admin.sms.resetDefaults')}</Button>
             <Button size="sm" disabled={!dirty} onClick={save}>{t('common.save')}</Button>
-          </>
+          </div>
         )} />
       <div className="grid gap-5 md:grid-cols-[200px_minmax(0,1fr)]">
-        <div className="flex md:flex-col gap-1 overflow-x-auto no-scrollbar">
+        <div className="flex flex-wrap md:flex-col gap-1">
           {KINDS.map((k) => (
             <button key={k} type="button" onClick={() => setActive(k)} className={cn('flex items-center gap-2 rounded-[10px] px-3 h-10 text-[13.5px] font-medium whitespace-nowrap transition-colors text-left', active === k ? 'bg-brand-soft text-brand-ink' : 'text-ink-2 hover:bg-surface-2')}>
               <MessageSquareText className="size-4 shrink-0" />{labels[k]}
@@ -69,11 +69,11 @@ export function SmsTemplatesCard({ companyId, companyName, readOnly }: { company
             ))}
           </div>
           <div className="rounded-[var(--radius)] border border-line bg-surface-2/50 p-4">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-2">
               <span className="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-3">{t('admin.sms.preview')}</span>
               <Badge tone={seg.segments > 2 ? 'warn' : 'neutral'} size="sm">{t('admin.sms.segments', { chars: seg.chars, segments: seg.segments })}{seg.unicode ? ' · UCS-2' : ' · GSM-7'}</Badge>
             </div>
-            <div className="max-w-sm rounded-2xl rounded-tl-md bg-surface border border-line px-3.5 py-2.5 text-[14px] leading-relaxed shadow-1">{preview(draft[active]) || '…'}</div>
+            <div className="max-w-sm rounded-2xl rounded-tl-md bg-surface border border-line px-3.5 py-2.5 text-[14px] leading-relaxed shadow-1 break-words">{preview(draft[active]) || '…'}</div>
           </div>
         </div>
       </div>

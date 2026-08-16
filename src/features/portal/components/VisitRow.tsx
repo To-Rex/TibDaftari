@@ -30,7 +30,7 @@ export function VisitRow({
       <Link
         to={routes.portal.visit(order.id)}
         className={cn(
-          'group hover:bg-surface-2/70 flex items-center gap-3.5 px-4 py-3.5 transition-colors sm:px-5',
+          'group hover:bg-surface-2/70 flex items-center gap-3 px-3 py-3.5 transition-colors xs:gap-3.5 xs:px-4 sm:px-5',
           className,
         )}
       >
@@ -38,7 +38,7 @@ export function VisitRow({
           <Receipt className="size-[18px]" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-ink flex items-center gap-2 text-[14.5px] font-medium">
+          <p className="text-ink flex flex-wrap items-center gap-x-2 gap-y-1 text-[14.5px] font-medium">
             <span className="tabular">{order.number}</span>
             {!compact && (
               <Badge tone={paymentTone[order.payment]} size="sm">
@@ -47,11 +47,14 @@ export function VisitRow({
             )}
           </p>
           <p className="text-ink-3 mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[12.5px]">
-            {place && <span className="truncate">{place}</span>}
+            {place && <span className="max-w-full truncate">{place}</span>}
             {place && <span aria-hidden>·</span>}
             <span className="tabular">{fmtDate(order.createdAt)}</span>
             <span aria-hidden>·</span>
             <span>{t('portal.common.services', { count: order.itemCount })}</span>
+            {/* watch/tiny phones: amount + status move into the meta line */}
+            <span className="tabular text-ink-2 font-medium xs:hidden">· {fmtMoney(order.total)}</span>
+            <span className="xs:hidden">· {compact ? t(`portal.payment.${order.payment}`) : t(`portal.orderStatus.${order.status}`)}</span>
           </p>
           {!compact && (
             <div className="mt-2 flex items-center gap-2.5">
@@ -69,7 +72,7 @@ export function VisitRow({
             </div>
           )}
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-1">
+        <div className="flex shrink-0 flex-col items-end gap-1 max-xs:hidden">
           <span className="tabular text-[14px] font-semibold">{fmtMoney(order.total)}</span>
           {compact ? (
             <Badge tone={paymentTone[order.payment]} size="sm">

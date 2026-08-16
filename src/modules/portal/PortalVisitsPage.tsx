@@ -39,7 +39,7 @@ export default function PortalVisitsPage() {
     [clinicName(companyId), branchNames.get(branchId)].filter(Boolean).join(' · ')
 
   return (
-    <Page width="medium">
+    <Page width="medium" className="2xl:max-w-6xl 3xl:max-w-[1600px]">
       <PageHeader title={t('portal.visits.title')} description={t('portal.visits.subtitle')} />
       <Card padded={false} className="overflow-hidden">
         {q.isPending ? (

@@ -51,7 +51,7 @@ export function CompanyDrawer({ open, onClose, company }: { open: boolean; onClo
         <Field label={t('admin.company.legalName')} optionalText={t('common.optional')}>
           {(id) => <Input id={id} {...register('legalName')} />}
         </Field>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label={t('admin.company.slug')} required hint={t('admin.company.slugHint')} error={errors.slug && t('admin.company.invalidSlug')}>
             {(id) => <Input id={id} mono {...register('slug')} invalid={!!errors.slug} />}
           </Field>
@@ -65,7 +65,7 @@ export function CompanyDrawer({ open, onClose, company }: { open: boolean; onClo
             )}
           </Field>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label={t('admin.company.phone')} optionalText={t('common.optional')}>
             {(id) => <Input id={id} {...register('phone')} />}
           </Field>

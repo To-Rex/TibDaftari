@@ -30,7 +30,7 @@ export default function LandingPage() {
         <div className="absolute inset-0 grid-dots opacity-[0.35] [mask-image:radial-gradient(60%_50%_at_50%_0%,black,transparent)]" />
       </div>
 
-      <header className="mx-auto flex h-[72px] max-w-6xl items-center justify-between px-5 sm:px-8">
+      <header className="mx-auto flex h-[64px] xs:h-[72px] max-w-6xl 2xl:max-w-[1400px] 3xl:max-w-[1600px] items-center justify-between px-4 xs:px-5 sm:px-8 2xl:px-10">
         <Logo />
         <div className="flex items-center gap-1">
           <LanguageSwitcher />
@@ -43,15 +43,15 @@ export default function LandingPage() {
 
       <main>
         {/* Hero */}
-        <section className="mx-auto grid max-w-6xl items-center gap-12 px-5 pb-16 pt-10 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:pt-16">
+        <section className="mx-auto grid max-w-6xl 2xl:max-w-[1400px] 3xl:max-w-[1600px] items-center gap-14 px-4 xs:px-5 pb-16 pt-8 sm:px-8 sm:pt-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:pt-16 2xl:gap-24 2xl:px-10 2xl:pt-24 3xl:pt-28">
           <div>
             <motion.div {...rise(0)}>
-              <Badge tone="brand" className="mb-5 h-7 px-3 text-[12.5px]"><Sparkles className="size-3.5" />{t('landing.heroEyebrow')}</Badge>
+              <Badge tone="brand" className="mb-5 h-auto min-h-7 max-w-full whitespace-normal px-3 py-1 text-[12.5px] 2xl:text-[13.5px]"><Sparkles className="size-3.5 shrink-0" />{t('landing.heroEyebrow')}</Badge>
             </motion.div>
-            <motion.h1 {...rise(0.06)} className="text-[40px] leading-[1.06] font-semibold tracking-[-0.02em] sm:text-[56px]">
+            <motion.h1 {...rise(0.06)} className="text-[34px] leading-[1.06] font-semibold tracking-[-0.02em] xs:text-[40px] sm:text-[56px] 2xl:text-[68px] 3xl:text-[80px]">
               {t('landing.heroTitle')}
             </motion.h1>
-            <motion.p {...rise(0.12)} className="mt-6 max-w-xl text-[17px] leading-relaxed text-ink-2">{t('landing.heroSubtitle')}</motion.p>
+            <motion.p {...rise(0.12)} className="mt-6 max-w-xl text-[16px] leading-relaxed text-ink-2 sm:text-[17px] 2xl:max-w-2xl 2xl:text-[20px] 3xl:text-[22px]">{t('landing.heroSubtitle')}</motion.p>
             <motion.div {...rise(0.18)} className="mt-9 flex flex-wrap items-center gap-3">
               <Link to={patient ? routes.portal.root : routes.patientLogin}>
                 <Button size="lg" rightIcon={<ArrowRight className="size-4" />}>{t('landing.ctaPatient')}</Button>
@@ -60,34 +60,34 @@ export default function LandingPage() {
                 <Button size="lg" variant="ghost">{t('landing.ctaStaff')}</Button>
               </Link>
             </motion.div>
-            <motion.dl {...rise(0.26)} className="mt-12 grid max-w-md grid-cols-3 gap-6 border-t border-line pt-6">
+            <motion.dl {...rise(0.26)} className="mt-10 grid max-w-md grid-cols-2 gap-4 border-t border-line pt-6 xs:grid-cols-3 sm:mt-12 sm:gap-6 2xl:max-w-lg">
               {[
                 ['128K+', t('landing.stat1')],
                 ['40+', t('landing.stat2')],
                 ['< 2 kun', t('landing.stat3')],
               ].map(([v, l]) => (
                 <div key={l}>
-                  <dt className="text-[22px] font-semibold tracking-tight tabular">{v}</dt>
-                  <dd className="text-[12.5px] text-ink-3">{l}</dd>
+                  <dt className="text-[20px] font-semibold tracking-tight tabular sm:text-[22px] 2xl:text-[28px]">{v}</dt>
+                  <dd className="text-[12.5px] text-ink-3 2xl:text-[14px]">{l}</dd>
                 </div>
               ))}
             </motion.dl>
           </div>
 
-          <motion.div initial={{ opacity: 0, y: reduce ? 0 : 30, rotate: reduce ? 0 : -1.5 }} animate={{ opacity: 1, y: 0, rotate: 0 }} transition={{ duration: 0.8, delay: 0.2, ease }} className="relative mx-auto w-full max-w-md lg:max-w-none">
+          <motion.div initial={{ opacity: 0, y: reduce ? 0 : 30, rotate: reduce ? 0 : -1.5 }} animate={{ opacity: 1, y: 0, rotate: 0 }} transition={{ duration: 0.8, delay: 0.2, ease }} className="relative mx-auto w-full max-w-md pb-12 lg:max-w-none lg:pb-0 2xl:max-w-2xl 2xl:[zoom:1.1] 3xl:max-w-3xl 3xl:[zoom:1.25]">
             <ResultPreviewCard />
           </motion.div>
         </section>
 
         {/* Features */}
-        <section className="mx-auto max-w-6xl px-5 pb-20 sm:px-8">
-          <div className="grid gap-4 md:grid-cols-3">
+        <section className="mx-auto max-w-6xl 2xl:max-w-[1400px] 3xl:max-w-[1600px] px-4 xs:px-5 pb-20 sm:px-8 2xl:px-10">
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 2xl:gap-6">
             {features.map((f, i) => (
               <motion.div key={f.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.5, delay: i * 0.08, ease }}
-                className="group rounded-[var(--radius-lg)] border border-line bg-surface/70 p-6 backdrop-blur transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-2">
+                className="group rounded-[var(--radius-lg)] border border-line bg-surface/70 p-5 xs:p-6 2xl:p-8 backdrop-blur transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-2">
                 <span className="mb-4 inline-grid size-11 place-items-center rounded-xl bg-brand-soft text-brand-ink transition-transform duration-300 group-hover:scale-105 [&>svg]:size-5">{f.icon}</span>
-                <h3 className="text-[16px] font-semibold">{f.title}</h3>
-                <p className="mt-1.5 text-[14px] leading-relaxed text-ink-3">{f.text}</p>
+                <h3 className="text-[16px] font-semibold 2xl:text-[18px]">{f.title}</h3>
+                <p className="mt-1.5 text-[14px] leading-relaxed text-ink-3 2xl:text-[15.5px]">{f.text}</p>
               </motion.div>
             ))}
           </div>
@@ -95,7 +95,7 @@ export default function LandingPage() {
       </main>
 
       <footer className="border-t border-line">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 py-6 text-[13px] text-ink-3 sm:flex-row sm:px-8">
+        <div className="mx-auto flex max-w-6xl 2xl:max-w-[1400px] 3xl:max-w-[1600px] flex-col items-center justify-between gap-3 px-4 xs:px-5 py-6 text-center text-[13px] text-ink-3 sm:flex-row sm:px-8 2xl:px-10">
           <span>{t('landing.footer', { year: new Date().getFullYear() })}</span>
           <span className="inline-flex items-center gap-1.5"><ShieldCheck className="size-3.5" />{t('landing.demoBadge')}</span>
         </div>

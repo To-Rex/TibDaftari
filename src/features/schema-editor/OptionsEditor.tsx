@@ -18,19 +18,19 @@ export function OptionsEditor({ value, onChange }: { value: SelectOption[]; onCh
       <div className="flex flex-col divide-y divide-line">
         {value.map((o, i) => (
           <div key={i} className="flex flex-col gap-1.5 px-2 py-2">
-            <div className="flex items-center gap-1.5">
-              <Input className="h-8 text-[13px] px-2 flex-1" value={o.label} placeholder={t('catalog.schemas.optionLabel')}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <Input className="h-8 text-[13px] px-2 flex-1 min-w-[120px]" value={o.label} placeholder={t('catalog.schemas.optionLabel')}
                 onChange={(e) => { const label = e.target.value; const auto = o.value === slugify(o.label) || !o.value; set(i, { label, ...(auto ? { value: uniqueKey(slugify(label), value.filter((_, j) => j !== i).map((x) => x.value)) } : {}) }) }} />
-              <Input className="h-8 text-[12px] px-2 w-32" mono value={o.value} onChange={(e) => set(i, { value: e.target.value })} placeholder="value" />
+              <Input className="h-8 text-[12px] px-2 w-24 sm:w-32" mono value={o.value} onChange={(e) => set(i, { value: e.target.value })} placeholder="value" />
               <IconButton size="sm" label={t('catalog.tree.moveUp')} onClick={() => move(i, -1)} disabled={i === 0}><ArrowUp /></IconButton>
               <IconButton size="sm" label={t('catalog.tree.moveDown')} onClick={() => move(i, 1)} disabled={i === value.length - 1}><ArrowDown /></IconButton>
               <IconButton size="sm" label={t('common.delete')} onClick={() => onChange(value.filter((_, j) => j !== i))} className="text-ink-3 hover:text-danger"><Trash2 /></IconButton>
             </div>
-            <div className="flex items-center gap-2 pl-0.5">
+            <div className="flex items-center gap-2 pl-0.5 flex-wrap">
               <Segmented size="sm" value={o.flag ?? 'normal'} onChange={(v) => set(i, { flag: v === 'normal' ? undefined : v })} items={FLAGS.map((f) => ({ value: f, label: t(`catalog.schemas.flags.${f}`) }))} />
-              <span className="flex items-center gap-1 ml-auto">
+              <span className="flex items-center gap-1.5 ml-auto">
                 {COLORS.map((c) => (
-                  <button key={c || 'none'} type="button" onClick={() => set(i, { color: c || undefined })} className={cn('size-5 rounded-full border transition-transform hover:scale-110', (o.color ?? '') === c ? 'ring-2 ring-brand ring-offset-1 ring-offset-bg-elevated' : 'border-line')} style={{ background: c || 'transparent' }} aria-label={c || 'none'}>
+                  <button key={c || 'none'} type="button" onClick={() => set(i, { color: c || undefined })} className={cn('size-6 sm:size-5 rounded-full border transition-transform hover:scale-110', (o.color ?? '') === c ? 'ring-2 ring-brand ring-offset-1 ring-offset-bg-elevated' : 'border-line')} style={{ background: c || 'transparent' }} aria-label={c || 'none'}>
                     {!c && <span className="block size-full rounded-full bg-[linear-gradient(135deg,transparent_45%,var(--c-line-strong)_45%,var(--c-line-strong)_55%,transparent_55%)]" />}
                   </button>
                 ))}

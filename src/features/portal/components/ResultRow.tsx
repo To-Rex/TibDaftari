@@ -30,7 +30,7 @@ export function ResultRow({
       <Link
         to={routes.portal.result(doc.id)}
         className={cn(
-          'group hover:bg-surface-2/70 flex items-center gap-3.5 px-4 py-3.5 transition-colors sm:px-5',
+          'group hover:bg-surface-2/70 flex items-center gap-3 px-3 py-3.5 transition-colors xs:gap-3.5 xs:px-4 sm:px-5',
           className,
         )}
       >
@@ -41,11 +41,13 @@ export function ResultRow({
           )}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-ink truncate text-[14.5px] font-medium">{documentTitle(doc)}</p>
+          <p className="text-ink line-clamp-2 text-[14.5px] font-medium xs:truncate">{documentTitle(doc)}</p>
           <p className="text-ink-3 mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[12.5px]">
-            {clinic && <span className="truncate">{clinic}</span>}
+            {clinic && <span className="max-w-full truncate">{clinic}</span>}
             {clinic && orderNumber && <span aria-hidden>·</span>}
             {orderNumber && <span className="tabular">{orderNumber}</span>}
+            {/* watch/tiny phones: status + date move into the meta line */}
+            <span className="tabular text-ok xs:hidden">· {t('portal.status.approved')} · {fmtDate(doc.createdAt)}</span>
             {showChannels && (
               <span className="text-ink-3/70 ml-1 inline-flex items-center gap-1">
                 {deliveredVia(doc, 'portal') && (
@@ -62,7 +64,7 @@ export function ResultRow({
             )}
           </p>
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-1">
+        <div className="flex shrink-0 flex-col items-end gap-1 max-xs:hidden">
           <Badge tone="ok" size="sm" dot>
             {t('portal.status.approved')}
           </Badge>

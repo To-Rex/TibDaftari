@@ -88,7 +88,7 @@ export default function PortalResultPage() {
   const title = doc ? documentTitle(doc) : ''
 
   return (
-    <Page width="medium">
+    <Page width="medium" className="2xl:max-w-6xl 3xl:max-w-[1600px]">
       <Link
         to={routes.portal.results}
         className="text-ink-3 hover:text-ink mb-3 inline-flex items-center gap-1.5 text-[13px] font-medium transition-colors"
@@ -96,7 +96,7 @@ export default function PortalResultPage() {
         <ArrowLeft className="size-3.5" /> {t('portal.result.backToResults')}
       </Link>
 
-      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div className="min-w-0">
           {doc ? (
             <>
@@ -106,7 +106,7 @@ export default function PortalResultPage() {
                 {' · '}
                 <span className="tabular">{fmtDate(doc.createdAt)}</span>
               </p>
-              <h1 className="mt-0.5 text-[22px] font-semibold tracking-tight sm:text-[26px]">
+              <h1 className="mt-0.5 text-[20px] font-semibold tracking-tight break-words xs:text-[22px] sm:text-[26px]">
                 {title}
               </h1>
               <motion.div
@@ -128,7 +128,7 @@ export default function PortalResultPage() {
             </div>
           )}
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 flex-wrap items-center gap-2 max-xs:[&>button]:flex-1">
           <Button
             variant="secondary"
             size="sm"
@@ -149,7 +149,7 @@ export default function PortalResultPage() {
         </div>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start 2xl:grid-cols-[minmax(0,1fr)_360px] 2xl:gap-8">
         <div className="min-w-0">
           {ready && ctx && q.data ? (
             <motion.div
@@ -163,7 +163,7 @@ export default function PortalResultPage() {
             <Skeleton className="mx-auto aspect-[794/1123] w-full max-w-[794px] rounded-[10px]" />
           )}
         </div>
-        <aside className="lg:sticky lg:top-20">
+        <aside className="min-w-0 lg:sticky lg:top-20">
           {ready && ctx && q.data ? (
             <ResultInfoPanel
               item={q.data.item}
