@@ -98,7 +98,9 @@ export interface ResultDocument extends AuditStamp {
   id: Id
   companyId: Id
   orderId: Id
-  orderItemId?: Id // absent when documentScope === 'order'
+  orderItemId?: Id // primary item (item-scoped documents)
+  /** all items covered by an order-scoped document (e.g. hepatitis panel) */
+  orderItemIds?: Id[]
   templateId: Id
   templateVersion: number
   title: string

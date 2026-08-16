@@ -14,11 +14,14 @@ import { cn } from '@/shared/lib/cn'
 import { ageMonthsFrom } from '@/shared/lib/format'
 import { Button, Card, EmptyState, Segmented, Skeleton } from '@/shared/ui'
 import { DocumentPreview } from './DocumentPreview'
+import { OrderScopePanel } from './OrderScopePanel'
+import { useOrderScopeItems } from './orderScope'
+import { useStaffSession } from '@/features/session/useSession'
 import { useTemplate } from './queries'
 import { useQuery } from '@tanstack/react-query'
 import { repos } from '@/data'
 
-export function ConfirmDetail({ companyId, itemId, onBack, onApprove, onReject, approving, justApproved }: {
+export function ConfirmDetail({ companyId, itemId, onBack, onApprove, onReject, approving, justApproved, onOrderApproved }: {
   companyId: Id
   itemId: Id | null
   /** < lg: return to the list (detail is shown full-width instead of the list) */
@@ -28,6 +31,8 @@ export function ConfirmDetail({ companyId, itemId, onBack, onApprove, onReject, 
   approving?: boolean
   /** id of the item that was just approved — triggers the success animation */
   justApproved?: Id | null
+  /** order-scoped approval finished (ids of covered items) */
+  onOrderApproved?: (ids: Id[]) => void
 }) {
   const { t } = useTranslation()
   const { can } = usePermissions()
@@ -39,6 +44,10 @@ export function ConfirmDetail({ companyId, itemId, onBack, onApprove, onReject, 
   const patientCtx = useMemo(() => ({ gender: patient.data?.gender, ageMonths: ageMonthsFrom(patient.data?.birthDate) }), [patient.data])
   const doc = useQuery({ queryKey: ['document', it?.documentId], queryFn: () => repos.orders.getDocument(it!.documentId!), enabled: !!it?.documentId })
   const docTemplate = useTemplate(doc.data?.templateId)
+  const { employeeId } = useStaffSession()
+  // approved order-scoped document → render with all covered items
+  const approvedOrderTpl = docTemplate.data?.scope === 'order' ? docTemplate.data : undefined
+  const approvedItems = useOrderScopeItems(companyId, approvedOrderTpl ? order.data?.order.id : undefined, approvedOrderTpl)
 
   if (!itemId) {
     return (
@@ -114,6 +123,10 @@ export function ConfirmDetail({ companyId, itemId, onBack, onApprove, onReject, 
         </div>
       )}
 
+      {it && it.status !== 'approved' && (
+        <OrderScopePanel companyId={companyId} employeeId={employeeId} item={it} order={order.data?.order} patient={patient.data} onApproved={onOrderApproved} />
+      )}
+
       {it && (
         <Card padded={false} className="overflow-hidden">
           <div className="flex items-center justify-between border-b border-line px-3 py-2.5 sm:px-4">
@@ -142,6 +155,8 @@ export function ConfirmDetail({ companyId, itemId, onBack, onApprove, onReject, 
                     onTemplateChange={setTemplateId}
                     fixedTemplate={it.status === 'approved' ? docTemplate.data : undefined}
                     showTemplateSelect={submitted}
+                    items={approvedOrderTpl ? approvedItems.items : undefined}
+                    loadingItems={approvedOrderTpl ? approvedItems.loading : false}
                   />
                 </motion.div>
               )}

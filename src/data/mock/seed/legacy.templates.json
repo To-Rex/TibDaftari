@@ -4363,7 +4363,7 @@
       "w": 135,
       "h": 22,
       "type": "text",
-      "text": "{values.a1}",
+      "text": "{svc.LG-85.result}",
       "style": {
        "fontFamily": "serif",
        "fontSize": 16,
@@ -4382,7 +4382,7 @@
       "w": 85,
       "h": 22,
       "type": "text",
-      "text": "{values.b1}",
+      "text": "{svc.LG-85.od}",
       "style": {
        "fontFamily": "serif",
        "fontSize": 16,
@@ -4458,7 +4458,7 @@
       "w": 135,
       "h": 22,
       "type": "text",
-      "text": "{values.a2}",
+      "text": "{svc.LG-83.result}",
       "style": {
        "fontFamily": "serif",
        "fontSize": 16,
@@ -4477,7 +4477,7 @@
       "w": 85,
       "h": 22,
       "type": "text",
-      "text": "{values.b2}",
+      "text": "{svc.LG-83.od}",
       "style": {
        "fontFamily": "serif",
        "fontSize": 16,
@@ -4553,7 +4553,7 @@
       "w": 135,
       "h": 22,
       "type": "text",
-      "text": "{values.a3}",
+      "text": "{svc.LG-84.result}",
       "style": {
        "fontFamily": "serif",
        "fontSize": 16,
@@ -4572,7 +4572,7 @@
       "w": 85,
       "h": 22,
       "type": "text",
-      "text": "{values.b3}",
+      "text": "{svc.LG-84.od}",
       "style": {
        "fontFamily": "serif",
        "fontSize": 16,
@@ -4648,7 +4648,7 @@
       "w": 135,
       "h": 22,
       "type": "text",
-      "text": "{values.a4}",
+      "text": "{svc.LG-92.result}",
       "style": {
        "fontFamily": "serif",
        "fontSize": 16,
@@ -4667,7 +4667,7 @@
       "w": 85,
       "h": 22,
       "type": "text",
-      "text": "{values.b4}",
+      "text": "{svc.LG-92.od}",
       "style": {
        "fontFamily": "serif",
        "fontSize": 16,
@@ -4919,7 +4919,7 @@
       "w": 221,
       "h": 22,
       "type": "text",
-      "text": "{values.c1}",
+      "text": "{svc.LG-86.result}",
       "style": {
        "fontFamily": "serif",
        "fontSize": 16,
@@ -5014,7 +5014,7 @@
       "w": 221,
       "h": 22,
       "type": "text",
-      "text": "{values.c2}",
+      "text": "{svc.LG-87.result}",
       "style": {
        "fontFamily": "serif",
        "fontSize": 16,
@@ -5331,7 +5331,7 @@
       "w": 135,
       "h": 22,
       "type": "text",
-      "text": "{values.d1}",
+      "text": "{svc.LG-88.load}",
       "style": {
        "fontFamily": "serif",
        "fontSize": 16,
@@ -5445,7 +5445,7 @@
       "w": 135,
       "h": 22,
       "type": "text",
-      "text": "{values.d2}",
+      "text": "{svc.LG-89.load}",
       "style": {
        "fontFamily": "serif",
        "fontSize": 16,
@@ -5559,7 +5559,7 @@
       "w": 135,
       "h": 22,
       "type": "text",
-      "text": "{values.d3}",
+      "text": "{svc.LG-90.load}",
       "style": {
        "fontFamily": "serif",
        "fontSize": 16,
@@ -5673,7 +5673,7 @@
       "w": 135,
       "h": 22,
       "type": "text",
-      "text": "{values.d4}",
+      "text": "{svc.LG-91.genotype}",
       "style": {
        "fontFamily": "serif",
        "fontSize": 16,

@@ -52,6 +52,10 @@ export default function PortalResultPage() {
             company: companyQ.data,
             branch,
             schema: schemaQ.data ?? null,
+            // order-scoped documents (several services on one sheet)
+            items: q.data.template.scope === 'order'
+              ? q.data.items.map((item) => ({ item, schema: q.data!.schemas.find((s) => s.id === item.schemaId) ?? null, code: q.data!.serviceCodes[item.serviceTypeId] ?? item.serviceTypeId }))
+              : undefined,
           })
         : null,
     [q.data, patientQ.data, companyQ.data, branch, schemaQ.data],

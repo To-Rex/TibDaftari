@@ -230,3 +230,12 @@ export const STANDARD_PLACEHOLDERS: { group: string; items: { key: string; label
     ],
   },
 ]
+
+/** Reserved dataset key for order-scoped tables (one row per order item). */
+export const ITEMS_DATASET = 'items'
+export const ITEMS_DATASET_COLUMNS = [
+  { key: 'i', label: '№' },
+  { key: 'code', label: 'Kod' },
+  { key: 'name', label: 'Xizmat' },
+  { key: 'status', label: 'Holat' },
+] as const

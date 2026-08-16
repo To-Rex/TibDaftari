@@ -104,6 +104,14 @@ export interface OrderRepository {
   saveValues(itemId: Id, employeeId: Id, values: ValueMap, labNote?: string): Promise<OrderItem>
   submitItem(itemId: Id, employeeId: Id): Promise<OrderItem>
   approveItem(itemId: Id, employeeId: Id, templateId?: Id): Promise<{ item: OrderItem; document: ResultDocument }>
+  /**
+   * Order-scoped approval: approve every `submitted` item of the order covered by an
+   * order-scope template (its serviceTypeIds/categoryIds) and issue ONE document for them.
+   * `itemIds` narrows the set (defaults to all matching items in submitted/approved state).
+   */
+  approveOrder(orderId: Id, employeeId: Id, templateId: Id, itemIds?: Id[]): Promise<{ items: OrderItem[]; document: ResultDocument }>
+  /** Items an order-scope template would cover for this order (for preview / confirmation UI). */
+  orderScopeItems(orderId: Id, templateId: Id): Promise<OrderItem[]>
   rejectItem(itemId: Id, employeeId: Id, reason: string): Promise<OrderItem>
   listDocuments(q: { orderId?: Id; patientId?: Id }): Promise<ResultDocument[]>
   getDocument(id: Id): Promise<ResultDocument>
@@ -136,7 +144,7 @@ export interface ReportRepository {
 export interface PortalRepository {
   overview(patientId: Id): Promise<{ patient: Patient; orders: Order[]; documents: ResultDocument[]; companies: { id: Id; name: string }[] }>
   order(patientId: Id, orderId: Id): Promise<{ order: Order; items: OrderItem[]; documents: ResultDocument[] }>
-  document(patientId: Id, documentId: Id): Promise<{ document: ResultDocument; template: ResultTemplate; item?: OrderItem; order: Order }>
+  document(patientId: Id, documentId: Id): Promise<{ document: ResultDocument; template: ResultTemplate; item?: OrderItem; order: Order; items: OrderItem[]; schemas: AttributeSchema[]; serviceCodes: Record<Id, string> }>
 }
 
 export interface Repositories {

@@ -7,17 +7,26 @@ import { cn } from '@/shared/lib/cn'
 import { SearchInput } from '@/shared/ui'
 import { PLACEHOLDER_MIME } from './EditorCanvas'
 import { FIELD_TYPE_ICONS } from '@/features/schema-editor/fieldDefaults'
+import type { PaletteService } from './useTemplateSchema'
 
 /**
  * Standard placeholders + schema fields. Click → onInsert(`{key}`), drag → drop on canvas creates an element.
  */
-export function PlaceholderPalette({ schema, onInsert, compact }: { schema: AttributeSchema | null; onInsert?: (key: string) => void; compact?: boolean }) {
+export function PlaceholderPalette({ schema, onInsert, compact, services }: { schema: AttributeSchema | null; onInsert?: (key: string) => void; compact?: boolean; /** order-scoped templates: bound services -> {svc.CODE.field} */ services?: PaletteService[] }) {
   const { t } = useTranslation()
   const [q, setQ] = useState('')
   const groups = useMemo(() => {
     const std = STANDARD_PLACEHOLDERS.map((g) => ({ group: t(`catalog.editor.ph.${g.group}`), items: g.items.map((i) => ({ key: i.key, label: i.label, type: undefined as string | undefined })) }))
     const values = schema ? [{ group: `${t('catalog.editor.ph.values')} · ${schema.name}`, items: schema.fields.map((f) => ({ key: `values.${f.key}`, label: f.label, type: f.type as string | undefined })) }] : []
-    const all = [...values, ...std]
+    // order-scoped: one group per bound service -> {svc.CODE.field}
+    const svc = (services ?? []).map((sv) => ({
+      group: `${sv.code} · ${sv.name}`,
+      items: [
+        { key: `svc.${sv.code}.name`, label: t('catalog.editor.ph.svcMeta'), type: undefined as string | undefined },
+        ...(sv.schema?.fields.filter((f) => f.type !== 'table') ?? []).map((f) => ({ key: `svc.${sv.code}.${f.key}`, label: f.label, type: f.type as string | undefined })),
+      ],
+    }))
+    const all = [...svc, ...values, ...std]
     const s = q.trim().toLowerCase()
     return s ? all.map((g) => ({ ...g, items: g.items.filter((i) => i.key.toLowerCase().includes(s) || i.label.toLowerCase().includes(s)) })).filter((g) => g.items.length) : all
   }, [schema, q, t])
@@ -27,6 +36,7 @@ export function PlaceholderPalette({ schema, onInsert, compact }: { schema: Attr
       <div className="px-3 pt-3 pb-2">
         {!compact && <h3 className="text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-3 mb-2">{t('catalog.editor.placeholders')}</h3>}
         <SearchInput value={q} onChange={setQ} placeholder={t('common.searchPlaceholder')} className="h-8 text-[13px]" />
+        {services && services.length > 0 && <p className="mt-2 text-[11.5px] leading-snug text-ink-3">{t('catalog.editor.orderScopeHint')}</p>}
       </div>
       <div className="flex-1 overflow-y-auto px-2 pb-3">
         {groups.map((g) => (

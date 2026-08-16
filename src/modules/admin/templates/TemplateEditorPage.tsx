@@ -49,7 +49,7 @@ export default function TemplateEditorPage() {
   const doc = useEditorStore((s) => s.doc)
   const preview = useEditorStore((s) => s.preview)
   const dirty = useIsDirty()
-  const { schema, ctx, assets } = useTemplateSchema(previewStId, companyId)
+  const { schema, ctx, assets, services } = useTemplateSchema(previewStId, companyId)
 
   // load into store when template arrives (once per id)
   useEffect(() => {
@@ -126,7 +126,7 @@ export default function TemplateEditorPage() {
       {(() => {
         const insertPlaceholder = (key: string) => { const s = useEditorStore.getState(); const isV = key.startsWith('values.'); s.addElement(isV ? createElement('field', s.doc.margin, s.doc.margin + 120, { fieldKey: key.slice(7) }) : createElement('text', s.doc.margin, s.doc.margin + 120, { text: `{${key}}` })); setPanelsSheet(false) }
         const panelTabs = <Tabs size="sm" value={leftTab} onChange={setLeftTab} className="px-2" items={[{ value: 'layers', label: t('catalog.editor.layers'), icon: <Layers /> }, { value: 'placeholders', label: t('catalog.editor.placeholders'), icon: <Braces /> }]} />
-        const panelBody = leftTab === 'layers' ? <LayersPanel /> : <PlaceholderPalette schema={schema} onInsert={insertPlaceholder} />
+        const panelBody = leftTab === 'layers' ? <LayersPanel /> : <PlaceholderPalette schema={schema} services={services} onInsert={insertPlaceholder} />
         const propsPanel = <PropertiesPanel schema={schema} assets={assets} onPickImage={() => { const id = useEditorStore.getState().selectedIds[0]; if (id) setAssetPick(id) }} />
         const canvas = <EditorCanvas ctx={ctx} assets={assets} fitSignal={fitSignal} />
 

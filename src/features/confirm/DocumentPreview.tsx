@@ -23,7 +23,7 @@ export function useFitScale<T extends HTMLElement>(paperW: number) {
   return { ref, scale }
 }
 
-export function DocumentPreview({ companyId, item, order, patient, schema, templateId, onTemplateChange, showTemplateSelect = true, className, fixedTemplate }: {
+export function DocumentPreview({ companyId, item, order, patient, schema, templateId, onTemplateChange, showTemplateSelect = true, className, fixedTemplate, items, loadingItems }: {
   companyId: string
   item: OrderItem
   order?: Order | null
@@ -35,6 +35,9 @@ export function DocumentPreview({ companyId, item, order, patient, schema, templ
   className?: string
   /** when given (approved documents) — render exactly this template */
   fixedTemplate?: ResultTemplate | null
+  /** order-scoped documents: covered items with schema + service code */
+  items?: { item: OrderItem; schema: AttributeSchema | null; code: string }[]
+  loadingItems?: boolean
 }) {
   const { t } = useTranslation()
   const templates = useTemplatesFor(companyId, fixedTemplate ? undefined : item)
@@ -53,12 +56,12 @@ export function DocumentPreview({ companyId, item, order, patient, schema, templ
   }, [list, templateId, fixedTemplate])
 
   const ctx = useMemo(
-    () => buildRenderContext({ patient, order, item, company: company.data, branch, schema }),
-    [patient, order, item, company.data, branch, schema],
+    () => buildRenderContext({ patient, order, item, company: company.data, branch, schema, items }),
+    [patient, order, item, company.data, branch, schema, items],
   )
   const size = template ? paperSize(template.doc) : { w: 794, h: 1123 }
   const { ref, scale } = useFitScale<HTMLDivElement>(size.w)
-  const loading = (!fixedTemplate && templates.isLoading) || assets.isLoading || company.isLoading
+  const loading = (!fixedTemplate && templates.isLoading) || assets.isLoading || company.isLoading || !!loadingItems
 
   return (
     <div className={cn('flex flex-col gap-3', className)}>

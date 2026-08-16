@@ -1,5 +1,5 @@
 /** Builds a RenderContext from domain objects (mirror of the backend context builder). */
-import type { AttributeSchema, Branch, Company, Order, OrderItem, Patient, RenderContext } from '@/domain'
+import type { AttributeSchema, Branch, Company, Order, OrderItem, Patient, RenderContext, RenderItem } from '@/domain'
 import { ageFrom, ageMonthsFrom, fmtDate, fmtDateTime, fmtPhone } from '@/shared/lib/format'
 import i18n from '@/shared/i18n'
 
@@ -11,6 +11,8 @@ export function buildRenderContext(input: {
   branch?: Pick<Branch, 'name' | 'address'> | null
   schema?: AttributeSchema | null
   districtName?: string
+  /** order-scoped documents: every covered item with its schema and catalog code */
+  items?: { item: OrderItem; schema: AttributeSchema | null; code: string }[]
 }): RenderContext {
   const p = input.patient
   const address = [input.districtName, p?.address?.street].filter(Boolean).join(', ')
@@ -39,11 +41,17 @@ export function buildRenderContext(input: {
     today: fmtDate(new Date().toISOString()),
     values: input.item?.values ?? {},
     schema: input.schema ?? null,
+    items: input.items?.map(toRenderItem),
   }
 }
 
-/** Sample context for editor previews when no real item is selected. */
-export function sampleRenderContext(schema: AttributeSchema | null, company?: Pick<Company, 'name' | 'phone' | 'address'> | null, branch?: Pick<Branch, 'name' | 'address'> | null): RenderContext {
+export const toRenderItem = (x: { item: OrderItem; schema: AttributeSchema | null; code: string }): RenderItem => ({
+  code: x.code, serviceTypeId: x.item.serviceTypeId, serviceName: x.item.serviceName, status: x.item.status, values: x.item.values, schema: x.schema,
+  approvedAt: x.item.approvedAt ? fmtDateTime(x.item.approvedAt) : undefined, technician: x.item.technicianName, doctor: x.item.doctorName,
+})
+
+/** Sample values for a schema (shared by item- and order-scope previews). */
+export function sampleValues(schema: AttributeSchema | null): RenderContext['values'] {
   const values: RenderContext['values'] = {}
   for (const f of schema?.fields ?? []) {
     switch (f.type) {
@@ -65,6 +73,21 @@ export function sampleRenderContext(schema: AttributeSchema | null, company?: Pi
       }
     }
   }
+  return values
+}
+
+/** Sample context for ORDER-scoped previews: one RenderItem per bound service. */
+export function sampleOrderRenderContext(services: { code: string; name: string; serviceTypeId: string; schema: AttributeSchema | null }[], company?: Pick<Company, 'name' | 'phone' | 'address'> | null, branch?: Pick<Branch, 'name' | 'address'> | null): RenderContext {
+  const base = sampleRenderContext(services[0]?.schema ?? null, company, branch)
+  return {
+    ...base,
+    items: services.map((s) => ({ code: s.code, serviceTypeId: s.serviceTypeId, serviceName: s.name, status: 'approved', values: sampleValues(s.schema), schema: s.schema, approvedAt: base.item.approvedAt, technician: base.item.technician, doctor: base.item.doctor })),
+  }
+}
+
+/** Sample context for editor previews when no real item is selected. */
+export function sampleRenderContext(schema: AttributeSchema | null, company?: Pick<Company, 'name' | 'phone' | 'address'> | null, branch?: Pick<Branch, 'name' | 'address'> | null): RenderContext {
+  const values = sampleValues(schema)
   return buildRenderContext({
     patient: { fullName: 'Karimova Madina Aziz qizi', phone: '998901234567', birthDate: '1992-04-12', gender: 'female', address: { street: 'Al-Xorazmiy ko‘chasi, 12-uy' }, passportNumber: 'AB1234567' },
     order: { number: 'UR-001240', createdAt: new Date().toISOString() },

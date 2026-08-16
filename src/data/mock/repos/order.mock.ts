@@ -41,6 +41,13 @@ function pushSms(o: Order, kind: OutboxMessage['kind'], text: string) {
   db().outbox.unshift({ id: uid('msg'), companyId: o.companyId, branchId: o.branchId, patientId: o.patientId, orderId: o.id, channel: 'sms', kind, to: o.patientPhone, text, status: 'queued', attempts: 0, ...stamp() })
 }
 
+/** Items of an order that an order-scope template covers (by service type or category). */
+function coveredItems(orderId: string, tpl: { serviceTypeIds: string[]; categoryIds: string[] }) {
+  return db().items.filter((i) => i.orderId === orderId && i.status !== 'cancelled' && (
+    tpl.serviceTypeIds.includes(i.serviceTypeId) || tpl.categoryIds.includes(i.categoryId) || (tpl.serviceTypeIds.length === 0 && tpl.categoryIds.length === 0)
+  ))
+}
+
 export const orderMock: OrderRepository = {
   async list(companyId, q) {
     await latency()
@@ -210,6 +217,40 @@ export const orderMock: OrderRepository = {
     pushSms(order, 'result_ready', `${it.serviceName} natijasi tayyor. Portalda ko‘rishingiz mumkin. ${d.companies[0]?.name}`)
     return clone({ item: it, document })
   },
+  async orderScopeItems(orderId, templateId) {
+    await latency(120)
+    const tpl = db().templates.find((t) => t.id === templateId)
+    if (!tpl) throw new MockError(404, 'not_found', 'Shablon topilmadi')
+    return clone(coveredItems(orderId, tpl))
+  },
+  async approveOrder(orderId, employeeId, templateId, itemIds) {
+    await latency(700)
+    const d = db()
+    const tpl = d.templates.find((t) => t.id === templateId)
+    if (!tpl || tpl.status !== 'active') throw new MockError(422, 'no_template', 'Faol shablon topilmadi')
+    if (tpl.scope !== 'order') throw new MockError(422, 'scope', 'Bu shablon chek darajasidagi hujjat emas')
+    let covered = coveredItems(orderId, tpl).filter((i) => i.status === 'submitted' || i.status === 'approved')
+    if (itemIds?.length) covered = covered.filter((i) => itemIds.includes(i.id))
+    const toApprove = covered.filter((i) => i.status === 'submitted')
+    if (!toApprove.length) throw new MockError(409, 'state', 'Tasdiqlash uchun yuborilgan tahlil yo‘q')
+    const e = emp(employeeId)
+    const now = nowIso()
+    const document: ResultDocument = {
+      id: uid('doc'), companyId: toApprove[0]!.companyId, orderId, orderItemId: toApprove[0]!.id, orderItemIds: covered.map((i) => i.id),
+      templateId: tpl.id, templateVersion: tpl.version, title: `${tpl.name}`, status: 'final',
+      deliveries: [{ channel: 'portal', status: 'delivered', at: now }, { channel: 'sms', status: 'queued', at: now }], ...stamp(),
+    }
+    d.documents.push(document)
+    for (const it of toApprove) {
+      it.status = 'approved'; it.doctorId = employeeId; it.doctorName = e?.fullName; it.approvedAt = now; it.updatedAt = now; it.documentId = document.id
+    }
+    for (const it of covered) if (!it.documentId) it.documentId = document.id
+    tpl.usage++
+    const order = bundle(orderId).order
+    recompute(order)
+    pushSms(order, 'result_ready', `${tpl.name}: ${toApprove.length} ta tahlil natijasi tayyor. Portalda ko‘rishingiz mumkin. ${d.companies[0]?.name}`)
+    return clone({ items: covered, document })
+  },
   async rejectItem(itemId, _employeeId, reason) {
     await latency(300)
     const it = findItem(itemId)
@@ -341,7 +382,13 @@ export const portalMock: PortalRepository = {
     if (order.patientId !== patientId) throw new MockError(403, 'forbidden', 'Ruxsat yo‘q')
     const template = d.templates.find((t) => t.id === document.templateId)!
     const item = d.items.find((i) => i.id === document.orderItemId)
-    return clone({ document, template, item, order })
+    const ids = new Set(document.orderItemIds ?? (document.orderItemId ? [document.orderItemId] : []))
+    const items = d.items.filter((i) => ids.has(i.id))
+    const schemaIds = new Set(items.map((i) => i.schemaId).filter(Boolean) as string[])
+    const schemas = d.schemas.filter((s) => schemaIds.has(s.id))
+    const serviceCodes: Record<string, string> = {}
+    for (const i of items) serviceCodes[i.serviceTypeId] = d.serviceTypes.find((s) => s.id === i.serviceTypeId)?.code ?? i.serviceTypeId
+    return clone({ document, template, item, order, items, schemas, serviceCodes })
   },
 }
 

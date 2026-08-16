@@ -210,7 +210,8 @@ const uz = {
     layers: 'Qatlamlar',
     noLayers: 'Elementlar yo‘q — chapdagi panel orqali qo‘shing',
     placeholders: 'Maydonlar',
-    ph: { patient: 'Bemor', order: 'Chek va xizmat', organisation: 'Tashkilot', values: 'Natija maydonlari' },
+    ph: { patient: 'Bemor', order: 'Chek va xizmat', organisation: 'Tashkilot', values: 'Natija maydonlari', services: 'Chekdagi xizmatlar (kod bo‘yicha)', items: 'Xizmatlar jadvali (items)', svcMeta: 'Xizmat nomi' },
+    orderScopeHint: 'Chek darajasidagi andoza: {svc.KOD.maydon} — chekdagi har bir xizmatning qiymati; jadval uchun «items» ma’lumot manbai.',
     properties: 'Xususiyatlar',
     document: 'Hujjat',
     page: 'Sahifa',
@@ -373,7 +374,7 @@ const ru: typeof uz = {
   editor: {
     el: { text: 'Текст', field: 'Поле', table: 'Таблица', rect: 'Прямоугольник', ellipse: 'Эллипс', line: 'Линия', image: 'Изображение' },
     undo: 'Отменить', redo: 'Повторить', snap: 'Прилипание', grid: 'Сетка', fit: 'По размеру экрана', layers: 'Слои', noLayers: 'Элементов нет — добавьте через панель слева',
-    placeholders: 'Поля', ph: { patient: 'Пациент', order: 'Чек и услуга', organisation: 'Организация', values: 'Поля результата' }, properties: 'Свойства',
+    placeholders: 'Поля', ph: { patient: 'Пациент', order: 'Чек и услуга', organisation: 'Организация', values: 'Поля результата', services: 'Услуги в чеке (по коду)', items: 'Таблица услуг (items)', svcMeta: 'Название услуги' }, orderScopeHint: 'Шаблон уровня чека: {svc.КОД.поле} — значение каждой услуги чека; для таблицы источник «items».', properties: 'Свойства',
     document: 'Документ', page: 'Страница', paper: 'Бумага', orientation: 'Ориентация', portrait: 'Книжная', landscape: 'Альбомная', margin: 'Поля', background: 'Фон',
     docHint: 'Элемент не выбран. Добавьте элемент слева или щёлкните по элементу на листе. Мультивыбор — Shift.',
     geometry: 'Геометрия', rotation: 'Поворот', name: 'Имя', namePh: 'Имя слоя', state: 'Состояние', locked: 'Заблокирован', hidden: 'Скрыт', duplicate: 'Дублировать',
@@ -459,7 +460,7 @@ const en: typeof uz = {
   editor: {
     el: { text: 'Text', field: 'Field', table: 'Table', rect: 'Rectangle', ellipse: 'Ellipse', line: 'Line', image: 'Image' },
     undo: 'Undo', redo: 'Redo', snap: 'Snap', grid: 'Grid', fit: 'Fit to screen', layers: 'Layers', noLayers: 'No elements — add from the left panel',
-    placeholders: 'Fields', ph: { patient: 'Patient', order: 'Order & service', organisation: 'Organisation', values: 'Result fields' }, properties: 'Properties',
+    placeholders: 'Fields', ph: { patient: 'Patient', order: 'Order & service', organisation: 'Organisation', values: 'Result fields', services: 'Services in the order (by code)', items: 'Services table (items)', svcMeta: 'Service name' }, orderScopeHint: 'Order-level template: {svc.CODE.field} — a value of each service in the order; use the “items” dataset for tables.', properties: 'Properties',
     document: 'Document', page: 'Page', paper: 'Paper', orientation: 'Orientation', portrait: 'Portrait', landscape: 'Landscape', margin: 'Margin', background: 'Background',
     docHint: 'Nothing selected. Add an element from the left or click one on the page. Shift for multi-select.',
     geometry: 'Geometry', rotation: 'Rotation', name: 'Name', namePh: 'Layer name', state: 'State', locked: 'Locked', hidden: 'Hidden', duplicate: 'Duplicate',

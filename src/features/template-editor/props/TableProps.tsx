@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react'
 import type { AttributeSchema, TableColumn, TableElement } from '@/domain'
 import { Checkbox } from '@/shared/ui'
+import { ITEMS_DATASET, ITEMS_DATASET_COLUMNS } from '@/domain'
 import { useEditorStore } from '../useEditorStore'
 import { ColorInput, NumInput, PropRow, PropSection, SelectInput, TextInput } from './inputs'
 import { TextStyleFields } from './TextStyleFields'
@@ -10,9 +11,11 @@ export function TableProps({ el, schema }: { el: TableElement; schema: Attribute
   const { t } = useTranslation()
   const patch = useEditorStore((s) => s.patchElements)
   const set = (p: Partial<TableElement>) => patch([el.id], (e) => ({ ...e, ...p }) as TableElement)
+  const orderScope = useEditorStore((s) => s.meta?.scope === 'order')
   const tableFields = schema?.fields.filter((f) => f.type === 'table') ?? []
   const bound = tableFields.find((f) => f.key === el.fieldKey)
-  const bindOptions = bound ? bound.columns.map((c) => ({ value: c.key, label: `${c.label} · ${c.key}` })) : []
+  const itemsBound = orderScope && el.fieldKey === ITEMS_DATASET
+  const bindOptions = bound ? bound.columns.map((c) => ({ value: c.key, label: `${c.label} · ${c.key}` })) : itemsBound ? ITEMS_DATASET_COLUMNS.map((c) => ({ value: c.key, label: `${c.label} · ${c.key}` })) : []
   const setCol = (i: number, p: Partial<TableColumn>) => set({ columns: el.columns.map((c, j) => (j === i ? { ...c, ...p } : c)) })
   const move = (i: number, d: -1 | 1) => { const j = i + d; if (j < 0 || j >= el.columns.length) return; const cols = [...el.columns]; const [a, b] = [cols[i]!, cols[j]!]; cols[i] = b; cols[j] = a; set({ columns: cols }) }
   const addCol = () => { const c = bound?.columns.find((bc) => !el.columns.some((x) => x.bind === bc.key)); set({ columns: [...el.columns, { id: `${el.id}_c${Date.now().toString(36)}`, header: c?.label ?? t('catalog.editor.column'), bind: c?.key ?? '', width: 100, align: 'left' }] }) }
@@ -23,7 +26,7 @@ export function TableProps({ el, schema }: { el: TableElement; schema: Attribute
     <>
       <PropSection title={t('catalog.editor.binding')}>
         <PropRow label={t('catalog.editor.tableField')}>
-          <SelectInput value={el.fieldKey} onChange={(v) => set({ fieldKey: v })} options={[{ value: '', label: t('catalog.editor.staticTable') }, ...tableFields.map((f) => ({ value: f.key, label: f.label }))]} />
+          <SelectInput value={el.fieldKey} onChange={(v) => set({ fieldKey: v })} options={[{ value: '', label: t('catalog.editor.staticTable') }, ...(orderScope ? [{ value: ITEMS_DATASET, label: t('catalog.editor.ph.items') }] : []), ...tableFields.map((f) => ({ value: f.key, label: f.label }))]} />
         </PropRow>
         {bound && <button className="text-[12px] text-brand-ink hover:underline text-left" onClick={bindAll}>{t('catalog.editor.bindAllColumns', { n: bound.columns.length })}</button>}
       </PropSection>

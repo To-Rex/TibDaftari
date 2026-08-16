@@ -29,7 +29,8 @@ const ANDOZA_BINDINGS: Record<string, { serviceIds: number[]; categoryIds?: stri
   gemokultura: { serviceIds: [51], scope: 'item', status: 'active', note: 'product 51' },
   mikroflora: { serviceIds: [62], scope: 'item', status: 'active', note: 'natija_bak_ma.fr3' },
   virus_bio: { serviceIds: [97, 98, 99, 100, 101, 102, 103], scope: 'item', status: 'active', note: 'natija_virus.json (biokimyo)' },
-  virusologiya: { serviceIds: [], categoryIds: ['cat_vir'], scope: 'order', status: 'draft', note: 'gepatit paneli — chek darajasidagi hujjat (keyingi bosqich)' },
+  // Hepatitis panel: ONE document per order covering all bound hepatitis services (legacy request-level blanka).
+  virusologiya: { serviceIds: [85, 83, 84, 92, 86, 87, 88, 89, 90, 91], scope: 'order', status: 'active', note: 'natija_virus (gepatit paneli, chek darajasida)' },
 }
 
 const stamp = (d = 320) => ({ createdAt: daysAgo(d), updatedAt: daysAgo(10) })
@@ -91,7 +92,8 @@ function tableSchema(p: LgProduct, rows: LgNatija[]): AttributeSchema {
 function simpleSchema(p: LgProduct): AttributeSchema | null {
   if (QUALITATIVE.has(p.id)) return { id: `sch_lg_${p.id}`, companyId: 'c1', name: p.name, version: 1, status: 'published', usedBy: 1, ...stamp(), fields: [
     { key: 'result', label: 'Natija', type: 'select', options: YESNO, required: true, order: 1 },
-    { key: 'comment', label: 'Izoh', type: 'longtext', required: false, order: 2 } ] }
+    { key: 'od', label: 'Оптик зичлик (ОD)', type: 'number', required: false, order: 2, decimals: 3, references: [] },
+    { key: 'comment', label: 'Izoh', type: 'longtext', required: false, order: 3 } ] }
   if (QUANTITATIVE.has(p.id)) return { id: `sch_lg_${p.id}`, companyId: 'c1', name: p.name, version: 1, status: 'published', usedBy: 1, ...stamp(), fields: [
     { key: 'result', label: 'Natija', type: 'select', options: YESNO, required: true, order: 1 },
     { key: 'load', label: 'Miqdor', type: 'number', unit: 'ME/ml', required: false, order: 2, decimals: 0, references: [{ text: 'бўлмаслиги керак' }], visibleIf: { key: 'result', equals: 'detected' } },
@@ -185,7 +187,7 @@ export function buildLegacyCatalog(): { serviceTypes: ServiceType[]; schemas: At
       status: b.status, version: 1, serviceTypeIds: ids, categoryIds: b.categoryIds ?? [], scope: b.scope, language: 'uz', doc: src.doc, usage: 0, ...stamp(400),
     }
     templates.push(tpl)
-    if (b.status === 'active') for (const st of serviceTypes) if (ids.includes(st.id)) st.defaultTemplateId = tpl.id
+    if (b.status === 'active') for (const st of serviceTypes) if (ids.includes(st.id)) { st.defaultTemplateId = tpl.id; if (b.scope === 'order') st.documentScope = 'order' }
   }
   const assets: TemplateAsset[] = importedTemplates.assets.map((a) => ({ ...a, companyId: 'c1', kind: a.kind as TemplateAsset['kind'] }))
   return { serviceTypes, schemas, templates, assets }

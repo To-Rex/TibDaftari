@@ -6,7 +6,23 @@
 import type { AttributeSchema, FieldDef, NumberField, ValueMap } from './catalog'
 import { evaluateNumber, referenceText } from './catalog'
 
+/** One order item inside an order-scoped document (e.g. hepatitis panel = several services on one sheet). */
+export interface RenderItem {
+  /** service code (catalog `ServiceType.code`, e.g. LG-85) — the stable key templates bind to via {svc.CODE.field} */
+  code: string
+  serviceTypeId: string
+  serviceName: string
+  status: string
+  values: ValueMap
+  schema: AttributeSchema | null
+  approvedAt?: string
+  technician?: string
+  doctor?: string
+}
+
 export interface RenderContext {
+  /** present for order-scoped documents; templates use {svc.<code>.<field>} and the `items` table dataset */
+  items?: RenderItem[]
   patient: {
     fullName: string
     phone: string
@@ -33,7 +49,7 @@ export interface RenderContext {
   schema: AttributeSchema | null
 }
 
-const PLACEHOLDER = /\{([a-zA-Z0-9_.]+)\}/g
+const PLACEHOLDER = /\{([a-zA-Z0-9_.\-]+)\}/g
 
 export function getPath(obj: unknown, path: string): unknown {
   return path.split('.').reduce<unknown>((acc, k) => {
@@ -48,6 +64,7 @@ export function interpolate(text: string, ctx: RenderContext, row?: Record<strin
     if (row && path === 'i') return fmt(row.__i)
     if (row && path.startsWith('row.')) return fmt(row[path.slice(4)])
     if (path.startsWith('values.')) return fmt(formatValue(ctx, path.slice(7)))
+    if (path.startsWith('svc.')) return fmt(serviceValue(ctx, path.slice(4)))
     return fmt(getPath(ctx, path))
   })
 }
@@ -116,6 +133,53 @@ export function fieldUnit(ctx: RenderContext, key: string): string {
 }
 
 export function tableRows(ctx: RenderContext, fieldKey: string): Record<string, unknown>[] {
+  if (fieldKey === 'items') return itemRows(ctx)
   const v = ctx.values[fieldKey]
   return Array.isArray(v) ? (v as Record<string, unknown>[]) : []
+}
+
+/* ---------------------------- Order-scoped documents ---------------------------- */
+
+const norm = (s: string) => s.trim().toLowerCase()
+
+/** Find an order item by its service code (case-insensitive). */
+export function findItem(ctx: RenderContext, code: string): RenderItem | undefined {
+  const c = norm(code)
+  return ctx.items?.find((it) => norm(it.code) === c)
+}
+
+/**
+ * Resolve `svc.<code>.<key>`:
+ *   key = name | status | approvedAt | technician | doctor  → item meta
+ *   key = <fieldKey>                                         → formatted value from that item's schema
+ * Missing item/field → ''.
+ */
+export function serviceValue(ctx: RenderContext, path: string): string {
+  const dot = path.lastIndexOf('.')
+  if (dot < 0) return ''
+  const code = path.slice(0, dot)
+  const key = path.slice(dot + 1)
+  const it = findItem(ctx, code)
+  if (!it) return ''
+  switch (key) {
+    case 'name': return it.serviceName
+    case 'status': return it.status
+    case 'approvedAt': return it.approvedAt ?? ''
+    case 'technician': return it.technician ?? ''
+    case 'doctor': return it.doctor ?? ''
+    default: {
+      const sub: RenderContext = { ...ctx, values: it.values, schema: it.schema }
+      return formatValue(sub, key)
+    }
+  }
+}
+
+/** Rows for the `items` dataset (table element bound to fieldKey "items"). */
+export function itemRows(ctx: RenderContext): Record<string, unknown>[] {
+  return (ctx.items ?? []).map((it, i) => {
+    const sub: RenderContext = { ...ctx, values: it.values, schema: it.schema }
+    const row: Record<string, unknown> = { code: it.code, name: it.serviceName, status: it.status, i: i + 1 }
+    for (const f of it.schema?.fields ?? []) if (f.type !== 'table') row[f.key] = formatValue(sub, f.key)
+    return row
+  })
 }

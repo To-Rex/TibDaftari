@@ -134,7 +134,8 @@ export default function ConfirmPage() {
           )}
         </Card>
         <div className={cn('min-w-0', !selectedId && 'max-lg:hidden')}>
-          <ConfirmDetail companyId={companyId} itemId={selectedId} onBack={() => select(null)} onApprove={(tid) => setApproveOpen({ templateId: tid })} onReject={() => setRejectOpen(true)} approving={approve.isPending} justApproved={justApproved} />
+          <ConfirmDetail companyId={companyId} itemId={selectedId} onBack={() => select(null)} onApprove={(tid) => setApproveOpen({ templateId: tid })} onReject={() => setRejectOpen(true)} approving={approve.isPending} justApproved={justApproved}
+            onOrderApproved={(ids) => { if (selectedId) { setJustApproved(selectedId); setTimeout(() => { setJustApproved(null); const next = rows.find((r) => !ids.includes(r.id)); select(next?.id ?? null) }, 900) } }} />
         </div>
       </div>
 

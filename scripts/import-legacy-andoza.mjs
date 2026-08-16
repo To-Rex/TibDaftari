@@ -34,6 +34,17 @@ const TOKEN_MAP = {
   'category.name': 'item.serviceName',
   'setup.name': 'company.name',
 }
+/**
+ * virusologiya (hepatitis panel) script variables → order-scoped placeholders by SERVICE CODE
+ * (legacy compute_vars: a=natija, b=miqdor/OD, c=qualitative PCR, d=quantitative PCR / genotype).
+ * Codes are catalog ServiceType.code (LG-<legacy product id>) — admins can rebind in the editor.
+ */
+const HEP_VARS = {
+  a1: 'svc.LG-85.result', b1: 'svc.LG-85.od', a2: 'svc.LG-83.result', b2: 'svc.LG-83.od',
+  a3: 'svc.LG-84.result', b3: 'svc.LG-84.od', a4: 'svc.LG-92.result', b4: 'svc.LG-92.od',
+  c1: 'svc.LG-86.result', c2: 'svc.LG-87.result',
+  d1: 'svc.LG-88.load', d2: 'svc.LG-89.load', d3: 'svc.LG-90.load', d4: 'svc.LG-91.genotype',
+}
 /** virus_bio script variables → biochemistry schema keys (sch_bio) */
 const BIO_VARS = { a10: 'values.bilirubin_total', a11: 'values.bilirubin_direct', a12: '', a13: 'values.alt', a14: 'values.ast', a15: 'values.protein', a16: 'values.albumin', a17: 'values.glucose', b2: '', b7: '' }
 
@@ -46,7 +57,11 @@ function mapText(text, docKey) {
     return TOKEN_MAP[k] != null ? `{${TOKEN_MAP[k]}}` : `{${k}}`
   })
   t = t.replace(/\[i\]|\[line\]/g, '{i}').replace(/\[date\]/g, '{today}')
-  t = t.replace(/\[([a-d]\d{1,2})\]/g, (_, v) => (docKey === 'virus_bio' && v in BIO_VARS ? (BIO_VARS[v] ? `{${BIO_VARS[v]}}` : '') : `{values.${v}}`))
+  t = t.replace(/\[([a-d]\d{1,2})\]/g, (_, v) => {
+    if (docKey === 'virus_bio' && v in BIO_VARS) return BIO_VARS[v] ? `{${BIO_VARS[v]}}` : ''
+    if (docKey === 'virusologiya' && v in HEP_VARS) return `{${HEP_VARS[v]}}`
+    return `{values.${v}}`
+  })
   return t
 }
 const mapExpr = (e) => (e ? mapText(e) : undefined)
