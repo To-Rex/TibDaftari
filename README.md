@@ -16,7 +16,7 @@ Hozircha **mock ma’lumotlar** bilan ishlaydi (`VITE_DATA_SOURCE=mock`). Backen
 ```bash
 npm install
 cp .env.example .env
-npm run dev        # http://localhost:5180
+npm run dev        # http://localhost:5180 (PORT env bilan o‘zgartiriladi)
 npm run build      # tsc + vite build
 npm run typecheck
 npm run lint
