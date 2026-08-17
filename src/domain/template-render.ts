@@ -51,7 +51,7 @@ export interface RenderContext {
   schema: AttributeSchema | null
 }
 
-const PLACEHOLDER = /\{([a-zA-Z0-9_.\-]+)\}/g
+const PLACEHOLDER = /\{([a-zA-Z0-9_.-]+)\}/g
 
 export function getPath(obj: unknown, path: string): unknown {
   return path.split('.').reduce<unknown>((acc, k) => {

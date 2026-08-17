@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { PatientSession, Permission, StaffSession } from '@/domain'
 import { repos } from '@/data'
+import { onUnauthorized } from '@/data/http/client'
 import { storage } from '@/shared/lib/storage'
 
 const STAFF_KEY = 'clinic.staff.token'
@@ -73,6 +74,12 @@ export const useAuth = create<AuthState>((set, get) => ({
     set({ staff: s })
   },
 }))
+
+/** API said 401 for an actor (expired/revoked token): drop that session so route guards redirect to login. */
+onUnauthorized((actor) => {
+  if (actor === 'staff') useAuth.setState({ staff: null })
+  else if (actor === 'patient') useAuth.setState({ patient: null })
+})
 
 /** Permission helpers — usable in components and plain functions. */
 export const usePermissions = () => {

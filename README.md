@@ -9,7 +9,7 @@ Ko‘p filialli klinika platformasining web ilovasi (React 19 + Vite + TypeScrip
 | Xodimlar ilovasi | `/app/*` | registrator, laborant, vrach, rahbar |
 | Boshqaruv | `/admin/*` | kompaniya admini, superadmin |
 
-Hozircha **mock ma’lumotlar** bilan ishlaydi (`VITE_DATA_SOURCE=mock`). Backend (FastAPI) tayyor bo‘lganda `src/data/http/` yoziladi va faqat provider almashadi.
+Ma’lumotlar **TibDaftari-Backend** (FastAPI) dan olinadi: `src/data/http/*` repositorylari `VITE_API_URL` (`…/api/v1`) manziliga so‘rov yuboradi. Dev uchun `.env` (`http://localhost:8000/api/v1`), production build uchun `.env.production`.
 
 ## Ishga tushirish
 
@@ -22,17 +22,17 @@ npm run typecheck
 npm run lint
 ```
 
-Demo hisoblar (parol `123456`): `super`, `admin`, `umida` (registrator), `dilnoza` (laborant), `ahmed` (vrach). Bemor uchun login sahifasidagi demo raqam, OTP kod `1234`.
+Demo hisoblar (backend seed, parol `123456`): `super`, `admin`, `umida` (registrator), `dilnoza` (laborant), `ahmed` (vrach). Bemor OTP kodi backend dev rejimida (`OTP_DEV_MODE`) javobda `devCode` sifatida qaytadi va login sahifasida ko‘rsatiladi.
 
 ## Arxitektura
 
-Qarang: [ARCHITECTURE.md](ARCHITECTURE.md). Qisqacha: `domain` (sof tiplar) ← `data` (repository kontraktlari + mock) ← `features` (hooklar/komponentlar) ← `modules` (sahifalar) ; `shared` (UI kit, i18n, theme) ; `app` (router, layout, guard).
+Qarang: [ARCHITECTURE.md](ARCHITECTURE.md). Qisqacha: `domain` (sof tiplar) ← `data` (repository kontraktlari + http implementatsiya) ← `features` (hooklar/komponentlar) ← `modules` (sahifalar) ; `shared` (UI kit, i18n, theme) ; `app` (router, layout, guard).
 
 ## Deploy (Dokploy + Railpack)
 
 Xabarchi-Web bilan bir xil usul: GitHub repo → Dokploy ilovasi (Build type: **Railpack**). Railpack `railpack.json` va `package.json` dan Node 22 + Vite SPA ekanini aniqlaydi, `npm ci` → `npm run build` bajaradi va `dist/` ni Caddy orqali (SPA fallback bilan, `/app/*`, `/admin/*`, `/me/*` marshrutlar ishlaydi) `PORT` da uzatadi. Alohida start-komanda kerak emas.
 
 Dokploy'da:
-- **Environment**: hozircha majburiy o‘zgaruvchi yo‘q (mock rejim). Backend chiqqanda: `VITE_DATA_SOURCE=http`, `VITE_API_URL=https://<backend>/api/v1` (Vite build-time o‘zgaruvchilar — o‘zgartirsangiz qayta build kerak).
+- **Environment**: `VITE_API_URL=https://<backend>/api/v1` (`.env.production` da default qiymat bor; Vite build-time o‘zgaruvchi — o‘zgartirsangiz qayta build kerak).
 - **Health check**: `GET /` (200).
 - Git push → avtomatik deploy.

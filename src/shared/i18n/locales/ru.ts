@@ -23,7 +23,7 @@ export const ru: DeepPartial<Dictionary> = {
     staffTitle: 'Вход для сотрудников', staffSubtitle: 'Введите логин и пароль', login: 'Логин', password: 'Пароль', signIn: 'Войти', signingIn: 'Проверка…',
     patientTitle: 'Кабинет пациента', patientSubtitle: 'Мы отправим код подтверждения на ваш номер', phone: 'Номер телефона', sendCode: 'Отправить код', codeSent: 'Код отправлен',
     enterCode: 'Введите 4-значный код, отправленный на {{phone}}', verify: 'Подтвердить', resend: 'Отправить снова', resendIn: 'Отправить снова ({{s}} с)', changePhone: 'Изменить номер',
-    orContinueWith: 'или', google: 'Войти через Google', apple: 'Войти через Apple', soon: 'скоро', devHint: 'Демо-код: {{code}}', demoAccounts: 'Демо-аккаунты', demoPassword: 'Пароль: 123456',
+    orContinueWith: 'или', google: 'Войти через Google', apple: 'Войти через Apple', soon: 'скоро', devHint: 'Демо-код: {{code}}', patientHint: 'Введите номер телефона, указанный в клинике — мы отправим одноразовый код по SMS.', demoAccounts: 'Демо-аккаунты', demoPassword: 'Пароль: 123456',
     forStaff: 'Вы сотрудник?', forPatients: 'Вы пациент?', staffLink: 'Вход для сотрудников', patientLink: 'Войти в кабинет пациента', sessionExpired: 'Сессия истекла, войдите снова',
   },
   landing: {
@@ -64,6 +64,6 @@ export const ru: DeepPartial<Dictionary> = {
     managementCardFourText: 'Настраивайте типы анализов, динамические формы и вид результата в одном месте.', finalKicker: 'Демо-режим доступен',
     finalTitle: 'Посмотрите процесс TibDaftari сами.', finalText: 'Откройте кабинет пациента или систему сотрудников и попробуйте путь от приёма до результата на демо-данных.',
     finalPatientCta: 'Кабинет пациента', finalStaffCta: 'Вход для сотрудников', finalHint: 'В демо-режиме используются тестовые данные',
-    footer: '© {{year}} TibDaftari. Все права защищены.', demoBadge: 'Демо-режим, тестовые данные',
+    footer: '© {{year}} TibDaftari. Все права защищены.', demoBadge: 'Демо-режим',
   },
 }

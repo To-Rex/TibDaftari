@@ -131,6 +131,7 @@ export const uz = {
     apple: 'Apple bilan kirish',
     soon: 'tez orada',
     devHint: 'Demo kod: {{code}}',
+    patientHint: 'Klinikada ro‘yxatdan o‘tgan telefon raqamingizni kiriting — SMS orqali bir martalik kod yuboramiz.',
     demoAccounts: 'Demo hisoblar',
     demoPassword: 'Parol: 123456',
     forStaff: 'Xodimmisiz?',
@@ -240,7 +241,7 @@ export const uz = {
     finalStaffCta: 'Xodimlar uchun kirish',
     finalHint: 'Demo rejimda ma’lumotlar test uchun yaratilgan',
     footer: '© {{year}} TibDaftari. Barcha huquqlar himoyalangan.',
-    demoBadge: 'Demo rejim, mock ma’lumotlar',
+    demoBadge: 'Demo rejim',
   },
 }
 

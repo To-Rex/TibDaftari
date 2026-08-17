@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowLeft, FileQuestion } from 'lucide-react'
 import { usePatientSession } from '@/features/session/useSession'
 import { stagger } from '@/features/portal/motion'
-import { useBranches, useCompany, usePortalOrder } from '@/features/portal/queries'
+import { usePortalOrder } from '@/features/portal/queries'
 import { orderActiveCount, orderReadyCount, paymentTone } from '@/features/portal/status'
 import { VisitItemCard } from '@/features/portal/components/VisitItemCard'
 import { routes } from '@/shared/config/routes'
@@ -59,9 +59,7 @@ export default function PortalVisitPage() {
   const { orderId } = useParams<{ orderId: string }>()
   const session = usePatientSession()
   const q = usePortalOrder(session.patientId, orderId)
-  const companyQ = useCompany(q.data?.order.companyId)
-  const branchesQ = useBranches(q.data?.order.companyId)
-  const branch = branchesQ.data?.find((b) => b.id === q.data?.order.branchId)
+  const branch = q.data?.branch
 
   if (q.isError) {
     return (
@@ -103,7 +101,7 @@ export default function PortalVisitPage() {
         {order ? (
           <>
             <p className="text-ink-3 text-[12.5px]">
-              {companyQ.data?.name}
+              {q.data?.company.name}
               {branch && <> · {branch.name}</>}
               {' · '}
               <span className="tabular">{fmtDateTime(order.createdAt)}</span>

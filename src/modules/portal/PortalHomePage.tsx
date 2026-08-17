@@ -4,7 +4,7 @@ import { motion } from 'motion/react'
 import { CalendarDays, FileCheck2, FolderOpen, Wallet } from 'lucide-react'
 import { usePatientSession } from '@/features/session/useSession'
 import { stagger } from '@/features/portal/motion'
-import { usePortalOverview, useBranchNames } from '@/features/portal/queries'
+import { branchNameMap, usePortalOverview } from '@/features/portal/queries'
 import { firstName, isRecent } from '@/features/portal/status'
 import { SummaryCard } from '@/features/portal/components/SummaryCard'
 import { SectionHeader } from '@/features/portal/components/SectionHeader'
@@ -22,7 +22,7 @@ export default function PortalHomePage() {
   const { t } = useTranslation()
   const session = usePatientSession()
   const q = usePortalOverview(session.patientId)
-  const branchNames = useBranchNames(q.data?.companies.map((c) => c.id) ?? [])
+  const branchNames = branchNameMap(q.data?.branches)
 
   useEffect(() => {
     if (q.error) toast.error(t('portal.common.loadError'), errorMessage(q.error))

@@ -7,7 +7,7 @@ React 19 + Vite 8 + TypeScript (strict) + Tailwind v4 + TanStack Query + Zustand
 ```
 modules/    pages per zone: landing | portal (patients) | staff (/app) | admin (/admin)
 features/   feature hooks & feature-level components (react-query hooks, forms, editors)
-data/       repository CONTRACTS (repositories.ts) + mock impl (mock/) + future http/
+data/       repository CONTRACTS (repositories.ts) + http impl (http/*.http.ts over http/client.ts)
 domain/     pure TS types & pure functions (no React, no I/O)
 shared/     ui kit (shared/ui), i18n, theme, lib helpers, hooks, config/routes
 app/        router, layouts, guards, providers
@@ -15,7 +15,7 @@ app/        router, layouts, guards, providers
 
 Rules
 - Pages never call `repos` directly for mutations without react-query; use `useQuery`/`useMutation` from a `features/<name>/queries.ts` (or inline in the page if tiny). Query keys: `['<entity>', companyId, params]`.
-- Pages never import from `data/mock/*` (except the demo hint on login). Only `import { repos } from '@/data'`.
+- Pages never import from `data/http/*` directly. Only `import { repos, ApiError } from '@/data'`.
 - All user-facing text goes through `t('ns.key')`. Add keys to `shared/i18n/locales/uz.ts` (base) and mirror in `ru.ts`/`en.ts` (DeepPartial — untranslated keys fall back to uz).
 - Colors only via tokens (`bg-surface`, `text-ink-2`, `border-line`, `bg-brand-soft`, `text-danger` …). Never raw hex in components (template documents are the exception — they are printed).
 - Use `shared/ui` primitives: `Button, IconButton, Input, SearchInput, Textarea, Select, Checkbox, Switch, Field, Card, CardHeader, Badge, Avatar, Skeleton, SkeletonRows, EmptyState, Stat, Modal, Drawer, ConfirmDialog, toast, Tabs, Segmented, Menu, Pagination, Tooltip, DataTable, Page, PageHeader, Toolbar, Logo, BrandMark, LanguageSwitcher, ThemeToggle`.
@@ -34,5 +34,5 @@ Rules
 - Templates: `ResultTemplate` (status draft/active/archived, serviceTypeIds/categoryIds, `doc: TemplateDoc` with absolute-px elements text/field/rect/ellipse/line/image/table). Rendering helpers in `domain/template-render.ts` (`interpolate`, `formatValue`, `fieldFlag`, `fieldReference`, `tableRows`).
 - Messaging: `OutboxMessage` (sms outbox with scheduled/queued/sent/delivered/failed).
 
-## Mock data
-`data/mock/db.ts` seeds 2 companies, 3 branches, 9 employees, 640 patients, ~1150 orders, 22 service types, 9 schemas, 5 templates. Demo logins: super/admin/umida/sevara/muhammad/dilnoza/ahmed/nodir — password `123456`. Patient OTP code is `1234`.
+## Data layer (http)
+`data/http/client.ts` — thin fetch client (`api.get/post/put/delete`, bearer token per actor staff|patient from localStorage, camelCase JSON, `ApiError` from the backend error envelope, `absoluteUrl()` for `/api/v1/files/*` and PDF links, 401 → `onUnauthorized` → auth store drops the session). Each `data/http/<x>.http.ts` implements one repository interface against `TibDaftari-Backend` (`ARCHITECTURE.md` there is the endpoint map). Demo logins come from the backend seed: super/admin/umida/dilnoza/ahmed — password `123456`; patient OTP `devCode` is returned only when the backend runs in OTP dev mode.

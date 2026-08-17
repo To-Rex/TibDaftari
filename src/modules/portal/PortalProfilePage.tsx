@@ -8,7 +8,7 @@ import { repos } from '@/data'
 import { useAuth } from '@/features/auth/store'
 import { usePatientSession } from '@/features/session/useSession'
 import { fadeUp, stagger } from '@/features/portal/motion'
-import { usePatient, usePortalOverview } from '@/features/portal/queries'
+import { usePortalOverview } from '@/features/portal/queries'
 import { routes } from '@/shared/config/routes'
 import { LOCALES } from '@/shared/i18n'
 import { useTheme, type ThemeMode } from '@/shared/theme/ThemeProvider'
@@ -46,9 +46,8 @@ export default function PortalProfilePage() {
   const [confirm, setConfirm] = useState(false)
   const [leaving, setLeaving] = useState(false)
 
-  const patientQ = usePatient(session.patientId)
   const overviewQ = usePortalOverview(session.patientId)
-  const p = patientQ.data
+  const p = overviewQ.data?.patient
   const districtsQ = useQuery({
     queryKey: ['portal', 'districts', p?.address?.regionId] as const,
     queryFn: () => repos.patients.districts(p?.address?.regionId),

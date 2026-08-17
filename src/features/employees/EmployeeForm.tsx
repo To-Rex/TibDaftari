@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import type { Category, Employee, Id } from '@/domain'
-import { MockError, repos } from '@/data'
+import { ApiError, repos } from '@/data'
 import { usePermissions } from '@/features/auth/store'
 import { useBranches } from '@/features/org/queries'
 import { useRoles } from '@/features/roles/queries'
@@ -81,7 +81,7 @@ export function EmployeeForm({ companyId, employee, onSaved, onCancel, formId = 
       toast.success(isEdit ? t('admin.employees.saved') : t('admin.employees.created'))
       onSaved(saved)
     } catch (e) {
-      if (e instanceof MockError && e.status === 409) setError('login', { message: 'taken' })
+      if (e instanceof ApiError && e.status === 409) setError('login', { message: 'taken' })
       else toast.error(errorMessage(e))
     }
   })

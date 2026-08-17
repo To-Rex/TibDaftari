@@ -4,14 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
 import { ArrowLeft, BadgeCheck, Download, FileQuestion, Printer } from 'lucide-react'
 import { usePatientSession } from '@/features/session/useSession'
-import {
-  useBranches,
-  useCompany,
-  usePatient,
-  usePortalDocument,
-  useSchema,
-  useTemplateAssets,
-} from '@/features/portal/queries'
+import { usePortalDocument, usePortalOverview } from '@/features/portal/queries'
 import { documentTitle } from '@/features/portal/status'
 import { DocumentViewer } from '@/features/portal/components/DocumentViewer'
 import { ResultInfoPanel } from '@/features/portal/components/ResultInfoPanel'
@@ -26,40 +19,31 @@ export default function PortalResultPage() {
   const session = usePatientSession()
 
   const q = usePortalDocument(session.patientId, documentId)
-  const companyId = q.data?.document.companyId
-  const patientQ = usePatient(session.patientId)
-  const companyQ = useCompany(companyId)
-  const branchesQ = useBranches(companyId)
-  const assetsQ = useTemplateAssets(companyId)
-  const schemaQ = useSchema(q.data?.item?.schemaId)
+  // patient card comes from the overview (portal token); everything else travels with the document
+  const overviewQ = usePortalOverview(session.patientId)
 
-  const branch = branchesQ.data?.find((b) => b.id === q.data?.order.branchId)
-  const ready =
-    !!q.data &&
-    patientQ.isSuccess &&
-    companyQ.isSuccess &&
-    branchesQ.isSuccess &&
-    assetsQ.isSuccess &&
-    (!q.data.item?.schemaId || schemaQ.isSuccess)
+  const company = q.data?.company
+  const branch = q.data?.branch
+  const ready = !!q.data && overviewQ.isSuccess
 
   const ctx = useMemo(
     () =>
       q.data
         ? buildRenderContext({
-            patient: patientQ.data,
+            patient: overviewQ.data?.patient,
             order: q.data.order,
             item: q.data.item,
-            company: companyQ.data,
+            company,
             branch,
             category: q.data.category,
-            schema: schemaQ.data ?? null,
+            schema: q.data.schemas.find((s) => s.id === q.data?.item?.schemaId) ?? null,
             // order-scoped documents (several services on one sheet)
             items: q.data.template.scope === 'order'
               ? q.data.items.map((item) => ({ item, schema: q.data!.schemas.find((s) => s.id === item.schemaId) ?? null, code: q.data!.serviceCodes[item.serviceTypeId] ?? item.serviceTypeId }))
               : undefined,
           })
         : null,
-    [q.data, patientQ.data, companyQ.data, branch, schemaQ.data],
+    [q.data, overviewQ.data?.patient, company, branch],
   )
 
   const print = () => window.print()
@@ -106,7 +90,7 @@ export default function PortalResultPage() {
           {doc ? (
             <>
               <p className="text-ink-3 text-[12.5px]">
-                {companyQ.data?.name}
+                {company?.name}
                 {branch && <> · {branch.name}</>}
                 {' · '}
                 <span className="tabular">{fmtDate(doc.createdAt)}</span>
@@ -162,7 +146,7 @@ export default function PortalResultPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             >
-              <DocumentViewer doc={q.data.template.doc} ctx={ctx} assets={assetsQ.data ?? []} />
+              <DocumentViewer doc={q.data.template.doc} ctx={ctx} assets={q.data.assets} />
             </motion.div>
           ) : (
             <Skeleton className="mx-auto aspect-[794/1123] w-full max-w-[794px] rounded-[10px]" />
@@ -174,7 +158,7 @@ export default function PortalResultPage() {
               item={q.data.item}
               order={q.data.order}
               ctx={ctx}
-              clinic={companyQ.data?.name}
+              clinic={company?.name}
               branch={branch?.name}
             />
           ) : (

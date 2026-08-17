@@ -160,7 +160,7 @@ export interface TemplateAsset {
   companyId: Id
   kind: 'logo' | 'stamp' | 'signature' | 'image'
   name: string
-  url: string // data URI in mock
+  url: string // absolute URL (backend /api/v1/files/{id}) or data URI while uploading
   width: number
   height: number
   employeeId?: Id // signature belongs to a doctor

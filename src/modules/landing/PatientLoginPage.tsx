@@ -5,11 +5,10 @@ import { AnimatePresence, motion } from 'motion/react'
 import { Phone, ShieldCheck } from 'lucide-react'
 import { AuthLayout } from './AuthLayout'
 import { Button, Field, Input, toast } from '@/shared/ui'
-import { repos, MockError } from '@/data'
+import { repos, ApiError } from '@/data'
 import { useAuth } from '@/features/auth/store'
 import { routes } from '@/shared/config/routes'
 import { fmtPhone } from '@/shared/lib/format'
-import { db } from '@/data/mock/db'
 
 const formatLocal = (raw: string) => {
   const d = raw.replace(/\D/g, '').slice(0, 9)
@@ -47,7 +46,7 @@ export default function PatientLoginPage() {
       setTimeout(() => inputs.current[0]?.focus(), 60)
       toast.success(t('auth.codeSent'))
     } catch (e) {
-      toast.error(e instanceof MockError ? e.message : t('common.error'))
+      toast.error(e instanceof ApiError ? e.message : t('common.error'))
     } finally {
       setBusy(false)
     }
@@ -60,7 +59,7 @@ export default function PatientLoginPage() {
       patientLogin(s)
       nav(routes.portal.root, { replace: true })
     } catch (e) {
-      toast.error(e instanceof MockError ? e.message : t('common.error'))
+      toast.error(e instanceof ApiError ? e.message : t('common.error'))
       setCode(['', '', '', ''])
       inputs.current[0]?.focus()
     } finally {
@@ -87,14 +86,12 @@ export default function PatientLoginPage() {
     if (full.length === 4) void verify(full)
   }
 
-  const demoPhone = db().patients[0]?.phone
-
   return (
     <AuthLayout
       aside={
         <div className="rounded-[var(--radius-lg)] border border-line bg-surface/60 p-4 xs:p-5 sm:p-6 backdrop-blur">
           <p className="inline-flex items-center gap-2 text-[13px] font-medium text-brand-ink"><ShieldCheck className="size-4" />{t('landing.demoBadge')}</p>
-          <p className="mt-2 text-[13.5px] text-ink-3 break-words">Demo bemor: <button className="font-mono text-ink underline-offset-2 hover:underline min-h-[40px] py-1" onClick={() => setPhone(formatLocal(demoPhone?.slice(3) ?? ''))}>{fmtPhone(demoPhone)}</button></p>
+          <p className="mt-2 text-[13.5px] text-ink-3 break-words">{t('auth.patientHint')}</p>
         </div>
       }
     >

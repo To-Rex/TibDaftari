@@ -4,7 +4,7 @@ import { useQueries } from '@tanstack/react-query'
 import { motion } from 'motion/react'
 import { ArrowLeft, Copy, Lock, Plus, ShieldCheck, Trash2, Users } from 'lucide-react'
 import { PERMISSIONS, type Permission, type Role } from '@/domain'
-import { MockError, repos } from '@/data'
+import { ApiError, repos } from '@/data'
 import { useStaffSession } from '@/features/session/useSession'
 import { usePermissions } from '@/features/auth/store'
 import { useDeleteRole, useRoles, useSaveRole } from '@/features/roles/queries'
@@ -76,7 +76,7 @@ export default function RolesPage() {
       setView('list')
     } catch (e) {
       setConfirm(false)
-      toast.error(e instanceof MockError && e.code === 'in_use' ? t('admin.roles.inUse') : errorMessage(e))
+      toast.error(e instanceof ApiError && e.code === 'in_use' ? t('admin.roles.inUse') : errorMessage(e))
     }
   }
 

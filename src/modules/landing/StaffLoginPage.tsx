@@ -9,7 +9,7 @@ import { AuthLayout } from './AuthLayout'
 import { Button, Field, Input, Badge, toast } from '@/shared/ui'
 import { useAuth } from '@/features/auth/store'
 import { routes } from '@/shared/config/routes'
-import { MockError } from '@/data'
+import { ApiError } from '@/data'
 
 const schema = z.object({ login: z.string().min(2), password: z.string().min(4) })
 type Form = z.infer<typeof schema>
@@ -36,7 +36,7 @@ export default function StaffLoginPage() {
       const dest = loc.state?.from ?? (s.roleKey === 'admin' || s.isSuperAdmin ? routes.admin.root : routes.app.root)
       nav(dest, { replace: true })
     } catch (e) {
-      toast.error(e instanceof MockError ? e.message : t('common.error'))
+      toast.error(e instanceof ApiError ? e.message : t('common.error'))
     }
   }
 

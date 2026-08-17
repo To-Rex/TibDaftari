@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { CalendarDays } from 'lucide-react'
 import { usePatientSession } from '@/features/session/useSession'
 import { stagger } from '@/features/portal/motion'
-import { useBranchNames, usePortalOverview } from '@/features/portal/queries'
+import { branchNameMap, usePortalOverview } from '@/features/portal/queries'
 import { VisitRow } from '@/features/portal/components/VisitRow'
 import { errorMessage } from '@/shared/lib/errors'
 import {
@@ -24,7 +24,7 @@ export default function PortalVisitsPage() {
   const { t } = useTranslation()
   const session = usePatientSession()
   const q = usePortalOverview(session.patientId)
-  const branchNames = useBranchNames(q.data?.companies.map((c) => c.id) ?? [])
+  const branchNames = branchNameMap(q.data?.branches)
   const [page, setPage] = useState(1)
 
   useEffect(() => {

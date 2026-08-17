@@ -21,7 +21,7 @@ const schema = z.object({
 type Values = z.infer<typeof schema>
 type Priority = Values['defaultPriority']
 
-/** 'xab_live_abcdef7f2a' → 'xab_live_••••7f2a' — computed client-side, plaintext never persisted in mock. */
+/** 'xab_live_abcdef7f2a' → 'xab_live_••••7f2a' — computed client-side, the API never returns the plaintext key. */
 export const maskApiKey = (key: string) => {
   const m = /^([a-z]+_[a-z]+_)?(.*)$/i.exec(key)
   const prefix = m?.[1] ?? ''

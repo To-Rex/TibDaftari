@@ -1,6 +1,6 @@
 /**
  * Repository contracts. Pages/features depend ONLY on these interfaces.
- * `mock/` implements them in-memory today; `http/` will call FastAPI later.
+ * `http/` implements them against the TibDaftari FastAPI backend.
  */
 import type {
   AttributeSchema,
@@ -140,11 +140,20 @@ export interface ReportRepository {
   breakdown(companyId: Id, q: { by: 'category' | 'service' | 'branch' | 'employee'; dateFrom: string; dateTo: string; branchId?: Id }): Promise<{ name: string; count: number; revenue: number }[]>
 }
 
-/** Patient portal — scoped by patient token; separate surface on purpose. */
+/** Public clinic card shown in the portal (letterhead data only — no settings/secrets). */
+export type PortalCompany = Pick<Company, 'id' | 'name' | 'logoUrl' | 'phone' | 'address'>
+/** Public branch card shown in the portal. */
+export type PortalBranch = Pick<Branch, 'id' | 'companyId' | 'name' | 'address' | 'phone'>
+
+/**
+ * Patient portal — scoped by patient token; separate surface on purpose.
+ * Every payload is self-contained (clinic/branch cards, assets, schemas travel with it) so portal
+ * pages never call staff-only endpoints.
+ */
 export interface PortalRepository {
-  overview(patientId: Id): Promise<{ patient: Patient; orders: Order[]; documents: ResultDocument[]; companies: { id: Id; name: string }[] }>
-  order(patientId: Id, orderId: Id): Promise<{ order: Order; items: OrderItem[]; documents: ResultDocument[] }>
-  document(patientId: Id, documentId: Id): Promise<{ document: ResultDocument; template: ResultTemplate; item?: OrderItem; order: Order; items: OrderItem[]; schemas: AttributeSchema[]; serviceCodes: Record<Id, string>; category?: Category }>
+  overview(patientId: Id): Promise<{ patient: Patient; orders: Order[]; documents: ResultDocument[]; companies: PortalCompany[]; branches: PortalBranch[] }>
+  order(patientId: Id, orderId: Id): Promise<{ order: Order; items: OrderItem[]; documents: ResultDocument[]; company: PortalCompany; branch?: PortalBranch | null }>
+  document(patientId: Id, documentId: Id): Promise<{ document: ResultDocument; template: ResultTemplate; item?: OrderItem; order: Order; items: OrderItem[]; schemas: AttributeSchema[]; serviceCodes: Record<Id, string>; category?: Category; company: PortalCompany; branch?: PortalBranch | null; assets: TemplateAsset[] }>
 }
 
 export interface Repositories {
