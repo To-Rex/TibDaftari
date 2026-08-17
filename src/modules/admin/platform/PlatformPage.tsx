@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { Building2, LogIn, Pencil, Plus } from 'lucide-react'
 import type { Column } from '@/shared/ui'
 import type { Company } from '@/domain'
-import { usePermissions } from '@/features/auth/store'
+import { useAuth, usePermissions } from '@/features/auth/store'
+import { useNavigate } from 'react-router-dom'
+import { routes } from '@/shared/config/routes'
 import { useCompanies, useSaveCompany } from '@/features/org/queries'
 import { CompanyDrawer } from '@/features/org/CompanyDrawer'
 import { useDebounce } from '@/shared/hooks/useDebounce'
@@ -15,6 +17,9 @@ export default function PlatformPage() {
   const { t } = useTranslation()
   const { can } = usePermissions()
   const canManage = can('platform.company.manage')
+  const nav = useNavigate()
+  const setActiveCompany = useAuth((s) => s.setActiveCompany)
+  const enter = (c: Company) => { setActiveCompany(c.id); toast.success(t('admin.platform.switched', { name: c.name })); nav(routes.admin.root) }
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
@@ -56,7 +61,7 @@ export default function PlatformPage() {
     ) },
     { key: 'actions', header: '', align: 'right', card: 'actions', cell: (c) => (
       <div className="flex flex-wrap items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-        <Button size="xs" variant="soft" leftIcon={<LogIn className="size-3.5" />} onClick={() => toast.info(t('admin.platform.impersonateSoon'))}>{t('admin.platform.impersonate')}</Button>
+        <Button size="xs" variant="soft" leftIcon={<LogIn className="size-3.5" />} onClick={() => enter(c)}>{t('admin.platform.impersonate')}</Button>
         {canManage && <IconButton label={t('common.edit')} size="sm" onClick={() => setDrawer({ open: true, company: c })}><Pencil /></IconButton>}
       </div>
     ) },

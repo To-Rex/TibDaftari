@@ -7,17 +7,30 @@ import { storage } from '@/shared/lib/storage'
 const STAFF_KEY = 'clinic.staff.token'
 const PATIENT_KEY = 'clinic.patient.token'
 const BRANCH_KEY = 'clinic.staff.branch'
+/** superadmin only: the company currently being managed (null = own/home company) */
+const COMPANY_KEY = 'clinic.staff.company'
+
+/** Superadmins may work inside any company: overlay the chosen company id on the session. */
+const withActiveCompany = (s: StaffSession | null): StaffSession | null => {
+  if (!s || !s.isSuperAdmin) return s
+  const active = storage.get<string | null>(COMPANY_KEY, null)
+  return active && active !== s.companyId ? { ...s, companyId: active } : s
+}
 
 interface AuthState {
   staff: StaffSession | null
   patient: PatientSession | null
   /** currently selected branch for staff (null = all branches for admins) */
   branchId: string | null
+  /** superadmin: own company id (session.companyId may be overlaid by setActiveCompany) */
+  homeCompanyId: string | null
   hydrated: boolean
   hydrate: () => Promise<void>
   staffLogin: (login: string, password: string) => Promise<StaffSession>
   patientLogin: (session: PatientSession) => void
   setBranch: (id: string | null) => void
+  /** superadmin: switch the managed company (null = back to own company); resets branch scope */
+  setActiveCompany: (companyId: string | null) => void
   logoutStaff: () => Promise<void>
   logoutPatient: () => Promise<void>
   refreshStaff: () => Promise<void>
@@ -27,24 +40,27 @@ export const useAuth = create<AuthState>((set, get) => ({
   staff: null,
   patient: null,
   branchId: storage.get<string | null>(BRANCH_KEY, null),
+  homeCompanyId: null,
   hydrated: false,
   async hydrate() {
     const st = storage.get<string | null>(STAFF_KEY, null)
     const pt = storage.get<string | null>(PATIENT_KEY, null)
-    const [staff, patient] = await Promise.all([
+    const [home, patient] = await Promise.all([
       st ? repos.auth.staffMe(st).catch(() => null) : null,
       pt ? repos.auth.patientMe(pt).catch(() => null) : null,
     ])
-    if (!staff) storage.remove(STAFF_KEY)
+    if (!home) storage.remove(STAFF_KEY)
     if (!patient) storage.remove(PATIENT_KEY)
+    const staff = withActiveCompany(home)
     const branchId = staff ? (get().branchId ?? staff.branchId) : null
-    set({ staff, patient, branchId, hydrated: true })
+    set({ staff, patient, branchId, homeCompanyId: home?.companyId ?? null, hydrated: true })
   },
   async staffLogin(login, password) {
     const s = await repos.auth.staffLogin({ login, password })
     storage.set(STAFF_KEY, s.accessToken)
     storage.set(BRANCH_KEY, s.branchId)
-    set({ staff: s, branchId: s.branchId })
+    storage.remove(COMPANY_KEY)
+    set({ staff: s, branchId: s.branchId, homeCompanyId: s.companyId })
     return s
   },
   patientLogin(session) {
@@ -55,11 +71,22 @@ export const useAuth = create<AuthState>((set, get) => ({
     storage.set(BRANCH_KEY, id)
     set({ branchId: id })
   },
+  setActiveCompany(companyId) {
+    const { staff, homeCompanyId } = get()
+    if (!staff?.isSuperAdmin) return
+    const home = homeCompanyId ?? staff.companyId
+    const next = companyId && companyId !== home ? companyId : null
+    if (next) storage.set(COMPANY_KEY, next)
+    else storage.remove(COMPANY_KEY)
+    storage.set(BRANCH_KEY, null)
+    set({ staff: { ...staff, companyId: next ?? home }, branchId: null })
+  },
   async logoutStaff() {
     const t = get().staff?.accessToken
     if (t) await repos.auth.logout(t)
     storage.remove(STAFF_KEY)
-    set({ staff: null })
+    storage.remove(COMPANY_KEY)
+    set({ staff: null, homeCompanyId: null })
   },
   async logoutPatient() {
     const t = get().patient?.accessToken
@@ -71,7 +98,7 @@ export const useAuth = create<AuthState>((set, get) => ({
     const t = get().staff?.accessToken
     if (!t) return
     const s = await repos.auth.staffMe(t).catch(() => null)
-    set({ staff: s })
+    set({ staff: withActiveCompany(s), homeCompanyId: s?.companyId ?? null })
   },
 }))
 

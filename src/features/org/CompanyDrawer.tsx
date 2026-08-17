@@ -1,4 +1,5 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
+import { useWatch } from 'react-hook-form'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -12,7 +13,7 @@ import { useSaveCompany } from './queries'
 const schema = z.object({
   name: z.string().trim().min(2),
   legalName: z.string().trim(),
-  slug: z.string().trim().regex(/^[a-z0-9-]{2,40}$/),
+  slug: z.string().trim().regex(/^[a-z0-9-]{2,40}$/).or(z.literal('')),
   phone: z.string().trim(),
   email: z.string().trim().email().or(z.literal('')),
   address: z.string().trim(),
@@ -28,12 +29,19 @@ export function CompanyDrawer({ open, onClose, company }: { open: boolean; onClo
     name: company?.name ?? '', legalName: company?.legalName ?? '', slug: company?.slug ?? '', phone: company?.phone ?? '', email: company?.email ?? '',
     address: company?.address ?? '', locale: company?.locale ?? 'uz', isActive: company?.isActive ?? true,
   }), [company])
-  const { register, control, handleSubmit, reset, formState: { errors } } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: defaults })
-  useEffect(() => { if (open) reset(defaults) }, [open, defaults, reset])
+  const { register, control, handleSubmit, reset, setValue, formState: { errors } } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: defaults })
+  const slugTouched = useRef(false)
+  useEffect(() => { if (open) { reset(defaults); slugTouched.current = false } }, [open, defaults, reset])
+  // new company: propose a slug from the name until the user edits the slug field themselves
+  const name = useWatch({ control, name: 'name' })
+  useEffect(() => {
+    if (company || slugTouched.current) return
+    setValue('slug', slugFromName(name ?? ''))
+  }, [name, company, setValue])
 
   const submit = handleSubmit(async (v) => {
     try {
-      await save.mutateAsync({ id: company?.id, ...v, legalName: v.legalName || undefined, phone: v.phone || undefined, email: v.email || undefined, address: v.address || undefined })
+      await save.mutateAsync({ id: company?.id, ...v, slug: v.slug || slugFromName(v.name), legalName: v.legalName || undefined, phone: v.phone || undefined, email: v.email || undefined, address: v.address || undefined })
       toast.success(t('admin.platform.saved'))
       onClose()
     } catch (e) {
@@ -53,7 +61,7 @@ export function CompanyDrawer({ open, onClose, company }: { open: boolean; onClo
         </Field>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label={t('admin.company.slug')} required hint={t('admin.company.slugHint')} error={errors.slug && t('admin.company.invalidSlug')}>
-            {(id) => <Input id={id} mono {...register('slug')} invalid={!!errors.slug} />}
+            {(id) => <Input id={id} mono {...register('slug', { onChange: () => { slugTouched.current = true } })} invalid={!!errors.slug} />}
           </Field>
           <Field label={t('admin.company.locale')}>
             {(id) => (
@@ -83,3 +91,16 @@ export function CompanyDrawer({ open, onClose, company }: { open: boolean; onClo
     </Drawer>
   )
 }
+
+const TRANSLIT: Record<string, string> = { а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'yo', ж: 'j', з: 'z', и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'x', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'sh', ъ: '', ы: 'i', ь: '', э: 'e', ю: 'yu', я: 'ya', ў: 'o', қ: 'q', ғ: 'g', ҳ: 'h' }
+/** "Shifo Med Servis" → "shifo-med-servis" (Cyrillic transliterated, apostrophes dropped). */
+export const slugFromName = (name: string): string =>
+  name
+    .toLowerCase()
+    .replace(/[‘’'`ʻ]/g, '')
+    .split('')
+    .map((ch) => TRANSLIT[ch] ?? ch)
+    .join('')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40)

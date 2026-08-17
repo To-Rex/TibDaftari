@@ -10,6 +10,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import {
   LayoutDashboard, ClipboardList, Users, FlaskConical, BadgeCheck, BarChart3, MessageSquare, Building2, GitBranch, UserCog,
   ShieldCheck, FolderTree, ListChecks, LayoutTemplate, Send, PanelLeftClose, PanelLeftOpen, Bell, LogOut, ChevronDown, Menu as MenuIcon, X, Globe2, Receipt, ArrowLeftRight,
+  Check,
 } from 'lucide-react'
 import type { Permission } from '@/domain'
 import { repos } from '@/data'
@@ -162,9 +163,13 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
 function TopBar({ onMenu, module }: { onMenu: () => void; module: 'staff' | 'admin' }) {
   const { t } = useTranslation()
   const nav = useNavigate()
-  const { staff, branchId, setBranch, logoutStaff } = useAuth()
+  const { staff, branchId, setBranch, logoutStaff, homeCompanyId, setActiveCompany } = useAuth()
   const s = staff!
   const branches = useQuery({ queryKey: ['branches', s.companyId], queryFn: () => repos.tenant.listBranches(s.companyId) })
+  // superadmin: company switcher (manage any clinic from the same session)
+  const companies = useQuery({ queryKey: ['companies', 'switcher'], queryFn: () => repos.tenant.listCompanies({ page: 1, pageSize: 100 }), enabled: s.isSuperAdmin, staleTime: 60_000 })
+  const activeCompany = companies.data?.items.find((c) => c.id === s.companyId)
+  const isForeign = s.isSuperAdmin && !!homeCompanyId && s.companyId !== homeCompanyId
   const notif = useQuery({ queryKey: ['notifications'], queryFn: () => repos.messaging.notifications(), refetchInterval: 60_000 })
   const unread = notif.data?.filter((n) => !n.read).length ?? 0
   const myBranches = (branches.data ?? []).filter((b) => b.isActive)
@@ -175,6 +180,29 @@ function TopBar({ onMenu, module }: { onMenu: () => void; module: 'staff' | 'adm
     <header className="app-topbar sticky top-0 z-30 flex h-14 items-center gap-1.5 border-b border-line bg-bg/86 px-2 backdrop-blur-md xs:gap-2 xs:px-3 sm:h-16 sm:gap-3 sm:px-6">
       <IconButton label="menu" className="lg:hidden shrink-0" onClick={onMenu}><MenuIcon /></IconButton>
       <div className="lg:hidden max-xs:hidden shrink-0"><Logo compact /></div>
+
+      {/* Company switcher — superadmin only */}
+      {s.isSuperAdmin && (
+        <Menu
+          align="start"
+          trigger={(open) => (
+            <button title={activeCompany?.name ?? ''} className={cn('inline-flex h-9 min-w-0 shrink items-center gap-1.5 rounded-full border px-2.5 text-[13px] font-medium shadow-1 transition-colors sm:gap-2 sm:px-3 hover:border-line-strong', isForeign ? 'border-accent/50 bg-accent/10 text-accent' : 'border-line bg-surface', open && 'border-brand')}>
+              <Building2 className="size-4 shrink-0" />
+              <span className="max-sm:hidden max-w-[120px] md:max-w-[180px] truncate">{activeCompany?.name ?? '…'}</span>
+              <ChevronDown className="size-3.5 shrink-0 text-ink-3" />
+            </button>
+          )}
+          items={[
+            ...(companies.data?.items ?? []).map((c) => ({
+              key: c.id,
+              label: <span className="flex flex-col"><span>{c.name}{c.id === homeCompanyId ? ` · ${t('admin.platform.homeCompany')}` : ''}</span><span className="text-[11.5px] text-ink-3">{c.slug}{c.isActive ? '' : ` · ${t('admin.platform.inactive')}`}</span></span>,
+              onSelect: () => { setActiveCompany(c.id); nav(routes.admin.root) },
+              icon: c.id === s.companyId ? <Check /> : <Building2 />,
+            })),
+            { key: 'platform', label: t('nav.platform'), icon: <Globe2 />, onSelect: () => nav(routes.admin.platform) },
+          ]}
+        />
+      )}
 
       {/* Branch switcher */}
       <Menu
