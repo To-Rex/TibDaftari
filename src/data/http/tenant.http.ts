@@ -1,5 +1,5 @@
 /** HTTP TenantRepository — companies + branches (`app/modules/tenant`). */
-import type { Branch, Company, Page } from '@/domain'
+import type { Branch, Company, Page, SmsTestResult } from '@/domain'
 import type { TenantRepository } from '../repositories'
 import { api, compact } from './client'
 
@@ -23,4 +23,6 @@ export const tenantHttp: TenantRepository = {
     const body = compact(rest)
     return id ? api.put<Branch>(`/branches/${id}`, body) : api.post<Branch>(`/companies/${companyId}/branches`, body)
   },
+
+  testSms: (companyId, to) => api.post<SmsTestResult>(`/companies/${companyId}/sms/test`, to ? { to } : {}),
 }

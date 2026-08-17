@@ -9,7 +9,9 @@ import { useStaffSession } from '@/features/session/useSession'
 import { usePermissions } from '@/features/auth/store'
 import { useCompany, useSaveCompany } from '@/features/org/queries'
 import { SmsTemplatesCard } from '@/features/org/SmsTemplatesCard'
+import { repos } from '@/data'
 import { errorMessage } from '@/shared/lib/errors'
+import { fmtPhone } from '@/shared/lib/format'
 import { Badge, Button, Card, CardHeader, Field, Input, Page, PageHeader, Segmented, Skeleton, Textarea, toast } from '@/shared/ui'
 
 const schema = z.object({
@@ -29,10 +31,10 @@ export const maskApiKey = (key: string) => {
   return `${prefix}••••${body.slice(-4)}`
 }
 
-const CURL = `curl -X POST https://<xabarchi-host>/api/v1/public/messages \\
+const CURL = `curl -X POST https://manager-xabarchi-backend-bula2s-f6aaa1-13-140-185-49.sslip.io/api/v1/public/messages \\
   -H "X-API-Key: xab_live_..." \\
   -H "Content-Type: application/json" \\
-  -d '{ "to": "998901234567", "text": "Natija tayyor", "priority": "transactional" }'`
+  -d '{ "to": ["998901234567"], "text": "Natija tayyor", "priority": "transactional" }'`
 
 export default function SmsSettingsPage() {
   const { t } = useTranslation()
@@ -68,12 +70,24 @@ export default function SmsSettingsPage() {
     }
   })
 
+  /** Sends ONE real SMS through the company's Xabarchi account (to the company phone).
+   *  A freshly typed key is saved first so the backend can use it. */
   const testConnection = async () => {
-    if (!connected && !watch('apiKey')) return toast.warning(t('admin.sms.testNoKey'))
+    const typedKey = watch('apiKey')
+    if (!connected && !typedKey) return toast.warning(t('admin.sms.testNoKey'))
     setTesting(true)
-    await new Promise((r) => setTimeout(r, 1200))
-    setTesting(false)
-    toast.success(t('admin.sms.testOk'), t('admin.sms.testOkHint'))
+    try {
+      if (isDirty) {
+        const v = watch()
+        await save.mutateAsync({ id: companyId, sms: { provider: v.provider, defaultPriority: v.defaultPriority, senderNote: v.senderNote || undefined, apiKey: v.provider !== 'none' && v.apiKey ? v.apiKey : undefined, apiKeyMasked: c?.sms.apiKeyMasked } })
+      }
+      const r = await repos.tenant.testSms(companyId)
+      toast.success(t('admin.sms.testOk'), t('admin.sms.testSent', { to: r.to ? fmtPhone(r.to) : '—', id: r.providerMessageId ?? '—' }))
+    } catch (e) {
+      toast.error(t('admin.sms.testFailed'), errorMessage(e))
+    } finally {
+      setTesting(false)
+    }
   }
   const copyCurl = async () => {
     await navigator.clipboard.writeText(CURL).catch(() => undefined)
@@ -145,7 +159,7 @@ export default function SmsSettingsPage() {
             </Card>
           </form>
 
-          <SmsTemplatesCard companyId={companyId} companyName={c.name} readOnly={!canWrite} />
+          <SmsTemplatesCard companyId={companyId} companyName={c.name} readOnly={!canWrite} templates={c.smsTemplates} />
 
           <Card>
             <CardHeader className="max-xs:flex-col max-xs:items-start" title={t('admin.sms.docsTitle')} description={t('admin.sms.docsText')}

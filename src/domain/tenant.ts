@@ -1,6 +1,15 @@
 import type { AuditStamp, Id, Locale } from './common'
 import type { PermissionOverrides } from './access/permissions'
 
+export type SmsTemplateKind = 'payment_receipt' | 'result_ready' | 'reminder'
+export type SmsTemplateOverrides = Partial<Record<SmsTemplateKind, string>>
+
+export interface SmsTestResult {
+  ok: boolean
+  providerMessageId?: string
+  to?: string
+}
+
 export interface Company extends AuditStamp {
   id: Id
   name: string
@@ -21,6 +30,10 @@ export interface Company extends AuditStamp {
     defaultPriority: 'urgent' | 'transactional' | 'bulk'
     senderNote?: string
   }
+  /** Per-company SMS text overrides ({patient} {order} {service} {company}); empty = platform default. */
+  smsTemplates?: SmsTemplateOverrides
+  /** Company Telegram bot (token stays on the backend). */
+  telegram?: { botUsername: string | null; connected: boolean }
   branchCount: number
   employeeCount: number
 }

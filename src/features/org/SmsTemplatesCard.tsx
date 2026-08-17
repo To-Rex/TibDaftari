@@ -1,15 +1,19 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { MessageSquareText, RotateCcw } from 'lucide-react'
+import type { SmsTemplateKind, SmsTemplateOverrides } from '@/domain'
 import { storage } from '@/shared/lib/storage'
 import { cn } from '@/shared/lib/cn'
+import { errorMessage } from '@/shared/lib/errors'
 import { Badge, Button, Card, CardHeader, Textarea, toast } from '@/shared/ui'
+import { useSaveCompany } from './queries'
 
-export type SmsTemplateKind = 'payment_receipt' | 'result_ready' | 'reminder'
+export type { SmsTemplateKind }
 export type SmsTemplates = Record<SmsTemplateKind, string>
 const KINDS: SmsTemplateKind[] = ['payment_receipt', 'result_ready', 'reminder']
 const PLACEHOLDERS = ['{patient}', '{order}', '{service}', '{company}'] as const
-const STORAGE_KEY = (companyId: string) => `clinic.sms.templates.${companyId}`
+/** Pre-backend drafts lived in localStorage; they are offered once as the initial draft, then dropped. */
+const LEGACY_STORAGE_KEY = (companyId: string) => `clinic.sms.templates.${companyId}`
 
 const SAMPLE = { patient: 'Karimova Aziza', order: 'UR-001241', service: 'Umumiy qon tahlili', company: '' }
 
@@ -23,11 +27,18 @@ export function smsSegments(text: string): { chars: number; segments: number; un
   return { chars, segments, unicode }
 }
 
-export function SmsTemplatesCard({ companyId, companyName, readOnly }: { companyId: string; companyName: string; readOnly?: boolean }) {
+export function SmsTemplatesCard({ companyId, companyName, readOnly, templates }: { companyId: string; companyName: string; readOnly?: boolean; templates?: SmsTemplateOverrides }) {
   const { t } = useTranslation()
+  const saveCompany = useSaveCompany()
   const defaults = useMemo<SmsTemplates>(() => ({ payment_receipt: t('admin.sms.defaultPayment'), result_ready: t('admin.sms.defaultResult'), reminder: t('admin.sms.defaultReminder') }), [t])
-  const [saved, setSaved] = useState<SmsTemplates>(() => ({ ...defaults, ...storage.get<Partial<SmsTemplates>>(STORAGE_KEY(companyId), {}) }))
-  const [draft, setDraft] = useState<SmsTemplates>(saved)
+  /** what the backend currently has (empty override = platform default text) */
+  const saved = useMemo<SmsTemplates>(() => ({ ...defaults, ...Object.fromEntries(Object.entries(templates ?? {}).filter(([, v]) => !!v)) }), [defaults, templates])
+  const legacy = useMemo(() => storage.get<Partial<SmsTemplates> | null>(LEGACY_STORAGE_KEY(companyId), null), [companyId])
+  const [draft, setDraft] = useState<SmsTemplates>(() => ({ ...saved, ...(legacy ?? {}) }))
+  const touched = useRef(!!legacy)
+  // follow the backend value until the user starts editing (or a legacy draft was restored)
+  useEffect(() => { if (!touched.current) setDraft(saved) }, [saved])
+  const edit = (next: (d: SmsTemplates) => SmsTemplates) => { touched.current = true; setDraft(next) }
   const [active, setActive] = useState<SmsTemplateKind>('payment_receipt')
   const dirty = KINDS.some((k) => draft[k] !== saved[k])
 
@@ -35,20 +46,27 @@ export function SmsTemplatesCard({ companyId, companyName, readOnly }: { company
   const preview = (text: string) => text.replace(/\{(patient|order|service|company)\}/g, (_, k: keyof typeof SAMPLE) => (k === 'company' ? companyName : SAMPLE[k]))
   const seg = smsSegments(preview(draft[active]))
 
-  const save = () => {
-    storage.set(STORAGE_KEY(companyId), draft)
-    setSaved(draft)
-    toast.success(t('admin.sms.templatesSaved'))
+  const save = async () => {
+    // texts equal to the platform default are stored as empty overrides (backend falls back)
+    const overrides: SmsTemplateOverrides = Object.fromEntries(KINDS.map((k) => [k, draft[k] !== defaults[k] ? draft[k] : ''])) as SmsTemplateOverrides
+    try {
+      await saveCompany.mutateAsync({ id: companyId, smsTemplates: overrides })
+      storage.remove(LEGACY_STORAGE_KEY(companyId))
+      touched.current = false
+      toast.success(t('admin.sms.templatesSaved'))
+    } catch (e) {
+      toast.error(errorMessage(e))
+    }
   }
-  const insert = (ph: string) => setDraft((d) => ({ ...d, [active]: `${d[active]}${d[active].endsWith(' ') || !d[active] ? '' : ' '}${ph}` }))
+  const insert = (ph: string) => edit((d) => ({ ...d, [active]: `${d[active]}${d[active].endsWith(' ') || !d[active] ? '' : ' '}${ph}` }))
 
   return (
     <Card>
       <CardHeader className="max-sm:flex-col max-sm:items-start" title={t('admin.sms.templatesTitle')} description={t('admin.sms.templatesSub')}
         actions={!readOnly && (
           <div className="flex flex-wrap items-center gap-2 max-w-full">
-            <Button size="sm" variant="ghost" leftIcon={<RotateCcw className="size-3.5" />} onClick={() => setDraft(defaults)}>{t('admin.sms.resetDefaults')}</Button>
-            <Button size="sm" disabled={!dirty} onClick={save}>{t('common.save')}</Button>
+            <Button size="sm" variant="ghost" leftIcon={<RotateCcw className="size-3.5" />} onClick={() => edit(() => defaults)}>{t('admin.sms.resetDefaults')}</Button>
+            <Button size="sm" disabled={!dirty} loading={saveCompany.isPending} onClick={() => void save()}>{t('common.save')}</Button>
           </div>
         )} />
       <div className="grid gap-5 md:grid-cols-[200px_minmax(0,1fr)]">
@@ -61,7 +79,7 @@ export function SmsTemplatesCard({ companyId, companyName, readOnly }: { company
           ))}
         </div>
         <div className="flex flex-col gap-3 min-w-0">
-          <Textarea value={draft[active]} disabled={readOnly} rows={3} onChange={(e) => setDraft((d) => ({ ...d, [active]: e.target.value }))} className="font-mono text-[13.5px]" />
+          <Textarea value={draft[active]} disabled={readOnly} rows={3} onChange={(e) => edit((d) => ({ ...d, [active]: e.target.value }))} className="font-mono text-[13.5px]" />
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-[12.5px] text-ink-3 mr-1">{t('admin.sms.placeholders')}:</span>
             {PLACEHOLDERS.map((p) => (

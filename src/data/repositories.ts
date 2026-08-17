@@ -30,6 +30,7 @@ import type {
   ResultTemplate,
   Role,
   ServiceType,
+  SmsTestResult,
   StaffLoginInput,
   StaffSession,
   TemplateAsset,
@@ -53,6 +54,8 @@ export interface TenantRepository {
   saveCompany(input: Partial<Company> & { id?: Id }): Promise<Company>
   listBranches(companyId: Id): Promise<Branch[]>
   saveBranch(input: Partial<Branch> & { companyId: Id; id?: Id }): Promise<Branch>
+  /** Sends ONE real SMS through the company's Xabarchi account (default recipient: company phone). */
+  testSms(companyId: Id, to?: string): Promise<SmsTestResult>
 }
 
 export interface StaffRepository {
