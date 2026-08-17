@@ -36,6 +36,9 @@ export interface Order extends AuditStamp {
   /** counts by item status, for badges */
   progress: Record<ItemStatus, number>
   note?: string
+  /** Cancellation (reason kept separately; `note` is never overwritten). */
+  cancelReason?: string
+  cancelledAt?: IsoDateTime
 }
 
 export interface OrderItem extends AuditStamp {

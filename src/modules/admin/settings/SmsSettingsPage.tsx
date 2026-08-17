@@ -59,6 +59,7 @@ export default function SmsSettingsPage() {
         defaultPriority: v.defaultPriority,
         senderNote: v.senderNote || undefined,
         apiKeyMasked: v.provider === 'none' ? undefined : v.apiKey ? maskApiKey(v.apiKey) : c?.sms.apiKeyMasked,
+        apiKey: v.provider !== 'none' && v.apiKey ? v.apiKey : undefined,
       }
       await save.mutateAsync({ id: companyId, sms })
       toast.success(t('admin.sms.saved'))

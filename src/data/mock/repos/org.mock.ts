@@ -23,6 +23,7 @@ export const tenantMock: TenantRepository = {
   async saveCompany(input) {
     await latency(400)
     const d = db()
+    if (input.sms) input = { ...input, sms: { ...input.sms, apiKey: undefined } } // plaintext never stored/echoed
     if (input.id) {
       const i = d.companies.findIndex((x) => x.id === input.id)
       if (i < 0) throw new MockError(404, 'not_found', 'Kompaniya topilmadi')

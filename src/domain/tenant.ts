@@ -16,6 +16,8 @@ export interface Company extends AuditStamp {
   sms: {
     provider: 'xabarchi' | 'none'
     apiKeyMasked?: string // 'xab_live_••••1234' — plaintext never leaves the backend
+    /** Write-only: plaintext key sent by the settings form when the user typed one; never returned. */
+    apiKey?: string
     defaultPriority: 'urgent' | 'transactional' | 'bulk'
     senderNote?: string
   }
