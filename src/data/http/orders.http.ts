@@ -5,7 +5,7 @@
  *  - `ResultDocument.pdfUrl` comes back relative (`/api/v1/documents/{id}/pdf`) and is absolutised here.
  */
 import type { Id, Order, OrderItem, Page, Payment, ResultDocument } from '@/domain'
-import type { OrderRepository } from '@/data/repositories'
+import type { OrderRepository, WorklistCounts } from '@/data/repositories'
 import { absoluteUrl, api, ApiError } from './client'
 
 /** Worklist row: OrderItem + order/patient join columns (matches backend `WorklistItemOut`). */
@@ -73,6 +73,11 @@ export const ordersHttp: OrderRepository = {
     }),
 
   cancel: (orderId, reason) => api.post<Order>(`/orders/${orderId}/cancel`, { reason }),
+
+  worklistCounts: (companyId, q) =>
+    api.get<WorklistCounts>(`/companies/${companyId}/worklist/counts`, {
+      query: { search: q.search, branchId: q.branchId, categoryIds: q.categoryIds, dateFrom: q.dateFrom, dateTo: q.dateTo },
+    }),
 
   /** `categoryIds` / `status` are repeated query keys (`status=a&status=b`). */
   worklist: (companyId, q) =>

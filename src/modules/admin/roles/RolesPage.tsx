@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useQueries } from '@tanstack/react-query'
 import { motion } from 'motion/react'
 import { ArrowLeft, Copy, Lock, Plus, ShieldCheck, Trash2, Users } from 'lucide-react'
 import { PERMISSIONS, type Permission, type Role } from '@/domain'
-import { ApiError, repos } from '@/data'
+import { ApiError } from '@/data'
 import { useStaffSession } from '@/features/session/useSession'
 import { usePermissions } from '@/features/auth/store'
 import { useDeleteRole, useRoles, useSaveRole } from '@/features/roles/queries'
@@ -33,10 +32,7 @@ export default function RolesPage() {
   const [view, setView] = useState<'list' | 'detail'>('list')
 
   const list = useMemo(() => [...(roles.data ?? [])].sort((a, b) => Number(b.isSystem) - Number(a.isSystem)), [roles.data])
-  const counts = useQueries({
-    queries: list.map((r) => ({ queryKey: ['employees-count', companyId, r.id], queryFn: async () => (await repos.staff.listEmployees(companyId, { roleId: r.id, pageSize: 1 })).total })),
-  })
-  const countOf = (i: number) => counts[i]?.data
+  const countOf = (i: number) => list[i]?.employeeCount
 
   useEffect(() => {
     if (!list.length) return

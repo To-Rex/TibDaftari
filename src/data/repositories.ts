@@ -11,6 +11,7 @@ import type {
   District,
   Employee,
   Id,
+  MessageStatus,
   Notification,
   Order,
   OrderItem,
@@ -38,6 +39,8 @@ import type {
   ItemStatus,
   PermissionOverrides,
 } from '@/domain'
+
+export type WorklistCounts = Record<'all' | ItemStatus, number>
 
 export interface AuthRepository {
   staffLogin(input: StaffLoginInput): Promise<StaffSession>
@@ -103,6 +106,8 @@ export interface OrderRepository {
   cancel(orderId: Id, reason: string): Promise<Order>
   /** Lab worklist: items filtered by category/status/date */
   worklist(companyId: Id, q: PageQuery & { branchId?: Id; categoryIds?: Id[]; status?: ItemStatus[]; dateFrom?: string; dateTo?: string }): Promise<Page<OrderItem & { orderNumber: string; patientName: string; patientPhone: string; patientGender?: 'male' | 'female'; patientBirthDate?: string }>>
+  /** Per-status counters for the same worklist filters (one round trip for all status tabs). */
+  worklistCounts(companyId: Id, q: { branchId?: Id; categoryIds?: Id[]; dateFrom?: string; dateTo?: string; search?: string }): Promise<WorklistCounts>
   getItem(itemId: Id): Promise<OrderItem>
   saveValues(itemId: Id, employeeId: Id, values: ValueMap, labNote?: string): Promise<OrderItem>
   submitItem(itemId: Id, employeeId: Id): Promise<OrderItem>
@@ -133,6 +138,8 @@ export interface TemplateRepository {
 
 export interface MessagingRepository {
   listOutbox(companyId: Id, q: PageQuery & { status?: string; kind?: string }): Promise<Page<OutboxMessage>>
+  /** Per-status counters for the same outbox filters (one request for all tabs). */
+  outboxCounts(companyId: Id, q: { kind?: string; search?: string }): Promise<Record<'all' | MessageStatus | 'sending', number>>
   send(companyId: Id, input: { to: string[]; text: string; kind: OutboxMessage['kind']; scheduledAt?: string }): Promise<OutboxMessage[]>
   notifications(): Promise<Notification[]>
   markRead(id?: Id): Promise<void>

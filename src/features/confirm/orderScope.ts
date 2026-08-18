@@ -4,9 +4,10 @@
  * data-driven — which template applies is decided by the template's own bindings.
  */
 import { useMemo } from 'react'
-import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { AttributeSchema, Id, OrderItem, ResultTemplate } from '@/domain'
 import { repos } from '@/data'
+import { catalogKeys } from '@/features/catalog/queries'
 
 /** Active order-scope templates that cover this item (by service type or category). */
 export function useOrderScopeTemplates(companyId: Id, item: Pick<OrderItem, 'serviceTypeId' | 'categoryId'> | undefined) {
@@ -28,19 +29,15 @@ export function useOrderScopeItems(companyId: Id, orderId: Id | undefined, templ
     queryFn: () => repos.orders.orderScopeItems(orderId!, template!.id),
     enabled: !!orderId && !!template,
   })
-  const services = useQuery({ queryKey: ['service-types', companyId, 'all'], queryFn: () => repos.catalog.listServiceTypes(companyId, {}), staleTime: 5 * 60_000 })
-  const schemaIds = useMemo(() => [...new Set((covered.data ?? []).map((i) => i.schemaId).filter(Boolean) as string[])], [covered.data])
-  const schemas = useQueries({ queries: schemaIds.map((id) => ({ queryKey: ['schema', id], queryFn: () => repos.catalog.getSchema(id), staleTime: 5 * 60_000 })) })
-  const schemaMap = useMemo(() => {
-    const m = new Map<string, AttributeSchema>()
-    schemas.forEach((q) => { if (q.data) m.set(q.data.id, q.data) })
-    return m
-  }, [schemas])
+  // shared, prefetched lists (same keys as the catalog hooks) instead of one request per schema
+  const services = useQuery({ queryKey: catalogKeys.serviceTypes(companyId, {}), queryFn: () => repos.catalog.listServiceTypes(companyId, {}), staleTime: 5 * 60_000 })
+  const schemas = useQuery({ queryKey: catalogKeys.schemas(companyId), queryFn: () => repos.catalog.listSchemas(companyId), staleTime: 5 * 60_000 })
+  const schemaMap = useMemo(() => new Map<string, AttributeSchema>((schemas.data ?? []).map((s) => [s.id, s])), [schemas.data])
   const items = useMemo(() => {
     const codes = new Map((services.data ?? []).map((s) => [s.id, s.code ?? s.id]))
     return (covered.data ?? []).map((item) => ({ item, schema: item.schemaId ? (schemaMap.get(item.schemaId) ?? null) : null, code: codes.get(item.serviceTypeId) ?? item.serviceTypeId }))
   }, [covered.data, schemaMap, services.data])
-  const loading = covered.isLoading || services.isLoading || schemas.some((q) => q.isLoading)
+  const loading = covered.isLoading || services.isLoading || schemas.isLoading
   return { items, covered: covered.data ?? [], loading }
 }
 

@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'motion/react'
 import {
   LayoutDashboard, ClipboardList, Users, FlaskConical, BadgeCheck, BarChart3, MessageSquare, Building2, GitBranch, UserCog,
@@ -15,6 +15,7 @@ import {
 import type { Permission } from '@/domain'
 import { repos } from '@/data'
 import { useAuth, usePermissions } from '@/features/auth/store'
+import { preloadRouteChunks, warmWorkspaceData } from '@/features/session/warmup'
 import { routes } from '@/shared/config/routes'
 import { cn } from '@/shared/lib/cn'
 import { Avatar, Badge, LanguageSwitcher, Logo, BrandMark, Menu, ThemeToggle, IconButton, Tooltip } from '@/shared/ui'
@@ -32,6 +33,9 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
   const loc = useLocation()
   useEffect(() => setMobileOpen(false), [loc.pathname])
   useEffect(() => storage.set('clinic.sidebar', collapsed), [collapsed])
+  // instant navigation: shared data prefetched once per company, route chunks loaded on idle
+  const qc = useQueryClient()
+  useEffect(() => { warmWorkspaceData(qc, staff.companyId, module); preloadRouteChunks() }, [qc, staff.companyId, module])
 
   const pending = useQuery({
     queryKey: ['shell-badges', staff.companyId],

@@ -2,15 +2,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { useQueries } from '@tanstack/react-query'
 import { RefreshCw } from 'lucide-react'
 import type { ItemStatus } from '@/domain'
-import { repos } from '@/data'
 import { useStaffSession } from '@/features/session/useSession'
 import { CategoryTabs, type CategorySelection } from '@/features/lab/CategoryTabs'
 import { DateRangeFilter, initialRange, type RangeState } from '@/features/lab/DateRangeFilter'
 import { WorklistTable } from '@/features/lab/WorklistTable'
-import { useLabCategories, useWorklist, type WorklistParams } from '@/features/lab/queries'
+import { useLabCategories, useWorklist, useWorklistCounts, type WorklistParams } from '@/features/lab/queries'
 import { routes } from '@/shared/config/routes'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import { cn } from '@/shared/lib/cn'
@@ -45,17 +43,9 @@ export default function LabPage() {
   const base: WorklistParams = { branchId: branchId ?? undefined, categoryIds, dateFrom: range.range.from, dateTo: range.range.to, search: q || undefined }
   const list = useWorklist(companyId, { ...base, status: status === 'all' ? undefined : [status], page, pageSize }, { refetchInterval: 30_000, enabled: !!cats.data })
 
-  // per-status counts (light queries: 1 row each)
-  const countQueries = useQueries({
-    queries: STATUS_FILTERS.map((s) => ({
-      queryKey: ['worklist-count', companyId, base, s],
-      queryFn: () => repos.orders.worklist(companyId, { ...base, status: s === 'all' ? undefined : [s], page: 1, pageSize: 1 }),
-      enabled: !!cats.data,
-      refetchInterval: 30_000,
-      select: (d: { total: number }) => d.total,
-    })),
-  })
-  const counts = Object.fromEntries(STATUS_FILTERS.map((s, i) => [s, countQueries[i]?.data])) as Record<StatusFilter, number | undefined>
+  // per-status counts — one GROUP BY request for all tabs
+  const countsQ = useWorklistCounts(companyId, base, { enabled: !!cats.data, refetchInterval: 30_000 })
+  const counts = Object.fromEntries(STATUS_FILTERS.map((s) => [s, countsQ.data?.[s]])) as Record<StatusFilter, number | undefined>
 
   const data = list.data
   const restrictedHint = cats.data?.restricted ? t('clinical.lab.restrictedHint') : undefined

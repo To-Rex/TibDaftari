@@ -4,6 +4,15 @@ import { repos } from '@/data'
 
 export interface OutboxParams { status?: string; search?: string; page?: number; pageSize?: number }
 
+export function useOutboxCounts(companyId: Id, params: { kind?: string; search?: string }, refetchInterval?: number | false) {
+  return useQuery({
+    queryKey: ['outbox-counts', companyId, params],
+    queryFn: () => repos.messaging.outboxCounts(companyId, params),
+    placeholderData: (p) => p,
+    refetchInterval,
+  })
+}
+
 export function useOutbox(companyId: Id, params: OutboxParams, refetchInterval?: number | false) {
   return useQuery({
     queryKey: ['outbox', companyId, params],

@@ -77,6 +77,8 @@ export interface Role {
   description?: string
   permissions: Permission[]
   isSystem: boolean
+  /** employees of the requesting company using this role (server-computed) */
+  employeeCount?: number
 }
 
 export interface PermissionOverrides {

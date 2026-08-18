@@ -7,6 +7,8 @@ import type { MessagingRepository } from '@/data/repositories'
 import { api, compact } from './client'
 
 export const messagingHttp: MessagingRepository = {
+  outboxCounts: (companyId, q) => api.get(`/companies/${companyId}/outbox/counts`, { query: { kind: q.kind, search: q.search } }),
+
   /** Sort is fixed server-side (createdAt desc); sortBy/sortDir are forwarded but ignored. */
   listOutbox: (companyId, q) =>
     api.get<Page<OutboxMessage>>(`/companies/${companyId}/outbox`, {

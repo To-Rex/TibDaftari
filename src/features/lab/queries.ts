@@ -32,6 +32,17 @@ export function useWorklist(companyId: Id, params: WorklistParams, opts?: { refe
   })
 }
 
+/** Status-tab counters in ONE request (replaces one worklist request per tab). */
+export function useWorklistCounts(companyId: Id, params: Omit<WorklistParams, 'status' | 'page' | 'pageSize'>, opts?: { refetchInterval?: number; enabled?: boolean }) {
+  return useQuery({
+    queryKey: ['worklist-counts', companyId, params] as const,
+    queryFn: () => repos.orders.worklistCounts(companyId, params),
+    placeholderData: (prev) => prev,
+    refetchInterval: opts?.refetchInterval,
+    enabled: opts?.enabled ?? true,
+  })
+}
+
 export const useItem = (itemId: Id | undefined) =>
   useQuery({ queryKey: labKeys.item(itemId ?? ''), queryFn: () => repos.orders.getItem(itemId!), enabled: !!itemId })
 

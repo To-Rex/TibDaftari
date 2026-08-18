@@ -2,15 +2,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { useQueries } from '@tanstack/react-query'
 import { Info, MessageSquare, Plus, Settings2 } from 'lucide-react'
 import type { MessageStatus, OutboxMessage } from '@/domain'
-import { repos } from '@/data'
 import { usePermissions } from '@/features/auth/store'
 import { useStaffSession } from '@/features/session/useSession'
 import { ComposeDrawer } from '@/features/messaging/ComposeDrawer'
 import { MESSAGE_STATUSES, MessageStatusBadge } from '@/features/messaging/MessageStatusBadge'
-import { useOutbox } from '@/features/messaging/queries'
+import { useOutbox, useOutboxCounts } from '@/features/messaging/queries'
 import { routes } from '@/shared/config/routes'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import { fmtDateTime, fmtPhone, fmtRelative } from '@/shared/lib/format'
@@ -36,15 +34,9 @@ export default function MessagesPage() {
   const rows = useMemo(() => list.data?.items ?? [], [list.data])
   useEffect(() => setLive(rows.some((m) => m.status === 'queued' || m.status === 'sent')), [rows])
 
-  const counts = useQueries({
-    queries: MESSAGE_STATUSES.map((s) => ({
-      queryKey: ['outbox-count', companyId, s, q],
-      queryFn: () => repos.messaging.listOutbox(companyId, { status: s, search: q || undefined, page: 1, pageSize: 1 }),
-      select: (d: { total: number }) => d.total,
-      refetchInterval: live ? 3000 : 30_000,
-    })),
-  })
-  const countOf = useMemo(() => Object.fromEntries(MESSAGE_STATUSES.map((s, i) => [s, counts[i]?.data])) as Record<MessageStatus, number | undefined>, [counts])
+  // one GROUP BY request for every status tab
+  const countsQ = useOutboxCounts(companyId, { search: q || undefined }, live ? 3000 : 30_000)
+  const countOf = useMemo(() => Object.fromEntries(MESSAGE_STATUSES.map((s) => [s, countsQ.data?.[s]])) as Record<MessageStatus, number | undefined>, [countsQ.data])
 
   const columns: Column<OutboxMessage>[] = [
     { key: 'to', header: t('common.phone'), width: '170px', card: 'title', cell: (m) => <span className="font-mono text-[13px] tabular">{fmtPhone(m.to)}</span> },
