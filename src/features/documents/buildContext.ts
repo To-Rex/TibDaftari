@@ -66,15 +66,9 @@ export function sampleValues(schema: AttributeSchema | null): RenderContext['val
       case 'date': values[f.key] = new Date().toISOString().slice(0, 10); break
       case 'table': {
         if (f.presetRows.length) {
-          // preset (seeded) tables preview EXACTLY like the real blank: every row, preset cells as-is,
-          // only a couple of demo findings so the layout of the value columns is visible
-          const emptyCols = f.columns.filter((c) => (c.type === 'text' || c.type === 'select') && f.presetRows.every((r) => r[c.key] == null || r[c.key] === ''))
-          const demoCol = emptyCols[Math.min(1, emptyCols.length - 1)]
-          values[f.key] = f.presetRows.map((r, i) => {
-            const o: Record<string, unknown> = { ...r }
-            if (demoCol && (i === 4 || i === 5)) o[demoCol.key] = demoCol.type === 'select' ? (demoCol.options[0]?.value ?? '') : i === 4 ? '+6' : '+3'
-            return o
-          })
+          // preset (seeded) tables preview EXACTLY like the empty blank: every row, preset cells as-is,
+          // result columns left empty — they are filled by the laboratory, never by the template
+          values[f.key] = f.presetRows.map((r) => ({ ...r }))
           break
         }
         values[f.key] = Array.from({ length: 4 }, (_, i) => {
