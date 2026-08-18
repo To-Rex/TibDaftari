@@ -65,10 +65,21 @@ export function sampleValues(schema: AttributeSchema | null): RenderContext['val
       case 'boolean': values[f.key] = true; break
       case 'date': values[f.key] = new Date().toISOString().slice(0, 10); break
       case 'table': {
-        const rows = f.presetRows.length ? f.presetRows.slice(0, 8) : Array.from({ length: 4 }, () => ({}))
-        values[f.key] = rows.map((r, i) => {
-          const o: Record<string, unknown> = { ...r }
-          for (const c of f.columns) if (o[c.key] == null || o[c.key] === '') o[c.key] = c.type === 'select' ? (c.options[i % c.options.length]?.value ?? '') : c.type === 'number' ? 10 + i : c.type === 'boolean' ? i % 2 === 0 : c.type === 'multiselect' ? c.options.slice(0, 1).map((x) => x.value) : `Namuna ${i + 1}`
+        if (f.presetRows.length) {
+          // preset (seeded) tables preview EXACTLY like the real blank: every row, preset cells as-is,
+          // only a couple of demo findings so the layout of the value columns is visible
+          const emptyCols = f.columns.filter((c) => (c.type === 'text' || c.type === 'select') && f.presetRows.every((r) => r[c.key] == null || r[c.key] === ''))
+          const demoCol = emptyCols[Math.min(1, emptyCols.length - 1)]
+          values[f.key] = f.presetRows.map((r, i) => {
+            const o: Record<string, unknown> = { ...r }
+            if (demoCol && (i === 4 || i === 5)) o[demoCol.key] = demoCol.type === 'select' ? (demoCol.options[0]?.value ?? '') : i === 4 ? '+6' : '+3'
+            return o
+          })
+          break
+        }
+        values[f.key] = Array.from({ length: 4 }, (_, i) => {
+          const o: Record<string, unknown> = {}
+          for (const c of f.columns) o[c.key] = c.type === 'select' ? (c.options[i % c.options.length]?.value ?? '') : c.type === 'number' ? 10 + i : c.type === 'boolean' ? i % 2 === 0 : c.type === 'multiselect' ? c.options.slice(0, 1).map((x) => x.value) : `Namuna ${i + 1}`
           return o
         })
         break

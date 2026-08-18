@@ -71,19 +71,33 @@ export const DocumentRenderer = memo(function DocumentRenderer({ doc, ctx, asset
             nodes.length = 0
             nodes.push(...keep)
           }
-          return nodes.map((n) => (
-            <ElementView key={n.id} el={n} z={z} ctx={ctx} raw={!!raw} assetUrl={assetUrl} selected={selectedId === el.id} onClick={onElementClick ? () => onElementClick(el.id) : undefined} />
-          ))
+          // editor (raw) mode: the master row keeps its placeholders, but the rows it will repeat into are
+          // drawn as non-interactive "ghosts" filled from the sample rows — the sheet looks like the real blank
+          const ghosts: (TemplateElement & { __row?: Record<string, unknown> })[] = []
+          if (raw && el.repeat) {
+            const rows = tableRows(ctx, el.repeat.fieldKey)
+            rows.slice(1).forEach((row, k) => {
+              const i = k + 1
+              const node = { ...el, id: `${el.id}#ghost${i}`, y: el.y + i * el.repeat!.step, __row: { ...row, __i: i + 1 } }
+              if (!el.showIf || interpolate(el.showIf, ctx, node.__row).trim()) ghosts.push(node)
+            })
+          }
+          return [
+            ...ghosts.map((n) => <ElementView key={n.id} el={n} z={z} ctx={ctx} raw={false} ghost assetUrl={assetUrl} selected={false} />),
+            ...nodes.map((n) => (
+              <ElementView key={n.id} el={n} z={z} ctx={ctx} raw={!!raw} assetUrl={assetUrl} selected={selectedId === el.id} onClick={onElementClick ? () => onElementClick(el.id) : undefined} />
+            )),
+          ]
         })}
       </div>
     </div>
   )
 })
 
-function ElementView({ el, z, ctx, raw, assetUrl, selected, onClick }: { el: TemplateElement & { __row?: Record<string, unknown> }; z: number; ctx: RenderContext; raw: boolean; assetUrl: (id?: string) => string | undefined; selected: boolean; onClick?: () => void }) {
-  const base: CSSProperties = { position: 'absolute', left: el.x, top: el.y, width: el.w, height: el.h, opacity: el.opacity ?? 1, transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined, zIndex: z, boxSizing: 'border-box' }
+function ElementView({ el, z, ctx, raw, ghost, assetUrl, selected, onClick }: { el: TemplateElement & { __row?: Record<string, unknown> }; z: number; ctx: RenderContext; raw: boolean; ghost?: boolean; assetUrl: (id?: string) => string | undefined; selected: boolean; onClick?: () => void }) {
+  const base: CSSProperties = { position: 'absolute', left: el.x, top: el.y, width: el.w, height: el.h, opacity: ghost ? (el.opacity ?? 1) * 0.55 : (el.opacity ?? 1), transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined, zIndex: z, boxSizing: 'border-box', pointerEvents: ghost ? 'none' : undefined }
   const wrap = (child: React.ReactNode, extra?: CSSProperties) => (
-    <div style={{ ...base, ...extra }} data-el={el.id} onMouseDown={onClick} className={cn(onClick && 'cursor-pointer', selected && 'outline outline-2 outline-[#0f7a6b] outline-offset-1', raw && !selected && 'hover:outline hover:outline-1 hover:outline-[#0f7a6b]/50')}>
+    <div style={{ ...base, ...extra }} data-el={ghost ? undefined : el.id} data-ghost={ghost ? '' : undefined} onMouseDown={onClick} className={cn(onClick && 'cursor-pointer', selected && 'outline outline-2 outline-[#0f7a6b] outline-offset-1', raw && !selected && 'hover:outline hover:outline-1 hover:outline-[#0f7a6b]/50')}>
       {child}
     </div>
   )
