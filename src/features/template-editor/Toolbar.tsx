@@ -43,12 +43,12 @@ export function Toolbar({ onPickImage, onFit, onOpenPanels, onOpenProps }: { onP
         <span className="contents xl:hidden">
           {onOpenPanels && (
             <Tooltip label={`${t('catalog.editor.layers')} / ${t('catalog.editor.placeholders')}`} side="bottom">
-              <button className={btn} onClick={onOpenPanels}><Layers /></button>
+              <button type="button" className={btn} onClick={onOpenPanels}><Layers /></button>
             </Tooltip>
           )}
           {onOpenProps && (
             <Tooltip label={t('catalog.editor.properties')} side="bottom">
-              <button className={cn(btn, 'relative')} onClick={onOpenProps}>
+              <button type="button" className={cn(btn, 'relative')} onClick={onOpenProps}>
                 <SlidersHorizontal />
                 {selectedCount > 0 && <span className="absolute -top-0.5 -right-0.5 grid min-w-4 h-4 px-1 place-items-center rounded-full bg-brand text-white text-[10px] tabular leading-none">{selectedCount}</span>}
               </button>
@@ -59,19 +59,19 @@ export function Toolbar({ onPickImage, onFit, onOpenPanels, onOpenProps }: { onP
       )}
 
       {ELEMENT_TYPES.map((ty) => { const I = ELEMENT_ICONS[ty]; return (
-        <Tooltip key={ty} label={t(`catalog.editor.el.${ty}`)} side="bottom"><button className={btn} onClick={() => add(ty)} disabled={preview}><I /></button></Tooltip>
+        <Tooltip key={ty} label={t(`catalog.editor.el.${ty}`)} side="bottom"><button type="button" className={btn} onClick={() => add(ty)} disabled={preview}><I /></button></Tooltip>
       ) })}
       <div className={sep} />
-      <Tooltip label={`${t('catalog.editor.undo')} (Ctrl+Z)`} side="bottom"><button className={btn} onClick={undo} disabled={!canUndo}><Undo2 /></button></Tooltip>
-      <Tooltip label={`${t('catalog.editor.redo')} (Ctrl+Y)`} side="bottom"><button className={btn} onClick={redo} disabled={!canRedo}><Redo2 /></button></Tooltip>
+      <Tooltip label={`${t('catalog.editor.undo')} (Ctrl+Z)`} side="bottom"><button type="button" className={btn} onClick={undo} disabled={!canUndo}><Undo2 /></button></Tooltip>
+      <Tooltip label={`${t('catalog.editor.redo')} (Ctrl+Y)`} side="bottom"><button type="button" className={btn} onClick={redo} disabled={!canRedo}><Redo2 /></button></Tooltip>
       <div className={sep} />
-      <Tooltip label={t('catalog.editor.snap')} side="bottom"><button className={cn(btn, snap && 'bg-brand-soft text-brand-ink')} onClick={toggleSnap}><Magnet /></button></Tooltip>
-      <Tooltip label={t('catalog.editor.grid')} side="bottom"><button className={cn(btn, showGrid && 'bg-brand-soft text-brand-ink')} onClick={toggleGrid}><Grid3X3 /></button></Tooltip>
+      <Tooltip label={t('catalog.editor.snap')} side="bottom"><button type="button" className={cn(btn, snap && 'bg-brand-soft text-brand-ink')} onClick={toggleSnap}><Magnet /></button></Tooltip>
+      <Tooltip label={t('catalog.editor.grid')} side="bottom"><button type="button" className={cn(btn, showGrid && 'bg-brand-soft text-brand-ink')} onClick={toggleGrid}><Grid3X3 /></button></Tooltip>
       <div className="flex items-center gap-0.5 shrink-0 max-xl:ml-auto max-xl:flex-row max-xl:pl-1 xl:mt-auto xl:flex-col">
-        <button className={btn} onClick={() => setZoom(zoom + 0.1)} aria-label="zoom in"><Plus /></button>
-        <button className="min-w-9 h-8 xl:h-auto text-[11px] tabular text-ink-3 hover:text-ink" onClick={() => setZoom(1)}>{Math.round(zoom * 100)}%</button>
-        <button className={btn} onClick={() => setZoom(zoom - 0.1)} aria-label="zoom out"><Minus /></button>
-        <Tooltip label={t('catalog.editor.fit')} side="top"><button className={btn} onClick={onFit}><Maximize /></button></Tooltip>
+        <button type="button" className={btn} onClick={() => setZoom(zoom + 0.1)} aria-label="zoom in"><Plus /></button>
+        <button type="button" className="min-w-9 h-8 xl:h-auto text-[11px] tabular text-ink-3 hover:text-ink" onClick={() => setZoom(1)}>{Math.round(zoom * 100)}%</button>
+        <button type="button" className={btn} onClick={() => setZoom(zoom - 0.1)} aria-label="zoom out"><Minus /></button>
+        <Tooltip label={t('catalog.editor.fit')} side="top"><button type="button" className={btn} onClick={onFit}><Maximize /></button></Tooltip>
       </div>
     </div>
   )

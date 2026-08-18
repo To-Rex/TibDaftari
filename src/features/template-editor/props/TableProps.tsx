@@ -28,7 +28,7 @@ export function TableProps({ el, schema }: { el: TableElement; schema: Attribute
         <PropRow label={t('catalog.editor.tableField')}>
           <SelectInput value={el.fieldKey} onChange={(v) => set({ fieldKey: v })} options={[{ value: '', label: t('catalog.editor.staticTable') }, ...(orderScope ? [{ value: ITEMS_DATASET, label: t('catalog.editor.ph.items') }] : []), ...tableFields.map((f) => ({ value: f.key, label: f.label }))]} />
         </PropRow>
-        {bound && <button className="text-[12px] text-brand-ink hover:underline text-left" onClick={bindAll}>{t('catalog.editor.bindAllColumns', { n: bound.columns.length })}</button>}
+        {bound && <button type="button" className="text-[12px] text-brand-ink hover:underline text-left" onClick={bindAll}>{t('catalog.editor.bindAllColumns', { n: bound.columns.length })}</button>}
       </PropSection>
       <PropSection title={`${t('catalog.editor.columns')} · ${el.columns.length}`}>
         <div className="flex flex-col gap-2">
@@ -36,9 +36,9 @@ export function TableProps({ el, schema }: { el: TableElement; schema: Attribute
             <div key={c.id} className="rounded-lg border border-line p-2 flex flex-col gap-1.5 bg-surface-2/30">
               <div className="flex items-center gap-1">
                 <TextInput value={c.header} onChange={(v) => setCol(i, { header: v })} placeholder={t('catalog.editor.header')} className="flex-1" />
-                <button className={ib} disabled={i === 0} onClick={() => move(i, -1)}><ArrowUp /></button>
-                <button className={ib} disabled={i === el.columns.length - 1} onClick={() => move(i, 1)}><ArrowDown /></button>
-                <button className={`${ib} hover:text-danger`} onClick={() => set({ columns: el.columns.filter((_, j) => j !== i) })}><Trash2 /></button>
+                <button type="button" className={ib} disabled={i === 0} onClick={() => move(i, -1)}><ArrowUp /></button>
+                <button type="button" className={ib} disabled={i === el.columns.length - 1} onClick={() => move(i, 1)}><ArrowDown /></button>
+                <button type="button" className={`${ib} hover:text-danger`} onClick={() => set({ columns: el.columns.filter((_, j) => j !== i) })}><Trash2 /></button>
               </div>
               <div className="grid grid-cols-[1fr_64px_72px] gap-1">
                 {bound ? (
@@ -51,7 +51,7 @@ export function TableProps({ el, schema }: { el: TableElement; schema: Attribute
               </div>
             </div>
           ))}
-          <button onClick={addCol} className="inline-flex items-center gap-1.5 h-8 px-2 rounded-lg text-[12.5px] text-brand-ink hover:bg-brand-soft/60 self-start"><Plus className="size-3.5" />{t('catalog.editor.addColumn')}</button>
+          <button type="button" onClick={addCol} className="inline-flex items-center gap-1.5 h-8 px-2 rounded-lg text-[12.5px] text-brand-ink hover:bg-brand-soft/60 self-start"><Plus className="size-3.5" />{t('catalog.editor.addColumn')}</button>
         </div>
       </PropSection>
       <PropSection title={t('catalog.editor.tableOptions')}>

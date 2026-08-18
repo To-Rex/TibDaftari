@@ -175,9 +175,9 @@ export default function CatalogPage() {
             <div className="catalog-services-header p-3 sm:p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-line">
               <div className="min-w-0">
                 <div className="catalog-breadcrumb flex items-center gap-1 text-[12.5px] text-ink-3 mb-0.5 flex-wrap">
-                  <button className="hover:text-ink transition-colors" onClick={() => setSelected(null)}>{t('catalog.tree.all')}</button>
+                  <button type="button" className="hover:text-ink transition-colors" onClick={() => setSelected(null)}>{t('catalog.tree.all')}</button>
                   {path.map((c) => (
-                    <span key={c.id} className="flex items-center gap-1 min-w-0"><ChevronRight className="size-3 shrink-0" /><button className="hover:text-ink transition-colors truncate" onClick={() => setSelected(c.id)}>{c.name}</button></span>
+                    <span key={c.id} className="flex items-center gap-1 min-w-0"><ChevronRight className="size-3 shrink-0" /><button type="button" className="hover:text-ink transition-colors truncate" onClick={() => setSelected(c.id)}>{c.name}</button></span>
                   ))}
                 </div>
                 <h2 className="catalog-services-title text-[16px] font-semibold flex items-center gap-2 flex-wrap">

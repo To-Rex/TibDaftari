@@ -39,12 +39,12 @@ const LayerRow = memo(function LayerRow({ el, selected, isTop, isBottom }: { el:
       <I className="size-3.5 shrink-0" />
       <span className="truncate flex-1">{elementLabel(el)}</span>
       <span className="flex lg:hidden lg:group-hover:flex items-center" onClick={(e) => e.stopPropagation()}>
-        <button className={ib} disabled={isTop} onClick={() => reorder(el.id, 'up')} title={t('catalog.editor.bringForward')}><ArrowUp /></button>
-        <button className={ib} disabled={isBottom} onClick={() => reorder(el.id, 'down')} title={t('catalog.editor.sendBackward')}><ArrowDown /></button>
+        <button type="button" className={ib} disabled={isTop} onClick={() => reorder(el.id, 'up')} title={t('catalog.editor.bringForward')}><ArrowUp /></button>
+        <button type="button" className={ib} disabled={isBottom} onClick={() => reorder(el.id, 'down')} title={t('catalog.editor.sendBackward')}><ArrowDown /></button>
       </span>
       <span className={cn('flex items-center', !(el.hidden || el.locked) && 'lg:opacity-0 lg:group-hover:opacity-100')} onClick={(e) => e.stopPropagation()}>
-        <button className={ib} onClick={() => patchElements([el.id], (x) => ({ ...x, hidden: !x.hidden }))} title={t('catalog.editor.hidden')}>{el.hidden ? <EyeOff /> : <Eye />}</button>
-        <button className={ib} onClick={() => patchElements([el.id], (x) => ({ ...x, locked: !x.locked }))} title={t('catalog.editor.locked')}>{el.locked ? <Lock /> : <Unlock />}</button>
+        <button type="button" className={ib} onClick={() => patchElements([el.id], (x) => ({ ...x, hidden: !x.hidden }))} title={t('catalog.editor.hidden')}>{el.hidden ? <EyeOff /> : <Eye />}</button>
+        <button type="button" className={ib} onClick={() => patchElements([el.id], (x) => ({ ...x, locked: !x.locked }))} title={t('catalog.editor.locked')}>{el.locked ? <Lock /> : <Unlock />}</button>
       </span>
     </div>
   )

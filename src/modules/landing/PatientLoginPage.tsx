@@ -129,8 +129,8 @@ export default function PatientLoginPage() {
             </div>
             {challenge?.devCode && <p className="mt-3 text-center text-[12.5px] text-ink-3">{t('auth.devHint', { code: challenge.devCode })}</p>}
             <div className="mt-6 flex flex-wrap items-center justify-between gap-2 text-[13px]">
-              <button className="min-h-[40px] text-ink-3 hover:text-ink" onClick={() => setStep('phone')}>{t('auth.changePhone')}</button>
-              <button disabled={left > 0 || busy} onClick={() => void send()} className="min-h-[40px] font-medium text-brand-ink disabled:text-ink-3">{left > 0 ? t('auth.resendIn', { s: left }) : t('auth.resend')}</button>
+              <button type="button" className="min-h-[40px] text-ink-3 hover:text-ink" onClick={() => setStep('phone')}>{t('auth.changePhone')}</button>
+              <button type="button" disabled={left > 0 || busy} onClick={() => void send()} className="min-h-[40px] font-medium text-brand-ink disabled:text-ink-3">{left > 0 ? t('auth.resendIn', { s: left }) : t('auth.resend')}</button>
             </div>
           </motion.div>
         )}

@@ -59,7 +59,7 @@ export function DataTable<T>({ columns, rows, rowKey, loading, skeletonRows = 8,
               {columns.map((c) => (
                 <th key={c.key} style={{ width: c.width }} className={cn('px-4 py-2.5 font-medium first:rounded-tl-[var(--radius)] last:rounded-tr-[var(--radius)] whitespace-nowrap', c.align === 'right' && 'text-right', c.align === 'center' && 'text-center', c.hideBelow && hide[c.hideBelow], c.className)}>
                   {c.sortable && onSort ? (
-                    <button onClick={() => onSort(c.key)} className={cn('inline-flex items-center gap-1 hover:text-ink transition-colors', sortBy === c.key && 'text-ink')}>
+                    <button type="button" onClick={() => onSort(c.key)} className={cn('inline-flex items-center gap-1 hover:text-ink transition-colors', sortBy === c.key && 'text-ink')}>
                       {c.header}
                       {sortBy === c.key ? (sortDir === 'asc' ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />) : <ArrowUpDown className="size-3 opacity-50" />}
                     </button>

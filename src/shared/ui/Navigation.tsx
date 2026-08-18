@@ -12,7 +12,7 @@ export function Tabs<T extends string>({ items, value, onChange, className, size
       {items.map((it) => {
         const active = it.value === value
         return (
-          <button key={it.value} role="tab" aria-selected={active} onClick={() => onChange(it.value)}
+          <button key={it.value} type="button" role="tab" aria-selected={active} onClick={() => onChange(it.value)}
             className={cn('app-tab relative flex items-center gap-2 whitespace-nowrap px-3 font-medium text-ink-3 transition-colors hover:text-ink', size === 'sm' ? 'h-9 text-[13px]' : 'h-11 text-[14px]', active && 'text-ink')}>
             {it.icon && <span className="[&>svg]:size-4">{it.icon}</span>}
             {it.label}
@@ -33,7 +33,7 @@ export function Segmented<T extends string>({ items, value, onChange, className,
       {items.map((it) => {
         const active = it.value === value
         return (
-          <button key={it.value} role="radio" aria-checked={active} onClick={() => onChange(it.value)}
+          <button key={it.value} type="button" role="radio" aria-checked={active} onClick={() => onChange(it.value)}
             className={cn('app-segment relative flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] font-medium transition-colors', size === 'sm' ? 'h-7 px-2.5 text-[12.5px]' : 'h-8 px-3 text-[13px]', block && 'flex-1', active ? 'text-ink' : 'text-ink-3 hover:text-ink-2')}>
             {active && <motion.span layoutId={id} className="absolute inset-0 rounded-[7px] bg-surface shadow-1 border border-line/70" transition={{ type: 'spring', stiffness: 500, damping: 38 }} />}
             <span className="relative flex items-center gap-1.5 [&>svg]:size-3.5">{it.icon}{it.label}</span>
@@ -75,7 +75,7 @@ export function Menu({ trigger, items, align = 'end', className }: { trigger: (o
               {items.map((it) => (
                 <div key={it.key}>
                   {it.separatorBefore && <div className="my-1 h-px bg-line" />}
-                  <button role="menuitem" disabled={it.disabled} onClick={() => { it.onSelect?.(); setOpen(false) }}
+                  <button type="button" role="menuitem" disabled={it.disabled} onClick={() => { it.onSelect?.(); setOpen(false) }}
                     className={cn('flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13.5px] transition-colors hover:bg-surface-2 disabled:opacity-40 [&>svg]:size-4 [&>svg]:text-ink-3', it.danger && 'text-danger hover:bg-danger-soft [&>svg]:text-danger')}>
                     {it.icon}{it.label}
                   </button>
@@ -105,15 +105,15 @@ export function Pagination({ page, totalPages, total, pageSize, onPage, onPageSi
         )}
       </div>
       <div className="flex items-center gap-1">
-        <button disabled={page <= 1} onClick={() => onPage(page - 1)} className="grid size-9 sm:size-8 place-items-center rounded-lg hover:bg-surface-2 disabled:opacity-30"><ChevronLeft className="size-4" /></button>
+        <button type="button" disabled={page <= 1} onClick={() => onPage(page - 1)} className="grid size-9 sm:size-8 place-items-center rounded-lg hover:bg-surface-2 disabled:opacity-30"><ChevronLeft className="size-4" /></button>
         {/* compact "3 / 12" on phones */}
         <span className="sm:hidden tabular px-1 text-ink-2 font-medium">{page} / {totalPages}</span>
         {pageNumbers(page, totalPages).map((p, i) =>
           p === '…' ? <span key={`e${i}`} className="px-1 max-sm:hidden">…</span> : (
-            <button key={p} onClick={() => onPage(p)} className={cn('h-8 min-w-8 px-2 rounded-lg tabular text-[13px] font-medium max-sm:hidden', p === page ? 'bg-brand text-white' : 'hover:bg-surface-2 text-ink-2')}>{p}</button>
+            <button key={p} type="button" onClick={() => onPage(p)} className={cn('h-8 min-w-8 px-2 rounded-lg tabular text-[13px] font-medium max-sm:hidden', p === page ? 'bg-brand text-white' : 'hover:bg-surface-2 text-ink-2')}>{p}</button>
           ),
         )}
-        <button disabled={page >= totalPages} onClick={() => onPage(page + 1)} className="grid size-9 sm:size-8 place-items-center rounded-lg hover:bg-surface-2 disabled:opacity-30"><ChevronRight className="size-4" /></button>
+        <button type="button" disabled={page >= totalPages} onClick={() => onPage(page + 1)} className="grid size-9 sm:size-8 place-items-center rounded-lg hover:bg-surface-2 disabled:opacity-30"><ChevronRight className="size-4" /></button>
       </div>
     </div>
   )

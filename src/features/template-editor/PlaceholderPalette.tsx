@@ -46,7 +46,7 @@ export function PlaceholderPalette({ schema, onInsert, compact, services }: { sc
               {g.items.map((it) => {
                 const I = it.type ? FIELD_TYPE_ICONS[it.type as keyof typeof FIELD_TYPE_ICONS] : undefined
                 return (
-                  <button
+                  <button type="button"
                     key={it.key}
                     draggable
                     onDragStart={(e) => { e.dataTransfer.setData(PLACEHOLDER_MIME, it.key); e.dataTransfer.setData('text/plain', `{${it.key}}`); e.dataTransfer.effectAllowed = 'copy' }}

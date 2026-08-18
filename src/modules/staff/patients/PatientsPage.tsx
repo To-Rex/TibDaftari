@@ -57,7 +57,7 @@ export default function PatientsPage() {
         <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1) }} placeholder={t('staff.patients.searchPh')} className="w-full sm:w-80 3xl:w-96" />
         <div className="flex flex-wrap items-center gap-1.5">
           {TAGS.map((tg) => (
-            <button key={tg} onClick={() => { setTag(tag === tg ? undefined : tg); setPage(1) }} className={cn('h-9 rounded-full border px-3 text-[12.5px] font-medium transition-colors md:h-8', tag === tg ? 'border-brand bg-brand-soft text-brand-ink' : 'border-line text-ink-2 hover:bg-surface-2')}>{tg}</button>
+            <button type="button" key={tg} onClick={() => { setTag(tag === tg ? undefined : tg); setPage(1) }} className={cn('h-9 rounded-full border px-3 text-[12.5px] font-medium transition-colors md:h-8', tag === tg ? 'border-brand bg-brand-soft text-brand-ink' : 'border-line text-ink-2 hover:bg-surface-2')}>{tg}</button>
           ))}
         </div>
       </Toolbar>

@@ -92,7 +92,7 @@ export default function RolesPage() {
                 const active = r.id === selectedId
                 return (
                   <MotionItem key={r.id} variants={fadeUp}>
-                    <button onClick={() => { setSelectedId(r.id); setView('detail') }} className={cn('relative w-full text-left flex items-center gap-3 rounded-[10px] px-3 py-2.5 min-h-11 transition-colors', active ? 'text-ink' : 'hover:bg-surface-2 text-ink-2')}>
+                    <button type="button" onClick={() => { setSelectedId(r.id); setView('detail') }} className={cn('relative w-full text-left flex items-center gap-3 rounded-[10px] px-3 py-2.5 min-h-11 transition-colors', active ? 'text-ink' : 'hover:bg-surface-2 text-ink-2')}>
                       {active && <motion.span layoutId="role-active" className="absolute inset-0 rounded-[10px] bg-brand-soft" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
                       <span className={cn('relative grid size-9 shrink-0 place-items-center rounded-lg [&>svg]:size-4', r.key === 'superadmin' ? 'bg-accent/15 text-accent' : r.isSystem ? 'bg-brand text-white' : 'bg-surface-2 text-ink-3')}>{r.key === 'superadmin' ? <Lock /> : <ShieldCheck />}</span>
                       <span className="relative min-w-0 flex-1">

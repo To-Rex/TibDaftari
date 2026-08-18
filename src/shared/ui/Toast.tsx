@@ -55,7 +55,7 @@ export function ToastViewport() {
                 <p className="text-[14px] font-medium leading-5">{t.title}</p>
                 {t.description && <p className="mt-0.5 text-[13px] text-ink-3 leading-5">{t.description}</p>}
               </div>
-              <button onClick={() => dismiss(t.id)} className="grid size-7 place-items-center rounded-full text-ink-3 hover:bg-surface-2" aria-label="dismiss">
+              <button type="button" onClick={() => dismiss(t.id)} className="grid size-7 place-items-center rounded-full text-ink-3 hover:bg-surface-2" aria-label="dismiss">
                 <X className="size-3.5" />
               </button>
             </motion.div>

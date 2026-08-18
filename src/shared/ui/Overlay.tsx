@@ -115,8 +115,8 @@ export function ConfirmDialog({ open, onClose, onConfirm, title, description, co
     <Modal open={open} onClose={onClose} size="sm" title={title} description={description} hideClose
       footer={
         <>
-          <button onClick={onClose} className="h-9 px-3.5 rounded-[var(--radius-sm)] text-[14px] font-medium text-ink-2 hover:bg-surface-2">{cancelText}</button>
-          <button onClick={onConfirm} disabled={loading} className={cn('h-9 px-4 rounded-[var(--radius-sm)] text-[14px] font-medium text-white disabled:opacity-60', danger ? 'bg-danger' : 'bg-brand')}>{confirmText}</button>
+          <button type="button" onClick={onClose} className="h-9 px-3.5 rounded-[var(--radius-sm)] text-[14px] font-medium text-ink-2 hover:bg-surface-2">{cancelText}</button>
+          <button type="button" onClick={onConfirm} disabled={loading} className={cn('h-9 px-4 rounded-[var(--radius-sm)] text-[14px] font-medium text-white disabled:opacity-60', danger ? 'bg-danger' : 'bg-brand')}>{confirmText}</button>
         </>
       }
     >

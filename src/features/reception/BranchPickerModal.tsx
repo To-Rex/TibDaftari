@@ -18,7 +18,7 @@ export function BranchPickerModal({ open, onClose, companyId, onPick, loading }:
         <motion.ul variants={stagger} initial="hidden" animate="show" className="flex flex-col gap-2">
           {list.map((b) => (
             <motion.li key={b.id} variants={fadeUp}>
-              <button disabled={loading} onClick={() => onPick(b.id)} className="group flex w-full items-center gap-3 rounded-[var(--radius)] border border-line bg-surface px-4 py-3 text-left transition-[border-color,box-shadow,transform] hover:-translate-y-px hover:border-brand/50 hover:shadow-2 disabled:opacity-60">
+              <button type="button" disabled={loading} onClick={() => onPick(b.id)} className="group flex w-full items-center gap-3 rounded-[var(--radius)] border border-line bg-surface px-4 py-3 text-left transition-[border-color,box-shadow,transform] hover:-translate-y-px hover:border-brand/50 hover:shadow-2 disabled:opacity-60">
                 <span className="grid size-9 place-items-center rounded-lg bg-brand-soft text-brand-ink"><GitBranch className="size-4" /></span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[14px] font-medium">{b.name}</span>

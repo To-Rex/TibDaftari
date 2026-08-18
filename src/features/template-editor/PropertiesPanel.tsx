@@ -81,8 +81,8 @@ function MultiProps({ els }: { els: TemplateElement[] }) {
           <ToggleChip active={false} onClick={() => align('bottom')}><AlignEndHorizontal /></ToggleChip>
         </PropRow>
         <PropRow label={t('catalog.editor.state')}>
-          <button className="h-8 px-2.5 rounded-md border border-line text-[12px] hover:bg-surface-2" onClick={() => patch(ids, (e) => ({ ...e, locked: true }))}>{t('catalog.editor.lockAll')}</button>
-          <button className="h-8 px-2.5 rounded-md border border-line text-[12px] hover:bg-surface-2" onClick={() => patch(ids, (e) => ({ ...e, locked: undefined }))}>{t('catalog.editor.unlockAll')}</button>
+          <button type="button" className="h-8 px-2.5 rounded-md border border-line text-[12px] hover:bg-surface-2" onClick={() => patch(ids, (e) => ({ ...e, locked: true }))}>{t('catalog.editor.lockAll')}</button>
+          <button type="button" className="h-8 px-2.5 rounded-md border border-line text-[12px] hover:bg-surface-2" onClick={() => patch(ids, (e) => ({ ...e, locked: undefined }))}>{t('catalog.editor.unlockAll')}</button>
         </PropRow>
       </PropSection>
     </>

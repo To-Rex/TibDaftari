@@ -46,7 +46,7 @@ export function AssetPickerModal({ open, onClose, assets, companyId, onPick }: {
               <p className="mb-2 text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-3">{t(`catalog.editor.assetKind.${k}`)} · {list.length}</p>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 {list.map((a) => (
-                  <button key={a.id} onClick={() => onPick(a)} className={cn('group rounded-[var(--radius)] border border-line bg-surface p-2 text-left transition-all hover:border-brand hover:shadow-2 hover:-translate-y-px')}>
+                  <button type="button" key={a.id} onClick={() => onPick(a)} className={cn('group rounded-[var(--radius)] border border-line bg-surface p-2 text-left transition-all hover:border-brand hover:shadow-2 hover:-translate-y-px')}>
                     <div className="aspect-square rounded-lg bg-[repeating-conic-gradient(rgb(0_0_0/0.05)_0_25%,transparent_0_50%)] bg-[length:12px_12px] grid place-items-center overflow-hidden">
                       <img src={a.url} alt={a.name} className="max-w-full max-h-full object-contain" />
                     </div>

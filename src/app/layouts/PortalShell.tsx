@@ -39,7 +39,7 @@ export function PortalShell() {
           <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
             <LanguageSwitcher compact />
             <ThemeToggle />
-            <Menu trigger={() => (<button className="ml-0.5 flex items-center gap-2 rounded-full p-1 xs:pr-2 hover:bg-surface-2"><Avatar name={p.fullName} size="sm" /><span className="max-lg:hidden text-[13px] font-medium">{p.fullName.split(' ')[1] ?? p.fullName}</span></button>)}
+            <Menu trigger={() => (<button type="button" className="ml-0.5 flex items-center gap-2 rounded-full p-1 xs:pr-2 hover:bg-surface-2"><Avatar name={p.fullName} size="sm" /><span className="max-lg:hidden text-[13px] font-medium">{p.fullName.split(' ')[1] ?? p.fullName}</span></button>)}
               items={[{ key: 'logout', label: t('common.logout'), icon: <LogOut />, danger: true, onSelect: () => void logoutPatient().then(() => nav(routes.home)) }]} />
           </div>
         </div>

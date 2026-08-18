@@ -173,7 +173,7 @@ export default function TemplateEditorPage() {
               )}
             </AnimatePresence>
             {!preview && (
-              <button onClick={() => setLeftOpen((o) => !o)} className={cn('self-start mt-2 -ml-px z-10 grid size-6 place-items-center rounded-r-md border border-l-0 border-line bg-surface text-ink-3 hover:text-ink')} title={t('catalog.editor.togglePanel')}>
+              <button type="button" onClick={() => setLeftOpen((o) => !o)} className={cn('self-start mt-2 -ml-px z-10 grid size-6 place-items-center rounded-r-md border border-l-0 border-line bg-surface text-ink-3 hover:text-ink')} title={t('catalog.editor.togglePanel')}>
                 {leftOpen ? <PanelLeftClose className="size-3.5" /> : <PanelLeftOpen className="size-3.5" />}
               </button>
             )}

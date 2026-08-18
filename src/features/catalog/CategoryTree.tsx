@@ -34,7 +34,7 @@ export function CategoryTree({ categories, loading, selectedId, onSelect, canWri
 
   return (
     <div className="catalog-category-tree p-2">
-      <button
+      <button type="button"
         onClick={() => onSelect(null)}
         className={cn('catalog-tree-all w-full flex items-center gap-2 h-10 lg:h-9 px-2.5 rounded-lg text-[13.5px] font-medium transition-colors', selectedId === null ? 'bg-brand-soft text-brand-ink' : 'text-ink-2 hover:bg-surface-2')}
       >
@@ -83,7 +83,7 @@ const TreeRow = memo(function TreeRow({ node, selected, expanded, onToggle, onSe
         className={cn('catalog-tree-row-content flex items-center gap-1.5 h-10 lg:h-9 pr-1.5 rounded-lg text-[13.5px] transition-colors cursor-pointer', selected ? 'catalog-tree-row-selected bg-brand-soft text-brand-ink' : 'text-ink hover:bg-surface-2', !cat.isActive && 'catalog-tree-row-inactive opacity-55', canWrite && 'max-lg:pr-10')}
         style={{ paddingLeft: 6 + depth * 16 }}
       >
-        <button
+        <button type="button"
           onClick={(e) => { e.stopPropagation(); if (hasKids) onToggle() }}
           className={cn('catalog-tree-chevron size-5 grid place-items-center rounded text-ink-3 transition-transform', hasKids ? 'hover:bg-surface-3 hover:text-ink' : 'opacity-0 pointer-events-none', expanded && 'rotate-90')}
           aria-label={expanded ? 'collapse' : 'expand'}

@@ -22,14 +22,14 @@ export function CommonProps({ el, schema }: { el: TemplateElement; schema: Attri
           <ToggleChip active={!!el.locked} onClick={() => p({ locked: !el.locked || undefined })} title={t('catalog.editor.locked')}>{el.locked ? <Lock /> : <Unlock />}</ToggleChip>
           <ToggleChip active={!!el.hidden} onClick={() => p({ hidden: !el.hidden || undefined })} title={t('catalog.editor.hidden')}>{el.hidden ? <EyeOff /> : <Eye />}</ToggleChip>
           <span className="flex-1" />
-          <button className={ib} title={t('catalog.editor.duplicate')} onClick={duplicateSelected}><Copy /></button>
-          <button className={`${ib} text-danger hover:bg-danger-soft`} title={t('common.delete')} onClick={removeSelected}><Trash2 /></button>
+          <button type="button" className={ib} title={t('catalog.editor.duplicate')} onClick={duplicateSelected}><Copy /></button>
+          <button type="button" className={`${ib} text-danger hover:bg-danger-soft`} title={t('common.delete')} onClick={removeSelected}><Trash2 /></button>
         </PropRow>
         <PropRow label={t('catalog.editor.zOrder')}>
-          <button className={ib} title={t('catalog.editor.bringToFront')} onClick={() => reorder(el.id, 'front')}><ArrowUpToLine /></button>
-          <button className={ib} title={t('catalog.editor.bringForward')} onClick={() => reorder(el.id, 'up')}><ArrowUp /></button>
-          <button className={ib} title={t('catalog.editor.sendBackward')} onClick={() => reorder(el.id, 'down')}><ArrowDown /></button>
-          <button className={ib} title={t('catalog.editor.sendToBack')} onClick={() => reorder(el.id, 'back')}><ArrowDownToLine /></button>
+          <button type="button" className={ib} title={t('catalog.editor.bringToFront')} onClick={() => reorder(el.id, 'front')}><ArrowUpToLine /></button>
+          <button type="button" className={ib} title={t('catalog.editor.bringForward')} onClick={() => reorder(el.id, 'up')}><ArrowUp /></button>
+          <button type="button" className={ib} title={t('catalog.editor.sendBackward')} onClick={() => reorder(el.id, 'down')}><ArrowDown /></button>
+          <button type="button" className={ib} title={t('catalog.editor.sendToBack')} onClick={() => reorder(el.id, 'back')}><ArrowDownToLine /></button>
         </PropRow>
       </PropSection>
       <PropSection title={t('catalog.editor.advanced')} defaultOpen={!!(el.repeat || el.showIf)}>

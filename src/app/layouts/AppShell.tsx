@@ -149,7 +149,7 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-ink/40 lg:hidden" onClick={() => setMobileOpen(false)} />
             <motion.aside initial={{ x: -260 }} animate={{ x: 0 }} exit={{ x: -260 }} transition={{ type: 'spring', stiffness: 400, damping: 36 }} className="app-mobile-sidebar fixed inset-y-0 left-0 z-50 w-[min(260px,88vw)] border-r border-line bg-bg-elevated lg:hidden">
-              <button onClick={() => setMobileOpen(false)} className="absolute right-3 top-4 grid size-8 place-items-center rounded-full hover:bg-surface-2"><X className="size-4" /></button>
+              <button type="button" onClick={() => setMobileOpen(false)} className="absolute right-3 top-4 grid size-8 place-items-center rounded-full hover:bg-surface-2"><X className="size-4" /></button>
               {sidebar}
             </motion.aside>
           </>
@@ -190,7 +190,7 @@ function TopBar({ onMenu, module }: { onMenu: () => void; module: 'staff' | 'adm
         <Menu
           align="start"
           trigger={(open) => (
-            <button title={activeCompany?.name ?? ''} className={cn('inline-flex h-9 min-w-0 shrink items-center gap-1.5 rounded-full border px-2.5 text-[13px] font-medium shadow-1 transition-colors sm:gap-2 sm:px-3 hover:border-line-strong', isForeign ? 'border-accent/50 bg-accent/10 text-accent' : 'border-line bg-surface', open && 'border-brand')}>
+            <button type="button" title={activeCompany?.name ?? ''} className={cn('inline-flex h-9 min-w-0 shrink items-center gap-1.5 rounded-full border px-2.5 text-[13px] font-medium shadow-1 transition-colors sm:gap-2 sm:px-3 hover:border-line-strong', isForeign ? 'border-accent/50 bg-accent/10 text-accent' : 'border-line bg-surface', open && 'border-brand')}>
               <Building2 className="size-4 shrink-0" />
               <span className="max-sm:hidden max-w-[120px] md:max-w-[180px] truncate">{activeCompany?.name ?? '…'}</span>
               <ChevronDown className="size-3.5 shrink-0 text-ink-3" />
@@ -212,7 +212,7 @@ function TopBar({ onMenu, module }: { onMenu: () => void; module: 'staff' | 'adm
       <Menu
         align="start"
         trigger={(open) => (
-          <button title={current ? current.name : t('common.allBranches')} className={cn('app-branch-switcher inline-flex h-9 min-w-0 shrink items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 text-[13px] font-medium shadow-1 transition-colors sm:gap-2 sm:px-3 hover:border-line-strong', open && 'border-brand')}>
+          <button type="button" title={current ? current.name : t('common.allBranches')} className={cn('app-branch-switcher inline-flex h-9 min-w-0 shrink items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 text-[13px] font-medium shadow-1 transition-colors sm:gap-2 sm:px-3 hover:border-line-strong', open && 'border-brand')}>
             <GitBranch className="size-4 shrink-0 text-brand" />
             <span className="max-sm:hidden max-w-[120px] md:max-w-[160px] 2xl:max-w-[240px] truncate">{current ? current.name : t('common.allBranches')}</span>
             <ChevronDown className="size-3.5 shrink-0 text-ink-3" />
@@ -250,7 +250,7 @@ function TopBar({ onMenu, module }: { onMenu: () => void; module: 'staff' | 'adm
         />
         <Menu
           trigger={() => (
-            <button className="ml-0.5 xs:ml-1 flex items-center gap-2 rounded-full p-1 sm:pr-2 hover:bg-surface-2">
+            <button type="button" className="ml-0.5 xs:ml-1 flex items-center gap-2 rounded-full p-1 sm:pr-2 hover:bg-surface-2">
               <Avatar name={s.fullName} size="sm" />
               <span className="max-md:hidden max-w-[160px] text-left leading-tight">
                 <span className="block truncate text-[13px] font-medium">{s.fullName}</span>

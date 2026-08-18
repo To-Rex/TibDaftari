@@ -35,7 +35,7 @@ export function LanguageSwitcher({ compact }: { compact?: boolean }) {
         compact ? (
           <IconButton label="language"><Languages /></IconButton>
         ) : (
-          <button className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium text-ink-2 hover:bg-surface-2 hover:text-ink">
+          <button type="button" className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium text-ink-2 hover:bg-surface-2 hover:text-ink">
             <Languages className="size-4" />
             {LOCALES.find((l) => l.code === cur)?.short}
           </button>

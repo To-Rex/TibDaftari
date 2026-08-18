@@ -25,7 +25,7 @@ export function FilterChips<T extends string>({
       {items.map((it) => {
         const active = it.value === value
         return (
-          <button
+          <button type="button"
             key={it.value}
             role="radio"
             aria-checked={active}

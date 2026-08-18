@@ -48,7 +48,7 @@ export function PatientSearchPanel({ companyId, selectedId, onSelect, onNew, inp
             <AnimatePresence initial={false}>
               {results.map((p, i) => (
                 <motion.li key={p.id} layout initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, delay: Math.min(i * 0.025, 0.2) }}>
-                  <button onClick={() => onSelect(p)} onMouseEnter={() => setCursor(i)}
+                  <button type="button" onClick={() => onSelect(p)} onMouseEnter={() => setCursor(i)}
                     className={cn('flex w-full items-center gap-3 rounded-[var(--radius)] border px-3 py-2.5 text-left transition-[background-color,border-color,box-shadow]', selectedId === p.id ? 'border-brand/50 bg-brand-soft/50 shadow-1' : i === cursor ? 'border-line bg-surface-2/70' : 'border-transparent hover:bg-surface-2/60')}>
                     <Avatar name={p.fullName} size="md" className="max-xs:hidden" />
                     <span className="min-w-0 flex-1">

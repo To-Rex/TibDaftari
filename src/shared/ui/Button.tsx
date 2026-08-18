@@ -37,7 +37,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   ref,
 ) {
   return (
-    <button ref={ref} className={cn(base, variants[variant], sizes[size], block && 'w-full', className)} disabled={disabled || loading} {...rest}>
+    <button ref={ref} type="button" className={cn(base, variants[variant], sizes[size], block && 'w-full', className)} disabled={disabled || loading} {...rest}>
       {loading ? <Loader2 className="size-4 animate-spin" aria-hidden /> : leftIcon}
       {children}
       {!loading && rightIcon}
@@ -58,6 +58,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
   return (
     <button
       ref={ref}
+      type="button"
       aria-label={label}
       title={label}
       className={cn(base, 'rounded-full', variants[variant], iconSizes[size], className)}
