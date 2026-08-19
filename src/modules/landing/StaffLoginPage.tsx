@@ -33,7 +33,10 @@ export default function StaffLoginPage() {
   const onSubmit = async (v: Form) => {
     try {
       const s = await staffLogin(v.login, v.password)
-      const dest = loc.state?.from ?? (s.roleKey === 'admin' || s.isSuperAdmin ? routes.admin.root : routes.app.root)
+      // land in the module that fits THIS account; a remembered `from` of another user/module is ignored
+      const home = s.roleKey === 'admin' || s.isSuperAdmin ? routes.admin.root : routes.app.root
+      const from = loc.state?.from
+      const dest = from && from.startsWith(home) ? from : home
       nav(dest, { replace: true })
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : t('common.error'))

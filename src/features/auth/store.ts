@@ -20,6 +20,9 @@ const withActiveCompany = (s: StaffSession | null): StaffSession | null => {
   return active && active !== s.companyId ? { ...s, companyId: active } : s
 }
 
+/** Bumped by every login/logout; an in-flight hydrate() must not overwrite a newer session. */
+let sessionEpoch = 0
+
 interface AuthState {
   staff: StaffSession | null
   patient: PatientSession | null
@@ -46,6 +49,7 @@ export const useAuth = create<AuthState>((set, get) => ({
   homeCompanyId: null,
   hydrated: false,
   async hydrate() {
+    const epoch = sessionEpoch
     const st = storage.get<string | null>(STAFF_KEY, null)
     const pt = storage.get<string | null>(PATIENT_KEY, null)
     // 1) optimistic: restore the last known sessions instantly (no round trip before first paint)
@@ -61,6 +65,11 @@ export const useAuth = create<AuthState>((set, get) => ({
       st ? repos.auth.staffMe(st).catch(() => null) : null,
       pt ? repos.auth.patientMe(pt).catch(() => null) : null,
     ])
+    if (epoch !== sessionEpoch) {
+      // someone logged in/out while we were validating the OLD tokens — their result is authoritative
+      set({ hydrated: true })
+      return
+    }
     if (!home) { storage.remove(STAFF_KEY); storage.remove(STAFF_SESSION_KEY) } else storage.set(STAFF_SESSION_KEY, home)
     if (!patient) { storage.remove(PATIENT_KEY); storage.remove(PATIENT_SESSION_KEY) } else storage.set(PATIENT_SESSION_KEY, patient)
     const staff = withActiveCompany(home)
@@ -69,6 +78,10 @@ export const useAuth = create<AuthState>((set, get) => ({
   },
   async staffLogin(login, password) {
     const s = await repos.auth.staffLogin({ login, password })
+    sessionEpoch++
+    // a previous staff session of another user in this browser is gone for good
+    const prev = get().staff
+    if (prev && prev.accessToken !== s.accessToken) void repos.auth.logout(prev.accessToken).catch(() => undefined)
     storage.set(STAFF_KEY, s.accessToken)
     storage.set(STAFF_SESSION_KEY, s)
     storage.set(BRANCH_KEY, s.branchId)
@@ -77,6 +90,7 @@ export const useAuth = create<AuthState>((set, get) => ({
     return s
   },
   patientLogin(session) {
+    sessionEpoch++
     storage.set(PATIENT_KEY, session.accessToken)
     storage.set(PATIENT_SESSION_KEY, session)
     set({ patient: session })
@@ -96,6 +110,7 @@ export const useAuth = create<AuthState>((set, get) => ({
     set({ staff: { ...staff, companyId: next ?? home }, branchId: null })
   },
   async logoutStaff() {
+    sessionEpoch++
     const t = get().staff?.accessToken
     if (t) await repos.auth.logout(t)
     storage.remove(STAFF_KEY)
@@ -104,6 +119,7 @@ export const useAuth = create<AuthState>((set, get) => ({
     set({ staff: null, homeCompanyId: null })
   },
   async logoutPatient() {
+    sessionEpoch++
     const t = get().patient?.accessToken
     if (t) await repos.auth.logout(t)
     storage.remove(PATIENT_KEY)
@@ -113,7 +129,9 @@ export const useAuth = create<AuthState>((set, get) => ({
   async refreshStaff() {
     const t = get().staff?.accessToken
     if (!t) return
+    const epoch = sessionEpoch
     const s = await repos.auth.staffMe(t).catch(() => null)
+    if (epoch !== sessionEpoch) return
     if (s) storage.set(STAFF_SESSION_KEY, s)
     set({ staff: withActiveCompany(s), homeCompanyId: s?.companyId ?? null })
   },
@@ -121,6 +139,7 @@ export const useAuth = create<AuthState>((set, get) => ({
 
 /** API said 401 for an actor (expired/revoked token): drop that session so route guards redirect to login. */
 onUnauthorized((actor) => {
+  sessionEpoch++
   if (actor === 'staff') { storage.remove(STAFF_SESSION_KEY); useAuth.setState({ staff: null }) }
   else if (actor === 'patient') { storage.remove(PATIENT_SESSION_KEY); useAuth.setState({ patient: null }) }
 })
