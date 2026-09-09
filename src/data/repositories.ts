@@ -126,7 +126,7 @@ export interface OrderRepository {
 }
 
 export interface TemplateRepository {
-  list(companyId: Id, q?: { status?: string; serviceTypeId?: Id; search?: string }): Promise<ResultTemplate[]>
+  list(companyId: Id, q?: { status?: string; serviceTypeId?: Id; branchId?: Id; search?: string }): Promise<ResultTemplate[]>
   get(id: Id): Promise<ResultTemplate>
   save(input: Partial<ResultTemplate> & { companyId: Id; id?: Id }): Promise<ResultTemplate>
   setStatus(id: Id, status: ResultTemplate['status']): Promise<ResultTemplate>

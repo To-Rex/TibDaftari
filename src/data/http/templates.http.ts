@@ -14,6 +14,7 @@ const templateBody = (input: Partial<ResultTemplate>, withStatus: boolean) =>
     description: input.description,
     serviceTypeIds: input.serviceTypeIds,
     categoryIds: input.categoryIds,
+    branchIds: input.branchIds,
     scope: input.scope,
     language: input.language,
     doc: input.doc,
@@ -26,7 +27,7 @@ const withAbsoluteUrl = (a: TemplateAsset): TemplateAsset => ({ ...a, url: absol
 export const templatesHttp: TemplateRepository = {
   list: (companyId, q) =>
     api.get<ResultTemplate[]>(`/companies/${companyId}/templates`, {
-      query: { status: q?.status, serviceTypeId: q?.serviceTypeId, search: q?.search },
+      query: { status: q?.status, serviceTypeId: q?.serviceTypeId, branchId: q?.branchId, search: q?.search },
     }),
 
   get: (id) => api.get<ResultTemplate>(`/templates/${id}`),

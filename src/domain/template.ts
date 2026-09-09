@@ -148,6 +148,8 @@ export interface ResultTemplate extends AuditStamp {
   /** service types this template can render (N:N). Empty = generic. */
   serviceTypeIds: Id[]
   categoryIds: Id[]
+  /** branches this template belongs to. Empty = every branch of the company. */
+  branchIds: Id[]
   scope: 'item' | 'order'
   language: 'uz' | 'ru' | 'en'
   doc: TemplateDoc

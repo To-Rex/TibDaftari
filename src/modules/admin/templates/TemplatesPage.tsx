@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { LayoutTemplate, Plus } from 'lucide-react'
 import type { ResultTemplate } from '@/domain'
 import { usePermissions } from '@/features/auth/store'
+import { useBranches } from '@/features/org/queries'
 import { useStaffSession } from '@/features/session/useSession'
 import { useCategories, useDeleteTemplate, useDuplicateTemplate, useSaveTemplate, useServiceTypes, useTemplateStatus, useTemplates } from '@/features/catalog/queries'
 import { NewTemplateModal, type NewTemplateInput } from '@/features/template-editor/NewTemplateModal'
@@ -24,7 +25,7 @@ type StatusFilter = 'all' | ResultTemplate['status']
 export default function TemplatesPage() {
   const { t } = useTranslation()
   const nav = useNavigate()
-  const { companyId } = useStaffSession()
+  const { companyId, branchId } = useStaffSession()
   const { can } = usePermissions()
   const canWrite = can('admin.template.write')
   const canPublish = can('admin.template.publish')
@@ -32,12 +33,14 @@ export default function TemplatesPage() {
   const [search, setSearch] = useState('')
   const dSearch = useDebounce(search)
   const [status, setStatus] = useState<StatusFilter>('all')
-  const q = useMemo(() => ({ status: status === 'all' ? undefined : status, search: dSearch || undefined }), [status, dSearch])
+  // the top-bar branch switcher scopes the gallery: a branch sees its own templates + company-wide ones
+  const q = useMemo(() => ({ status: status === 'all' ? undefined : status, search: dSearch || undefined, branchId: branchId ?? undefined }), [status, dSearch, branchId])
 
   const templates = useTemplates(companyId, q)
   const all = useTemplates(companyId, {})
   const serviceTypes = useServiceTypes(companyId, {})
   const categories = useCategories(companyId)
+  const branches = useBranches(companyId)
   const save = useSaveTemplate(companyId)
   const dup = useDuplicateTemplate()
   const setStatusM = useTemplateStatus()
@@ -78,7 +81,7 @@ export default function TemplatesPage() {
 
   const create = async (input: NewTemplateInput) => {
     try {
-      const tpl = await save.mutateAsync({ name: input.name, doc: input.doc, serviceTypeIds: input.serviceTypeIds, categoryIds: input.categoryIds, scope: input.scope, language: input.language })
+      const tpl = await save.mutateAsync({ name: input.name, doc: input.doc, serviceTypeIds: input.serviceTypeIds, categoryIds: input.categoryIds, branchIds: input.branchIds, scope: input.scope, language: input.language })
       setCreating(false)
       nav(routes.admin.template(tpl.id))
     } catch (e) { toast.error(errorMessage(e)) }
@@ -111,14 +114,14 @@ export default function TemplatesPage() {
       ) : (
         <MotionList variants={stagger} initial="hidden" animate="show" className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,270px),1fr))]">
           {list.map((tpl) => (
-            <TemplateCard key={tpl.id} tpl={tpl} companyId={companyId} serviceTypes={serviceTypes.data ?? []} categories={categories.data ?? []} canWrite={canWrite} canPublish={canPublish}
+            <TemplateCard key={tpl.id} tpl={tpl} companyId={companyId} serviceTypes={serviceTypes.data ?? []} categories={categories.data ?? []} branches={branches.data ?? []} canWrite={canWrite} canPublish={canPublish}
               onOpen={() => nav(routes.admin.template(tpl.id))} onDuplicate={() => void duplicate(tpl)} onDelete={() => setToDelete(tpl)} onExport={() => void exportTpl(tpl)}
               onSetStatus={(s) => (s === 'active' ? setToActivate(tpl) : void setSt(tpl, s))} />
           ))}
         </MotionList>
       )}
 
-      <NewTemplateModal open={creating} onClose={() => setCreating(false)} serviceTypes={serviceTypes.data ?? []} categories={categories.data ?? []} templates={all.data ?? []} onSubmit={create} saving={save.isPending} />
+      <NewTemplateModal open={creating} onClose={() => setCreating(false)} serviceTypes={serviceTypes.data ?? []} categories={categories.data ?? []} branches={branches.data ?? []} templates={all.data ?? []} onSubmit={create} saving={save.isPending} />
       <ConfirmDialog open={!!toDelete} onClose={() => setToDelete(null)} danger loading={del.isPending} title={t('catalog.templates.deleteTitle', { name: toDelete?.name ?? '' })} description={t('catalog.templates.deleteHint')} confirmText={t('common.delete')} cancelText={t('common.cancel')}
         onConfirm={async () => { try { await del.mutateAsync(toDelete!.id); setToDelete(null); toast.success(t('catalog.templates.deleted')) } catch (e) { toast.error(errorMessage(e)) } }} />
       <ConfirmDialog open={!!toActivate} onClose={() => setToActivate(null)} loading={setStatusM.isPending} title={t('catalog.templates.activateTitle', { name: toActivate?.name ?? '' })} description={t('catalog.templates.activateHint')} confirmText={t('catalog.templates.activate')} cancelText={t('common.cancel')}

@@ -6,7 +6,7 @@ import { Braces, Layers, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import type { TemplateAsset } from '@/domain'
 import { usePermissions } from '@/features/auth/store'
 import { useStaffSession } from '@/features/session/useSession'
-import { useCategories, useSaveTemplate, useServiceTypes, useTemplate, useTemplateStatus } from '@/features/catalog/queries'
+import { useBranches, useCategories, useSaveTemplate, useServiceTypes, useTemplate, useTemplateStatus } from '@/features/catalog/queries'
 import { useLeavePrompt } from '@/features/schema-editor/useLeavePrompt'
 import { AssetPickerModal } from '@/features/template-editor/AssetPickerModal'
 import { BindingsFields, type Bindings } from '@/features/template-editor/BindingsFields'
@@ -42,6 +42,7 @@ export default function TemplateEditorPage() {
   const tplQ = useTemplate(templateId)
   const serviceTypes = useServiceTypes(companyId, {})
   const categories = useCategories(companyId)
+  const branches = useBranches(companyId)
   const save = useSaveTemplate(companyId)
   const setStatus = useTemplateStatus()
 
@@ -193,7 +194,7 @@ export default function TemplateEditorPage() {
 
       <Modal open={bindingsOpen} onClose={() => setBindingsOpen(false)} title={t('catalog.editor.bindings')} description={t('catalog.editor.bindingsHint')} size="lg"
         footer={<><Button variant="ghost" onClick={() => setBindingsOpen(false)}>{t('common.cancel')}</Button><Button onClick={() => { if (bindDraft) useEditorStore.getState().setMeta(bindDraft); setBindingsOpen(false) }}>{t('common.done')}</Button></>}>
-        {bindDraft && <BindingsFields value={bindDraft} onChange={setBindDraft} serviceTypes={serviceTypes.data ?? []} categories={categories.data ?? []} />}
+        {bindDraft && <BindingsFields value={bindDraft} onChange={setBindDraft} serviceTypes={serviceTypes.data ?? []} categories={categories.data ?? []} branches={branches.data ?? []} />}
       </Modal>
 
       <ConfirmDialog open={activateAsk} onClose={() => setActivateAsk(false)} loading={setStatus.isPending || save.isPending} title={t('catalog.templates.activateTitle', { name: useEditorStore.getState().meta.name })} description={t('catalog.templates.activateHint')} confirmText={t('catalog.templates.activate')} cancelText={t('common.cancel')} onConfirm={() => void activate()} />

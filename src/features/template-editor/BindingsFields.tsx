@@ -1,15 +1,15 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Check } from 'lucide-react'
-import type { Category, ServiceType } from '@/domain'
+import type { Branch, Category, ServiceType } from '@/domain'
 import { cn } from '@/shared/lib/cn'
 import { Badge, Field, SearchInput, Segmented, Select } from '@/shared/ui'
 import { categoryPath } from '@/features/catalog/tree'
 
-export interface Bindings { serviceTypeIds: string[]; categoryIds: string[]; scope: 'item' | 'order'; language: 'uz' | 'ru' | 'en' }
+export interface Bindings { serviceTypeIds: string[]; categoryIds: string[]; branchIds: string[]; scope: 'item' | 'order'; language: 'uz' | 'ru' | 'en' }
 
 /** Shared form body: bind template to service types (searchable multi-select) / categories, scope, language. */
-export function BindingsFields({ value, onChange, serviceTypes, categories }: { value: Bindings; onChange: (b: Bindings) => void; serviceTypes: ServiceType[]; categories: Category[] }) {
+export function BindingsFields({ value, onChange, serviceTypes, categories, branches }: { value: Bindings; onChange: (b: Bindings) => void; serviceTypes: ServiceType[]; categories: Category[]; branches?: Branch[] }) {
   const { t } = useTranslation()
   const [q, setQ] = useState('')
   const list = useMemo(() => {
@@ -18,6 +18,7 @@ export function BindingsFields({ value, onChange, serviceTypes, categories }: { 
   }, [serviceTypes, q])
   const toggle = (id: string) => onChange({ ...value, serviceTypeIds: value.serviceTypeIds.includes(id) ? value.serviceTypeIds.filter((x) => x !== id) : [...value.serviceTypeIds, id] })
   const toggleCat = (id: string) => onChange({ ...value, categoryIds: value.categoryIds.includes(id) ? value.categoryIds.filter((x) => x !== id) : [...value.categoryIds, id] })
+  const toggleBranch = (id: string) => onChange({ ...value, branchIds: (value.branchIds ?? []).includes(id) ? value.branchIds.filter((x) => x !== id) : [...(value.branchIds ?? []), id] })
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-3">
@@ -28,6 +29,19 @@ export function BindingsFields({ value, onChange, serviceTypes, categories }: { 
           </Select>
         )}</Field>
       </div>
+      {branches && branches.length > 1 && (
+        <Field label={t('catalog.templates.bindBranches')} hint={t('catalog.templates.bindBranchesHint')}>{() => (
+          <div className="flex flex-wrap gap-1.5">
+            {branches.map((b) => { const on = (value.branchIds ?? []).includes(b.id); return (
+              <button key={b.id} type="button" onClick={() => toggleBranch(b.id)} aria-pressed={on}
+                className={cn('inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium transition-colors', on ? 'border-brand bg-brand-soft/60 text-brand-ink' : 'border-line hover:border-line-strong text-ink-2')}>
+                {on && <Check className="size-3.5" />}{b.name}
+              </button>
+            ) })}
+            <span className="self-center text-[12px] text-ink-3">{(value.branchIds ?? []).length === 0 ? t('catalog.templates.allBranches') : ''}</span>
+          </div>
+        )}</Field>
+      )}
       <Field label={t('catalog.templates.bindServices')} hint={t('catalog.templates.bindServicesHint')}>{() => (
         <div className="rounded-[var(--radius)] border border-line overflow-hidden">
           <div className="p-2 border-b border-line bg-surface-2/40 flex items-center gap-2">

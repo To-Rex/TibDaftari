@@ -146,6 +146,7 @@ export async function importTemplateFile(companyId: string, file: TemplateFile, 
   let name = file.template.name
   if (ctx.existingNames.includes(name)) { let i = 2; while (ctx.existingNames.includes(`${file.template.name} (${i})`)) i++; name = `${file.template.name} (${i})` }
 
-  const template = await repos.templates.save({ companyId, name, description: file.template.description, scope: file.template.scope, language: file.template.language, serviceTypeIds, categoryIds, doc, status: 'draft' })
+  // branch bindings are NOT transferred (branch ids differ between installations) — imported templates apply to every branch until bound
+  const template = await repos.templates.save({ companyId, name, description: file.template.description, scope: file.template.scope, language: file.template.language, serviceTypeIds, categoryIds, branchIds: [], doc, status: 'draft' })
   return { template, createdAssets: created, reusedAssets: reused, unresolvedServiceCodes, unresolvedCategoryCodes }
 }

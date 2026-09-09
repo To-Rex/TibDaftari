@@ -7,7 +7,7 @@ import type { Guide } from './geometry'
 
 const HISTORY_LIMIT = 60
 
-export interface EditorMeta { name: string; serviceTypeIds: string[]; categoryIds: string[]; scope: 'item' | 'order'; language: 'uz' | 'ru' | 'en' }
+export interface EditorMeta { name: string; serviceTypeIds: string[]; categoryIds: string[]; branchIds: string[]; scope: 'item' | 'order'; language: 'uz' | 'ru' | 'en' }
 
 export interface EditorState {
   template: ResultTemplate | null
@@ -55,14 +55,14 @@ export interface EditorState {
   markSaved: (t: ResultTemplate) => void
 }
 
-const metaOf = (t: ResultTemplate): EditorMeta => ({ name: t.name, serviceTypeIds: [...t.serviceTypeIds], categoryIds: [...t.categoryIds], scope: t.scope, language: t.language })
+const metaOf = (t: ResultTemplate): EditorMeta => ({ name: t.name, serviceTypeIds: [...t.serviceTypeIds], categoryIds: [...t.categoryIds], branchIds: [...(t.branchIds ?? [])], scope: t.scope, language: t.language })
 export const serialize = (doc: TemplateDoc, meta: EditorMeta) => JSON.stringify({ doc, meta })
 const clone = <T>(v: T): T => structuredClone(v)
 let lastPush = { t: 0, key: '' }
 
 export const useEditorStore = create<EditorState>((set, get) => ({
   template: null,
-  meta: { name: '', serviceTypeIds: [], categoryIds: [], scope: 'item', language: 'uz' },
+  meta: { name: '', serviceTypeIds: [], categoryIds: [], branchIds: [], scope: 'item', language: 'uz' },
   doc: emptyDoc(),
   savedJson: '',
   selectedIds: [],

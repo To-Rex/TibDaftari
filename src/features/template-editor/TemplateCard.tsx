@@ -2,7 +2,7 @@ import { memo, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
 import { Archive, CheckCircle2, Copy, Download, ExternalLink, MoreHorizontal, Trash2 } from 'lucide-react'
-import type { Category, ResultTemplate, ServiceType } from '@/domain'
+import type { Branch, Category, ResultTemplate, ServiceType } from '@/domain'
 import { paperSize } from '@/domain'
 import { DocumentRenderer } from '@/features/documents/DocumentRenderer'
 import { fmtRelative } from '@/shared/lib/format'
@@ -12,14 +12,15 @@ import { useTemplateSchema } from './useTemplateSchema'
 
 const TONE = { draft: 'warn', active: 'ok', archived: 'neutral' } as const
 
-export const TemplateCard = memo(function TemplateCard({ tpl, companyId, serviceTypes, categories, canWrite, canPublish, onOpen, onDuplicate, onSetStatus, onDelete, onExport }: {
-  tpl: ResultTemplate; companyId: string; serviceTypes: ServiceType[]; categories: Category[]; canWrite: boolean; canPublish: boolean
+export const TemplateCard = memo(function TemplateCard({ tpl, companyId, serviceTypes, categories, branches, canWrite, canPublish, onOpen, onDuplicate, onSetStatus, onDelete, onExport }: {
+  tpl: ResultTemplate; companyId: string; serviceTypes: ServiceType[]; categories: Category[]; branches?: Branch[]; canWrite: boolean; canPublish: boolean
   onOpen: () => void; onDuplicate: () => void; onSetStatus: (s: ResultTemplate['status']) => void; onDelete: () => void; onExport?: () => void
 }) {
   const { t } = useTranslation()
   const bound = tpl.serviceTypeIds.map((id) => serviceTypes.find((s) => s.id === id)).filter(Boolean) as ServiceType[]
   const cats = tpl.categoryIds.map((id) => categories.find((c) => c.id === id)).filter(Boolean) as Category[]
   const chips = [...bound.map((s) => s.name), ...cats.map((c) => c.name)]
+  const branchNames = (tpl.branchIds ?? []).map((id) => branches?.find((b) => b.id === id)?.name ?? null).filter(Boolean) as string[]
   return (
     <motion.div variants={fadeUp} className="h-full">
       <Card padded={false} interactive onClick={onOpen} className="group h-full flex flex-col overflow-hidden">
@@ -48,6 +49,7 @@ export const TemplateCard = memo(function TemplateCard({ tpl, companyId, service
             <Badge size="sm">v{tpl.version}</Badge>
             <Badge size="sm">{tpl.language.toUpperCase()}</Badge>
             <Badge size="sm">{tpl.scope === 'item' ? t('catalog.services.scopeItem') : t('catalog.services.scopeOrder')}</Badge>
+            {branchNames.length > 0 && <Badge size="sm" tone="brand">{branchNames.join(' · ')}</Badge>}
           </div>
           <div className="mt-auto flex items-center gap-1 flex-wrap">
             {chips.length === 0 ? <span className="text-[12px] text-ink-3">{t('catalog.services.generic')}</span> : chips.slice(0, 3).map((c) => <span key={c} className="h-6 rounded-full bg-surface-2 px-2 text-[11.5px] text-ink-2 truncate max-w-full sm:max-w-[140px] leading-6">{c}</span>)}

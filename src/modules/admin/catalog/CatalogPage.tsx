@@ -46,7 +46,7 @@ export default function CatalogPage() {
   const createTemplateFor = async (input: NewTemplateInput) => {
     if (!tplFor) return
     try {
-      const tpl = await saveTemplate.mutateAsync({ name: input.name, doc: input.doc, serviceTypeIds: input.serviceTypeIds, categoryIds: input.categoryIds, scope: input.scope, language: input.language })
+      const tpl = await saveTemplate.mutateAsync({ name: input.name, doc: input.doc, serviceTypeIds: input.serviceTypeIds, categoryIds: input.categoryIds, branchIds: input.branchIds, scope: input.scope, language: input.language })
       // bind as the service's default template so it is picked up immediately
       await saveSt.mutateAsync({ id: tplFor.id, defaultTemplateId: tpl.id })
       setTplFor(null)

@@ -10,11 +10,11 @@ import { repos } from '@/data'
 import { catalogKeys } from '@/features/catalog/queries'
 
 /** Active order-scope templates that cover this item (by service type or category). */
-export function useOrderScopeTemplates(companyId: Id, item: Pick<OrderItem, 'serviceTypeId' | 'categoryId'> | undefined) {
+export function useOrderScopeTemplates(companyId: Id, item: Pick<OrderItem, 'serviceTypeId' | 'categoryId' | 'branchId'> | undefined) {
   return useQuery({
-    queryKey: ['templates', companyId, 'order-scope', item?.serviceTypeId, item?.categoryId],
+    queryKey: ['templates', companyId, 'order-scope', item?.serviceTypeId, item?.categoryId, item?.branchId],
     queryFn: async () => {
-      const all = await repos.templates.list(companyId, { status: 'active' })
+      const all = await repos.templates.list(companyId, { status: 'active', branchId: item!.branchId })
       return all.filter((t) => t.scope === 'order' && (t.serviceTypeIds.includes(item!.serviceTypeId) || t.categoryIds.includes(item!.categoryId)))
     },
     enabled: !!item,

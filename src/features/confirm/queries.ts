@@ -3,11 +3,11 @@ import { useQuery } from '@tanstack/react-query'
 import type { Id, OrderItem } from '@/domain'
 import { repos } from '@/data'
 
-export function useTemplatesFor(companyId: Id, item: Pick<OrderItem, 'serviceTypeId' | 'categoryId'> | undefined) {
+export function useTemplatesFor(companyId: Id, item: Pick<OrderItem, 'serviceTypeId' | 'categoryId' | 'branchId'> | undefined) {
   return useQuery({
-    queryKey: ['templates', companyId, 'active', item?.serviceTypeId],
+    queryKey: ['templates', companyId, 'active', item?.serviceTypeId, item?.branchId],
     queryFn: async () => {
-      const all = (await repos.templates.list(companyId, { status: 'active', serviceTypeId: item!.serviceTypeId })).filter((t) => t.scope !== 'order')
+      const all = (await repos.templates.list(companyId, { status: 'active', serviceTypeId: item!.serviceTypeId, branchId: item!.branchId })).filter((t) => t.scope !== 'order')
       // most specific first: service-bound → category-bound → generic
       return all.sort((a, b) => score(b, item!) - score(a, item!))
     },

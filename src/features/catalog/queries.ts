@@ -9,7 +9,7 @@ export const catalogKeys = {
   schemas: (companyId: Id) => ['schemas', companyId] as const,
   schema: (id: Id) => ['schema', id] as const,
   branches: (companyId: Id) => ['branches', companyId] as const,
-  templates: (companyId: Id, q: { status?: string; serviceTypeId?: Id; search?: string }) => ['templates', companyId, q] as const,
+  templates: (companyId: Id, q: { status?: string; serviceTypeId?: Id; branchId?: Id; search?: string }) => ['templates', companyId, q] as const,
   template: (id: Id) => ['template', id] as const,
   assets: (companyId: Id) => ['templateAssets', companyId] as const,
 }
@@ -34,7 +34,7 @@ export const useSchema = (id: Id | null | undefined) =>
 export const useBranches = (companyId: Id) =>
   useQuery({ queryKey: catalogKeys.branches(companyId), queryFn: () => repos.tenant.listBranches(companyId) })
 
-export const useTemplates = (companyId: Id, q: { status?: string; serviceTypeId?: Id; search?: string } = {}) =>
+export const useTemplates = (companyId: Id, q: { status?: string; serviceTypeId?: Id; branchId?: Id; search?: string } = {}) =>
   useQuery({ queryKey: catalogKeys.templates(companyId, q), queryFn: () => repos.templates.list(companyId, q), placeholderData: (p) => p })
 
 export const useTemplate = (id: Id | undefined) =>
