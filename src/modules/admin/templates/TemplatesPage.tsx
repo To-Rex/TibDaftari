@@ -77,7 +77,10 @@ export default function TemplatesPage() {
   const [toDelete, setToDelete] = useState<ResultTemplate | null>(null)
   const [toActivate, setToActivate] = useState<ResultTemplate | null>(null)
 
-  const counts = useMemo(() => { const c = { all: 0, draft: 0, active: 0, archived: 0 }; for (const x of all.data ?? []) { c.all++; c[x.status]++ } return c }, [all.data])
+  // branch selected in the top bar: 'mixed' = this branch's templates + company-wide ones, 'branch' = only this branch's
+  const [branchMode, setBranchMode] = useState<'mixed' | 'branch'>('mixed')
+  const inScope = useMemo(() => (x: ResultTemplate) => !branchId || branchMode === 'mixed' ? (!branchId || x.branchIds.length === 0 || x.branchIds.includes(branchId)) : x.branchIds.includes(branchId), [branchId, branchMode])
+  const counts = useMemo(() => { const c = { all: 0, draft: 0, active: 0, archived: 0 }; for (const x of (all.data ?? []).filter(inScope)) { c.all++; c[x.status]++ } return c }, [all.data, inScope])
 
   const create = async (input: NewTemplateInput) => {
     try {
@@ -91,7 +94,7 @@ export default function TemplatesPage() {
     try { await setStatusM.mutateAsync({ id: tpl.id, status: s }); toast.success(s === 'active' ? t('catalog.templates.activated') : t('catalog.templates.archived')); setToActivate(null) } catch (e) { toast.error(errorMessage(e)) }
   }
 
-  const list = templates.data ?? []
+  const list = useMemo(() => (templates.data ?? []).filter(inScope), [templates.data, inScope])
   return (
     <Page>
       <PageHeader title={t('catalog.templates.title')} description={t('catalog.templates.subtitle')}
@@ -104,6 +107,9 @@ export default function TemplatesPage() {
         )} />
       <Toolbar actions={<Segmented size="sm" className="max-w-full overflow-x-auto no-scrollbar" value={status} onChange={setStatus} items={(['all', 'draft', 'active', 'archived'] as const).map((s) => ({ value: s, label: `${s === 'all' ? t('common.all') : t(`catalog.templates.status.${s}`)} · ${counts[s]}` }))} />}>
         <SearchInput value={search} onChange={setSearch} placeholder={t('catalog.templates.searchPh')} className="w-full sm:w-72" />
+        {branchId && (
+          <Segmented size="sm" value={branchMode} onChange={setBranchMode} items={[{ value: 'mixed', label: t('catalog.templates.branchMixed') }, { value: 'branch', label: t('catalog.templates.branchOnly') }]} />
+        )}
       </Toolbar>
 
       {templates.isLoading ? (
@@ -121,7 +127,7 @@ export default function TemplatesPage() {
         </MotionList>
       )}
 
-      <NewTemplateModal open={creating} onClose={() => setCreating(false)} serviceTypes={serviceTypes.data ?? []} categories={categories.data ?? []} branches={branches.data ?? []} templates={all.data ?? []} onSubmit={create} saving={save.isPending} />
+      <NewTemplateModal open={creating} onClose={() => setCreating(false)} serviceTypes={serviceTypes.data ?? []} categories={categories.data ?? []} branches={branches.data ?? []} templates={all.data ?? []} onSubmit={create} saving={save.isPending} initial={branchId ? { branchIds: [branchId] } : undefined} />
       <ConfirmDialog open={!!toDelete} onClose={() => setToDelete(null)} danger loading={del.isPending} title={t('catalog.templates.deleteTitle', { name: toDelete?.name ?? '' })} description={t('catalog.templates.deleteHint')} confirmText={t('common.delete')} cancelText={t('common.cancel')}
         onConfirm={async () => { try { await del.mutateAsync(toDelete!.id); setToDelete(null); toast.success(t('catalog.templates.deleted')) } catch (e) { toast.error(errorMessage(e)) } }} />
       <ConfirmDialog open={!!toActivate} onClose={() => setToActivate(null)} loading={setStatusM.isPending} title={t('catalog.templates.activateTitle', { name: toActivate?.name ?? '' })} description={t('catalog.templates.activateHint')} confirmText={t('catalog.templates.activate')} cancelText={t('common.cancel')}

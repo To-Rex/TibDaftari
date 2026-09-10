@@ -22,7 +22,7 @@ import { categoryPath } from '@/features/catalog/tree'
 
 export default function CatalogPage() {
   const { t } = useTranslation()
-  const { companyId } = useStaffSession()
+  const { companyId, branchId } = useStaffSession()
   const { can } = usePermissions()
   const canWrite = can('admin.catalog.write')
   const qc = useQueryClient()
@@ -210,7 +210,7 @@ export default function CatalogPage() {
                 templates={templates.data ?? []}
                 onSubmit={createTemplateFor}
                 saving={saveTemplate.isPending || saveSt.isPending}
-                initial={tplFor ? { name: `${tplFor.name} — blanka`, serviceTypeIds: [tplFor.id], categoryIds: [], scope: tplFor.documentScope, language: 'uz' } : undefined}
+                initial={tplFor ? { name: `${tplFor.name} — blanka`, serviceTypeIds: [tplFor.id], categoryIds: [], branchIds: branchId ? [branchId] : [], scope: tplFor.documentScope, language: 'uz' } : undefined}
               />
             </div>
           </Card>
