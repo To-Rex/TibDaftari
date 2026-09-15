@@ -6,7 +6,7 @@
  */
 import { memo, type CSSProperties } from 'react'
 import type { RenderContext, TemplateAsset, TemplateDoc, TemplateElement, TextStyle, TableColumn } from '@/domain'
-import { fieldFlag, fieldReference, fieldUnit, fieldDef, formatValue, interpolate, paperSize, tableRows, visibleTableRows } from '@/domain'
+import { fieldFlag, fieldReference, fieldUnit, fieldDef, formatValue, interpolate, paperSize, tableRows, visibleTableRows, TABLE_NUMBER_W, tableHeaderGroups } from '@/domain'
 import { cn } from '@/shared/lib/cn'
 
 const FONT: Record<TextStyle['fontFamily'], string> = {
@@ -152,7 +152,13 @@ function ElementView({ el, z, ctx, raw, ghost, assetUrl, selected, onClick }: { 
         ? el.fieldKey ? [Object.fromEntries(el.columns.map((c) => [c.bind, `{${c.bind}}`]))] : staticRows
         : el.fieldKey ? tableRows(ctx, el.fieldKey) : staticRows
       const totalW = el.columns.reduce((s, c) => s + c.width, 0) || 1
-      const numW = el.showRowNumber ? 28 : 0
+      const numW = el.showRowNumber ? (el.numberWidth ?? TABLE_NUMBER_W) : 0
+      const groups = tableHeaderGroups(el.columns)
+      // single-line mode: no vertical padding so a row is exactly `rowHeight` (legacy blanks)
+      const nowrap: CSSProperties = el.nowrap ? { whiteSpace: 'nowrap', overflow: 'hidden', padding: '0 6px' } : {}
+      // header cells follow the column alignment unless the header style asks for centre/right explicitly
+      const headAlign = (c: TableColumn) => (el.headerStyle.align === 'center' || el.headerStyle.align === 'right' ? el.headerStyle.align : c.align)
+      const hasGroups = groups.some((g) => g.group)
       const cellStyle = textStyleToCss(el.cellStyle)
       const headStyle = textStyleToCss(el.headerStyle)
       const border = `${el.borderWidth}px solid ${el.borderColor}`
@@ -176,18 +182,29 @@ function ElementView({ el, z, ctx, raw, ghost, assetUrl, selected, onClick }: { 
             {el.columns.map((c) => <col key={c.id} style={{ width: `${((c.width / totalW) * 100).toFixed(2)}%` }} />)}
           </colgroup>
           {el.showHeader && (
-            <thead><tr>
-              {el.showRowNumber && <th style={{ ...headStyle, display: 'table-cell', border, padding: '4px 6px', height: el.rowHeight, textAlign: 'center' }}>№</th>}
-              {el.columns.map((c) => <th key={c.id} style={{ ...headStyle, display: 'table-cell', border, padding: '4px 6px', height: el.rowHeight, textAlign: c.align }}>{c.header}</th>)}
-            </tr></thead>
+            <thead>
+              <tr>
+                {el.showRowNumber && <th rowSpan={hasGroups ? 2 : 1} style={{ ...headStyle, display: 'table-cell', border, padding: '4px 6px', height: el.rowHeight, textAlign: 'center' }}>{el.numberHeader ?? '№'}</th>}
+                {hasGroups
+                  ? groups.map((g) => g.group
+                    ? <th key={`g${g.from}`} colSpan={g.count} style={{ ...headStyle, display: 'table-cell', border, padding: '4px 6px', height: el.rowHeight, textAlign: 'center' }}>{g.group}</th>
+                    : <th key={el.columns[g.from]!.id} rowSpan={2} style={{ ...headStyle, display: 'table-cell', border, padding: '4px 6px', height: el.rowHeight, textAlign: headAlign(el.columns[g.from]!) }}>{el.columns[g.from]!.header}</th>)
+                  : el.columns.map((c) => <th key={c.id} style={{ ...headStyle, display: 'table-cell', border, padding: '4px 6px', height: el.rowHeight, textAlign: headAlign(c) }}>{c.header}</th>)}
+              </tr>
+              {hasGroups && (
+                <tr>
+                  {el.columns.filter((c) => c.group).map((c) => <th key={c.id} style={{ ...headStyle, display: 'table-cell', border, padding: '4px 6px', height: el.rowHeight, textAlign: headAlign(c) }}>{c.header}</th>)}
+                </tr>
+              )}
+            </thead>
           )}
           <tbody>
             {rows.map((r, i) => (
               <tr key={i} style={{ background: el.zebra && i % 2 === 1 ? el.zebra : undefined }}>
-                {el.showRowNumber && <td style={{ ...cellStyle, display: 'table-cell', border, padding: '3px 6px', height: el.rowHeight, textAlign: 'center' }}>{i + 1}</td>}
+                {el.showRowNumber && <td style={{ ...cellStyle, display: 'table-cell', border, padding: '3px 6px', height: el.rowHeight, textAlign: 'center', ...nowrap }}>{i + 1}</td>}
                 {el.columns.map((c, ci) => {
                   const cell = raw ? { text: el.fieldKey ? `{${c.bind}}` : String(r[keyOf(c, ci)] ?? ''), abnormal: false } : fmtCell(r, keyOf(c, ci))
-                  return <td key={c.id} style={{ ...cellStyle, display: 'table-cell', border, padding: '3px 6px', height: el.rowHeight, textAlign: c.align, color: el.highlightAbnormal && cell.abnormal ? ABN : cellStyle.color, fontWeight: el.highlightAbnormal && cell.abnormal ? 600 : cellStyle.fontWeight }}>{cell.text}</td>
+                  return <td key={c.id} style={{ ...cellStyle, display: 'table-cell', border, padding: '3px 6px', height: el.rowHeight, textAlign: c.align, color: el.highlightAbnormal && cell.abnormal ? ABN : cellStyle.color, fontWeight: el.highlightAbnormal && cell.abnormal ? 600 : cellStyle.fontWeight, background: c.fillIfSet && !raw && cell.text.trim() ? c.fillIfSet : undefined, ...nowrap }}>{cell.text}</td>
                 })}
               </tr>
             ))}

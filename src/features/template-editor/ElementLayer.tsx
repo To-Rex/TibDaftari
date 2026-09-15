@@ -88,7 +88,7 @@ function ColumnDividers({ el, zoom }: { el: TableElement; zoom: number }) {
   const cols = el.columns
   if (cols.length < 2) return null
   const totalW = cols.reduce((s, c) => s + c.width, 0) || 1
-  const numW = el.showRowNumber ? ROW_NUMBER_W : 0
+  const numW = el.showRowNumber ? (el.numberWidth ?? ROW_NUMBER_W) : 0
   const avail = Math.max(0, el.w - numW)
   const pxPerUnit = avail / totalW
   const xs: number[] = []

@@ -103,6 +103,10 @@ export interface TableColumn {
   align: 'left' | 'center' | 'right'
   /** marks a "result" column for `hideEmptyRows` (rows whose value columns are all empty are skipped) */
   valueColumn?: boolean
+  /** group header: consecutive columns with the same group share one spanning header cell above their own headers */
+  group?: string
+  /** cell background when the cell has a value (legacy SES "found" highlight) */
+  fillIfSet?: string
 }
 
 export interface TableElement extends ElementBase {
@@ -124,6 +128,24 @@ export interface TableElement extends ElementBase {
   maxRows?: number
   /** skip rows whose value columns (`valueColumn`, else every column but the first) are all empty */
   hideEmptyRows?: boolean
+  /** № column header text (default '№') and width in px (default 28) */
+  numberHeader?: string
+  numberWidth?: number
+  /** single-line cells: text never wraps, overflow is clipped, every row is exactly `rowHeight` (legacy SES blanks) */
+  nowrap?: boolean
+}
+
+export const TABLE_NUMBER_W = 28
+
+/** Consecutive columns sharing a `group` → one spanning header cell: [{group, from, count}] */
+export function tableHeaderGroups(columns: TableColumn[]): { group: string | undefined; from: number; count: number }[] {
+  const out: { group: string | undefined; from: number; count: number }[] = []
+  columns.forEach((c, i) => {
+    const last = out[out.length - 1]
+    if (last && last.group !== undefined && last.group === c.group) last.count++
+    else out.push({ group: c.group || undefined, from: i, count: 1 })
+  })
+  return out
 }
 
 /** Row filter shared by every renderer: `hideEmptyRows` + `maxRows` (identical rule in the backend PDF renderer). */

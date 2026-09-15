@@ -88,6 +88,10 @@ export function TableProps({ el, schema }: { el: TableElement; schema: Attribute
                 <NumInput value={c.width} min={10} onChange={(v) => setCol(i, { width: v })} />
                 <SelectInput value={c.align} onChange={(v) => setCol(i, { align: v })} options={[{ value: 'left', label: '⇤' }, { value: 'center', label: '↔' }, { value: 'right', label: '⇥' }]} />
               </div>
+              <div className="grid grid-cols-[1fr_auto] gap-1 items-center">
+                <TextInput value={c.group ?? ''} onChange={(v) => setCol(i, { group: v || undefined })} placeholder={t('catalog.editor.columnGroup')} />
+                <span className="inline-flex items-center gap-1 text-[11.5px] text-ink-3" title={t('catalog.editor.fillIfSetHint')}>{t('catalog.editor.fillIfSet')}<ColorInput value={c.fillIfSet} onChange={(v) => setCol(i, { fillIfSet: v })} allowNone noneLabel="—" /></span>
+              </div>
               {el.hideEmptyRows && (
                 <Checkbox checked={!!c.valueColumn} onChange={(e) => setCol(i, { valueColumn: e.target.checked || undefined })} label={<span className="text-[12px]">{t('catalog.editor.valueColumn')}</span>} />
               )}
@@ -151,6 +155,11 @@ export function TableProps({ el, schema }: { el: TableElement; schema: Attribute
           <Checkbox checked={el.highlightAbnormal} onChange={(e) => set({ highlightAbnormal: e.target.checked })} label={<span className="text-[12.5px]">{t('catalog.editor.highlightAbnormal')}</span>} />
         </div>
         <PropRow label={t('catalog.editor.rowHeight')}><NumInput value={el.rowHeight} min={10} max={80} onChange={(v) => set({ rowHeight: v })} suffix="px" /></PropRow>
+        <Checkbox checked={!!el.nowrap} onChange={(e) => set({ nowrap: e.target.checked || undefined })} label={<span className="text-[12.5px]">{t('catalog.editor.nowrap')}</span>} />
+        {el.nowrap && <p className="text-[11.5px] text-ink-3">{t('catalog.editor.nowrapHint')}</p>}
+        {el.showRowNumber && (
+          <PropRow label={t('catalog.editor.numberColumn')}><TextInput value={el.numberHeader ?? '№'} onChange={(v) => set({ numberHeader: v || undefined })} className="max-w-[80px]" /><NumInput value={el.numberWidth ?? 28} min={12} max={120} onChange={(v) => set({ numberWidth: v })} suffix="px" className="max-w-[96px]" /></PropRow>
+        )}
         <PropRow label={t('catalog.editor.border')}><ColorInput value={el.borderColor} onChange={(v) => set({ borderColor: v ?? '#000000' })} /><NumInput value={el.borderWidth} min={0} max={6} step={0.5} onChange={(v) => set({ borderWidth: v })} className="max-w-[72px]" /></PropRow>
         <PropRow label={t('catalog.editor.zebra')}><ColorInput value={el.zebra} onChange={(v) => set({ zebra: v })} allowNone noneLabel={t('catalog.editor.none')} /></PropRow>
       </PropSection>

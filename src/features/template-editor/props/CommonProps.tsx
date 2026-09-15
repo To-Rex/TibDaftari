@@ -2,6 +2,9 @@ import { useTranslation } from 'react-i18next'
 import { ArrowDown, ArrowDownToLine, ArrowUp, ArrowUpToLine, Copy, Eye, EyeOff, Lock, Trash2, Unlock } from 'lucide-react'
 import type { AttributeSchema, TemplateElement } from '@/domain'
 import { useEditorStore } from '../useEditorStore'
+import { Table2 } from 'lucide-react'
+import { toast } from '@/shared/ui'
+import { convertRepeatGroupToTable } from '../convertRepeatGroup'
 import { NumInput, PropRow, PropSection, SelectInput, TextInput, ToggleChip } from './inputs'
 
 /** Position/size/appearance shared by all elements + z-order + advanced repeat/showIf. */
@@ -38,6 +41,19 @@ export function CommonProps({ el, schema }: { el: TemplateElement; schema: Attri
           {el.repeat && <NumInput value={el.repeat.step} min={1} onChange={(v) => p({ repeat: { fieldKey: el.repeat!.fieldKey, step: v } })} suffix="px" className="max-w-[84px]" />}
         </PropRow>
         {el.repeat && <p className="text-[11.5px] text-ink-3 -mt-1">{t('catalog.editor.repeatHint')}</p>}
+        {el.repeat && (
+          <div className="rounded-lg border border-brand/30 bg-brand-soft/30 p-2 flex flex-col gap-1">
+            <button type="button" className="inline-flex items-center gap-1.5 h-8 px-2 rounded-lg text-[12.5px] font-medium text-brand-ink hover:bg-brand-soft self-start" onClick={() => {
+              const st = useEditorStore.getState()
+              const res = convertRepeatGroupToTable(st.doc, el.id)
+              if (!res) { toast.warning(t('catalog.editor.convertFailed')); return }
+              st.replaceDoc(res.doc, true)
+              st.select([res.tableId])
+              toast.success(t('catalog.editor.converted'))
+            }}><Table2 className="size-4" />{t('catalog.editor.convertToTable')}</button>
+            <p className="text-[11.5px] text-ink-3">{t('catalog.editor.convertToTableHint')}</p>
+          </div>
+        )}
         <PropRow label={t('catalog.editor.showIf')}><TextInput value={el.showIf ?? ''} mono onChange={(v) => p({ showIf: v || undefined })} placeholder="{values.note}" /></PropRow>
         <p className="text-[11.5px] text-ink-3 -mt-1">{t('catalog.editor.showIfHint')}</p>
       </PropSection>
