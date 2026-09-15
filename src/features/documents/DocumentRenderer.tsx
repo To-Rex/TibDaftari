@@ -5,8 +5,8 @@
  * exact same layout rules, so this is the visual contract.
  */
 import { memo, type CSSProperties } from 'react'
-import type { RenderContext, TemplateAsset, TemplateDoc, TemplateElement, TextStyle } from '@/domain'
-import { fieldFlag, fieldReference, fieldUnit, fieldDef, formatValue, interpolate, paperSize, tableRows } from '@/domain'
+import type { RenderContext, TemplateAsset, TemplateDoc, TemplateElement, TextStyle, TableColumn } from '@/domain'
+import { fieldFlag, fieldReference, fieldUnit, fieldDef, formatValue, interpolate, paperSize, tableRows, visibleTableRows } from '@/domain'
 import { cn } from '@/shared/lib/cn'
 
 const FONT: Record<TextStyle['fontFamily'], string> = {
@@ -146,9 +146,11 @@ function ElementView({ el, z, ctx, raw, ghost, assetUrl, selected, onClick }: { 
     case 'table': {
       const def = fieldDef(ctx.schema, el.fieldKey)
       const cols = def?.type === 'table' ? def.columns : []
-      const rows: Record<string, unknown>[] = raw
-        ? [Object.fromEntries(el.columns.map((c) => [c.bind, `{${c.bind}}`]))]
-        : el.fieldKey ? tableRows(ctx, el.fieldKey) : (el.staticRows ?? []).map((r) => Object.fromEntries(el.columns.map((c, i) => [c.bind || String(i), r[i] ?? ''])))
+      // static tables: cells are template text (placeholders resolved at render); editor shows them raw
+      const staticRows = (el.staticRows ?? []).map((r) => Object.fromEntries(el.columns.map((c, i) => [c.bind || String(i), raw ? (r[i] ?? '') : interpolate(r[i] ?? '', ctx)])))
+      const sourceRows: Record<string, unknown>[] = raw
+        ? el.fieldKey ? [Object.fromEntries(el.columns.map((c) => [c.bind, `{${c.bind}}`]))] : staticRows
+        : el.fieldKey ? tableRows(ctx, el.fieldKey) : staticRows
       const totalW = el.columns.reduce((s, c) => s + c.width, 0) || 1
       const numW = el.showRowNumber ? 28 : 0
       const cellStyle = textStyleToCss(el.cellStyle)
@@ -164,6 +166,9 @@ function ElementView({ el, z, ctx, raw, ghost, assetUrl, selected, onClick }: { 
         if (col?.type === 'number' && typeof v === 'number') { const ref = col.references[0]; const ab = (ref?.min != null && v < ref.min) || (ref?.max != null && v > ref.max); return { text: String(v), abnormal: !!ab } }
         return { text: Array.isArray(v) ? v.join(', ') : String(v), abnormal: false }
       }
+      // static tables may leave `bind` empty — cells are then addressed by column index
+      const keyOf = (c: TableColumn, i: number) => (el.fieldKey ? c.bind : c.bind || String(i))
+      const rows = raw ? sourceRows : visibleTableRows(sourceRows, el.columns, el, (r, c) => fmtCell(r, keyOf(c, el.columns.indexOf(c))).text)
       return wrap(
         <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', border }}>
           <colgroup>
@@ -180,8 +185,8 @@ function ElementView({ el, z, ctx, raw, ghost, assetUrl, selected, onClick }: { 
             {rows.map((r, i) => (
               <tr key={i} style={{ background: el.zebra && i % 2 === 1 ? el.zebra : undefined }}>
                 {el.showRowNumber && <td style={{ ...cellStyle, display: 'table-cell', border, padding: '3px 6px', height: el.rowHeight, textAlign: 'center' }}>{i + 1}</td>}
-                {el.columns.map((c) => {
-                  const cell = raw ? { text: `{${c.bind}}`, abnormal: false } : fmtCell(r, c.bind)
+                {el.columns.map((c, ci) => {
+                  const cell = raw ? { text: el.fieldKey ? `{${c.bind}}` : String(r[keyOf(c, ci)] ?? ''), abnormal: false } : fmtCell(r, keyOf(c, ci))
                   return <td key={c.id} style={{ ...cellStyle, display: 'table-cell', border, padding: '3px 6px', height: el.rowHeight, textAlign: c.align, color: el.highlightAbnormal && cell.abnormal ? ABN : cellStyle.color, fontWeight: el.highlightAbnormal && cell.abnormal ? 600 : cellStyle.fontWeight }}>{cell.text}</td>
                 })}
               </tr>

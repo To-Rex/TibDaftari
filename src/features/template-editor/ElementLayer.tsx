@@ -1,6 +1,6 @@
 import { memo, useEffect, useRef } from 'react'
 import { Lock } from 'lucide-react'
-import type { TemplateElement } from '@/domain'
+import type { TableElement, TemplateElement } from '@/domain'
 import { cn } from '@/shared/lib/cn'
 import { textStyleToCss } from '@/features/documents/DocumentRenderer'
 import { HANDLES, type HandleDir, type Rect } from './geometry'
@@ -21,6 +21,7 @@ export function ElementLayer({ elements, selectedIds, zoom, marquee, onElementPo
       {elements.map((el) => !el.hidden && (
         <ElementBox key={el.id} el={el} selected={selectedIds.includes(el.id)} zoom={zoom} onPointerDown={onElementPointerDown} editing={editingId === el.id} />
       ))}
+      {single && !single.locked && single.type === 'table' && <ColumnDividers el={single} zoom={zoom} />}
       {single && !single.locked && editingId !== single.id && (
         <div className="absolute pointer-events-none" style={{ left: single.x * zoom, top: single.y * zoom, width: single.w * zoom, height: single.h * zoom }}>
           {HANDLES.map((d) => (
@@ -77,5 +78,52 @@ function InlineTextEditor({ id, text, zoom, styleCss }: { id: string; text: stri
       className="absolute inset-0 resize-none outline-none border-0 bg-transparent select-text"
       style={{ ...styleCss, display: 'block', width: '100%', height: '100%', letterSpacing: styleCss.letterSpacing != null ? Number(styleCss.letterSpacing) * zoom : undefined, boxSizing: 'border-box' }}
     />
+  )
+}
+
+const ROW_NUMBER_W = 28
+
+/** Draggable vertical dividers between the columns of the selected table — drag to redistribute widths. */
+function ColumnDividers({ el, zoom }: { el: TableElement; zoom: number }) {
+  const cols = el.columns
+  if (cols.length < 2) return null
+  const totalW = cols.reduce((s, c) => s + c.width, 0) || 1
+  const numW = el.showRowNumber ? ROW_NUMBER_W : 0
+  const avail = Math.max(0, el.w - numW)
+  const pxPerUnit = avail / totalW
+  const xs: number[] = []
+  let acc = numW
+  for (let i = 0; i < cols.length - 1; i++) { acc += cols[i]!.width * pxPerUnit; xs.push(acc) }
+
+  const onDown = (e: React.PointerEvent, k: number) => {
+    e.preventDefault(); e.stopPropagation()
+    const store = useEditorStore.getState()
+    store.pushHistory()
+    const startX = e.clientX
+    const startWidths = cols.map((c) => c.width)
+    const target = e.currentTarget as HTMLElement
+    target.setPointerCapture(e.pointerId)
+    const move = (ev: PointerEvent) => {
+      const deltaUnits = (ev.clientX - startX) / zoom / (pxPerUnit || 1)
+      const a = startWidths[k]!, b = startWidths[k + 1]!
+      const min = 10
+      const na = Math.max(min, Math.min(a + b - min, a + deltaUnits))
+      const nb = a + b - na
+      useEditorStore.getState().patchElements([el.id], (x) => ({ ...(x as TableElement), columns: (x as TableElement).columns.map((c, i) => (i === k ? { ...c, width: Math.round(na) } : i === k + 1 ? { ...c, width: Math.round(nb) } : c)) }) as TemplateElement, false)
+    }
+    const up = () => { target.removeEventListener('pointermove', move); target.removeEventListener('pointerup', up); target.removeEventListener('pointercancel', up) }
+    target.addEventListener('pointermove', move); target.addEventListener('pointerup', up); target.addEventListener('pointercancel', up)
+  }
+
+  return (
+    <>
+      {xs.map((x, k) => (
+        <div key={k} onPointerDown={(e) => onDown(e, k)} title="⇔"
+          className="absolute z-10 w-[9px] -translate-x-1/2 cursor-col-resize touch-none group/div"
+          style={{ left: (el.x + x) * zoom, top: el.y * zoom, height: el.h * zoom }}>
+          <div className="mx-auto h-full w-px bg-brand/40 group-hover/div:bg-brand group-hover/div:w-[2px]" />
+        </div>
+      ))}
+    </>
   )
 }

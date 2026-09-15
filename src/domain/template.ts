@@ -101,6 +101,8 @@ export interface TableColumn {
   bind: string
   width: number // px; auto-normalised to element width
   align: 'left' | 'center' | 'right'
+  /** marks a "result" column for `hideEmptyRows` (rows whose value columns are all empty are skipped) */
+  valueColumn?: boolean
 }
 
 export interface TableElement extends ElementBase {
@@ -118,6 +120,22 @@ export interface TableElement extends ElementBase {
   showHeader: boolean
   showRowNumber: boolean
   highlightAbnormal: boolean
+  /** render at most N data rows (bound tables) */
+  maxRows?: number
+  /** skip rows whose value columns (`valueColumn`, else every column but the first) are all empty */
+  hideEmptyRows?: boolean
+}
+
+/** Row filter shared by every renderer: `hideEmptyRows` + `maxRows` (identical rule in the backend PDF renderer). */
+export function visibleTableRows<T>(rows: T[], columns: TableColumn[], el: Pick<TableElement, 'maxRows' | 'hideEmptyRows'>, cellText: (row: T, column: TableColumn) => string): T[] {
+  let out = rows
+  if (el.hideEmptyRows && columns.length) {
+    const flagged = columns.filter((c) => c.valueColumn)
+    const valueCols = flagged.length ? flagged : columns.slice(1)
+    if (valueCols.length) out = out.filter((r) => valueCols.some((c) => cellText(r, c).trim() !== ''))
+  }
+  if (el.maxRows && el.maxRows > 0) out = out.slice(0, el.maxRows)
+  return out
 }
 
 export type TemplateElement =
