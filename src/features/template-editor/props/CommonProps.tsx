@@ -45,7 +45,7 @@ export function CommonProps({ el, schema }: { el: TemplateElement; schema: Attri
           <div className="rounded-lg border border-brand/30 bg-brand-soft/30 p-2 flex flex-col gap-1">
             <button type="button" className="inline-flex items-center gap-1.5 h-8 px-2 rounded-lg text-[12.5px] font-medium text-brand-ink hover:bg-brand-soft self-start" onClick={() => {
               const st = useEditorStore.getState()
-              const res = convertRepeatGroupToTable(st.doc, el.id)
+              const res = convertRepeatGroupToTable(st.doc, el.id, schema)
               if (!res) { toast.warning(t('catalog.editor.convertFailed')); return }
               st.replaceDoc(res.doc, true)
               st.select([res.tableId])

@@ -5,11 +5,14 @@
  * element bound to the same table field — columns, group headers, № column, per-cell highlight fills,
  * borders and text styles are all derived from the drawing. The original elements are removed.
  */
-import type { RectElement, TableColumn, TableElement, TemplateDoc, TemplateElement, TextElement, TextStyle } from '@/domain'
-import { PAPER_PX, defaultTextStyle } from '@/domain'
+import type { AttributeSchema, RectElement, TableColumn, TableElement, TemplateDoc, TemplateElement, TextElement, TextStyle } from '@/domain'
+import { PAPER_PX, TABLE_NUMBER_W, defaultTextStyle } from '@/domain'
 
-const ROW_RE = /^\{row\.([a-zA-Z0-9_-]+)\}$/
-const INDEX_RE = /^\{i\}$/
+/** `{i}` (row number) or `{row.key}` tokens; a row text may combine several ("{i} {row.name}", "{row.name} {row.natija}") */
+const TOKEN_RE = /\{i\}|\{row\.([a-zA-Z0-9_-]+)\}/g
+const isRowText = (s: string) => /\{/.test(s) && s.replace(TOKEN_RE, '').trim() === ''
+/** token list of a row text: null = row number, string = bound column key */
+const tokensOf = (s: string): (string | null)[] => [...s.matchAll(TOKEN_RE)].map((m) => m[1] ?? null)
 
 const isThinV = (e: TemplateElement) => (e.type === 'rect' && e.w <= 2 && e.h > 8) || (e.type === 'line' && e.orientation === 'vertical')
 const isThinH = (e: TemplateElement) => (e.type === 'rect' && e.h <= 2 && e.w > 8) || (e.type === 'line' && e.orientation === 'horizontal')
@@ -17,14 +20,19 @@ const overlapX = (a: { x: number; w: number }, b: { x: number; w: number }) => M
 
 export interface ConvertResult { doc: TemplateDoc; tableId: string }
 
-/** Convert the repeat group containing `elementId` into a table element; returns null if nothing to convert. */
-export function convertRepeatGroupToTable(doc: TemplateDoc, elementId: string): ConvertResult | null {
+/**
+ * Convert the repeat group containing `elementId` into a table element; returns null if nothing to convert.
+ * `schema` (the bound attribute schema, when known) supplies column labels for cells whose blank has no header text.
+ */
+export function convertRepeatGroupToTable(doc: TemplateDoc, elementId: string, schema?: AttributeSchema | null): ConvertResult | null {
   const els = doc.elements
   const seed = els.find((e) => e.id === elementId)
   if (!seed?.repeat) return null
   const fieldKey = seed.repeat.fieldKey
   const group = els.filter((e) => e.repeat?.fieldKey === fieldKey)
-  const rowTexts = group.filter((e): e is TextElement => e.type === 'text' && (ROW_RE.test(e.text.trim()) || INDEX_RE.test(e.text.trim()))).sort((a, b) => a.x - b.x)
+  const rowTexts = group.filter((e): e is TextElement => e.type === 'text' && isRowText(e.text.trim())).sort((a, b) => a.x - b.x)
+  const tableField = schema?.fields.find((f) => f.type === 'table' && f.key === fieldKey)
+  const labels: Record<string, string> = Object.fromEntries((tableField?.type === 'table' ? tableField.columns : []).map((c) => [c.key, c.label]))
   if (!rowTexts.length) return null
   const step = seed.repeat.step
   const rowTop = Math.min(...rowTexts.map((t) => t.y))
@@ -44,14 +52,10 @@ export function convertRepeatGroupToTable(doc: TemplateDoc, elementId: string): 
   const hRules = els.filter((e) => !e.repeat && isThinH(e) && overlapX(e, { x: tableX, w: tableW }) > tableW * 0.5)
   const topRules = hRules.filter((e) => e.y < rowTop).sort((a, b) => a.y - b.y)
   const tableY = topRules.length ? Math.round(topRules[0]!.y) : Math.round(rowTop - step)
-  // height: the static grid's extent when it reaches below the first row, else all the free space down
-  // to the next static element (legacy blanks reserve exactly the rows area), else the page bottom
+  // height: the static grid's extent when it reaches below the first row; an open-ended grid (drawn row by
+  // row) ran down the page as far as the rows went, so the table gets the same room — down to the page margin
   const staticBottom = Math.max(0, ...staticV.map((e) => e.y + e.h))
-  const nextBelow = Math.min(
-    PAPER_PX[doc.paper].h - doc.margin,
-    ...els.filter((e) => !e.repeat && !isThinV(e) && !isThinH(e) && e.y >= rowBottom && overlapX(e, { x: tableX, w: tableW }) > 0).map((e) => e.y),
-  )
-  const bottom = staticBottom > rowBottom + step ? staticBottom : nextBelow - 4
+  const bottom = staticBottom > rowBottom + step ? staticBottom : PAPER_PX[doc.paper].h - doc.margin
   const tableH = Math.max(step * 2, Math.round(bottom - tableY))
 
   // --- column intervals: from rule edges when they exist, else from the texts themselves
@@ -89,33 +93,41 @@ export function convertRepeatGroupToTable(doc: TemplateDoc, elementId: string): 
   intervals.forEach((iv, idx) => {
     const t = iv.text
     if (!t) return
-    const m = ROW_RE.exec(t.text.trim())
-    if (!m) {
-      showRowNumber = true
-      numberWidth = Math.round(iv.w)
-      numberHeader = ownHeader(iv).text
-      return
-    }
-    const bind = m[1]!
-    const header = ownHeader(iv)
+    const toks = tokensOf(t.text.trim())
+    const binds = toks.filter((k): k is string => k !== null)
+    const own = ownHeader(iv)
     const spanning = headerTexts.filter((h) => { const cs = columnsFor(h); return cs.length > 1 && cs.includes(iv) })
     const groupText = spanning.sort((a, b) => a.y - b.y)[0]
     if (groupText) consumedHeaders.add(groupText.id)
-    const hl = highlightRects.find((r) => overlapX(r, iv) > iv.w * 0.5 && (r.showIf ?? '').includes(`{row.${bind}}`))
-    columns.push({
-      id: `${seed.id}_col${idx}`,
-      header: header.text ?? bind,
-      bind,
-      width: Math.round(iv.w),
-      align: t.style.align === 'center' ? 'center' : t.style.align === 'right' ? 'right' : 'left',
-      ...(groupText ? { group: groupText.text.trim() } : {}),
-      ...(hl ? { fillIfSet: hl.fill } : {}),
+    // "{i}" inside a cell ("{i} {row.name}") becomes a narrow № column carved out of that cell
+    let numW = 0
+    if (toks.includes(null)) {
+      showRowNumber = true
+      numW = binds.length ? Math.min(TABLE_NUMBER_W, iv.w / 3) : iv.w
+      numberWidth = Math.round(numW)
+      if (!binds.length) numberHeader = own.text
+    }
+    if (!binds.length) return
+    // several bound tokens in one cell → one column each; the cell's own header (if any) spans them as a group
+    const each = (iv.w - numW) / binds.length
+    const groupName = binds.length > 1 ? (own.text ?? groupText?.text.trim()) : groupText?.text.trim()
+    binds.forEach((bind, k) => {
+      const hl = highlightRects.find((r) => overlapX(r, iv) > iv.w * 0.5 && (r.showIf ?? '').includes(`{row.${bind}}`))
+      columns.push({
+        id: `${seed.id}_col${idx}${binds.length > 1 ? `_${k}` : ''}`,
+        header: (binds.length === 1 ? own.text : undefined) ?? labels[bind] ?? bind,
+        bind,
+        width: Math.round(each),
+        align: t.style.align === 'center' ? 'center' : t.style.align === 'right' ? 'right' : 'left',
+        ...(groupName ? { group: groupName } : {}),
+        ...(hl ? { fillIfSet: hl.fill } : {}),
+      })
     })
   })
   if (!columns.length) return null
 
   const headerStyleSrc = headerTexts.find((h) => consumedHeaders.has(h.id))?.style
-  const cellStyleSrc = rowTexts.find((t) => ROW_RE.test(t.text.trim()))?.style
+  const cellStyleSrc = rowTexts.find((t) => tokensOf(t.text.trim()).some((k) => k !== null))?.style
   const headerStyle: TextStyle = headerStyleSrc ? { ...headerStyleSrc, align: 'center', vAlign: 'middle' } : defaultTextStyle({ fontSize: 11, fontWeight: 600 })
   const cellStyle: TextStyle = cellStyleSrc ? { ...cellStyleSrc, vAlign: 'middle' } : defaultTextStyle({ fontSize: 11 })
   const ruleColor = (vRules[0] as RectElement | undefined)?.fill ?? (hRules[0] as RectElement | undefined)?.fill ?? '#000000'
