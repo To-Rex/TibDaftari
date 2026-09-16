@@ -148,8 +148,13 @@ function ElementView({ el, z, ctx, raw, ghost, assetUrl, selected, onClick }: { 
       const cols = def?.type === 'table' ? def.columns : []
       // static tables: cells are template text (placeholders resolved at render); editor shows them raw
       const staticRows = (el.staticRows ?? []).map((r) => Object.fromEntries(el.columns.map((c, i) => [c.bind || String(i), raw ? (r[i] ?? '') : interpolate(r[i] ?? '', ctx)])))
+      // editor (raw) mode: the first row keeps its placeholders; the rows the field will fill in are drawn as
+      // muted "ghosts" from the sample rows (preset rows) — the sheet looks like the real blank, as with repeat groups
+      const GHOST = '__ghost'
       const sourceRows: Record<string, unknown>[] = raw
-        ? el.fieldKey ? [Object.fromEntries(el.columns.map((c) => [c.bind, `{${c.bind}}`]))] : staticRows
+        ? el.fieldKey
+          ? [Object.fromEntries(el.columns.map((c) => [c.bind, `{${c.bind}}`])), ...tableRows(ctx, el.fieldKey).slice(1).map((r) => ({ ...r, [GHOST]: true }))]
+          : staticRows
         : el.fieldKey ? tableRows(ctx, el.fieldKey) : staticRows
       const totalW = el.columns.reduce((s, c) => s + c.width, 0) || 1
       const numW = el.showRowNumber ? (el.numberWidth ?? TABLE_NUMBER_W) : 0
@@ -203,8 +208,9 @@ function ElementView({ el, z, ctx, raw, ghost, assetUrl, selected, onClick }: { 
               <tr key={i} style={{ background: el.zebra && i % 2 === 1 ? el.zebra : undefined }}>
                 {el.showRowNumber && <td style={{ ...cellStyle, display: 'table-cell', border, padding: '3px 6px', height: el.rowHeight, textAlign: 'center', ...nowrap }}>{i + 1}</td>}
                 {el.columns.map((c, ci) => {
-                  const cell = raw ? { text: el.fieldKey ? `{${c.bind}}` : String(r[keyOf(c, ci)] ?? ''), abnormal: false } : fmtCell(r, keyOf(c, ci))
-                  return <td key={c.id} style={{ ...cellStyle, display: 'table-cell', border, padding: '3px 6px', height: el.rowHeight, textAlign: c.align, color: el.highlightAbnormal && cell.abnormal ? ABN : cellStyle.color, fontWeight: el.highlightAbnormal && cell.abnormal ? 600 : cellStyle.fontWeight, background: c.fillIfSet && !raw && cell.text.trim() ? c.fillIfSet : undefined, ...nowrap }}>{cell.text}</td>
+                  const ghost = raw && !!r[GHOST]
+                  const cell = raw && !ghost ? { text: el.fieldKey ? `{${c.bind}}` : String(r[keyOf(c, ci)] ?? ''), abnormal: false } : fmtCell(r, keyOf(c, ci))
+                  return <td key={c.id} style={{ ...cellStyle, display: 'table-cell', border, padding: '3px 6px', height: el.rowHeight, textAlign: c.align, color: el.highlightAbnormal && cell.abnormal ? ABN : cellStyle.color, fontWeight: el.highlightAbnormal && cell.abnormal ? 600 : cellStyle.fontWeight, background: c.fillIfSet && (ghost || !raw) && cell.text.trim() ? c.fillIfSet : undefined, opacity: ghost ? 0.55 : undefined, ...nowrap }}>{cell.text}</td>
                 })}
               </tr>
             ))}
