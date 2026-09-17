@@ -19,6 +19,13 @@ export interface Company extends AuditStamp {
   phone?: string
   email?: string
   address?: string
+  /** Location: country → region (viloyat / city) → district. Names are resolved by the API for display. */
+  countryId: Id | null
+  regionId: Id | null
+  districtId: Id | null
+  countryName?: string | null
+  regionName?: string | null
+  districtName?: string | null
   locale: Locale
   isActive: boolean
   /** Per-company SMS provider — each clinic owns its Xabarchi account. */

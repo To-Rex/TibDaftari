@@ -25,9 +25,12 @@ export const usePatientSearch = (companyId: Id, query: string, limit = 12) =>
 export const usePatient = (id: Id | undefined) =>
   useQuery({ queryKey: patientKeys.detail(id ?? ''), queryFn: () => repos.patients.get(id!), enabled: !!id })
 
-export const useRegions = () => useQuery({ queryKey: ['regions'], queryFn: () => repos.patients.regions(), staleTime: Infinity })
-export const useDistricts = (regionId?: Id) =>
-  useQuery({ queryKey: ['districts', regionId ?? ''], queryFn: () => repos.patients.districts(regionId || undefined), staleTime: Infinity })
+export const useCountries = () => useQuery({ queryKey: ['countries'], queryFn: () => repos.patients.countries(), staleTime: Infinity })
+/** Regions of `countryId`; undefined → the platform default country (Uzbekistan), as patient forms expect. */
+export const useRegions = (countryId?: Id, opts?: { enabled?: boolean }) =>
+  useQuery({ queryKey: ['regions', countryId ?? ''], queryFn: () => repos.patients.regions(countryId || undefined), staleTime: Infinity, enabled: opts?.enabled ?? true })
+export const useDistricts = (regionId?: Id, opts?: { enabled?: boolean }) =>
+  useQuery({ queryKey: ['districts', regionId ?? ''], queryFn: () => repos.patients.districts(regionId || undefined), staleTime: Infinity, enabled: opts?.enabled ?? true })
 
 export function useCreatePatient(companyId: Id) {
   const qc = useQueryClient()

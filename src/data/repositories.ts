@@ -8,6 +8,7 @@ import type {
   Category,
   Company,
   DashboardSummary,
+  Country,
   District,
   Employee,
   Id,
@@ -78,7 +79,9 @@ export interface PatientRepository {
   create(companyId: Id, input: PatientUpsertInput): Promise<Patient>
   update(id: Id, input: Partial<PatientUpsertInput>): Promise<Patient>
   findDuplicates(companyId: Id, input: Partial<PatientUpsertInput>): Promise<Patient[]>
-  regions(): Promise<Region[]>
+  countries(): Promise<Country[]>
+  /** Regions of a country; without `countryId` the API returns the platform default country's (Uzbekistan). */
+  regions(countryId?: Id): Promise<Region[]>
   districts(regionId?: Id): Promise<District[]>
 }
 

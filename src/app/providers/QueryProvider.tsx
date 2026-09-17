@@ -16,7 +16,7 @@ const PERSIST_KEY = 'clinic.query.cache.v1'
 const DAY = 24 * 60 * 60 * 1000
 
 /** Query-key prefixes that are safe and worth persisting (no personal data). */
-const PERSISTED_PREFIXES = new Set(['categories', 'service-types', 'serviceTypes', 'schemas', 'schema', 'templates', 'template', 'templateAssets', 'template-assets', 'branches', 'company', 'companies', 'roles', 'regions', 'districts'])
+const PERSISTED_PREFIXES = new Set(['categories', 'service-types', 'serviceTypes', 'schemas', 'schema', 'templates', 'template', 'templateAssets', 'template-assets', 'branches', 'company', 'companies', 'roles', 'countries', 'regions', 'districts'])
 
 const isPersistable = (key: readonly unknown[]) => typeof key[0] === 'string' && PERSISTED_PREFIXES.has(key[0])
 

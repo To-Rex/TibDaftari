@@ -8,6 +8,7 @@ import type { Company } from '@/domain'
 import { LOCALES } from '@/shared/i18n'
 import { errorMessage } from '@/shared/lib/errors'
 import { Button, Drawer, Field, Input, Select, Switch, Textarea, toast } from '@/shared/ui'
+import { LocationFields } from './LocationFields'
 import { useSaveCompany } from './queries'
 
 const schema = z.object({
@@ -17,6 +18,9 @@ const schema = z.object({
   phone: z.string().trim(),
   email: z.string().trim().email().or(z.literal('')),
   address: z.string().trim(),
+  countryId: z.string(),
+  regionId: z.string(),
+  districtId: z.string(),
   locale: z.enum(['uz', 'ru', 'en']),
   isActive: z.boolean(),
 })
@@ -27,9 +31,10 @@ export function CompanyDrawer({ open, onClose, company }: { open: boolean; onClo
   const save = useSaveCompany()
   const defaults = useMemo<Values>(() => ({
     name: company?.name ?? '', legalName: company?.legalName ?? '', slug: company?.slug ?? '', phone: company?.phone ?? '', email: company?.email ?? '',
-    address: company?.address ?? '', locale: company?.locale ?? 'uz', isActive: company?.isActive ?? true,
+    address: company?.address ?? '', countryId: company?.countryId ?? '', regionId: company?.regionId ?? '', districtId: company?.districtId ?? '',
+    locale: company?.locale ?? 'uz', isActive: company?.isActive ?? true,
   }), [company])
-  const { register, control, handleSubmit, reset, setValue, formState: { errors } } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: defaults })
+  const { register, control, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: defaults })
   const slugTouched = useRef(false)
   useEffect(() => { if (open) { reset(defaults); slugTouched.current = false } }, [open, defaults, reset])
   // new company: propose a slug from the name until the user edits the slug field themselves
@@ -41,7 +46,7 @@ export function CompanyDrawer({ open, onClose, company }: { open: boolean; onClo
 
   const submit = handleSubmit(async (v) => {
     try {
-      await save.mutateAsync({ id: company?.id, ...v, slug: v.slug || slugFromName(v.name), legalName: v.legalName || undefined, phone: v.phone || undefined, email: v.email || undefined, address: v.address || undefined })
+      await save.mutateAsync({ id: company?.id, ...v, slug: v.slug || slugFromName(v.name), legalName: v.legalName || undefined, phone: v.phone || undefined, email: v.email || undefined, address: v.address || undefined, countryId: v.countryId || null, regionId: v.regionId || null, districtId: v.districtId || null })
       toast.success(t('admin.platform.saved'))
       onClose()
     } catch (e) {
@@ -81,6 +86,11 @@ export function CompanyDrawer({ open, onClose, company }: { open: boolean; onClo
             {(id) => <Input id={id} type="email" {...register('email')} invalid={!!errors.email} />}
           </Field>
         </div>
+        <Controller control={control} name="countryId" render={() => (
+          <LocationFields className="sm:grid-cols-1" preselectCountryCode={company ? undefined : 'UZ'}
+            value={{ countryId: watch('countryId'), regionId: watch('regionId'), districtId: watch('districtId') }}
+            onChange={(v) => { setValue('countryId', v.countryId, { shouldDirty: true }); setValue('regionId', v.regionId, { shouldDirty: true }); setValue('districtId', v.districtId, { shouldDirty: true }) }} />
+        )} />
         <Field label={t('admin.company.address')} optionalText={t('common.optional')}>
           {(id) => <Textarea id={id} rows={2} {...register('address')} />}
         </Field>

@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { routes } from '@/shared/config/routes'
 import { useCompanies, useSaveCompany } from '@/features/org/queries'
 import { CompanyDrawer } from '@/features/org/CompanyDrawer'
+import { locationText } from '@/features/org/LocationFields'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import { errorMessage } from '@/shared/lib/errors'
 import { fmtDate } from '@/shared/lib/format'
@@ -50,6 +51,7 @@ export default function PlatformPage() {
         </div>
       </div>
     ) },
+    { key: 'location', header: t('admin.platform.colLocation'), hideBelow: 'md', card: 'meta', cell: (c) => <span className="text-ink-2 truncate">{locationText(c) || <span className="text-ink-3">—</span>}</span> },
     { key: 'branchCount', header: t('admin.platform.colBranches'), align: 'right', hideBelow: 'sm', cell: (c) => <span className="tabular">{c.branchCount}</span> },
     { key: 'employeeCount', header: t('admin.platform.colEmployees'), align: 'right', hideBelow: 'sm', cell: (c) => <span className="tabular">{c.employeeCount}</span> },
     { key: 'sms', header: t('admin.platform.colSms'), hideBelow: 'md', card: 'meta', cell: (c) => <Badge tone={c.sms.provider === 'xabarchi' && c.sms.apiKeyMasked ? 'ok' : 'neutral'} dot>{c.sms.provider === 'xabarchi' ? t('admin.sms.providerXabarchi') : t('admin.sms.providerNone')}</Badge> },

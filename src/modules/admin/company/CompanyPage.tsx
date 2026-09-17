@@ -7,6 +7,7 @@ import { ImagePlus, Trash2 } from 'lucide-react'
 import type { Locale } from '@/domain'
 import { useStaffSession } from '@/features/session/useSession'
 import { usePermissions } from '@/features/auth/store'
+import { LocationFields } from '@/features/org/LocationFields'
 import { useCompany, useSaveCompany } from '@/features/org/queries'
 import { LOCALES } from '@/shared/i18n'
 import { errorMessage } from '@/shared/lib/errors'
@@ -20,6 +21,9 @@ const schema = z.object({
   phone: z.string().trim(),
   email: z.string().trim().email().or(z.literal('')),
   address: z.string().trim(),
+  countryId: z.string(),
+  regionId: z.string(),
+  districtId: z.string(),
   locale: z.enum(['uz', 'ru', 'en']),
   logoUrl: z.string(),
 })
@@ -37,6 +41,7 @@ export default function CompanyPage() {
   const defaults = useMemo<Values>(() => ({
     name: company.data?.name ?? '', legalName: company.data?.legalName ?? '', slug: company.data?.slug ?? '', phone: company.data?.phone ?? '',
     email: company.data?.email ?? '', address: company.data?.address ?? '', locale: company.data?.locale ?? 'uz', logoUrl: company.data?.logoUrl ?? '',
+    countryId: company.data?.countryId ?? '', regionId: company.data?.regionId ?? '', districtId: company.data?.districtId ?? '',
   }), [company.data])
 
   const { register, control, handleSubmit, reset, watch, setValue, formState: { errors, isDirty } } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: defaults })
@@ -54,7 +59,7 @@ export default function CompanyPage() {
 
   const submit = handleSubmit(async (v) => {
     try {
-      await save.mutateAsync({ id: companyId, ...v, legalName: v.legalName || undefined, phone: v.phone || undefined, email: v.email || undefined, address: v.address || undefined, logoUrl: v.logoUrl || undefined, locale: v.locale as Locale })
+      await save.mutateAsync({ id: companyId, ...v, legalName: v.legalName || undefined, phone: v.phone || undefined, email: v.email || undefined, address: v.address || undefined, logoUrl: v.logoUrl || undefined, locale: v.locale as Locale, countryId: v.countryId || null, regionId: v.regionId || null, districtId: v.districtId || null })
       toast.success(t('admin.company.saved'))
     } catch (e) {
       toast.error(errorMessage(e))
@@ -139,6 +144,9 @@ export default function CompanyPage() {
               <Field label={t('admin.company.email')} optionalText={t('common.optional')} error={errors.email && t('admin.company.invalidEmail')}>
                 {(id) => <Input id={id} type="email" {...register('email')} invalid={!!errors.email} />}
               </Field>
+              <LocationFields className="sm:col-span-2" disabled={!canWrite}
+                value={{ countryId: watch('countryId'), regionId: watch('regionId'), districtId: watch('districtId') }}
+                onChange={(v) => { setValue('countryId', v.countryId, { shouldDirty: true }); setValue('regionId', v.regionId, { shouldDirty: true }); setValue('districtId', v.districtId, { shouldDirty: true }) }} />
               <Field label={t('admin.company.address')} optionalText={t('common.optional')} className="sm:col-span-2">
                 {(id) => <Textarea id={id} rows={2} {...register('address')} />}
               </Field>

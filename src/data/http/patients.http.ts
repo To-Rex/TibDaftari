@@ -1,5 +1,5 @@
-/** HTTP PatientRepository — patients + public regions/districts (`app/modules/patients`). */
-import type { District, Page, Patient, Region } from '@/domain'
+/** HTTP PatientRepository — patients + public countries/regions/districts (`app/modules/patients`). */
+import type { Country, District, Page, Patient, Region } from '@/domain'
 import type { PatientRepository } from '../repositories'
 import { api, compact } from './client'
 
@@ -18,7 +18,9 @@ export const patientsHttp: PatientRepository = {
   /** Backend only reads the identity keys (phone / passportNumber / pinfl); extras are ignored. */
   findDuplicates: (companyId, input) => api.post<Patient[]>(`/companies/${companyId}/patients/duplicates`, compact({ ...input })),
 
-  regions: () => api.get<Region[]>('/regions', { actor: 'none' }),
+  countries: () => api.get<Country[]>('/countries', { actor: 'none' }),
+
+  regions: (countryId) => api.get<Region[]>('/regions', { actor: 'none', query: { countryId } }),
 
   districts: (regionId) => api.get<District[]>('/districts', { actor: 'none', query: { regionId } }),
 }

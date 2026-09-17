@@ -54,8 +54,19 @@ export interface PatientUpsertInput {
   note?: string
 }
 
+/** ISO 3166-1 country; `name` is Uzbek, `nameRu`/`nameEn` the localised names. */
+export interface Country {
+  id: Id
+  code: string
+  name: string
+  nameRu?: string | null
+  nameEn?: string | null
+  phoneCode?: string | null
+}
+/** First-level division (viloyat / oblast / city of republican status) of a country. */
 export interface Region {
   id: Id
+  countryId: Id
   name: string
 }
 export interface District {
