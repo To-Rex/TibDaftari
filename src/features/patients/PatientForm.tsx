@@ -10,9 +10,10 @@ import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import { Phone, User } from 'lucide-react'
 import type { Patient, PatientUpsertInput } from '@/domain'
-import { Field, Input, Select, Textarea, Segmented } from '@/shared/ui'
+import { Field, Input, Select, Textarea } from '@/shared/ui'
 import { cn } from '@/shared/lib/cn'
 import { formatLocalPhone, fromE164, localDigits, toE164 } from './phone'
+import { GenderPicker } from './GenderPicker'
 import { useDistricts, useRegions } from './queries'
 
 const makeSchema = (t: (k: string) => string) =>
@@ -113,10 +114,10 @@ export function PatientForm({ formId, patient, onSubmit, onDraftChange }: Patien
             {(id) => <Input id={id} type="date" {...register('birthDate')} className={big} max={new Date().toISOString().slice(0, 10)} />}
           </Field>
         </div>
-        <Field label={t('common.gender')}>
-          {() => (
+        <Field label={t('common.gender')} hint={t('staff.patients.form.genderHint')}>
+          {(id) => (
             <Controller name="gender" control={control} render={({ field }) => (
-              <Segmented<'male' | 'female' | ''> value={field.value} onChange={field.onChange} items={[{ value: 'male', label: t('common.male') }, { value: 'female', label: t('common.female') }]} />
+              <GenderPicker id={id} value={field.value} onChange={field.onChange} />
             )} />
           )}
         </Field>
