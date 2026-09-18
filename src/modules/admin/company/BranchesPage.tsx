@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Clock, GitBranch, MapPin, Pencil, Phone, Plus } from 'lucide-react'
+import { Clock, GitBranch, Globe, MapPin, Pencil, Phone, Plus } from 'lucide-react'
 import type { Branch } from '@/domain'
 import { useStaffSession } from '@/features/session/useSession'
 import { usePermissions } from '@/features/auth/store'
 import { useBranches } from '@/features/org/queries'
 import { BranchDrawer, orderNumberExample } from '@/features/org/BranchDrawer'
+import { locationText } from '@/features/org/LocationFields'
 import { fmtNumber } from '@/shared/lib/format'
 import { Badge, Button, Card, EmptyState, IconButton, MotionItem, MotionList, Page, PageHeader, Skeleton, fadeUp, stagger } from '@/shared/ui'
 
@@ -48,6 +49,7 @@ export default function BranchesPage() {
                     {canWrite && <IconButton label={t('common.edit')} size="sm" onClick={(e) => { e.stopPropagation(); openEdit(b) }}><Pencil /></IconButton>}
                   </div>
                   <ul className="flex flex-col gap-1.5 text-[13.5px] text-ink-2">
+                    <li className="flex items-start gap-2 min-w-0"><Globe className="size-4 text-ink-3 shrink-0 mt-0.5" /><span className="break-words min-w-0">{locationText(b) || t('common.notSet')}</span></li>
                     <li className="flex items-start gap-2 min-w-0"><MapPin className="size-4 text-ink-3 shrink-0 mt-0.5" /><span className="break-words min-w-0">{b.address || t('common.notSet')}</span></li>
                     <li className="flex items-center gap-2"><Phone className="size-4 text-ink-3 shrink-0" /><span className="tabular">{b.phone || t('common.notSet')}</span></li>
                     <li className="flex items-center gap-2"><Clock className="size-4 text-ink-3 shrink-0" /><span>{b.timezone}</span></li>

@@ -6,7 +6,8 @@ import { useTranslation } from 'react-i18next'
 import type { Branch, Id } from '@/domain'
 import { errorMessage } from '@/shared/lib/errors'
 import { Button, Drawer, Field, Input, Select, Switch, Textarea, toast } from '@/shared/ui'
-import { useSaveBranch } from './queries'
+import { LocationFields } from './LocationFields'
+import { useCompany, useSaveBranch } from './queries'
 
 export const TIMEZONES = ['Asia/Tashkent', 'Asia/Samarkand'] as const
 type Tz = (typeof TIMEZONES)[number]
@@ -15,6 +16,9 @@ const schema = z.object({
   name: z.string().trim().min(2),
   code: z.string().trim().regex(/^[A-Z]{2,4}$/),
   address: z.string().trim(),
+  countryId: z.string(),
+  regionId: z.string(),
+  districtId: z.string(),
   phone: z.string().trim(),
   timezone: z.enum(TIMEZONES),
   isActive: z.boolean(),
@@ -26,18 +30,23 @@ export const orderNumberExample = (code: string, seq: number) => `${code || 'XX'
 export function BranchDrawer({ open, onClose, companyId, branch }: { open: boolean; onClose: () => void; companyId: Id; branch?: Branch | null }) {
   const { t } = useTranslation()
   const save = useSaveBranch()
+  const company = useCompany(companyId)
+  // a new branch starts where the company is (its country/region/district); LocationFields falls back to Uzbekistan
   const defaults = useMemo<Values>(() => ({
     name: branch?.name ?? '', code: branch?.code ?? '', address: branch?.address ?? '', phone: branch?.phone ?? '',
+    countryId: (branch ? branch.countryId : company.data?.countryId) ?? '',
+    regionId: (branch ? branch.regionId : company.data?.regionId) ?? '',
+    districtId: (branch ? branch.districtId : company.data?.districtId) ?? '',
     timezone: TIMEZONES.includes(branch?.timezone as Tz) ? (branch!.timezone as Tz) : 'Asia/Tashkent',
     isActive: branch?.isActive ?? true,
-  }), [branch])
+  }), [branch, company.data])
   const { register, control, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: defaults })
   useEffect(() => { if (open) reset(defaults) }, [open, defaults, reset])
   const code = watch('code')
 
   const submit = handleSubmit(async (v) => {
     try {
-      await save.mutateAsync({ companyId, id: branch?.id, ...v, address: v.address || undefined, phone: v.phone || undefined })
+      await save.mutateAsync({ companyId, id: branch?.id, ...v, address: v.address || undefined, phone: v.phone || undefined, countryId: v.countryId || null, regionId: v.regionId || null, districtId: v.districtId || null })
       toast.success(t('admin.branches.saved'))
       onClose()
     } catch (e) {
@@ -64,6 +73,9 @@ export function BranchDrawer({ open, onClose, companyId, branch }: { open: boole
             )}
           </Field>
         </div>
+        <LocationFields className="sm:grid-cols-1" preselectCountryCode={branch ? undefined : 'UZ'}
+          value={{ countryId: watch('countryId'), regionId: watch('regionId'), districtId: watch('districtId') }}
+          onChange={(v) => { setValue('countryId', v.countryId, { shouldDirty: true }); setValue('regionId', v.regionId, { shouldDirty: true }); setValue('districtId', v.districtId, { shouldDirty: true }) }} />
         <Field label={t('admin.branches.address')} optionalText={t('common.optional')}>
           {(id) => <Textarea id={id} rows={2} {...register('address')} />}
         </Field>

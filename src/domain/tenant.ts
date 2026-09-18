@@ -51,6 +51,13 @@ export interface Branch extends AuditStamp {
   name: string
   code: string // used in cheque numbers e.g. UR-000123
   address?: string
+  /** Location: country → region → district (same reference data as the company). */
+  countryId: Id | null
+  regionId: Id | null
+  districtId: Id | null
+  countryName?: string | null
+  regionName?: string | null
+  districtName?: string | null
   phone?: string
   timezone: string
   isActive: boolean
