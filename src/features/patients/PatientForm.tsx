@@ -3,13 +3,15 @@
  * front-desk speed: phone auto-mask, Enter submits, sectioned layout.
  * Submit from outside via <button form={formId} type="submit">.
  */
-import { useEffect, useMemo, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import { Phone, User } from 'lucide-react'
 import type { Patient, PatientUpsertInput } from '@/domain'
+import { useBranches, useCompany } from '@/features/org/queries'
+import { useStaffSession } from '@/features/session/useSession'
 import { Field, Input, Select, Textarea } from '@/shared/ui'
 import { cn } from '@/shared/lib/cn'
 import { formatLocalPhone, fromE164, localDigits, toE164 } from './phone'
@@ -77,14 +79,35 @@ const big = 'h-11 text-[15px]'
 export function PatientForm({ formId, patient, onSubmit, onDraftChange }: PatientFormProps) {
   const { t } = useTranslation()
   const schema = useMemo(() => makeSchema(t), [t])
-  const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormValues>({
+  const { register, control, handleSubmit, watch, getValues, setValue, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: toDefaults(patient),
     mode: 'onBlur',
   })
   const regionId = watch('regionId')
-  const regions = useRegions()
+  // most walk-ins live where the clinic is: a new patient starts at the current branch's location
+  // (the company's when the branch has none), and the region list follows that country
+  const { companyId, branchId } = useStaffSession()
+  const branches = useBranches(companyId)
+  const company = useCompany(companyId)
+  const home = useMemo(() => {
+    const branch = branchId ? branches.data?.find((b) => b.id === branchId) : undefined
+    return (branch?.countryId || branch?.regionId ? branch : company.data) ?? null
+  }, [branchId, branches.data, company.data])
+  const regions = useRegions(home?.countryId ?? undefined)
   const districts = useDistricts(regionId || undefined)
+
+  const [prefilled, setPrefilled] = useState(false)
+  const prefillDone = useRef(false)
+  useEffect(() => {
+    if (patient || prefillDone.current || !home?.regionId) return
+    if (!regions.data?.some((r) => r.id === home.regionId)) return // wait for the list, skip an unlistable region
+    if (getValues('regionId') || getValues('districtId')) return // the user got there first
+    prefillDone.current = true
+    setValue('regionId', home.regionId)
+    setValue('districtId', home.districtId ?? '')
+    setPrefilled(true)
+  }, [patient, home, regions.data, getValues, setValue])
 
   const phone = watch('phone')
   const passportNumber = watch('passportNumber')
@@ -134,22 +157,26 @@ export function PatientForm({ formId, patient, onSubmit, onDraftChange }: Patien
         </div>
       </Section>
 
-      <Section title={t('common.address')}>
+      <Section title={t('common.address')} hint={prefilled && regionId === home?.regionId ? t('staff.patients.form.geoFromBranch') : undefined}>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t('staff.patients.form.region')}>
             {(id) => (
-              <Select id={id} {...register('regionId', { onChange: () => setValue('districtId', '') })} className={big}>
-                <option value="">{t('common.select')}</option>
-                {regions.data?.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
-              </Select>
+              <Controller name="regionId" control={control} render={({ field }) => (
+                <Select id={id} value={field.value} onBlur={field.onBlur} onChange={(e) => { field.onChange(e.target.value); setValue('districtId', '') }} className={big}>
+                  <option value="">{t('common.select')}</option>
+                  {regions.data?.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+                </Select>
+              )} />
             )}
           </Field>
           <Field label={t('staff.patients.form.district')}>
             {(id) => (
-              <Select id={id} {...register('districtId')} disabled={!regionId} className={big}>
-                <option value="">{t('common.select')}</option>
-                {districts.data?.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-              </Select>
+              <Controller name="districtId" control={control} render={({ field }) => (
+                <Select id={id} value={field.value} onBlur={field.onBlur} onChange={(e) => field.onChange(e.target.value)} disabled={!regionId} className={big}>
+                  <option value="">{t('common.select')}</option>
+                  {districts.data?.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                </Select>
+              )} />
             )}
           </Field>
         </div>
