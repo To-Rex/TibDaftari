@@ -134,7 +134,7 @@ export default function CatalogPage() {
         actions={canWrite && (
           <>
             <Button variant="secondary" leftIcon={<FolderPlus className="size-4" />} onClick={() => setCatDraft(draftFromCategory(null, selected))}>{t('catalog.tree.newCategory')}</Button>
-            <Button leftIcon={<Plus className="size-4" />} onClick={addService}>{t('catalog.services.add')}</Button>
+            <Button data-hotkey="n" leftIcon={<Plus className="size-4" />} onClick={addService}>{t('catalog.services.add')}</Button>
           </>
         )}
       />

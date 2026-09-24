@@ -1,6 +1,11 @@
 /** Base locale. Other locales must satisfy this shape (typed in index.ts). */
 export const uz = {
   common: {
+    hotkeys: {
+      title: 'Tezkor tugmalar', button: 'Tezkor tugmalar', groupGlobal: 'Umumiy', groupNav: 'Sahifalarga o‘tish (G, so‘ng harf)', groupPage: 'Shu sahifadagi amallar', groupForm: 'Formalar',
+      help: 'Tezkor tugmalar ro‘yxati', search: 'Qidiruvga o‘tish', close: 'Oyna / menyuni yopish', pages: 'Ro‘yxatning oldingi / keyingi sahifasi', none: 'Bu sahifada tezkor amal yo‘q',
+      next: 'Keyingi maydon; oxirgi maydonda — saqlash', submit: 'Istalgan maydondan saqlash / yuborish', tiles: 'Plitkalarda tanlash (masalan Jinsi)', auto: 'Telefon, passport, JSHSHIR to‘lganda kursor o‘zi keyingi maydonga o‘tadi',
+    },
     appName: 'TibDaftari',
     loading: 'Yuklanmoqda…',
     save: 'Saqlash',

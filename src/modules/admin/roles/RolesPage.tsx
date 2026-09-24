@@ -79,7 +79,7 @@ export default function RolesPage() {
   return (
     <Page>
       <PageHeader title={t('admin.roles.title')} description={t('admin.roles.subtitle')}
-        actions={canWrite && <Button leftIcon={<Plus className="size-4" />} onClick={() => startNew(selected)}>{t('admin.roles.newRole')}</Button>} />
+        actions={canWrite && <Button data-hotkey="n" leftIcon={<Plus className="size-4" />} onClick={() => startNew(selected)}>{t('admin.roles.newRole')}</Button>} />
 
       <div className="grid gap-5 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)] 3xl:grid-cols-[340px_minmax(0,1fr)] items-start">
         {/* Roles list */}

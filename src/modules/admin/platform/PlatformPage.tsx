@@ -74,7 +74,7 @@ export default function PlatformPage() {
   return (
     <Page>
       <PageHeader eyebrow="Superadmin" title={t('admin.platform.title')} description={t('admin.platform.subtitle')}
-        actions={canManage && <Button leftIcon={<Plus className="size-4" />} onClick={() => setDrawer({ open: true, company: null })}>{t('admin.platform.add')}</Button>} />
+        actions={canManage && <Button data-hotkey="n" leftIcon={<Plus className="size-4" />} onClick={() => setDrawer({ open: true, company: null })}>{t('admin.platform.add')}</Button>} />
 
       <Toolbar actions={data && <span className="text-[13px] text-ink-3 tabular">{t('admin.platform.total', { count: data.total })}</span>}>
         <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1) }} placeholder={t('admin.platform.searchPlaceholder')} className="w-full sm:w-72" />

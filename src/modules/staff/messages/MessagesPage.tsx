@@ -62,7 +62,7 @@ export default function MessagesPage() {
       <PageHeader
         title={t('clinical.messages.title')}
         description={t('clinical.messages.subtitle')}
-        actions={can(['messaging.send', 'messaging.broadcast']) && <Button leftIcon={<Plus className="size-4" />} onClick={() => setCompose(true)}>{t('clinical.messages.newMessage')}</Button>}
+        actions={can(['messaging.send', 'messaging.broadcast']) && <Button data-hotkey="n" leftIcon={<Plus className="size-4" />} onClick={() => setCompose(true)}>{t('clinical.messages.newMessage')}</Button>}
       />
 
       <div className="mb-4 flex flex-wrap items-start gap-x-3 gap-y-2 rounded-[var(--radius)] border border-info/25 bg-info-soft/60 px-4 py-3 text-[13px] text-ink-2">

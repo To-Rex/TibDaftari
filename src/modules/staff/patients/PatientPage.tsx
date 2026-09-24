@@ -62,8 +62,8 @@ export default function PatientPage() {
         ) : <span className="flex items-center gap-4"><Skeleton className="size-16 rounded-full" /><span className="space-y-2"><Skeleton className="h-6 w-56" /><Skeleton className="h-4 w-40" /></span></span>}
         actions={p && (
           <>
-            {can('reception.patient.write') && <Button variant="secondary" leftIcon={<Pencil className="size-4" />} onClick={() => setEdit(true)}>{t('common.edit')}</Button>}
-            {can('reception.order.create') && <Button leftIcon={<Plus className="size-4" />} loading={newOrder.creating} onClick={() => newOrder.start(p.id)}>{t('staff.reception.newOrder')}</Button>}
+            {can('reception.patient.write') && <Button variant="secondary" data-hotkey="e" leftIcon={<Pencil className="size-4" />} onClick={() => setEdit(true)}>{t('common.edit')}</Button>}
+            {can('reception.order.create') && <Button data-hotkey="c" leftIcon={<Plus className="size-4" />} loading={newOrder.creating} onClick={() => newOrder.start(p.id)}>{t('staff.reception.newOrder')}</Button>}
           </>
         )}
       />

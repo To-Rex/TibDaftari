@@ -76,7 +76,7 @@ export default function EmployeesPage() {
   return (
     <Page>
       <PageHeader title={t('admin.employees.title')} description={t('admin.employees.subtitle')}
-        actions={canWrite && <Button leftIcon={<Plus className="size-4" />} onClick={() => setDrawer(true)}>{t('admin.employees.add')}</Button>} />
+        actions={canWrite && <Button data-hotkey="n" leftIcon={<Plus className="size-4" />} onClick={() => setDrawer(true)}>{t('admin.employees.add')}</Button>} />
 
       <Toolbar>
         <SearchInput value={search} onChange={reset(setSearch)} placeholder={t('admin.employees.searchPlaceholder')} className="w-full sm:w-72" />

@@ -24,7 +24,7 @@ export default function BranchesPage() {
   return (
     <Page>
       <PageHeader title={t('admin.branches.title')} description={t('admin.branches.subtitle')}
-        actions={canWrite && <Button leftIcon={<Plus className="size-4" />} onClick={openNew}>{t('admin.branches.add')}</Button>} />
+        actions={canWrite && <Button data-hotkey="n" leftIcon={<Plus className="size-4" />} onClick={openNew}>{t('admin.branches.add')}</Button>} />
 
       {branches.isLoading ? (
         <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))]">{[0, 1].map((i) => <Skeleton key={i} className="h-48 rounded-[var(--radius-lg)]" />)}</div>

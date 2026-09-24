@@ -3,6 +3,11 @@ import type { Dictionary } from './uz'
 
 export const en: DeepPartial<Dictionary> = {
   common: {
+    hotkeys: {
+      title: 'Keyboard shortcuts', button: 'Keyboard shortcuts', groupGlobal: 'Global', groupNav: 'Go to a page (G, then a letter)', groupPage: 'Actions on this page', groupForm: 'Forms',
+      help: 'Shortcut reference', search: 'Jump to search', close: 'Close the dialog / menu', pages: 'Previous / next page of the list', none: 'No quick actions on this page',
+      next: 'Next field; on the last field — save', submit: 'Save / submit from any field', tiles: 'Pick a tile (e.g. gender)', auto: 'Phone, passport, PINFL move the cursor on when complete',
+    },
     appName: 'TibDaftari', loading: 'Loading…', save: 'Save', saving: 'Saving…', cancel: 'Cancel', close: 'Close', delete: 'Delete', edit: 'Edit', create: 'Create', add: 'Add',
     search: 'Search', searchPlaceholder: 'Search…', filter: 'Filter', all: 'All', yes: 'Yes', no: 'No', back: 'Back', next: 'Next', done: 'Done', actions: 'Actions', status: 'Status',
     date: 'Date', today: 'Today', yesterday: 'Yesterday', last7: '7 days', last30: '30 days', thisMonth: 'This month', total: 'Total', sum: 'UZS', empty: 'Nothing found',

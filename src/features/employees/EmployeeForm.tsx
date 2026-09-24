@@ -12,6 +12,7 @@ import { useRoles } from '@/features/roles/queries'
 import { errorMessage } from '@/shared/lib/errors'
 import { cn } from '@/shared/lib/cn'
 import { Button, Checkbox, Field, Input, Select, Skeleton, Switch, toast } from '@/shared/ui'
+import { formKeyDown } from '@/features/patients/formKeys'
 import { useSaveEmployee } from './queries'
 
 const schema = z
@@ -89,7 +90,7 @@ export function EmployeeForm({ companyId, employee, onSaved, onCancel, formId = 
   const pwErr = (m?: string) => (m === 'short' ? t('admin.employees.passwordShort') : m === 'mismatch' ? t('admin.employees.passwordMismatch') : m ? t('common.required') : undefined)
 
   return (
-    <form id={formId} onSubmit={submit} className="flex flex-col gap-5">
+    <form id={formId} onSubmit={submit} onKeyDown={formKeyDown} className="flex flex-col gap-5">
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label={t('admin.employees.fullName')} required error={errors.fullName && t('common.required')} className="sm:col-span-2">
           {(id) => <Input id={id} autoFocus={!isEdit} {...register('fullName')} invalid={!!errors.fullName} />}

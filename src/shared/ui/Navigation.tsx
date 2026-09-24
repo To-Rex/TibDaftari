@@ -105,7 +105,7 @@ export function Pagination({ page, totalPages, total, pageSize, onPage, onPageSi
         )}
       </div>
       <div className="flex items-center gap-1">
-        <button type="button" disabled={page <= 1} onClick={() => onPage(page - 1)} className="grid size-9 sm:size-8 place-items-center rounded-lg hover:bg-surface-2 disabled:opacity-30"><ChevronLeft className="size-4" /></button>
+        <button type="button" data-hotkey="[" aria-label="[" disabled={page <= 1} onClick={() => onPage(page - 1)} className="grid size-9 sm:size-8 place-items-center rounded-lg hover:bg-surface-2 disabled:opacity-30"><ChevronLeft className="size-4" /></button>
         {/* compact "3 / 12" on phones */}
         <span className="sm:hidden tabular px-1 text-ink-2 font-medium">{page} / {totalPages}</span>
         {pageNumbers(page, totalPages).map((p, i) =>
@@ -113,7 +113,7 @@ export function Pagination({ page, totalPages, total, pageSize, onPage, onPageSi
             <button key={p} type="button" onClick={() => onPage(p)} className={cn('h-8 min-w-8 px-2 rounded-lg tabular text-[13px] font-medium max-sm:hidden', p === page ? 'bg-brand text-white' : 'hover:bg-surface-2 text-ink-2')}>{p}</button>
           ),
         )}
-        <button type="button" disabled={page >= totalPages} onClick={() => onPage(page + 1)} className="grid size-9 sm:size-8 place-items-center rounded-lg hover:bg-surface-2 disabled:opacity-30"><ChevronRight className="size-4" /></button>
+        <button type="button" data-hotkey="]" aria-label="]" disabled={page >= totalPages} onClick={() => onPage(page + 1)} className="grid size-9 sm:size-8 place-items-center rounded-lg hover:bg-surface-2 disabled:opacity-30"><ChevronRight className="size-4" /></button>
       </div>
     </div>
   )

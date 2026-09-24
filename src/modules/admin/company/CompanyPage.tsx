@@ -8,6 +8,7 @@ import type { Locale } from '@/domain'
 import { useStaffSession } from '@/features/session/useSession'
 import { usePermissions } from '@/features/auth/store'
 import { LocationFields } from '@/features/org/LocationFields'
+import { formKeyDown } from '@/features/patients/formKeys'
 import { useCompany, useSaveCompany } from '@/features/org/queries'
 import { LOCALES } from '@/shared/i18n'
 import { errorMessage } from '@/shared/lib/errors'
@@ -81,7 +82,7 @@ export default function CompanyPage() {
       {!c ? (
         <div className="space-y-4"><Skeleton className="h-28" /><Skeleton className="h-64" /></div>
       ) : (
-        <form id="company-form" onSubmit={submit} className="flex flex-col gap-5">
+        <form id="company-form" onSubmit={submit} onKeyDown={formKeyDown} className="flex flex-col gap-5">
           {/* Header with logo */}
           <Card className="relative overflow-hidden">
             <div aria-hidden className="pointer-events-none absolute -left-16 -top-24 size-64 rounded-full bg-brand/8 blur-3xl" />

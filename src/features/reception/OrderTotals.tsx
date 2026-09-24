@@ -37,10 +37,10 @@ export function OrderTotals({ order, payments, onPay, onPrint, printActions, onC
           <motion.div className="h-full rounded-full bg-ok" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ type: 'spring', stiffness: 120, damping: 20 }} />
         </div>
         <div className="mt-5 flex flex-col gap-2">
-          {payable && <Button size="lg" block leftIcon={<Wallet className="size-4" />} onClick={onPay}>{t('staff.reception.pay')}</Button>}
+          {payable && <Button size="lg" block data-hotkey="t" leftIcon={<Wallet className="size-4" />} onClick={onPay}>{t('staff.reception.pay')}</Button>}
           <div className={cn('grid gap-2', cancellable && 'xs:grid-cols-2')}>
             <span className="inline-flex items-center gap-1">
-              <Button variant="secondary" leftIcon={<Printer className="size-4" />} onClick={onPrint} disabled={order.itemCount === 0}>{t('common.print')}</Button>
+              <Button variant="secondary" data-hotkey="p" leftIcon={<Printer className="size-4" />} onClick={onPrint} disabled={order.itemCount === 0}>{t('common.print')}</Button>
               {printActions?.length ? <Menu align="start" trigger={() => <Button variant="secondary" className="px-2" aria-label={t('common.print')}><ChevronDown className="size-4" /></Button>} items={printActions} /> : null}
             </span>
             {cancellable && <Button variant="ghost" className="text-danger hover:bg-danger-soft hover:text-danger" leftIcon={<XCircle className="size-4" />} onClick={onCancel}>{t('staff.reception.cancelOrder')}</Button>}

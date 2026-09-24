@@ -3,6 +3,11 @@ import type { Dictionary } from './uz'
 
 export const ru: DeepPartial<Dictionary> = {
   common: {
+    hotkeys: {
+      title: 'Горячие клавиши', button: 'Горячие клавиши', groupGlobal: 'Общие', groupNav: 'Переход к страницам (G, затем буква)', groupPage: 'Действия на этой странице', groupForm: 'Формы',
+      help: 'Список горячих клавиш', search: 'Перейти к поиску', close: 'Закрыть окно / меню', pages: 'Предыдущая / следующая страница списка', none: 'На этой странице нет быстрых действий',
+      next: 'Следующее поле; на последнем поле — сохранить', submit: 'Сохранить / отправить из любого поля', tiles: 'Выбор плиток (например, пол)', auto: 'Телефон, паспорт, ПИНФЛ заполнены — курсор сам переходит дальше',
+    },
     appName: 'TibDaftari', loading: 'Загрузка…', save: 'Сохранить', saving: 'Сохранение…', cancel: 'Отмена', close: 'Закрыть', delete: 'Удалить', edit: 'Изменить',
     create: 'Создать', add: 'Добавить', search: 'Поиск', searchPlaceholder: 'Поиск…', filter: 'Фильтр', all: 'Все', yes: 'Да', no: 'Нет', back: 'Назад', next: 'Далее', done: 'Готово',
     actions: 'Действия', status: 'Статус', date: 'Дата', today: 'Сегодня', yesterday: 'Вчера', last7: '7 дней', last30: '30 дней', thisMonth: 'Этот месяц', total: 'Итого', sum: 'сум',

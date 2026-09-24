@@ -52,7 +52,7 @@ export default function PatientsPage() {
   return (
     <Page>
       <PageHeader title={t('staff.patients.title')} description={q.data ? t('staff.patients.count', { n: fmtNumber(q.data.total) }) : t('staff.patients.subtitle')}
-        actions={can('reception.patient.write') && <Button leftIcon={<UserPlus className="size-4" />} onClick={() => setDrawer(true)}>{t('staff.patients.new')}</Button>} />
+        actions={can('reception.patient.write') && <Button data-hotkey="n" leftIcon={<UserPlus className="size-4" />} onClick={() => setDrawer(true)}>{t('staff.patients.new')}</Button>} />
       <Toolbar>
         <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1) }} placeholder={t('staff.patients.searchPh')} className="w-full sm:w-80 3xl:w-96" />
         <div className="flex flex-wrap items-center gap-1.5">

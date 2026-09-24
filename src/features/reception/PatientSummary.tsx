@@ -56,7 +56,7 @@ export function PatientSummary({ companyId, patient, onNewOrder, creating, canCr
           ))}
         </div>
         {canCreate && (
-          <Button size="lg" block className="mt-5" leftIcon={<Plus className="size-4" />} loading={creating} onClick={onNewOrder}>{t('staff.reception.newOrder')}</Button>
+          <Button size="lg" block data-hotkey="c" className="mt-5" leftIcon={<Plus className="size-4" />} loading={creating} onClick={onNewOrder}>{t('staff.reception.newOrder')}</Button>
         )}
       </Card>
 

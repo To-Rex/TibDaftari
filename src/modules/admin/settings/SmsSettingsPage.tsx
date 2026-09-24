@@ -13,6 +13,7 @@ import { repos } from '@/data'
 import { errorMessage } from '@/shared/lib/errors'
 import { fmtPhone } from '@/shared/lib/format'
 import { Badge, Button, Card, CardHeader, Field, Input, Page, PageHeader, Segmented, Skeleton, Textarea, toast } from '@/shared/ui'
+import { formKeyDown } from '@/features/patients/formKeys'
 
 const schema = z.object({
   provider: z.enum(['none', 'xabarchi']),
@@ -109,7 +110,7 @@ export default function SmsSettingsPage() {
 
       {!c ? <div className="space-y-4"><Skeleton className="h-64" /><Skeleton className="h-64" /></div> : (
         <div className="flex flex-col gap-5">
-          <form id="sms-form" onSubmit={submit}>
+          <form id="sms-form" onSubmit={submit} onKeyDown={formKeyDown}>
             <Card>
               <CardHeader className="max-xs:flex-col max-xs:items-start" title={t('admin.sms.providerTitle')} description={t('admin.sms.providerText')}
                 actions={<Badge tone={connected ? 'ok' : 'neutral'} dot>{connected ? t('admin.sms.connected') : t('admin.sms.notConnected')}</Badge>} />

@@ -2,7 +2,7 @@
  * Shared shell for the Staff (/app) and Admin (/admin) modules:
  * collapsible sidebar, top bar with branch switcher, notifications, user menu.
  */
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode, useCallback } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -15,13 +15,15 @@ import {
 import type { Permission } from '@/domain'
 import { repos } from '@/data'
 import { canSwitchBranch, useAuth, usePermissions } from '@/features/auth/store'
+import { useGlobalHotkeys } from '@/features/hotkeys/useGlobalHotkeys'
+import { HotkeysButton, HotkeysHelp } from '@/features/hotkeys/HotkeysHelp'
 import { preloadRouteChunks, warmWorkspaceData } from '@/features/session/warmup'
 import { routes } from '@/shared/config/routes'
 import { cn } from '@/shared/lib/cn'
 import { Avatar, Badge, LanguageSwitcher, Logo, BrandMark, Menu, ThemeToggle, IconButton, Tooltip } from '@/shared/ui'
 import { storage } from '@/shared/lib/storage'
 
-interface NavItem { to: string; label: string; icon: ReactNode; perm?: Permission | Permission[]; end?: boolean; badge?: number }
+interface NavItem { to: string; label: string; icon: ReactNode; perm?: Permission | Permission[]; end?: boolean; badge?: number; /** "G" + this letter jumps to the page */ key?: string }
 interface NavSection { title?: string; items: NavItem[] }
 
 export function AppShell({ module }: { module: 'staff' | 'admin' }) {
@@ -50,43 +52,48 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
   const sections: NavSection[] = useMemo(() => {
     if (module === 'admin') {
       return [
-        { items: [{ to: routes.admin.root, label: t('nav.dashboard'), icon: <LayoutDashboard />, end: true }] },
+        { items: [{ to: routes.admin.root, label: t('nav.dashboard'), icon: <LayoutDashboard />, end: true, key: 'd' }] },
         { title: t('nav.company'), items: [
-          { to: routes.admin.company, label: t('nav.company'), icon: <Building2 />, perm: 'admin.company.read' },
-          { to: routes.admin.branches, label: t('nav.branches'), icon: <GitBranch />, perm: 'admin.branch.write' },
-          { to: routes.admin.employees, label: t('nav.employees'), icon: <UserCog />, perm: 'admin.employee.read' },
-          { to: routes.admin.roles, label: t('nav.roles'), icon: <ShieldCheck />, perm: 'admin.role.write' },
+          { to: routes.admin.company, label: t('nav.company'), icon: <Building2 />, perm: 'admin.company.read', key: 'k' },
+          { to: routes.admin.branches, label: t('nav.branches'), icon: <GitBranch />, perm: 'admin.branch.write', key: 'f' },
+          { to: routes.admin.employees, label: t('nav.employees'), icon: <UserCog />, perm: 'admin.employee.read', key: 'x' },
+          { to: routes.admin.roles, label: t('nav.roles'), icon: <ShieldCheck />, perm: 'admin.role.write', key: 'r' },
         ] },
         { title: t('nav.catalog'), items: [
-          { to: routes.admin.catalog, label: t('nav.catalog'), icon: <FolderTree />, perm: 'admin.catalog.read' },
-          { to: routes.admin.schemas, label: t('nav.schemas'), icon: <ListChecks />, perm: 'admin.schema.write' },
-          { to: routes.admin.templates, label: t('nav.templates'), icon: <LayoutTemplate />, perm: 'admin.template.read' },
+          { to: routes.admin.catalog, label: t('nav.catalog'), icon: <FolderTree />, perm: 'admin.catalog.read', key: 'z' },
+          { to: routes.admin.schemas, label: t('nav.schemas'), icon: <ListChecks />, perm: 'admin.schema.write', key: 's' },
+          { to: routes.admin.templates, label: t('nav.templates'), icon: <LayoutTemplate />, perm: 'admin.template.read', key: 'a' },
         ] },
         { title: t('common.settings'), items: [
-          { to: routes.admin.sms, label: t('nav.smsSettings'), icon: <Send />, perm: 'admin.settings.write' },
-          ...(isSuperAdmin ? [{ to: routes.admin.platform, label: t('nav.platform'), icon: <Globe2 />, perm: 'platform.company.manage' as Permission }] : []),
+          { to: routes.admin.sms, label: t('nav.smsSettings'), icon: <Send />, perm: 'admin.settings.write', key: 'm' },
+          ...(isSuperAdmin ? [{ to: routes.admin.platform, label: t('nav.platform'), icon: <Globe2 />, perm: 'platform.company.manage' as Permission, key: 'p' }] : []),
         ] },
       ]
     }
     return [
-      { items: [{ to: routes.app.root, label: t('nav.dashboard'), icon: <LayoutDashboard />, end: true }] },
+      { items: [{ to: routes.app.root, label: t('nav.dashboard'), icon: <LayoutDashboard />, end: true, key: 'd' }] },
       { title: t('nav.reception'), items: [
-        { to: routes.app.reception, label: t('nav.reception'), icon: <ClipboardList />, perm: 'reception.order.create' },
-        { to: routes.app.patients, label: t('nav.patients'), icon: <Users />, perm: 'reception.patient.read' },
-        { to: routes.app.orders, label: t('nav.orders'), icon: <Receipt />, perm: ['reception.order.create', 'reports.operations.read'] },
+        { to: routes.app.reception, label: t('nav.reception'), icon: <ClipboardList />, perm: 'reception.order.create', key: 'q' },
+        { to: routes.app.patients, label: t('nav.patients'), icon: <Users />, perm: 'reception.patient.read', key: 'b' },
+        { to: routes.app.orders, label: t('nav.orders'), icon: <Receipt />, perm: ['reception.order.create', 'reports.operations.read'], key: 'c' },
       ] },
       { title: t('nav.lab'), items: [
-        { to: routes.app.lab, label: t('nav.lab'), icon: <FlaskConical />, perm: 'lab.worklist.read', badge: pending.data?.lab },
-        { to: routes.app.confirm, label: t('nav.confirm'), icon: <BadgeCheck />, perm: 'confirm.result.read', badge: pending.data?.confirm },
+        { to: routes.app.lab, label: t('nav.lab'), icon: <FlaskConical />, perm: 'lab.worklist.read', badge: pending.data?.lab, key: 'l' },
+        { to: routes.app.confirm, label: t('nav.confirm'), icon: <BadgeCheck />, perm: 'confirm.result.read', badge: pending.data?.confirm, key: 't' },
       ] },
       { items: [
-        { to: routes.app.reports, label: t('nav.reports'), icon: <BarChart3 />, perm: ['reports.finance.read', 'reports.operations.read'] },
-        { to: routes.app.messages, label: t('nav.messages'), icon: <MessageSquare />, perm: ['messaging.send', 'messaging.broadcast'], badge: pending.data?.sms },
+        { to: routes.app.reports, label: t('nav.reports'), icon: <BarChart3 />, perm: ['reports.finance.read', 'reports.operations.read'], key: 'h' },
+        { to: routes.app.messages, label: t('nav.messages'), icon: <MessageSquare />, perm: ['messaging.send', 'messaging.broadcast'], badge: pending.data?.sms, key: 'x' },
       ] },
     ]
   }, [module, t, isSuperAdmin, pending.data])
 
   const visible = sections.map((s) => ({ ...s, items: s.items.filter((i) => !i.perm || can(i.perm)) })).filter((s) => s.items.length)
+  // keyboard: "G" + letter jumps to a page the user may open; "?" opens the reference
+  const navHotkeys = useMemo(() => visible.flatMap((s) => s.items.filter((i) => i.key).map((i) => ({ key: i.key!, to: i.to, label: i.label }))), [visible])
+  const [help, setHelp] = useState(false)
+  const openHelp = useCallback(() => setHelp(true), [])
+  useGlobalHotkeys({ nav: navHotkeys, onHelp: openHelp })
   const canAdmin = can(['admin.company.read', 'admin.employee.read', 'admin.catalog.read', 'admin.template.read'])
 
   const sidebar = (
@@ -104,7 +111,7 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
             <ul className="space-y-0.5">
               {s.items.map((it) => (
                 <li key={it.to}>
-                  <NavLink to={it.to} end={it.end} className={({ isActive }) => cn('app-sidebar-link group relative flex h-10 items-center gap-3 rounded-[10px] px-3 text-[14px] font-medium transition-colors', collapsed && 'justify-center px-0', isActive ? 'bg-brand-soft text-brand-ink' : 'text-ink-2 hover:bg-surface-2 hover:text-ink')}>
+                  <NavLink to={it.to} end={it.end} title={it.key ? `${it.label} · G ${it.key.toUpperCase()}` : it.label} className={({ isActive }) => cn('app-sidebar-link group relative flex h-10 items-center gap-3 rounded-[10px] px-3 text-[14px] font-medium transition-colors', collapsed && 'justify-center px-0', isActive ? 'bg-brand-soft text-brand-ink' : 'text-ink-2 hover:bg-surface-2 hover:text-ink')}>
                     {({ isActive }) => (
                       <>
                         {isActive && <motion.span layoutId={`nav-${module}`} className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-brand" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
@@ -157,14 +164,15 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
       </AnimatePresence>
 
       <div className={cn('app-shell-content relative transition-[padding] duration-300 ease-[var(--ease-out)]', collapsed ? 'lg:pl-[72px]' : 'lg:pl-[248px]')}>
-        <TopBar onMenu={() => setMobileOpen(true)} module={module} />
+        <TopBar onMenu={() => setMobileOpen(true)} module={module} onHelp={openHelp} />
         <Outlet />
       </div>
-    </div>
+    <HotkeysHelp open={help} onClose={() => setHelp(false)} nav={navHotkeys} />
+      </div>
   )
 }
 
-function TopBar({ onMenu, module }: { onMenu: () => void; module: 'staff' | 'admin' }) {
+function TopBar({ onMenu, module, onHelp }: { onMenu: () => void; module: 'staff' | 'admin'; onHelp: () => void }) {
   const { t } = useTranslation()
   const nav = useNavigate()
   const { staff, branchId, setBranch, logoutStaff, homeCompanyId, setActiveCompany } = useAuth()
@@ -238,6 +246,7 @@ function TopBar({ onMenu, module }: { onMenu: () => void; module: 'staff' | 'adm
       <div className="flex-1 min-w-2" />
 
       <div className="flex shrink-0 items-center gap-0 xs:gap-1">
+        <HotkeysButton onClick={onHelp} />
         <LanguageSwitcher compact />
         <ThemeToggle />
         <Menu

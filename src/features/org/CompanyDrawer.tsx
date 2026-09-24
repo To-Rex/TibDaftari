@@ -9,6 +9,7 @@ import { LOCALES } from '@/shared/i18n'
 import { errorMessage } from '@/shared/lib/errors'
 import { Button, Drawer, Field, Input, Select, Switch, Textarea, toast } from '@/shared/ui'
 import { LocationFields } from './LocationFields'
+import { formKeyDown } from '@/features/patients/formKeys'
 import { useSaveCompany } from './queries'
 
 const schema = z.object({
@@ -57,7 +58,7 @@ export function CompanyDrawer({ open, onClose, company }: { open: boolean; onClo
   return (
     <Drawer open={open} onClose={onClose} title={company ? t('admin.platform.edit') : t('admin.platform.add')} width="max-w-lg"
       footer={<><Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button><Button form="company-drawer-form" type="submit" loading={save.isPending}>{t('common.save')}</Button></>}>
-      <form id="company-drawer-form" onSubmit={submit} className="flex flex-col gap-4">
+      <form id="company-drawer-form" onSubmit={submit} onKeyDown={formKeyDown} className="flex flex-col gap-4">
         <Field label={t('admin.company.name')} required error={errors.name && t('common.required')}>
           {(id) => <Input id={id} autoFocus {...register('name')} invalid={!!errors.name} />}
         </Field>

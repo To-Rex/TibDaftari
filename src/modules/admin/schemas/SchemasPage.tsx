@@ -56,7 +56,7 @@ export default function SchemasPage() {
   return (
     <Page>
       <PageHeader title={t('catalog.schemas.title')} description={t('catalog.schemas.subtitle')}
-        actions={canWrite && <Button leftIcon={<Plus className="size-4" />} onClick={createNew} loading={save.isPending}>{t('catalog.schemas.new')}</Button>} />
+        actions={canWrite && <Button data-hotkey="n" leftIcon={<Plus className="size-4" />} onClick={createNew} loading={save.isPending}>{t('catalog.schemas.new')}</Button>} />
       <Toolbar actions={<Segmented size="sm" className="max-w-full overflow-x-auto no-scrollbar" value={status} onChange={setStatus} items={(['all', 'draft', 'published', 'archived'] as const).map((s) => ({ value: s, label: `${s === 'all' ? t('common.all') : t(`common.${s}`)} · ${counts[s]}` }))} />}>
         <SearchInput value={search} onChange={setSearch} placeholder={t('catalog.schemas.searchPh')} className="w-full sm:w-72" />
       </Toolbar>

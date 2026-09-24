@@ -106,7 +106,7 @@ export default function TemplatesPage() {
             <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={(e) => void onImportFile(e.target.files?.[0])} />
             <Button variant="secondary" leftIcon={<Upload className="size-4" />} loading={importing} onClick={() => fileRef.current?.click()} title={t('catalog.templates.importHint')}>{t('catalog.templates.import')}</Button>
             {branchId && <Button variant="secondary" leftIcon={<ArrowDownToLine className="size-4" />} onClick={() => setFromBranch(true)} title={t('catalog.templates.fromBranchHint')}>{t('catalog.templates.fromBranch')}</Button>}
-            <Button leftIcon={<Plus className="size-4" />} onClick={() => setCreating(true)}>{t('catalog.templates.new')}</Button>
+            <Button data-hotkey="n" leftIcon={<Plus className="size-4" />} onClick={() => setCreating(true)}>{t('catalog.templates.new')}</Button>
           </>
         )} />
       <Toolbar actions={<Segmented size="sm" className="max-w-full overflow-x-auto no-scrollbar" value={status} onChange={setStatus} items={(['all', 'draft', 'active', 'archived'] as const).map((s) => ({ value: s, label: `${s === 'all' ? t('common.all') : t(`catalog.templates.status.${s}`)} · ${counts[s]}` }))} />}>

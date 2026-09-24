@@ -64,6 +64,7 @@ export interface SearchInputProps extends Omit<InputProps, 'onChange' | 'value'>
 export function SearchInput({ value, onChange, className, ...rest }: SearchInputProps) {
   return (
     <Input
+      data-search=""
       value={value}
       onChange={(e) => onChange(e.target.value)}
       leftIcon={<Search />}
