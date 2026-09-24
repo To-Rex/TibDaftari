@@ -34,6 +34,12 @@ const receptionUz = {
   title: 'Qabul',
   subtitle: 'Bemorni toping yoki ro‘yxatga oling va chek oching',
   shortcutHint: 'Qidiruvga o‘tish:',
+  shortcuts: {
+    title: 'Tezkor tugmalar', button: 'Tezkor tugmalar', groupPage: 'Qabul sahifasi', groupForm: 'Bemor formasi',
+    search: 'Qidiruvga o‘tish', pick: 'Ro‘yxatda yurish va bemorni ochish', newPatient: 'Yangi bemor', newOrder: 'Tanlangan bemorga yangi chek', help: 'Shu ro‘yxat',
+    next: 'Keyingi maydonga o‘tish; oxirgi maydonda — ro‘yxatga olish', nextShort: 'keyingi maydon', submit: 'Istalgan maydondan ro‘yxatga olish / saqlash', gender: 'Jinsi: Erkak / Ayol', close: 'Oynani yopish',
+    auto: 'Telefon (9 raqam), passport (AA 1234567) va JSHSHIR (14 raqam) to‘lganda kursor o‘zi keyingi maydonga o‘tadi',
+  },
   searchPh: 'Ism, telefon yoki passport…',
   searchHintTitle: 'Bemorni qidiring',
   searchHint: 'Kamida 2 ta belgi kiriting. ↑ ↓ bilan tanlang, Enter — ochish',
@@ -190,6 +196,12 @@ const dashboardRu = {
 }
 const receptionRu = {
   title: 'Приём', subtitle: 'Найдите или зарегистрируйте пациента и откройте чек', shortcutHint: 'К поиску:',
+  shortcuts: {
+    title: 'Горячие клавиши', button: 'Горячие клавиши', groupPage: 'Страница приёма', groupForm: 'Форма пациента',
+    search: 'Перейти к поиску', pick: 'Перемещение по списку и выбор пациента', newPatient: 'Новый пациент', newOrder: 'Новый чек для выбранного пациента', help: 'Этот список',
+    next: 'Следующее поле; на последнем поле — регистрация', nextShort: 'следующее поле', submit: 'Зарегистрировать / сохранить из любого поля', gender: 'Пол: мужской / женский', close: 'Закрыть окно',
+    auto: 'Телефон (9 цифр), паспорт (AA 1234567) и ПИНФЛ (14 цифр) заполнены — курсор сам переходит дальше',
+  },
   searchPh: 'Имя, телефон или паспорт…', searchHintTitle: 'Найдите пациента', searchHint: 'Введите минимум 2 символа. ↑ ↓ — выбор, Enter — открыть',
   noMatch: 'Пациент не найден', noMatchHint: 'Проверьте написание или добавьте нового пациента', newPatient: 'Новый пациент',
   lastVisit: 'Последний визит', ordersShort: 'чек.', itemsShort: 'услуг', pickPatientTitle: 'Пациент не выбран', pickPatientHint: 'Выберите пациента слева — здесь появятся его данные и чеки',
@@ -249,6 +261,12 @@ const dashboardEn = {
 }
 const receptionEn = {
   title: 'Reception', subtitle: 'Find or register a patient and open an order', shortcutHint: 'Jump to search:',
+  shortcuts: {
+    title: 'Keyboard shortcuts', button: 'Shortcuts', groupPage: 'Reception page', groupForm: 'Patient form',
+    search: 'Jump to search', pick: 'Move through the list and open a patient', newPatient: 'New patient', newOrder: 'New order for the selected patient', help: 'This list',
+    next: 'Next field; on the last field — register', nextShort: 'next field', submit: 'Register / save from any field', gender: 'Gender: male / female', close: 'Close the panel',
+    auto: 'Phone (9 digits), passport (AA 1234567) and PINFL (14 digits) move the cursor on by themselves once complete',
+  },
   searchPh: 'Name, phone or passport…', searchHintTitle: 'Search for a patient', searchHint: 'Type at least 2 characters. ↑ ↓ to select, Enter to open',
   noMatch: 'No patient found', noMatchHint: 'Check the spelling or add a new patient', newPatient: 'New patient',
   lastVisit: 'Last visit', ordersShort: 'orders', itemsShort: 'items', pickPatientTitle: 'No patient selected', pickPatientHint: 'Pick a patient on the left — their details and orders will appear here',

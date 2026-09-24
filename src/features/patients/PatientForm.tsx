@@ -16,6 +16,7 @@ import { Field, Input, Select, Textarea } from '@/shared/ui'
 import { cn } from '@/shared/lib/cn'
 import { formatLocalPhone, fromE164, localDigits, toE164 } from './phone'
 import { GenderPicker } from './GenderPicker'
+import { autoAdvance, formKeyDown } from './formKeys'
 import { useDistricts, useRegions } from './queries'
 
 const makeSchema = (t: (k: string) => string) =>
@@ -117,7 +118,7 @@ export function PatientForm({ formId, patient, onSubmit, onDraftChange }: Patien
   }, [phone, passportNumber, pinfl, onDraftChange])
 
   return (
-    <form id={formId} onSubmit={handleSubmit((v) => onSubmit(toInput(v)))} className="flex flex-col gap-7" autoComplete="off">
+    <form id={formId} onSubmit={handleSubmit((v) => onSubmit(toInput(v)))} onKeyDown={formKeyDown} className="flex flex-col gap-7" autoComplete="off">
       <Section title={t('staff.patients.form.secMain')}>
         <Field label={t('common.fullName')} required error={errors.fullName?.message}>
           {(id) => <Input id={id} {...register('fullName')} autoFocus placeholder={t('staff.patients.form.namePh')} className={big} leftIcon={<User />} invalid={!!errors.fullName} />}
@@ -128,7 +129,7 @@ export function PatientForm({ formId, patient, onSubmit, onDraftChange }: Patien
               <div className="flex items-stretch gap-2">
                 <span className="grid h-11 shrink-0 place-items-center rounded-[var(--radius-sm)] border border-line bg-surface-2 px-3 font-mono text-[14px] text-ink-2">+998</span>
                 <Controller name="phone" control={control} render={({ field }) => (
-                  <Input id={id} value={field.value} onChange={(e) => field.onChange(formatLocalPhone(e.target.value))} onBlur={field.onBlur} inputMode="numeric" placeholder="90 123 45 67" mono className={big} leftIcon={<Phone />} invalid={!!errors.phone} />
+                  <Input id={id} value={field.value} onChange={(e) => { const v = formatLocalPhone(e.target.value); field.onChange(v); if (localDigits(v).length === 9 && localDigits(field.value).length < 9) autoAdvance(e.target) }} onBlur={field.onBlur} inputMode="numeric" placeholder="90 123 45 67" mono className={big} leftIcon={<Phone />} invalid={!!errors.phone} />
                 )} />
               </div>
             )}
@@ -149,10 +150,10 @@ export function PatientForm({ formId, patient, onSubmit, onDraftChange }: Patien
       <Section title={t('staff.patients.form.secDocs')} hint={t('staff.patients.form.secDocsHint')}>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t('staff.patients.form.passport')} error={errors.passportNumber?.message}>
-            {(id) => <Input id={id} {...register('passportNumber')} placeholder="AA 1234567" mono className={cn(big, 'uppercase')} maxLength={12} />}
+            {(id) => <Input id={id} {...register('passportNumber', { onChange: (e) => { if (/^[A-Za-z]{2}\s?\d{7}$/.test(String(e.target.value).trim())) autoAdvance(e.target) } })} placeholder="AA 1234567" mono className={cn(big, 'uppercase')} maxLength={12} />}
           </Field>
           <Field label={t('staff.patients.form.pinfl')} error={errors.pinfl?.message}>
-            {(id) => <Input id={id} value={pinfl} onChange={(e) => setValue('pinfl', e.target.value.replace(/\D/g, '').slice(0, 14), { shouldValidate: true })} inputMode="numeric" placeholder="14 raqam" mono className={big} invalid={!!errors.pinfl} />}
+            {(id) => <Input id={id} value={pinfl} onChange={(e) => { const v = e.target.value.replace(/\D/g, '').slice(0, 14); setValue('pinfl', v, { shouldValidate: true }); if (v.length === 14 && pinfl.length < 14) autoAdvance(e.target) }} inputMode="numeric" placeholder="14 raqam" mono className={big} invalid={!!errors.pinfl} />}
           </Field>
         </div>
       </Section>

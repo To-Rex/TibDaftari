@@ -9,7 +9,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { AlertTriangle, ArrowRight } from 'lucide-react'
 import { repos } from '@/data'
 import type { Id, Patient, PatientUpsertInput } from '@/domain'
-import { Avatar, Button, Drawer, toast } from '@/shared/ui'
+import { Avatar, Button, Drawer, Kbd, toast } from '@/shared/ui'
 import { errorMessage } from '@/shared/lib/errors'
 import { fmtPhone } from '@/shared/lib/format'
 import { PatientForm } from './PatientForm'
@@ -82,6 +82,9 @@ export function PatientDrawer({ open, onClose, companyId, patient, onSaved, onPi
       description={editing ? patient?.fullName : t('staff.patients.form.subtitleNew')}
       footer={
         <>
+          <span className="mr-auto hidden items-center gap-1.5 whitespace-nowrap text-[12px] text-ink-3 lg:inline-flex" title={t('staff.reception.shortcuts.auto')}>
+            <Kbd>Enter</Kbd> {t('staff.reception.shortcuts.nextShort')} <span className="mx-1">·</span> <Kbd>Ctrl</Kbd>+<Kbd>Enter</Kbd> {editing ? t('common.save') : t('staff.patients.form.create')}
+          </span>
           <Button variant="ghost" onClick={onClose} className="max-sm:px-2">{t('common.cancel')}</Button>
           <Button type="submit" form={FORM_ID} loading={busy} size="lg" className="min-w-40 max-sm:min-w-0 max-sm:flex-1 max-sm:px-3">
             {editing ? t('common.save') : dupes.length ? t('staff.patients.form.createAnyway') : t('staff.patients.form.create')}
