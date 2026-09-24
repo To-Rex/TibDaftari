@@ -68,7 +68,7 @@ export default function LabPage() {
 
       <Toolbar
         className="md:flex-wrap"
-        actions={<DateRangeFilter value={range} onChange={setRange} size="sm" />}
+        actions={<DateRangeFilter value={range} onChange={setRange} size="sm" allowCustom />}
       >
         <SearchInput value={search} onChange={setSearch} placeholder={t('clinical.lab.searchPlaceholder')} className="h-9 w-full sm:w-72" />
         <div className="min-w-0 max-w-full overflow-x-auto no-scrollbar">
