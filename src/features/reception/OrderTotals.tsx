@@ -1,15 +1,15 @@
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
-import { Banknote, CreditCard, Landmark, ShieldCheck, Printer, Wallet, XCircle } from 'lucide-react'
+import { Banknote, ChevronDown, CreditCard, Landmark, ShieldCheck, Printer, Wallet, XCircle } from 'lucide-react'
 import type { Order, Payment, PaymentMethod } from '@/domain'
-import { Badge, Button, Card } from '@/shared/ui'
+import { Badge, Button, Card, Menu, type MenuItem } from '@/shared/ui'
 import { cn } from '@/shared/lib/cn'
 import { fmtDateTime, fmtMoney } from '@/shared/lib/format'
 import { paymentMethodLabel, paymentStatusMeta } from '@/features/orders/status'
 
 const METHOD_ICON: Record<PaymentMethod, typeof Banknote> = { cash: Banknote, card: CreditCard, transfer: Landmark, insurance: ShieldCheck }
 
-export function OrderTotals({ order, payments, onPay, onPrint, onCancel, canPay, canCancel }: { order: Order; payments: Payment[]; onPay: () => void; onPrint: () => void; onCancel: () => void; canPay: boolean; canCancel: boolean }) {
+export function OrderTotals({ order, payments, onPay, onPrint, printActions, onCancel, canPay, canCancel }: { order: Order; payments: Payment[]; onPay: () => void; onPrint: () => void; /** extra ways to print (print service / browser / settings) shown in a small menu next to the button */ printActions?: MenuItem[]; onCancel: () => void; canPay: boolean; canCancel: boolean }) {
   const { t } = useTranslation()
   const remaining = Math.max(0, order.total - order.paidAmount)
   const pay = paymentStatusMeta(order.payment)
@@ -39,7 +39,10 @@ export function OrderTotals({ order, payments, onPay, onPrint, onCancel, canPay,
         <div className="mt-5 flex flex-col gap-2">
           {payable && <Button size="lg" block leftIcon={<Wallet className="size-4" />} onClick={onPay}>{t('staff.reception.pay')}</Button>}
           <div className={cn('grid gap-2', cancellable && 'xs:grid-cols-2')}>
-            <Button variant="secondary" leftIcon={<Printer className="size-4" />} onClick={onPrint} disabled={order.itemCount === 0}>{t('common.print')}</Button>
+            <span className="inline-flex items-center gap-1">
+              <Button variant="secondary" leftIcon={<Printer className="size-4" />} onClick={onPrint} disabled={order.itemCount === 0}>{t('common.print')}</Button>
+              {printActions?.length ? <Menu align="start" trigger={() => <Button variant="secondary" className="px-2" aria-label={t('common.print')}><ChevronDown className="size-4" /></Button>} items={printActions} /> : null}
+            </span>
             {cancellable && <Button variant="ghost" className="text-danger hover:bg-danger-soft hover:text-danger" leftIcon={<XCircle className="size-4" />} onClick={onCancel}>{t('staff.reception.cancelOrder')}</Button>}
           </div>
         </div>

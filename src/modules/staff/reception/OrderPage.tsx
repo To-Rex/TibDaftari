@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
-import { ArrowUpRight, GitBranch, Plus, User, Wallet } from 'lucide-react'
+import { ArrowUpRight, GitBranch, Globe, Plus, Printer, Settings2, User, Wallet } from 'lucide-react'
 import { repos } from '@/data'
 import { Badge, Button, Card, EmptyState, Page, PageHeader, Skeleton, toast } from '@/shared/ui'
 import { errorMessage } from '@/shared/lib/errors'
@@ -19,7 +19,9 @@ import { OrderTotals } from '@/features/reception/OrderTotals'
 import { ServicePicker } from '@/features/reception/ServicePicker'
 import { PayModal } from '@/features/reception/PayModal'
 import { CancelOrderModal } from '@/features/reception/CancelOrderModal'
-import { Receipt } from '@/features/reception/Receipt'
+import { Receipt, type ReceiptProps } from '@/features/reception/Receipt'
+import { printReceipt } from '@/features/printing/printReceipt'
+import { PrintSettingsModal } from '@/features/printing/PrintSettingsModal'
 
 export default function OrderPage() {
   const { t } = useTranslation()
@@ -31,6 +33,7 @@ export default function OrderPage() {
   const removeItem = useRemoveItem(orderId)
   const [payOpen, setPayOpen] = useState(false)
   const [cancelOpen, setCancelOpen] = useState(false)
+  const [printSettingsOpen, setPrintSettingsOpen] = useState(false)
   const [adding, setAdding] = useState<string | null>(null)
   const [removing, setRemoving] = useState<string | null>(null)
 
@@ -42,6 +45,8 @@ export default function OrderPage() {
   const branches = useQuery({ queryKey: ['branches', companyId], queryFn: () => repos.tenant.listBranches(companyId), staleTime: 300_000 })
   const creator = useQuery({ queryKey: ['employee', order?.createdByEmployeeId], queryFn: () => repos.staff.getEmployee(order!.createdByEmployeeId), enabled: !!order, staleTime: 300_000 })
   const branch = branches.data?.find((b) => b.id === order?.branchId)
+  // one receipt object feeds both the hidden print sheet and the TPrints job
+  const receipt: ReceiptProps = { order: order!, items, payments, company: company.data, branch, cashier: creator.data?.fullName ?? staff.fullName }
   const inOrder = useMemo(() => new Set(items.filter((i) => i.status !== 'cancelled').map((i) => i.serviceTypeId)), [items])
 
   const onAdd = async (stId: string) => {
@@ -114,7 +119,13 @@ export default function OrderPage() {
 
         <div className="xl:sticky xl:top-20 xl:self-start">
           {order ? (
-            <OrderTotals order={order} payments={payments} onPay={() => setPayOpen(true)} onPrint={() => window.print()} onCancel={() => setCancelOpen(true)} canPay={can('reception.payment.create')} canCancel={can('reception.order.cancel')} />
+            <OrderTotals order={order} payments={payments} onPay={() => setPayOpen(true)} onPrint={() => void printReceipt(receipt, t).catch(() => undefined)}
+              printActions={[
+                { key: 'service', label: t('staff.reception.printing.viaService'), icon: <Printer />, onSelect: () => void printReceipt(receipt, t, 'service').catch(() => undefined) },
+                { key: 'browser', label: t('staff.reception.printing.viaBrowser'), icon: <Globe />, onSelect: () => void printReceipt(receipt, t, 'browser') },
+                { key: 'settings', label: t('staff.reception.printing.settings'), icon: <Settings2 />, onSelect: () => setPrintSettingsOpen(true), separatorBefore: true },
+              ]}
+              onCancel={() => setCancelOpen(true)} canPay={can('reception.payment.create')} canCancel={can('reception.order.cancel')} />
           ) : (
             <Card><Skeleton className="h-5 w-24" /><div className="mt-4 space-y-2">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-4" />)}</div></Card>
           )}
@@ -123,7 +134,8 @@ export default function OrderPage() {
 
       {order && <PayModal open={payOpen} onClose={() => setPayOpen(false)} order={order} employeeId={employeeId} onPaid={() => toast.success(t('staff.reception.paidOk'), order.number)} />}
       {order && <CancelOrderModal open={cancelOpen} onClose={() => setCancelOpen(false)} orderId={order.id} orderNumber={order.number} />}
-      {order && <Receipt order={order} items={items} payments={payments} company={company.data} branch={branch} cashier={creator.data?.fullName ?? staff.fullName} />}
+      {order && <Receipt {...receipt} />}
+      <PrintSettingsModal open={printSettingsOpen} onClose={() => setPrintSettingsOpen(false)} />
     </Page>
   )
 }

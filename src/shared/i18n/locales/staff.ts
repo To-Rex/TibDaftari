@@ -95,6 +95,16 @@ const receptionUz = {
     cashier: 'Kassir',
     footer: 'Murojaatingiz uchun rahmat!',
   },
+  printing: {
+    viaService: 'Chek printerida chop etish (TPrints)', viaBrowser: 'Brauzer orqali chop etish', settings: 'Printer sozlamalari',
+    title: 'Printer sozlamalari', hint: 'Bu kompyuter uchun: cheklar shu kompyuterdagi TPrints xizmati orqali chek printeriga yuboriladi.',
+    mode: 'Chop etish usuli', modeAuto: 'Avtomatik', modeService: 'Faqat TPrints', modeBrowser: 'Faqat brauzer',
+    url: 'TPrints manzili', urlHint: 'Odatda http://127.0.0.1:9100 — TPrints shu kompyuterda ishlayotgan bo‘lishi kerak', apiKey: 'API kalit',
+    check: 'Ulanishni tekshirish', connected: 'Ulandi · {{n}} ta printer', notConnected: 'TPrints topilmadi — dastur ishga tushganini va portni tekshiring',
+    printer: 'Printer', defaultPrinter: 'Standart printer', copies: 'Nusxalar', paper: 'Qog‘oz kengligi', paperAuto: 'Profil bo‘yicha',
+    testPrint: 'Sinov cheki', testSent: 'Sinov cheki yuborildi', saved: 'Printer sozlamalari saqlandi',
+    sent: 'Chek printerga yuborildi', fallback: 'TPrints topilmadi — chek brauzer orqali chop etilmoqda', failed: 'Chek chop etilmadi',
+  },
 }
 const patientsUz = {
   title: 'Bemorlar',
@@ -192,6 +202,16 @@ const receptionRu = {
   sendSms: 'Отправить SMS', sendSmsHint: 'Пациент получит SMS о чеке', paidOk: 'Оплата принята', payments: 'История оплат', noPayments: 'Оплат пока нет',
   cancelOrder: 'Отменить чек', cancelHint: 'Чек {{number}} будет отменён. Это действие необратимо.', cancelReason: 'Причина', cancelReasonPh: 'Например: пациент передумал', cancelDefaultReason: 'Отменён', cancelConfirm: 'Отменить', cancelled: 'Чек отменён',
   receipt: { number: 'Чек', patient: 'Пациент', cashier: 'Кассир', footer: 'Спасибо за обращение!' },
+  printing: {
+    viaService: 'Печать на чековом принтере (TPrints)', viaBrowser: 'Печать через браузер', settings: 'Настройки принтера',
+    title: 'Настройки принтера', hint: 'Для этого компьютера: чеки отправляются на чековый принтер через службу TPrints на этом компьютере.',
+    mode: 'Способ печати', modeAuto: 'Автоматически', modeService: 'Только TPrints', modeBrowser: 'Только браузер',
+    url: 'Адрес TPrints', urlHint: 'Обычно http://127.0.0.1:9100 — TPrints должен работать на этом компьютере', apiKey: 'API-ключ',
+    check: 'Проверить подключение', connected: 'Подключено · принтеров: {{n}}', notConnected: 'TPrints не найден — проверьте, что программа запущена, и порт',
+    printer: 'Принтер', defaultPrinter: 'Принтер по умолчанию', copies: 'Копий', paper: 'Ширина бумаги', paperAuto: 'По профилю',
+    testPrint: 'Тестовый чек', testSent: 'Тестовый чек отправлен', saved: 'Настройки принтера сохранены',
+    sent: 'Чек отправлен на принтер', fallback: 'TPrints не найден — чек печатается через браузер', failed: 'Чек не напечатан',
+  },
 }
 const patientsRu = {
   title: 'Пациенты', subtitle: 'Все пациенты клиники', count: '{{n}} пациентов', new: 'Новый пациент', searchPh: 'Имя, телефон или паспорт…',
@@ -241,6 +261,16 @@ const receptionEn = {
   sendSms: 'Send SMS', sendSmsHint: 'The patient receives an SMS about the order', paidOk: 'Payment received', payments: 'Payment history', noPayments: 'No payments yet',
   cancelOrder: 'Cancel order', cancelHint: 'Order {{number}} will be cancelled. This cannot be undone.', cancelReason: 'Reason', cancelReasonPh: 'e.g. patient changed their mind', cancelDefaultReason: 'Cancelled', cancelConfirm: 'Cancel order', cancelled: 'Order cancelled',
   receipt: { number: 'Order', patient: 'Patient', cashier: 'Cashier', footer: 'Thank you for visiting!' },
+  printing: {
+    viaService: 'Print on the receipt printer (TPrints)', viaBrowser: 'Print via the browser', settings: 'Printer settings',
+    title: 'Printer settings', hint: 'For this computer: receipts go to the receipt printer through the TPrints service running here.',
+    mode: 'Print method', modeAuto: 'Automatic', modeService: 'TPrints only', modeBrowser: 'Browser only',
+    url: 'TPrints address', urlHint: 'Usually http://127.0.0.1:9100 — TPrints must be running on this computer', apiKey: 'API key',
+    check: 'Check connection', connected: 'Connected · {{n}} printers', notConnected: 'TPrints not found — make sure the app is running and check the port',
+    printer: 'Printer', defaultPrinter: 'Default printer', copies: 'Copies', paper: 'Paper width', paperAuto: 'Per profile',
+    testPrint: 'Test receipt', testSent: 'Test receipt sent', saved: 'Printer settings saved',
+    sent: 'Receipt sent to the printer', fallback: 'TPrints not found — printing the receipt via the browser', failed: 'Receipt was not printed',
+  },
 }
 const patientsEn = {
   title: 'Patients', subtitle: 'All patients of the clinic', count: '{{n}} patients', new: 'New patient', searchPh: 'Name, phone or passport…',
