@@ -7,11 +7,18 @@ import { Avatar, Badge, Button, Card, EmptyState, IconButton, Skeleton, fadeUp, 
 import { ageFrom, fmtDate, fmtDateTime, fmtMoney, fmtPhone } from '@/shared/lib/format'
 import { routes } from '@/shared/config/routes'
 import { useOrdersList } from '@/features/orders/queries'
+import { useBranches } from '@/features/org/queries'
+import { useStaffSession } from '@/features/session/useSession'
 import { orderStatusMeta, paymentStatusMeta } from '@/features/orders/status'
 
 export function PatientSummary({ companyId, patient, onNewOrder, creating, canCreate, canEdit, onEdit }: { companyId: Id; patient: Patient; onNewOrder: () => void; creating: boolean; canCreate: boolean; canEdit: boolean; onEdit: () => void }) {
   const { t } = useTranslation()
-  const orders = useOrdersList(companyId, { patientId: patient.id, pageSize: 6, sortBy: 'createdAt', sortDir: 'desc' })
+  // the front desk works one branch at a time: recent cheques follow the branch chosen in the top bar
+  // (admins viewing "all branches" still see every branch); the patient page keeps the full history
+  const { branchId } = useStaffSession()
+  const branches = useBranches(companyId)
+  const branch = branchId ? branches.data?.find((b) => b.id === branchId) : undefined
+  const orders = useOrdersList(companyId, { patientId: patient.id, branchId: branchId ?? undefined, pageSize: 6, sortBy: 'createdAt', sortDir: 'desc' })
   const age = ageFrom(patient.birthDate)
 
   return (
@@ -55,7 +62,7 @@ export function PatientSummary({ companyId, patient, onNewOrder, creating, canCr
 
       <Card padded={false} className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3.5 sm:px-5">
-          <h3 className="text-[14px] font-semibold">{t('staff.reception.recentOrders')}</h3>
+          <h3 className="min-w-0 truncate text-[14px] font-semibold">{t('staff.reception.recentOrders')}{branch && <span className="font-normal text-ink-3"> · {branch.name}</span>}</h3>
           <Link to={routes.app.patient(patient.id)} className="text-[12.5px] font-medium text-brand-ink hover:underline">{t('common.seeAll')}</Link>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto border-t border-line">
