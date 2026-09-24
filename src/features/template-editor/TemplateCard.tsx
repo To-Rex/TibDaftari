@@ -49,7 +49,8 @@ export const TemplateCard = memo(function TemplateCard({ tpl, companyId, service
             <Badge size="sm">v{tpl.version}</Badge>
             <Badge size="sm">{tpl.language.toUpperCase()}</Badge>
             <Badge size="sm">{tpl.scope === 'item' ? t('catalog.services.scopeItem') : t('catalog.services.scopeOrder')}</Badge>
-            {branchNames.length > 0 ? <Badge size="sm" tone="brand">{branchNames.join(' · ')}</Badge> : <Badge size="sm">{t('catalog.templates.allBranches')}</Badge>}
+            {branchNames.length > 2 ? <span title={branchNames.join(' · ')}><Badge size="sm" tone="brand">{t('catalog.templates.nBranches', { n: branchNames.length })}</Badge></span>
+              : branchNames.length > 0 ? <Badge size="sm" tone="brand">{branchNames.join(' · ')}</Badge> : <Badge size="sm">{t('catalog.templates.allBranches')}</Badge>}
           </div>
           <div className="mt-auto flex items-center gap-1 flex-wrap">
             {chips.length === 0 ? <span className="text-[12px] text-ink-3">{t('catalog.services.generic')}</span> : chips.slice(0, 3).map((c) => <span key={c} className="h-6 rounded-full bg-surface-2 px-2 text-[11.5px] text-ink-2 truncate max-w-full sm:max-w-[140px] leading-6">{c}</span>)}

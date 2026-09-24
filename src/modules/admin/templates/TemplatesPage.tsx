@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { LayoutTemplate, Plus } from 'lucide-react'
+import { ArrowDownToLine, LayoutTemplate, Plus } from 'lucide-react'
 import type { ResultTemplate } from '@/domain'
 import { usePermissions } from '@/features/auth/store'
 import { useBranches } from '@/features/org/queries'
 import { useStaffSession } from '@/features/session/useSession'
 import { useCategories, useDeleteTemplate, useDuplicateTemplate, useSaveTemplate, useServiceTypes, useTemplateStatus, useTemplates } from '@/features/catalog/queries'
 import { NewTemplateModal, type NewTemplateInput } from '@/features/template-editor/NewTemplateModal'
+import { ImportFromBranchModal } from '@/features/template-editor/ImportFromBranchModal'
 import { buildTemplateFile, downloadTemplateFile, importTemplateFile, parseTemplateFile, TemplateFileError } from '@/features/template-editor/transfer'
 import { useRef } from 'react'
 import { Upload } from 'lucide-react'
@@ -33,7 +34,7 @@ export default function TemplatesPage() {
   const [search, setSearch] = useState('')
   const dSearch = useDebounce(search)
   const [status, setStatus] = useState<StatusFilter>('all')
-  // the top-bar branch switcher scopes the gallery: a branch sees its own templates + company-wide ones
+  // the top-bar branch switcher scopes the gallery: a branch sees the templates bound to it (see `inScope`)
   const q = useMemo(() => ({ status: status === 'all' ? undefined : status, search: dSearch || undefined, branchId: branchId ?? undefined }), [status, dSearch, branchId])
 
   const templates = useTemplates(companyId, q)
@@ -47,6 +48,7 @@ export default function TemplatesPage() {
   const del = useDeleteTemplate()
 
   const [creating, setCreating] = useState(false)
+  const [fromBranch, setFromBranch] = useState(false)
   const assets = useTemplateAssets(companyId)
   const qc = useQueryClient()
   const fileRef = useRef<HTMLInputElement>(null)
@@ -77,9 +79,9 @@ export default function TemplatesPage() {
   const [toDelete, setToDelete] = useState<ResultTemplate | null>(null)
   const [toActivate, setToActivate] = useState<ResultTemplate | null>(null)
 
-  // branch selected in the top bar: 'mixed' = this branch's templates + company-wide ones, 'branch' = only this branch's
-  const [branchMode, setBranchMode] = useState<'mixed' | 'branch'>('mixed')
-  const inScope = useMemo(() => (x: ResultTemplate) => !branchId || branchMode === 'mixed' ? (!branchId || x.branchIds.length === 0 || x.branchIds.includes(branchId)) : x.branchIds.includes(branchId), [branchId, branchMode])
+  // templates belong to branches: with a branch selected in the top bar only its own templates are listed
+  // (others are brought in with "from another branch"); "all branches" (admins) lists everything
+  const inScope = useMemo(() => (x: ResultTemplate) => !branchId || x.branchIds.includes(branchId), [branchId])
   const counts = useMemo(() => { const c = { all: 0, draft: 0, active: 0, archived: 0 }; for (const x of (all.data ?? []).filter(inScope)) { c.all++; c[x.status]++ } return c }, [all.data, inScope])
 
   const create = async (input: NewTemplateInput) => {
@@ -89,7 +91,8 @@ export default function TemplatesPage() {
       nav(routes.admin.template(tpl.id))
     } catch (e) { toast.error(errorMessage(e)) }
   }
-  const duplicate = async (tpl: ResultTemplate) => { try { await dup.mutateAsync(tpl.id); toast.success(t('catalog.templates.duplicated')) } catch (e) { toast.error(errorMessage(e)) } }
+  // a copy made inside a branch belongs to that branch only — the way to get a branch-specific variant of a shared template
+  const duplicate = async (tpl: ResultTemplate) => { try { await dup.mutateAsync({ id: tpl.id, branchIds: branchId ? [branchId] : undefined }); toast.success(t('catalog.templates.duplicated')) } catch (e) { toast.error(errorMessage(e)) } }
   const setSt = async (tpl: ResultTemplate, s: ResultTemplate['status']) => {
     try { await setStatusM.mutateAsync({ id: tpl.id, status: s }); toast.success(s === 'active' ? t('catalog.templates.activated') : t('catalog.templates.archived')); setToActivate(null) } catch (e) { toast.error(errorMessage(e)) }
   }
@@ -102,14 +105,12 @@ export default function TemplatesPage() {
           <>
             <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={(e) => void onImportFile(e.target.files?.[0])} />
             <Button variant="secondary" leftIcon={<Upload className="size-4" />} loading={importing} onClick={() => fileRef.current?.click()} title={t('catalog.templates.importHint')}>{t('catalog.templates.import')}</Button>
+            {branchId && <Button variant="secondary" leftIcon={<ArrowDownToLine className="size-4" />} onClick={() => setFromBranch(true)} title={t('catalog.templates.fromBranchHint')}>{t('catalog.templates.fromBranch')}</Button>}
             <Button leftIcon={<Plus className="size-4" />} onClick={() => setCreating(true)}>{t('catalog.templates.new')}</Button>
           </>
         )} />
       <Toolbar actions={<Segmented size="sm" className="max-w-full overflow-x-auto no-scrollbar" value={status} onChange={setStatus} items={(['all', 'draft', 'active', 'archived'] as const).map((s) => ({ value: s, label: `${s === 'all' ? t('common.all') : t(`catalog.templates.status.${s}`)} · ${counts[s]}` }))} />}>
         <SearchInput value={search} onChange={setSearch} placeholder={t('catalog.templates.searchPh')} className="w-full sm:w-72" />
-        {branchId && (
-          <Segmented size="sm" value={branchMode} onChange={setBranchMode} items={[{ value: 'mixed', label: t('catalog.templates.branchMixed') }, { value: 'branch', label: t('catalog.templates.branchOnly') }]} />
-        )}
       </Toolbar>
 
       {templates.isLoading ? (
@@ -127,6 +128,7 @@ export default function TemplatesPage() {
         </MotionList>
       )}
 
+      {branchId && <ImportFromBranchModal open={fromBranch} onClose={() => setFromBranch(false)} branchId={branchId} branches={branches.data ?? []} templates={all.data ?? []} />}
       <NewTemplateModal open={creating} onClose={() => setCreating(false)} serviceTypes={serviceTypes.data ?? []} categories={categories.data ?? []} branches={branches.data ?? []} templates={all.data ?? []} onSubmit={create} saving={save.isPending} initial={branchId ? { branchIds: [branchId] } : undefined} />
       <ConfirmDialog open={!!toDelete} onClose={() => setToDelete(null)} danger loading={del.isPending} title={t('catalog.templates.deleteTitle', { name: toDelete?.name ?? '' })} description={t('catalog.templates.deleteHint')} confirmText={t('common.delete')} cancelText={t('common.cancel')}
         onConfirm={async () => { try { await del.mutateAsync(toDelete!.id); setToDelete(null); toast.success(t('catalog.templates.deleted')) } catch (e) { toast.error(errorMessage(e)) } }} />

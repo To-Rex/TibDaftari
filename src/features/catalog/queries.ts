@@ -99,7 +99,7 @@ export function useTemplateStatus() {
 }
 export function useDuplicateTemplate() {
   const inv = useInvalidate()
-  return useMutation({ mutationFn: (id: Id) => repos.templates.duplicate(id), onSuccess: () => inv([['templates']]) })
+  return useMutation({ mutationFn: ({ id, name, branchIds }: { id: Id; name?: string; branchIds?: Id[] }) => repos.templates.duplicate(id, { name, branchIds }), onSuccess: () => inv([['templates']]) })
 }
 export function useDeleteTemplate() {
   const inv = useInvalidate()

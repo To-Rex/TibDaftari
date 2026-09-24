@@ -133,7 +133,8 @@ export interface TemplateRepository {
   get(id: Id): Promise<ResultTemplate>
   save(input: Partial<ResultTemplate> & { companyId: Id; id?: Id }): Promise<ResultTemplate>
   setStatus(id: Id, status: ResultTemplate['status']): Promise<ResultTemplate>
-  duplicate(id: Id): Promise<ResultTemplate>
+  /** Draft copy; `name` / `branchIds` override the source (a branch importing another branch's template). */
+  duplicate(id: Id, opts?: { name?: string; branchIds?: Id[] }): Promise<ResultTemplate>
   delete(id: Id): Promise<void>
   listAssets(companyId: Id): Promise<TemplateAsset[]>
   uploadAsset(companyId: Id, asset: Omit<TemplateAsset, 'id' | 'companyId'>): Promise<TemplateAsset>

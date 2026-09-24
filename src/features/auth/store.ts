@@ -73,7 +73,8 @@ export const useAuth = create<AuthState>((set, get) => ({
     if ((cachedStaff && cachedStaff.accessToken === st) || (cachedPatient && cachedPatient.accessToken === pt)) {
       const home = cachedStaff && cachedStaff.accessToken === st ? cachedStaff : null
       const staff = withActiveCompany(home)
-      const branchId = staff ? resolveBranch(staff, get().branchId) : null
+      // read the stored choice afresh — the store may have initialised before the session/branch were written
+      const branchId = staff ? resolveBranch(staff, storage.get<string | null>(BRANCH_KEY, get().branchId)) : null
       if (staff) storage.set(BRANCH_KEY, branchId) // a pinned employee's stale choice is corrected on disk too
       set({ staff, patient: cachedPatient && cachedPatient.accessToken === pt ? cachedPatient : null, branchId, homeCompanyId: home?.companyId ?? null, hydrated: true })
     }

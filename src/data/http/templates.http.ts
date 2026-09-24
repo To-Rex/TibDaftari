@@ -39,7 +39,7 @@ export const templatesHttp: TemplateRepository = {
 
   setStatus: (id, status) => api.post<ResultTemplate>(`/templates/${id}/status`, { status }),
 
-  duplicate: (id) => api.post<ResultTemplate>(`/templates/${id}/duplicate`),
+  duplicate: (id, opts) => api.post<ResultTemplate>(`/templates/${id}/duplicate`, compact({ name: opts?.name, branchIds: opts?.branchIds })),
 
   delete: (id) => api.delete<void>(`/templates/${id}`),
 
