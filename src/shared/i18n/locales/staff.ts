@@ -110,6 +110,7 @@ const receptionUz = {
     printer: 'Printer', defaultPrinter: 'Standart printer', copies: 'Nusxalar', paper: 'Qog‘oz kengligi', paperAuto: 'Profil bo‘yicha',
     testPrint: 'Sinov cheki', testSent: 'Sinov cheki yuborildi', saved: 'Printer sozlamalari saqlandi',
     sent: 'Chek printerga yuborildi', fallback: 'TPrints topilmadi — chek brauzer orqali chop etilmoqda', failed: 'Chek chop etilmadi',
+    documentPrinter: 'Natijalar (A4) printeri', documentPrinterHint: 'Tasdiqlangan natija PDF‘lari shu printerga chiqadi — oddiy/lazer printer (TPrints profili: windows)', printResult: 'Natijani chop etish', viaServiceA4: 'A4 printerda chop etish (TPrints)', viaBrowserPdf: 'Brauzer orqali chop etish (PDF)', resultSent: 'Natija printerga yuborildi', fallbackPdf: 'TPrints topilmadi — natija brauzer orqali chop etilmoqda',
   },
 }
 const patientsUz = {
@@ -223,6 +224,7 @@ const receptionRu = {
     printer: 'Принтер', defaultPrinter: 'Принтер по умолчанию', copies: 'Копий', paper: 'Ширина бумаги', paperAuto: 'По профилю',
     testPrint: 'Тестовый чек', testSent: 'Тестовый чек отправлен', saved: 'Настройки принтера сохранены',
     sent: 'Чек отправлен на принтер', fallback: 'TPrints не найден — чек печатается через браузер', failed: 'Чек не напечатан',
+    documentPrinter: 'Принтер результатов (A4)', documentPrinterHint: 'PDF подтверждённых результатов печатаются на этом принтере — обычный/лазерный (профиль TPrints: windows)', printResult: 'Печать результата', viaServiceA4: 'Печать на A4-принтере (TPrints)', viaBrowserPdf: 'Печать через браузер (PDF)', resultSent: 'Результат отправлен на принтер', fallbackPdf: 'TPrints не найден — результат печатается через браузер',
   },
 }
 const patientsRu = {
@@ -288,6 +290,7 @@ const receptionEn = {
     printer: 'Printer', defaultPrinter: 'Default printer', copies: 'Copies', paper: 'Paper width', paperAuto: 'Per profile',
     testPrint: 'Test receipt', testSent: 'Test receipt sent', saved: 'Printer settings saved',
     sent: 'Receipt sent to the printer', fallback: 'TPrints not found — printing the receipt via the browser', failed: 'Receipt was not printed',
+    documentPrinter: 'Results (A4) printer', documentPrinterHint: 'Approved result PDFs go to this printer — a regular/laser printer (TPrints profile: windows)', printResult: 'Print result', viaServiceA4: 'Print on the A4 printer (TPrints)', viaBrowserPdf: 'Print via the browser (PDF)', resultSent: 'Result sent to the printer', fallbackPdf: 'TPrints not found — printing the result via the browser',
   },
 }
 const patientsEn = {

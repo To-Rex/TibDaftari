@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { PrintDocumentButton } from '@/features/printing/PrintDocumentButton'
 import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { FileText, ExternalLink } from 'lucide-react'
@@ -65,6 +66,7 @@ export function PatientDocuments({ docs, loading }: { docs?: ResultDocument[]; l
                 </span>
               </span>
               <Badge tone={d.status === 'final' ? 'ok' : 'neutral'} size="sm" className="shrink-0">{d.status === 'final' ? t('staff.patients.docFinal') : t('common.draft')}</Badge>
+              <span className="shrink-0" onClick={(e) => { e.preventDefault(); e.stopPropagation() }}><PrintDocumentButton variant="icon" size="sm" doc={{ id: d.id, title: d.title }} /></span>
               <ExternalLink className="size-4 shrink-0 text-ink-3 opacity-0 transition-opacity group-hover:opacity-100 max-sm:hidden" />
             </Link>
           </motion.li>

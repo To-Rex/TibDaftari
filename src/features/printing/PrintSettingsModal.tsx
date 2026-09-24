@@ -32,6 +32,7 @@ export function PrintSettingsModal({ open, onClose }: { open: boolean; onClose: 
   }
   const save = () => { savePrintSettings({ ...s, url: s.url.trim().replace(/\/+$/, '') || 'http://127.0.0.1:9100', copies: Math.min(20, Math.max(1, s.copies || 1)) }); toast.success(t('staff.reception.printing.saved')); onClose() }
   const printerKnown = !s.printer || check.printers.includes(s.printer)
+  const docPrinterKnown = !s.documentPrinter || check.printers.includes(s.documentPrinter)
   const P = 'staff.reception.printing'
 
   return (
@@ -72,6 +73,15 @@ export function PrintSettingsModal({ open, onClose }: { open: boolean; onClose: 
               {(id) => <Input id={id} type="number" min={1} max={20} value={s.copies} onChange={(e) => patch({ copies: Number(e.target.value) || 1 })} />}
             </Field>
           </div>
+          <Field label={t(`${P}.documentPrinter`)} hint={t(`${P}.documentPrinterHint`)}>
+            {(id) => (
+              <Select id={id} value={s.documentPrinter} onChange={(e) => patch({ documentPrinter: e.target.value })}>
+                <option value="">{t(`${P}.defaultPrinter`)}{check.defaultPrinter ? ` — ${check.defaultPrinter}` : ''}</option>
+                {!docPrinterKnown && <option value={s.documentPrinter}>{s.documentPrinter}</option>}
+                {check.printers.map((p) => <option key={p} value={p}>{p}</option>)}
+              </Select>
+            )}
+          </Field>
           <Field label={t(`${P}.paper`)}>
             {() => (
               <Segmented<'0' | '58' | '80'> value={String(s.paper) as '0' | '58' | '80'} onChange={(v) => patch({ paper: Number(v) as 0 | 58 | 80 })}

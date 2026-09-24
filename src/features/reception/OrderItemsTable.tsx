@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { FlaskConical, Trash2 } from 'lucide-react'
 import type { Order, OrderItem } from '@/domain'
 import { Badge, EmptyState, IconButton, Skeleton } from '@/shared/ui'
+import { PrintDocumentButton } from '@/features/printing/PrintDocumentButton'
 import { cn } from '@/shared/lib/cn'
 import { fmtMoney } from '@/shared/lib/format'
 import { itemStatusMeta } from '@/features/orders/status'
@@ -51,7 +52,7 @@ export function OrderItemsTable({ order, items, loading, onRemove, removing, can
                     <td className="px-4 py-3 text-ink-3 max-lg:hidden">{it.categoryName}</td>
                     <td className="px-4 py-3 text-right text-ink-3 tabular whitespace-nowrap">{fmtMoney(it.price, false)}</td>
                     <td className="px-4 py-3 text-right font-semibold tabular whitespace-nowrap">{fmtMoney(it.finalPrice, false)}</td>
-                    <td className="px-4 py-3"><Badge tone={st.tone} size="sm" dot>{st.label}</Badge></td>
+                    <td className="px-4 py-3"><span className="inline-flex items-center gap-1.5"><Badge tone={st.tone} size="sm" dot>{st.label}</Badge>{it.documentId && <PrintDocumentButton variant="icon" size="sm" doc={{ id: it.documentId, title: it.serviceName }} />}</span></td>
                     {removable && (
                       <td className="px-2 py-2 text-right">
                         {canDel && <IconButton label={t('common.delete')} size="sm" onClick={() => onRemove(it.id)} disabled={removing === it.id} className="text-ink-3 hover:text-danger hover:bg-danger-soft"><Trash2 /></IconButton>}
@@ -82,7 +83,7 @@ export function OrderItemsTable({ order, items, loading, onRemove, removing, can
                     <span className="text-ink-3">{t('common.price')}: <span className="text-ink-2">{fmtMoney(it.price, false)}</span></span>
                     <span className="text-ink-3">{t('staff.reception.colFinal')}: <span className="font-semibold text-ink">{fmtMoney(it.finalPrice, false)}</span></span>
                   </span>
-                  <span className="mt-2 flex items-center gap-2"><Badge tone={st.tone} size="sm" dot>{st.label}</Badge></span>
+                  <span className="mt-2 flex items-center gap-2"><Badge tone={st.tone} size="sm" dot>{st.label}</Badge>{it.documentId && <PrintDocumentButton variant="icon" size="sm" doc={{ id: it.documentId, title: it.serviceName }} />}</span>
                 </span>
                 {removable && (
                   <span className="shrink-0 self-start">

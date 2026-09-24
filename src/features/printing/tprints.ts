@@ -12,14 +12,16 @@ export interface PrintSettings {
   mode: PrintMode
   url: string
   apiKey: string
-  /** '' = the service's default printer */
+  /** '' = the service's default printer (cheques) */
   printer: string
+  /** A4/document printer (Windows driver) for result PDFs; '' = the service's default printer */
+  documentPrinter: string
   /** 0 = printer profile's paper width */
   paper: 0 | 58 | 80
   copies: number
 }
 
-export const DEFAULT_PRINT_SETTINGS: PrintSettings = { mode: 'auto', url: 'http://127.0.0.1:9100', apiKey: '', printer: '', paper: 0, copies: 1 }
+export const DEFAULT_PRINT_SETTINGS: PrintSettings = { mode: 'auto', url: 'http://127.0.0.1:9100', apiKey: '', printer: '', documentPrinter: '', paper: 0, copies: 1 }
 const KEY = 'clinic.print.settings'
 
 export const loadPrintSettings = (): PrintSettings => ({ ...DEFAULT_PRINT_SETTINGS, ...(storage.get<Partial<PrintSettings>>(KEY, {}) ?? {}) })
@@ -83,6 +85,11 @@ const jobBody = (s: PrintSettings, elements: PrintElement[]) => ({
 /** Print a receipt; resolves when the service has printed it (`wait: true`). */
 export async function tprintsPrint(s: PrintSettings, elements: PrintElement[]): Promise<{ job_id?: string }> {
   return request(s, '/print', { method: 'POST', body: JSON.stringify(jobBody(s, elements)), timeoutMs: 90_000 })
+}
+
+/** Print a PDF (an approved result) on the document printer; resolves when the pages are spooled. */
+export async function tprintsPrintPdf(s: PrintSettings, pdfBase64: string, docName: string): Promise<{ job_id?: string }> {
+  return request(s, '/print/pdf', { method: 'POST', body: JSON.stringify({ ...(s.documentPrinter ? { printer: s.documentPrinter } : {}), copies: 1, wait: true, doc_name: docName.slice(0, 120), pdf_base64: pdfBase64 }), timeoutMs: 180_000 })
 }
 
 /** Service's own test receipt (checks the printer end to end). */
