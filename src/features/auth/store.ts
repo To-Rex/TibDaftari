@@ -20,6 +20,21 @@ const withActiveCompany = (s: StaffSession | null): StaffSession | null => {
   return active && active !== s.companyId ? { ...s, companyId: active } : s
 }
 
+/** Only superadmins and company admins may change the branch scope (incl. "all branches"). */
+export const canSwitchBranch = (s: StaffSession): boolean => s.isSuperAdmin || s.roleKey === 'admin'
+
+/**
+ * Branch scope for a session. Switchers keep their stored choice (null = all branches, else the login
+ * default); everyone else is pinned to an assigned branch — the stored one when it is theirs, otherwise
+ * the primary one. An older API without `branchIds` behaves as before.
+ */
+const resolveBranch = (s: StaffSession, stored: string | null): string | null => {
+  if (canSwitchBranch(s)) return stored ?? s.branchId
+  const mine = s.branchIds ?? []
+  if (!mine.length) return stored ?? s.branchId
+  return stored && mine.includes(stored) ? stored : (s.branchId ?? mine[0] ?? null)
+}
+
 /** Bumped by every login/logout; an in-flight hydrate() must not overwrite a newer session. */
 let sessionEpoch = 0
 
@@ -58,7 +73,9 @@ export const useAuth = create<AuthState>((set, get) => ({
     if ((cachedStaff && cachedStaff.accessToken === st) || (cachedPatient && cachedPatient.accessToken === pt)) {
       const home = cachedStaff && cachedStaff.accessToken === st ? cachedStaff : null
       const staff = withActiveCompany(home)
-      set({ staff, patient: cachedPatient && cachedPatient.accessToken === pt ? cachedPatient : null, branchId: staff ? (get().branchId ?? staff.branchId) : null, homeCompanyId: home?.companyId ?? null, hydrated: true })
+      const branchId = staff ? resolveBranch(staff, get().branchId) : null
+      if (staff) storage.set(BRANCH_KEY, branchId) // a pinned employee's stale choice is corrected on disk too
+      set({ staff, patient: cachedPatient && cachedPatient.accessToken === pt ? cachedPatient : null, branchId, homeCompanyId: home?.companyId ?? null, hydrated: true })
     }
     // 2) authoritative: re-validate with the API (permissions/roles may have changed; token may be revoked)
     const [home, patient] = await Promise.all([
@@ -73,7 +90,8 @@ export const useAuth = create<AuthState>((set, get) => ({
     if (!home) { storage.remove(STAFF_KEY); storage.remove(STAFF_SESSION_KEY) } else storage.set(STAFF_SESSION_KEY, home)
     if (!patient) { storage.remove(PATIENT_KEY); storage.remove(PATIENT_SESSION_KEY) } else storage.set(PATIENT_SESSION_KEY, patient)
     const staff = withActiveCompany(home)
-    const branchId = staff ? (get().branchId ?? staff.branchId) : null
+    const branchId = staff ? resolveBranch(staff, get().branchId) : null
+    if (staff) storage.set(BRANCH_KEY, branchId)
     set({ staff, patient, branchId, homeCompanyId: home?.companyId ?? null, hydrated: true })
   },
   async staffLogin(login, password) {
@@ -84,9 +102,10 @@ export const useAuth = create<AuthState>((set, get) => ({
     if (prev && prev.accessToken !== s.accessToken) void repos.auth.logout(prev.accessToken).catch(() => undefined)
     storage.set(STAFF_KEY, s.accessToken)
     storage.set(STAFF_SESSION_KEY, s)
-    storage.set(BRANCH_KEY, s.branchId)
+    const branchId = resolveBranch(s, null)
+    storage.set(BRANCH_KEY, branchId)
     storage.remove(COMPANY_KEY)
-    set({ staff: s, branchId: s.branchId, homeCompanyId: s.companyId })
+    set({ staff: s, branchId, homeCompanyId: s.companyId })
     return s
   },
   patientLogin(session) {
@@ -96,6 +115,9 @@ export const useAuth = create<AuthState>((set, get) => ({
     set({ patient: session })
   },
   setBranch(id) {
+    const s = get().staff
+    // non-admins stay inside their assigned branches (and never widen to "all branches")
+    if (s && !canSwitchBranch(s) && (id === null || !(s.branchIds ?? []).includes(id))) return
     storage.set(BRANCH_KEY, id)
     set({ branchId: id })
   },

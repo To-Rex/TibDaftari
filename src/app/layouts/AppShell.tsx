@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 import type { Permission } from '@/domain'
 import { repos } from '@/data'
-import { useAuth, usePermissions } from '@/features/auth/store'
+import { canSwitchBranch, useAuth, usePermissions } from '@/features/auth/store'
 import { preloadRouteChunks, warmWorkspaceData } from '@/features/session/warmup'
 import { routes } from '@/shared/config/routes'
 import { cn } from '@/shared/lib/cn'
@@ -176,9 +176,12 @@ function TopBar({ onMenu, module }: { onMenu: () => void; module: 'staff' | 'adm
   const isForeign = s.isSuperAdmin && !!homeCompanyId && s.companyId !== homeCompanyId
   const notif = useQuery({ queryKey: ['notifications'], queryFn: () => repos.messaging.notifications(), refetchInterval: 60_000 })
   const unread = notif.data?.filter((n) => !n.read).length ?? 0
-  const myBranches = (branches.data ?? []).filter((b) => b.isActive)
-  const current = myBranches.find((b) => b.id === branchId)
-  const canAll = s.isSuperAdmin || s.roleKey === 'admin' || s.roleKey === 'rahbar'
+  const activeBranches = (branches.data ?? []).filter((b) => b.isActive)
+  const current = activeBranches.find((b) => b.id === branchId)
+  // superadmin/admin: any branch or all of them; everyone else: only the branches they are assigned to
+  const switcher = canSwitchBranch(s)
+  const myBranches = switcher ? activeBranches : activeBranches.filter((b) => (s.branchIds ?? []).includes(b.id))
+  const pill = 'app-branch-switcher inline-flex h-9 min-w-0 shrink items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 text-[13px] font-medium shadow-1 sm:gap-2 sm:px-3'
 
   return (
     <header className="app-topbar sticky top-0 z-30 flex h-14 items-center gap-1.5 border-b border-line bg-bg/86 px-2 backdrop-blur-md xs:gap-2 xs:px-3 sm:h-16 sm:gap-3 sm:px-6">
@@ -208,21 +211,28 @@ function TopBar({ onMenu, module }: { onMenu: () => void; module: 'staff' | 'adm
         />
       )}
 
-      {/* Branch switcher */}
-      <Menu
-        align="start"
-        trigger={(open) => (
-          <button type="button" title={current ? current.name : t('common.allBranches')} className={cn('app-branch-switcher inline-flex h-9 min-w-0 shrink items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 text-[13px] font-medium shadow-1 transition-colors sm:gap-2 sm:px-3 hover:border-line-strong', open && 'border-brand')}>
-            <GitBranch className="size-4 shrink-0 text-brand" />
-            <span className="max-sm:hidden max-w-[120px] md:max-w-[160px] 2xl:max-w-[240px] truncate">{current ? current.name : t('common.allBranches')}</span>
-            <ChevronDown className="size-3.5 shrink-0 text-ink-3" />
-          </button>
-        )}
-        items={[
-          ...(canAll ? [{ key: 'all', label: t('common.allBranches'), onSelect: () => setBranch(null), icon: <Building2 /> }] : []),
-          ...myBranches.map((b) => ({ key: b.id, label: <span className="flex flex-col"><span>{b.name}</span><span className="text-[11.5px] text-ink-3">{b.code}</span></span>, onSelect: () => setBranch(b.id), icon: <GitBranch /> })),
-        ]}
-      />
+      {/* Branch scope: a switcher for superadmin/admin (or an employee assigned to several branches), otherwise a fixed label */}
+      {switcher || myBranches.length > 1 ? (
+        <Menu
+          align="start"
+          trigger={(open) => (
+            <button type="button" title={current ? current.name : t('common.allBranches')} className={cn(pill, 'transition-colors hover:border-line-strong', open && 'border-brand')}>
+              <GitBranch className="size-4 shrink-0 text-brand" />
+              <span className="max-sm:hidden max-w-[120px] md:max-w-[160px] 2xl:max-w-[240px] truncate">{current ? current.name : t('common.allBranches')}</span>
+              <ChevronDown className="size-3.5 shrink-0 text-ink-3" />
+            </button>
+          )}
+          items={[
+            ...(switcher ? [{ key: 'all', label: t('common.allBranches'), onSelect: () => setBranch(null), icon: <Building2 /> }] : []),
+            ...myBranches.map((b) => ({ key: b.id, label: <span className="flex flex-col"><span>{b.name}</span><span className="text-[11.5px] text-ink-3">{b.code}</span></span>, onSelect: () => setBranch(b.id), icon: <GitBranch /> })),
+          ]}
+        />
+      ) : (
+        <span title={current ? current.name : t('common.allBranches')} className={cn(pill, 'cursor-default')} data-branch-fixed>
+          <GitBranch className="size-4 shrink-0 text-brand" />
+          <span className="max-sm:hidden max-w-[120px] md:max-w-[160px] 2xl:max-w-[240px] truncate">{current ? current.name : t('common.allBranches')}</span>
+        </span>
+      )}
       {module === 'admin' && <Badge tone="brand" size="sm" className="max-sm:hidden">{t('nav.admin')}</Badge>}
 
       <div className="flex-1 min-w-2" />

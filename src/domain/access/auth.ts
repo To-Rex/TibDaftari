@@ -9,6 +9,8 @@ export interface StaffSession {
   employeeId: Id
   companyId: Id
   branchId: Id | null // null = company-wide (admin) — UI asks to pick a branch when needed
+  /** branches the employee is assigned to; only superadmin/admin may work outside them */
+  branchIds: Id[]
   isSuperAdmin: boolean
   roleKey: string
   fullName: string
