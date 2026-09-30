@@ -7,7 +7,7 @@ import type { Guide } from './geometry'
 
 const HISTORY_LIMIT = 60
 
-export interface EditorMeta { name: string; serviceTypeIds: string[]; categoryIds: string[]; branchIds: string[]; scope: 'item' | 'order'; language: 'uz' | 'ru' | 'en' }
+export interface EditorMeta { name: string; serviceTypeIds: string[]; categoryIds: string[]; branchIds: string[]; scope: 'item' | 'order' | 'receipt'; language: 'uz' | 'ru' | 'en' }
 
 export interface EditorState {
   template: ResultTemplate | null

@@ -1,17 +1,22 @@
 /** Builds a RenderContext from domain objects (mirror of the backend context builder). */
-import type { AttributeSchema, Branch, Category, Company, Order, OrderItem, Patient, RenderContext, RenderItem } from '@/domain'
-import { ageFrom, ageMonthsFrom, fmtDate, fmtDateTime, fmtPhone } from '@/shared/lib/format'
+import type { AttributeSchema, Branch, Category, Company, Order, OrderItem, Patient, Payment, RenderContext, RenderItem } from '@/domain'
+import { paymentMethodLabel } from '@/features/orders/status'
+import { ageFrom, ageMonthsFrom, fmtDate, fmtDateTime, fmtMoney, fmtPhone } from '@/shared/lib/format'
 import i18n from '@/shared/i18n'
 
 export function buildRenderContext(input: {
   patient?: Pick<Patient, 'fullName' | 'phone' | 'birthDate' | 'gender' | 'address' | 'passportNumber'> | null
-  order?: Pick<Order, 'number' | 'createdAt'> | null
+  /** receipts pass the whole order — its totals become `order.*` placeholders */
+  order?: (Pick<Order, 'number' | 'createdAt'> & Partial<Pick<Order, 'subtotal' | 'discountPercent' | 'discountAmount' | 'total' | 'paidAmount' | 'itemCount' | 'note' | 'status'>>) | null
   item?: Pick<OrderItem, 'serviceName' | 'approvedAt' | 'technicianName' | 'doctorName' | 'labNote' | 'values'> | null
   company?: Pick<Company, 'name' | 'phone' | 'address'> | null
-  branch?: Pick<Branch, 'name' | 'address'> | null
+  branch?: Pick<Branch, 'name' | 'address'> & { phone?: string | null } | null
   category?: Pick<Category, 'name' | 'phone'> | null
   schema?: AttributeSchema | null
   districtName?: string
+  /** receipts: payments (non-refunded) and the cashier who opened the cheque */
+  payments?: Pick<Payment, 'createdAt' | 'method' | 'amount' | 'note'>[]
+  cashier?: string
   /** order-scoped documents: every covered item with its schema and catalog code */
   items?: { item: OrderItem; schema: AttributeSchema | null; code: string }[]
 }): RenderContext {
@@ -29,7 +34,9 @@ export function buildRenderContext(input: {
       address,
       passportNumber: p?.passportNumber ?? '',
     },
-    order: { number: input.order?.number ?? '', date: fmtDate(input.order?.createdAt) },
+    order: orderBlock(input.order),
+    ...(input.cashier != null ? { cashier: { name: input.cashier } } : {}),
+    ...(input.payments ? { payments: input.payments.map((pay, i) => ({ i: i + 1, date: fmtDateTime(pay.createdAt), method: paymentMethodLabel(pay.method), amount: fmtMoney(pay.amount, false), note: pay.note ?? '' })) } : {}),
     item: {
       serviceName: input.item?.serviceName ?? '',
       approvedAt: input.item?.approvedAt ? fmtDateTime(input.item.approvedAt) : '',
@@ -38,7 +45,7 @@ export function buildRenderContext(input: {
       labNote: input.item?.labNote ?? '',
     },
     company: { name: input.company?.name ?? '', phone: input.company?.phone, address: input.company?.address },
-    branch: { name: input.branch?.name ?? '', address: input.branch?.address },
+    branch: { name: input.branch?.name ?? '', address: input.branch?.address, phone: input.branch?.phone ? fmtPhone(input.branch.phone) : undefined },
     category: { name: input.category?.name ?? '', phone: input.category?.phone },
     today: fmtDate(new Date().toISOString()),
     values: input.item?.values ?? {},
@@ -50,7 +57,43 @@ export function buildRenderContext(input: {
 export const toRenderItem = (x: { item: OrderItem; schema: AttributeSchema | null; code: string }): RenderItem => ({
   code: x.code, serviceTypeId: x.item.serviceTypeId, serviceName: x.item.serviceName, status: x.item.status, values: x.item.values, schema: x.schema,
   approvedAt: x.item.approvedAt ? fmtDateTime(x.item.approvedAt) : undefined, technician: x.item.technicianName, doctor: x.item.doctorName,
+  price: fmtMoney(x.item.price, false), finalPrice: fmtMoney(x.item.finalPrice, false), category: x.item.categoryName,
 })
+
+/** `order.*`: number/date always; totals when the order carries them (receipts). Mirror of the backend `_order_block`. */
+function orderBlock(o: NonNullable<Parameters<typeof buildRenderContext>[0]['order']> | null | undefined): RenderContext['order'] {
+  const block: RenderContext['order'] = { number: o?.number ?? '', date: fmtDate(o?.createdAt) }
+  if (!o) return block
+  if (o.createdAt) block.dateTime = fmtDateTime(o.createdAt)
+  if (o.total != null) {
+    const total = o.total, paid = o.paidAmount ?? 0
+    Object.assign(block, {
+      subtotal: fmtMoney(o.subtotal ?? total, false), discountPercent: String(o.discountPercent ?? 0), discountAmount: fmtMoney(o.discountAmount ?? 0, false),
+      total: fmtMoney(total, false), paidAmount: fmtMoney(paid, false), remaining: fmtMoney(Math.max(0, total - paid), false),
+      itemCount: String(o.itemCount ?? 0), note: o.note ?? '', status: o.status ?? '',
+    })
+  }
+  return block
+}
+
+/** Sample context for RECEIPT templates: three services, a discount, a partial payment. */
+export function sampleReceiptRenderContext(company?: Pick<Company, 'name' | 'phone' | 'address'> | null, branch?: (Pick<Branch, 'name' | 'address'> & { phone?: string | null }) | null): RenderContext {
+  const now = new Date().toISOString()
+  const services = [['PAR', 'Парозитологик тахлил', 'Parazitologiya', 52000], ['BAK', 'Бактериологик тахлил', 'Bakteriologiya', 160000], ['IFA', 'ИФА ВГ “B”', 'Virusologiya', 41000]] as const
+  const subtotal = services.reduce((s, x) => s + x[3], 0)
+  const discount = 10, total = subtotal - Math.floor(subtotal * discount / 100)
+  const ctx = buildRenderContext({
+    patient: { fullName: 'Karimova Madina Aziz qizi', phone: '998901234567', birthDate: '1992-04-12', gender: 'female', address: { street: 'Al-Xorazmiy ko‘chasi, 12-uy' }, passportNumber: 'AB1234567' },
+    order: { number: 'UR-001240', createdAt: now, subtotal, discountPercent: discount, discountAmount: Math.floor(subtotal * discount / 100), total, paidAmount: total - 50000, itemCount: services.length, status: 'in_progress' },
+    company: company ?? { name: 'Shifo Med', phone: '+998 62 228-82-81', address: 'Urganch sh., A. Bahodirxon 177' },
+    branch: branch ?? { name: 'Markaziy filial', address: 'Urganch sh.', phone: '+998 62 228-82-81' },
+    payments: [{ createdAt: now, method: 'cash', amount: total - 50000 }],
+    cashier: 'Umida Qodirova',
+    districtName: 'Urganch shahri',
+  })
+  ctx.items = services.map(([code, name, category, price]) => ({ code, serviceTypeId: code, serviceName: name, status: 'pending', values: {}, schema: null, price: fmtMoney(price, false), finalPrice: fmtMoney(price - Math.floor(price * discount / 100), false), category }))
+  return ctx
+}
 
 /** Sample values for a schema (shared by item- and order-scope previews). */
 export function sampleValues(schema: AttributeSchema | null): RenderContext['values'] {

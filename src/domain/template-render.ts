@@ -18,6 +18,10 @@ export interface RenderItem {
   approvedAt?: string
   technician?: string
   doctor?: string
+  /** receipts: formatted prices and the category name */
+  price?: string
+  finalPrice?: string
+  category?: string
 }
 
 export interface RenderContext {
@@ -34,7 +38,11 @@ export interface RenderContext {
     genderRaw?: 'male' | 'female'
     ageMonths?: number
   }
-  order: { number: string; date: string }
+  /** money fields are present for receipts (formatted like `305,000`) */
+  order: { number: string; date: string; dateTime?: string; subtotal?: string; discountPercent?: string; discountAmount?: string; total?: string; paidAmount?: string; remaining?: string; itemCount?: string; note?: string; status?: string }
+  cashier?: { name: string }
+  /** receipts: one row per (non-refunded) payment */
+  payments?: { i: number; date: string; method: string; amount: string; note?: string }[]
   item: {
     serviceName: string
     approvedAt?: string
@@ -43,7 +51,7 @@ export interface RenderContext {
     labNote?: string
   }
   company: { name: string; phone?: string; address?: string }
-  branch: { name: string; address?: string }
+  branch: { name: string; address?: string; phone?: string | null }
   /** department (category) of the service — its phone is printed in SES letterheads */
   category: { name: string; phone?: string }
   today: string
@@ -136,6 +144,7 @@ export function fieldUnit(ctx: RenderContext, key: string): string {
 
 export function tableRows(ctx: RenderContext, fieldKey: string): Record<string, unknown>[] {
   if (fieldKey === 'items') return itemRows(ctx)
+  if (fieldKey === 'payments') return ctx.payments ?? []
   const v = ctx.values[fieldKey]
   return Array.isArray(v) ? (v as Record<string, unknown>[]) : []
 }
@@ -181,6 +190,9 @@ export function itemRows(ctx: RenderContext): Record<string, unknown>[] {
   return (ctx.items ?? []).map((it, i) => {
     const sub: RenderContext = { ...ctx, values: it.values, schema: it.schema }
     const row: Record<string, unknown> = { code: it.code, name: it.serviceName, status: it.status, i: i + 1 }
+    if (it.price != null) row.price = it.price
+    if (it.finalPrice != null) row.finalPrice = it.finalPrice
+    if (it.category != null) row.category = it.category
     for (const f of it.schema?.fields ?? []) if (f.type !== 'table') row[f.key] = formatValue(sub, f.key)
     return row
   })

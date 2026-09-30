@@ -30,7 +30,7 @@ export function NewTemplateModal({ open, onClose, serviceTypes, categories, bran
     setTouched(true)
     if (!name.trim()) return
     const src = from === 'copy' ? templates.find((x) => x.id === copyId) : undefined
-    onSubmit({ name: name.trim(), ...b, doc: src ? structuredClone(src.doc) : emptyDoc() })
+    onSubmit({ name: name.trim(), ...b, doc: src ? structuredClone(src.doc) : emptyDoc(b.scope === 'receipt' ? 'Receipt80' : 'A4') })
   }
   return (
     <Modal open={open} onClose={onClose} title={t('catalog.templates.new')} description={t('catalog.templates.newHint')} size="lg"

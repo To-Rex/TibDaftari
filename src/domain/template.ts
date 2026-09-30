@@ -9,13 +9,16 @@ import type { AuditStamp, Id } from './common'
    Tables bind to a `table` field key or to a static column set.
 ------------------------------------------------------------------- */
 
-export type PaperSize = 'A4' | 'A5' | 'Letter'
+/** Receipt80 / Receipt58: 80 / 58 mm wide strips for cheque templates (the print service trims the blank tail) */
+export type PaperSize = 'A4' | 'A5' | 'Letter' | 'Receipt80' | 'Receipt58'
 export type Orientation = 'portrait' | 'landscape'
 
 export const PAPER_PX: Record<PaperSize, { w: number; h: number }> = {
   A4: { w: 794, h: 1123 },
   A5: { w: 559, h: 794 },
   Letter: { w: 816, h: 1056 },
+  Receipt80: { w: 302, h: 800 },
+  Receipt58: { w: 219, h: 800 },
 }
 
 export interface ElementBase {
@@ -177,6 +180,7 @@ export interface TemplateDoc {
 }
 
 export type TemplateStatus = 'draft' | 'active' | 'archived'
+export type TemplateScope = 'item' | 'order' | 'receipt'
 
 export interface ResultTemplate extends AuditStamp {
   id: Id
@@ -190,7 +194,8 @@ export interface ResultTemplate extends AuditStamp {
   categoryIds: Id[]
   /** branches this template belongs to. Empty = every branch of the company. */
   branchIds: Id[]
-  scope: 'item' | 'order'
+  /** item / order = result documents; receipt = the cheque printed at the front desk */
+  scope: TemplateScope
   language: 'uz' | 'ru' | 'en'
   doc: TemplateDoc
   thumbnailUrl?: string
@@ -226,8 +231,8 @@ export const defaultTextStyle = (over: Partial<TextStyle> = {}): TextStyle => ({
   ...over,
 })
 
-export const emptyDoc = (): TemplateDoc => ({
-  paper: 'A4',
+export const emptyDoc = (paper: PaperSize = 'A4'): TemplateDoc => ({
+  paper,
   orientation: 'portrait',
   background: '#ffffff',
   margin: 40,
@@ -283,3 +288,42 @@ export const ITEMS_DATASET_COLUMNS = [
   { key: 'name', label: 'Xizmat' },
   { key: 'status', label: 'Holat' },
 ] as const
+/** Receipt templates: the same `items` dataset also carries prices. */
+export const RECEIPT_ITEMS_COLUMNS = [
+  { key: 'i', label: '№' },
+  { key: 'name', label: 'Xizmat' },
+  { key: 'category', label: 'Yo‘nalish' },
+  { key: 'price', label: 'Narxi' },
+  { key: 'finalPrice', label: 'Yakuniy narx' },
+] as const
+/** Reserved dataset key for receipt templates (one row per payment). */
+export const PAYMENTS_DATASET = 'payments'
+export const PAYMENTS_DATASET_COLUMNS = [
+  { key: 'i', label: '№' },
+  { key: 'date', label: 'Sana' },
+  { key: 'method', label: 'To‘lov turi' },
+  { key: 'amount', label: 'Summa' },
+  { key: 'note', label: 'Izoh' },
+] as const
+/** Placeholders offered to receipt templates (besides patient / organisation). */
+export const RECEIPT_PLACEHOLDERS: { group: string; items: { key: string; label: string }[] }[] = [
+  {
+    group: 'receipt',
+    items: [
+      { key: 'order.number', label: 'Chek raqami' },
+      { key: 'order.date', label: 'Chek sanasi' },
+      { key: 'order.dateTime', label: 'Sana va vaqt' },
+      { key: 'order.subtotal', label: 'Xizmatlar summasi' },
+      { key: 'order.discountPercent', label: 'Chegirma %' },
+      { key: 'order.discountAmount', label: 'Chegirma summasi' },
+      { key: 'order.total', label: 'Jami' },
+      { key: 'order.paidAmount', label: 'To‘langan' },
+      { key: 'order.remaining', label: 'Qoldiq' },
+      { key: 'order.itemCount', label: 'Xizmatlar soni' },
+      { key: 'order.note', label: 'Chek izohi' },
+      { key: 'cashier.name', label: 'Kassir' },
+      { key: 'branch.phone', label: 'Filial telefoni' },
+      { key: 'today', label: 'Bugungi sana' },
+    ],
+  },
+]

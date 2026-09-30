@@ -6,7 +6,7 @@ import { cn } from '@/shared/lib/cn'
 import { Badge, Field, SearchInput, Segmented, Select } from '@/shared/ui'
 import { categoryPath } from '@/features/catalog/tree'
 
-export interface Bindings { serviceTypeIds: string[]; categoryIds: string[]; branchIds: string[]; scope: 'item' | 'order'; language: 'uz' | 'ru' | 'en' }
+export interface Bindings { serviceTypeIds: string[]; categoryIds: string[]; branchIds: string[]; scope: 'item' | 'order' | 'receipt'; language: 'uz' | 'ru' | 'en' }
 
 /** Shared form body: bind template to service types (searchable multi-select) / categories, scope, language. */
 export function BindingsFields({ value, onChange, serviceTypes, categories, branches }: { value: Bindings; onChange: (b: Bindings) => void; serviceTypes: ServiceType[]; categories: Category[]; branches?: Branch[] }) {
@@ -22,7 +22,7 @@ export function BindingsFields({ value, onChange, serviceTypes, categories, bran
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-3">
-        <Field label={t('catalog.templates.scope')}>{() => <Segmented value={value.scope} onChange={(v) => onChange({ ...value, scope: v })} items={[{ value: 'item', label: t('catalog.services.scopeItem') }, { value: 'order', label: t('catalog.services.scopeOrder') }]} />}</Field>
+        <Field label={t('catalog.templates.scope')}>{() => <Segmented value={value.scope} onChange={(v) => onChange({ ...value, scope: v })} items={[{ value: 'item', label: t('catalog.services.scopeItem') }, { value: 'order', label: t('catalog.services.scopeOrder') }, { value: 'receipt', label: t('catalog.services.scopeReceipt') }]} />}</Field>
         <Field label={t('common.language')}>{(id) => (
           <Select id={id} value={value.language} onChange={(e) => onChange({ ...value, language: e.target.value as Bindings['language'] })}>
             <option value="uz">O‘zbekcha</option><option value="ru">Русский</option><option value="en">English</option>
@@ -42,7 +42,8 @@ export function BindingsFields({ value, onChange, serviceTypes, categories, bran
           </div>
         )}</Field>
       )}
-      <Field label={t('catalog.templates.bindServices')} hint={t('catalog.templates.bindServicesHint')}>{() => (
+      {value.scope === 'receipt' && <p className="rounded-[var(--radius)] border border-dashed border-line px-3 py-2 text-[12.5px] text-ink-3">{t('catalog.templates.receiptHint')}</p>}
+      {value.scope !== 'receipt' && <Field label={t('catalog.templates.bindServices')} hint={t('catalog.templates.bindServicesHint')}>{() => (
         <div className="rounded-[var(--radius)] border border-line overflow-hidden">
           <div className="p-2 border-b border-line bg-surface-2/40 flex items-center gap-2">
             <SearchInput value={q} onChange={setQ} placeholder={t('catalog.services.searchPh')} className="h-9" />
@@ -59,7 +60,7 @@ export function BindingsFields({ value, onChange, serviceTypes, categories, bran
             {list.length === 0 && <p className="px-2 py-3 text-[12.5px] text-ink-3">{t('common.empty')}</p>}
           </div>
         </div>
-      )}</Field>
+      )}</Field>}
       <Field label={t('catalog.templates.bindCategories')}>{() => (
         <div className="flex flex-wrap gap-1.5">
           {categories.map((c) => { const on = value.categoryIds.includes(c.id); return (

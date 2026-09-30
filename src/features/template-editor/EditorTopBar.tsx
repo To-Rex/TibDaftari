@@ -74,8 +74,7 @@ export function EditorTopBar({ serviceTypes, canWrite, canPublish, saving, onBac
 
       {lg && (
         <>
-          <PreviewAsSelect serviceTypes={serviceTypes} showLabel={xl} className="w-40 2xl:w-64" />
-          <div className="w-px h-6 bg-line mx-1" />
+          {meta.scope !== 'receipt' && <><PreviewAsSelect serviceTypes={serviceTypes} showLabel={xl} className="w-40 2xl:w-64" /><div className="w-px h-6 bg-line mx-1" /></>}
           <Tooltip label={`${t('catalog.editor.undo')} (Ctrl+Z)`} side="bottom"><IconButton label={t('catalog.editor.undo')} size="sm" onClick={undo} disabled={!canUndo}><Undo2 /></IconButton></Tooltip>
           <Tooltip label={`${t('catalog.editor.redo')} (Ctrl+Y)`} side="bottom"><IconButton label={t('catalog.editor.redo')} size="sm" onClick={redo} disabled={!canRedo}><Redo2 /></IconButton></Tooltip>
           {xl && (

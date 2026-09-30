@@ -48,7 +48,7 @@ export const TemplateCard = memo(function TemplateCard({ tpl, companyId, service
             <Badge tone={TONE[tpl.status]} dot size="sm">{t(`catalog.templates.status.${tpl.status}`)}</Badge>
             <Badge size="sm">v{tpl.version}</Badge>
             <Badge size="sm">{tpl.language.toUpperCase()}</Badge>
-            <Badge size="sm">{tpl.scope === 'item' ? t('catalog.services.scopeItem') : t('catalog.services.scopeOrder')}</Badge>
+            <Badge size="sm" tone={tpl.scope === 'receipt' ? 'accent' : undefined}>{tpl.scope === 'item' ? t('catalog.services.scopeItem') : tpl.scope === 'receipt' ? t('catalog.services.scopeReceipt') : t('catalog.services.scopeOrder')}</Badge>
             {branchNames.length > 2 ? <span title={branchNames.join(' · ')}><Badge size="sm" tone="brand">{t('catalog.templates.nBranches', { n: branchNames.length })}</Badge></span>
               : branchNames.length > 0 ? <Badge size="sm" tone="brand">{branchNames.join(' · ')}</Badge> : <Badge size="sm">{t('catalog.templates.allBranches')}</Badge>}
           </div>

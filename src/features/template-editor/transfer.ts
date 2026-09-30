@@ -27,7 +27,7 @@ const fileSchema = z.object({
   template: z.object({
     name: z.string().min(1),
     description: z.string().optional(),
-    scope: z.enum(['item', 'order']),
+    scope: z.enum(['item', 'order', 'receipt']),
     language: z.enum(['uz', 'ru', 'en']),
     serviceCodes: z.array(z.string()),
     categoryCodes: z.array(z.string()),

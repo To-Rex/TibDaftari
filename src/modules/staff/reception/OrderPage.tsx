@@ -13,6 +13,8 @@ import { routes } from '@/shared/config/routes'
 import { usePermissions } from '@/features/auth/store'
 import { useStaffSession } from '@/features/session/useSession'
 import { useAddItems, useOrder, useRemoveItem } from '@/features/orders/queries'
+import { useTemplates } from '@/features/catalog/queries'
+import { pickReceiptTemplate } from '@/features/printing/receiptTemplate'
 import { orderStatusMeta, paymentStatusMeta } from '@/features/orders/status'
 import { OrderItemsTable } from '@/features/reception/OrderItemsTable'
 import { OrderTotals } from '@/features/reception/OrderTotals'
@@ -47,6 +49,9 @@ export default function OrderPage() {
   const branch = branches.data?.find((b) => b.id === order?.branchId)
   // one receipt object feeds both the hidden print sheet and the TPrints job
   const receipt: ReceiptProps = { order: order!, items, payments, company: company.data, branch, cashier: creator.data?.fullName ?? staff.fullName }
+  // an active receipt template of the order's branch (designed in Andozalar) replaces the built-in cheque layout
+  const templates = useTemplates(companyId, {})
+  const receiptTemplateId = useMemo(() => pickReceiptTemplate(templates.data ?? [], order?.branchId)?.id, [templates.data, order?.branchId])
   const inOrder = useMemo(() => new Set(items.filter((i) => i.status !== 'cancelled').map((i) => i.serviceTypeId)), [items])
 
   const onAdd = async (stId: string) => {
@@ -119,10 +124,10 @@ export default function OrderPage() {
 
         <div className="xl:sticky xl:top-20 xl:self-start">
           {order ? (
-            <OrderTotals order={order} payments={payments} onPay={() => setPayOpen(true)} onPrint={() => void printReceipt(receipt, t).catch(() => undefined)}
+            <OrderTotals order={order} payments={payments} onPay={() => setPayOpen(true)} onPrint={() => void printReceipt(receipt, t, undefined, receiptTemplateId).catch(() => undefined)}
               printActions={[
-                { key: 'service', label: t('staff.reception.printing.viaService'), icon: <Printer />, onSelect: () => void printReceipt(receipt, t, 'service').catch(() => undefined) },
-                { key: 'browser', label: t('staff.reception.printing.viaBrowser'), icon: <Globe />, onSelect: () => void printReceipt(receipt, t, 'browser') },
+                { key: 'service', label: t('staff.reception.printing.viaService'), icon: <Printer />, onSelect: () => void printReceipt(receipt, t, 'service', receiptTemplateId).catch(() => undefined) },
+                { key: 'browser', label: t('staff.reception.printing.viaBrowser'), icon: <Globe />, onSelect: () => void printReceipt(receipt, t, 'browser', receiptTemplateId).catch(() => undefined) },
                 { key: 'settings', label: t('staff.reception.printing.settings'), icon: <Settings2 />, onSelect: () => setPrintSettingsOpen(true), separatorBefore: true },
               ]}
               onCancel={() => setCancelOpen(true)} canPay={can('reception.payment.create')} canCancel={can('reception.order.cancel')} />

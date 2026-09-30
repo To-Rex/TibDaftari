@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { GripVertical } from 'lucide-react'
 import type { AttributeSchema } from '@/domain'
-import { STANDARD_PLACEHOLDERS } from '@/domain'
+import { RECEIPT_PLACEHOLDERS, STANDARD_PLACEHOLDERS } from '@/domain'
+import { useEditorStore } from './useEditorStore'
 import { cn } from '@/shared/lib/cn'
 import { SearchInput } from '@/shared/ui'
 import { PLACEHOLDER_MIME } from './EditorCanvas'
@@ -15,8 +16,11 @@ import type { PaletteService } from './useTemplateSchema'
 export function PlaceholderPalette({ schema, onInsert, compact, services }: { schema: AttributeSchema | null; onInsert?: (key: string) => void; compact?: boolean; /** order-scoped templates: bound services -> {svc.CODE.field} */ services?: PaletteService[] }) {
   const { t } = useTranslation()
   const [q, setQ] = useState('')
+  const receipt = useEditorStore((s) => s.meta?.scope === 'receipt')
   const groups = useMemo(() => {
-    const std = STANDARD_PLACEHOLDERS.map((g) => ({ group: t(`catalog.editor.ph.${g.group}`), items: g.items.map((i) => ({ key: i.key, label: i.label, type: undefined as string | undefined })) }))
+    // receipts: cheque placeholders + patient + organisation (no result values / item meta)
+    const base = receipt ? [...RECEIPT_PLACEHOLDERS, ...STANDARD_PLACEHOLDERS.filter((g) => g.group === 'patient' || g.group === 'organisation')] : STANDARD_PLACEHOLDERS
+    const std = base.map((g) => ({ group: t(`catalog.editor.ph.${g.group}`), items: g.items.map((i) => ({ key: i.key, label: i.label, type: undefined as string | undefined })) }))
     const values = schema ? [{ group: `${t('catalog.editor.ph.values')} · ${schema.name}`, items: schema.fields.map((f) => ({ key: `values.${f.key}`, label: f.label, type: f.type as string | undefined })) }] : []
     // order-scoped: one group per bound service -> {svc.CODE.field}
     const svc = (services ?? []).map((sv) => ({
@@ -29,7 +33,7 @@ export function PlaceholderPalette({ schema, onInsert, compact, services }: { sc
     const all = [...svc, ...values, ...std]
     const s = q.trim().toLowerCase()
     return s ? all.map((g) => ({ ...g, items: g.items.filter((i) => i.key.toLowerCase().includes(s) || i.label.toLowerCase().includes(s)) })).filter((g) => g.items.length) : all
-  }, [schema, q, t])
+  }, [schema, q, t, receipt, services])
 
   return (
     <div className="flex flex-col h-full min-h-0">

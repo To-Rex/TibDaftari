@@ -87,6 +87,11 @@ export async function tprintsPrint(s: PrintSettings, elements: PrintElement[]): 
   return request(s, '/print', { method: 'POST', body: JSON.stringify(jobBody(s, elements)), timeoutMs: 90_000 })
 }
 
+/** Print a cheque rendered as PDF (receipt template) on the cheque printer — thermal or regular. */
+export async function tprintsPrintReceiptPdf(s: PrintSettings, pdfBase64: string, docName: string): Promise<{ job_id?: string }> {
+  return request(s, '/print/pdf', { method: 'POST', body: JSON.stringify({ ...(s.printer ? { printer: s.printer } : {}), ...(s.paper ? { paper: s.paper } : {}), copies: Math.min(20, Math.max(1, s.copies || 1)), wait: true, doc_name: docName.slice(0, 120), pdf_base64: pdfBase64 }), timeoutMs: 120_000 })
+}
+
 /** Print a PDF (an approved result) on the document printer; resolves when the pages are spooled. */
 export async function tprintsPrintPdf(s: PrintSettings, pdfBase64: string, docName: string): Promise<{ job_id?: string }> {
   return request(s, '/print/pdf', { method: 'POST', body: JSON.stringify({ ...(s.documentPrinter ? { printer: s.documentPrinter } : {}), copies: 1, wait: true, doc_name: docName.slice(0, 120), pdf_base64: pdfBase64 }), timeoutMs: 180_000 })

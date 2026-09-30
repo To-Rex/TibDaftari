@@ -98,7 +98,7 @@ function DocProps() {
       <div className="px-3 h-11 flex items-center gap-2 border-b border-line"><span className="text-[13px] font-semibold">{t('catalog.editor.document')}</span></div>
       <PropSection title={t('catalog.editor.page')}>
         <PropRow label={t('catalog.editor.paper')}>
-          <SelectInput value={doc.paper} onChange={(v: PaperSize) => setDocProps({ paper: v })} options={(Object.keys(PAPER_PX) as PaperSize[]).map((p) => ({ value: p, label: `${p} · ${PAPER_PX[p].w}×${PAPER_PX[p].h}` }))} />
+          <SelectInput value={doc.paper} onChange={(v: PaperSize) => setDocProps({ paper: v })} options={(Object.keys(PAPER_PX) as PaperSize[]).map((p) => ({ value: p, label: `${p.startsWith('Receipt') ? t('catalog.editor.receiptPaper', { mm: p.slice(7) }) : p} · ${PAPER_PX[p].w}×${PAPER_PX[p].h}` }))} />
         </PropRow>
         <PropRow label={t('catalog.editor.orientation')}>
           <SelectInput value={doc.orientation} onChange={(v: Orientation) => setDocProps({ orientation: v })} options={[{ value: 'portrait', label: t('catalog.editor.portrait') }, { value: 'landscape', label: t('catalog.editor.landscape') }]} />

@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowDown, ArrowUp, Columns3, Copy, ExternalLink, Plus, Trash2 } from 'lucide-react'
 import type { AttributeSchema, TableColumn, TableElement } from '@/domain'
 import { Checkbox } from '@/shared/ui'
-import { ITEMS_DATASET, ITEMS_DATASET_COLUMNS } from '@/domain'
+import { ITEMS_DATASET, ITEMS_DATASET_COLUMNS, PAYMENTS_DATASET, PAYMENTS_DATASET_COLUMNS, RECEIPT_ITEMS_COLUMNS } from '@/domain'
 import { routes } from '@/shared/config/routes'
 import { useEditorStore } from '../useEditorStore'
 import { ColorInput, NumInput, PropRow, PropSection, SelectInput, TextInput } from './inputs'
@@ -15,11 +15,13 @@ export function TableProps({ el, schema }: { el: TableElement; schema: Attribute
   const patch = useEditorStore((s) => s.patchElements)
   const set = (p: Partial<TableElement>) => patch([el.id], (e) => ({ ...e, ...p }) as TableElement)
   const orderScope = useEditorStore((s) => s.meta?.scope === 'order')
+  const receiptScope = useEditorStore((st) => st.meta?.scope === 'receipt')
   const tableFields = schema?.fields.filter((f) => f.type === 'table') ?? []
   const bound = tableFields.find((f) => f.key === el.fieldKey)
-  const itemsBound = orderScope && el.fieldKey === ITEMS_DATASET
+  const itemsBound = (orderScope || receiptScope) && el.fieldKey === ITEMS_DATASET
+  const paymentsBound = receiptScope && el.fieldKey === PAYMENTS_DATASET
   const isStatic = !el.fieldKey
-  const bindOptions = bound ? bound.columns.map((c) => ({ value: c.key, label: `${c.label} · ${c.key}` })) : itemsBound ? ITEMS_DATASET_COLUMNS.map((c) => ({ value: c.key, label: `${c.label} · ${c.key}` })) : []
+  const bindOptions = bound ? bound.columns.map((c) => ({ value: c.key, label: `${c.label} · ${c.key}` })) : paymentsBound ? PAYMENTS_DATASET_COLUMNS.map((c) => ({ value: c.key, label: `${c.label} · ${c.key}` })) : itemsBound ? (receiptScope ? RECEIPT_ITEMS_COLUMNS : ITEMS_DATASET_COLUMNS).map((c) => ({ value: c.key, label: `${c.label} · ${c.key}` })) : []
 
   /* ------------------------------ columns ------------------------------ */
   const setCol = (i: number, p: Partial<TableColumn>) => set({ columns: el.columns.map((c, j) => (j === i ? { ...c, ...p } : c)) })
@@ -63,7 +65,7 @@ export function TableProps({ el, schema }: { el: TableElement; schema: Attribute
     <>
       <PropSection title={t('catalog.editor.binding')}>
         <PropRow label={t('catalog.editor.tableField')}>
-          <SelectInput value={el.fieldKey} onChange={(v) => set({ fieldKey: v })} options={[{ value: '', label: t('catalog.editor.staticTable') }, ...(orderScope ? [{ value: ITEMS_DATASET, label: t('catalog.editor.ph.items') }] : []), ...tableFields.map((f) => ({ value: f.key, label: f.label }))]} />
+          <SelectInput value={el.fieldKey} onChange={(v) => set({ fieldKey: v })} options={[{ value: '', label: t('catalog.editor.staticTable') }, ...(orderScope || receiptScope ? [{ value: ITEMS_DATASET, label: t('catalog.editor.ph.items') }] : []), ...(receiptScope ? [{ value: PAYMENTS_DATASET, label: t('catalog.editor.ph.payments') }] : []), ...tableFields.map((f) => ({ value: f.key, label: f.label }))]} />
         </PropRow>
         {bound && <button type="button" className="text-[12px] text-brand-ink hover:underline text-left" onClick={bindAll}>{t('catalog.editor.bindAllColumns', { n: bound.columns.length })}</button>}
       </PropSection>
@@ -132,7 +134,7 @@ export function TableProps({ el, schema }: { el: TableElement; schema: Attribute
         ) : (
           <div className="flex flex-col gap-2">
             <p className="text-[12px] text-ink-2">
-              {itemsBound ? t('catalog.editor.rowsFromItems') : t('catalog.editor.rowsFromSchema', { n: presetCount ?? 0 })}
+              {itemsBound ? t('catalog.editor.rowsFromItems') : paymentsBound ? t('catalog.editor.rowsFromPayments') : t('catalog.editor.rowsFromSchema', { n: presetCount ?? 0 })}
             </p>
             {bound && schema && (
               <a href={routes.admin.schema(schema.id)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-[12px] text-brand-ink hover:underline">
