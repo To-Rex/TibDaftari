@@ -40,9 +40,12 @@ export type PrintElement =
 export class TPrintsError extends Error {
   /** true when the service could not be reached at all (not running / wrong port), as opposed to a print failure */
   readonly unreachable: boolean
-  constructor(message: string, unreachable = false) {
+  /** HTTP status of a failed request (404 = an older service without this endpoint) */
+  readonly status?: number
+  constructor(message: string, unreachable = false, status?: number) {
     super(message)
     this.unreachable = unreachable
+    this.status = status
   }
 }
 
@@ -63,7 +66,7 @@ const request = async <T>(s: PrintSettings, path: string, init: RequestInit & { 
   }
   // a failed job answers 502 with {ok:false, job:{status:'xato', error}}
   const body = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; job?: { error?: string; status?: string } } & T
-  if (!res.ok || body.ok === false) throw new TPrintsError(body.error || body.job?.error || `HTTP ${res.status}`)
+  if (!res.ok || body.ok === false) throw new TPrintsError(body.error || body.job?.error || `HTTP ${res.status}`, false, res.status)
   return body
 }
 

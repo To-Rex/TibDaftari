@@ -6,7 +6,7 @@ import { Button, Field, Input, Modal, Segmented, Select } from '@/shared/ui'
 import { BindingsFields, type Bindings } from './BindingsFields'
 import type { TemplateKind } from './kind'
 
-export interface NewTemplateInput extends Bindings { name: string; doc: TemplateDoc }
+export interface NewTemplateInput extends Bindings { name: string; doc: TemplateDoc; /** cheques: 'default' = the standard cheque, built by the API */ startFrom: 'default' | 'blank' | 'copy' }
 
 export function NewTemplateModal({ open, onClose, serviceTypes, categories, branches, templates, onSubmit, saving, initial, kind = 'result' }: {
   open: boolean; onClose: () => void; serviceTypes: ServiceType[]; categories: Category[]; branches?: Branch[]; templates: ResultTemplate[]; onSubmit: (i: NewTemplateInput) => void; saving?: boolean
@@ -19,14 +19,14 @@ export function NewTemplateModal({ open, onClose, serviceTypes, categories, bran
   const K = kind === 'receipt' ? 'catalog.receipts' : 'catalog.templates'
   const [name, setName] = useState('')
   const [b, setB] = useState<Bindings>({ serviceTypeIds: [], categoryIds: [], branchIds: [], scope: kind === 'receipt' ? 'receipt' : 'item', language: 'uz' })
-  const [from, setFrom] = useState<'blank' | 'copy'>('blank')
+  const [from, setFrom] = useState<'default' | 'blank' | 'copy'>(kind === 'receipt' ? 'default' : 'blank')
   const [copyId, setCopyId] = useState('')
   const [touched, setTouched] = useState(false)
   useEffect(() => {
     if (!open) return
     setName(initial?.name ?? '')
     setB({ serviceTypeIds: initial?.serviceTypeIds ?? [], categoryIds: initial?.categoryIds ?? [], branchIds: initial?.branchIds ?? [], scope: kind === 'receipt' ? 'receipt' : (initial?.scope ?? 'item'), language: initial?.language ?? 'uz' })
-    setFrom('blank'); setCopyId(templates[0]?.id ?? ''); setTouched(false)
+    setFrom(kind === 'receipt' ? 'default' : 'blank'); setCopyId(templates[0]?.id ?? ''); setTouched(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, templates])
   const err = touched && !name.trim() ? t('common.required') : undefined
@@ -34,7 +34,7 @@ export function NewTemplateModal({ open, onClose, serviceTypes, categories, bran
     setTouched(true)
     if (!name.trim()) return
     const src = from === 'copy' ? templates.find((x) => x.id === copyId) : undefined
-    onSubmit({ name: name.trim(), ...b, doc: src ? structuredClone(src.doc) : emptyDoc(b.scope === 'receipt' ? 'Receipt80' : 'A4') })
+    onSubmit({ name: name.trim(), ...b, startFrom: from, doc: src ? structuredClone(src.doc) : emptyDoc(b.scope === 'receipt' ? 'Receipt80' : 'A4') })
   }
   return (
     <Modal open={open} onClose={onClose} title={t(`${K}.new`)} description={t(`${K}.newHint`)} size="lg"
@@ -43,7 +43,8 @@ export function NewTemplateModal({ open, onClose, serviceTypes, categories, bran
         <Field label={t('common.name')} required error={err}>{(id) => <Input id={id} value={name} onChange={(e) => setName(e.target.value)} invalid={!!err} placeholder={t(`${K}.namePh`)} autoFocus />}</Field>
         <Field label={t('catalog.templates.startFrom')}>{() => (
           <div className="flex flex-col gap-2">
-            <Segmented value={from} onChange={setFrom} items={[{ value: 'blank', label: t('catalog.templates.blank') }, { value: 'copy', label: t('catalog.templates.copyOf') }]} />
+            <Segmented value={from} onChange={setFrom} items={[...(kind === 'receipt' ? [{ value: 'default' as const, label: t('catalog.receipts.startDefault') }] : []), { value: 'blank' as const, label: t('catalog.templates.blank') }, { value: 'copy' as const, label: t('catalog.templates.copyOf') }]} />
+            {from === 'default' && <p className="text-[12px] text-ink-3">{t('catalog.receipts.addDefaultHint')}</p>}
             {from === 'copy' && (
               <Select value={copyId} onChange={(e) => setCopyId(e.target.value)}>
                 {templates.map((x) => <option key={x.id} value={x.id}>{x.name} · v{x.version}</option>)}

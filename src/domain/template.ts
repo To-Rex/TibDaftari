@@ -136,6 +136,8 @@ export interface TableElement extends ElementBase {
   numberWidth?: number
   /** single-line cells: text never wraps, overflow is clipped, every row is exactly `rowHeight` (legacy SES blanks) */
   nowrap?: boolean
+  /** the table takes the height of its rows and everything below it moves along (cheques, order documents) */
+  grow?: boolean
 }
 
 export const TABLE_NUMBER_W = 28
@@ -324,6 +326,9 @@ export const RECEIPT_PLACEHOLDERS: { group: string; items: { key: string; label:
       { key: 'cashier.name', label: 'Kassir' },
       { key: 'branch.phone', label: 'Filial telefoni' },
       { key: 'today', label: 'Bugungi sana' },
+      { key: 'order.hasDiscount', label: 'Chegirma bor — showIf uchun (1 yoki bo‘sh)' },
+      { key: 'order.hasRemaining', label: 'Qoldiq bor — showIf uchun' },
+      { key: 'order.hasPayments', label: 'To‘lovlar bor — showIf uchun' },
     ],
   },
 ]

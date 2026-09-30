@@ -135,6 +135,8 @@ export interface TemplateRepository {
   setStatus(id: Id, status: ResultTemplate['status']): Promise<ResultTemplate>
   /** Draft copy; `name` / `branchIds` override the source (a branch importing another branch's template). */
   duplicate(id: Id, opts?: { name?: string; branchIds?: Id[] }): Promise<ResultTemplate>
+  /** The standard cheque as a new draft receipt template (name / branches / paper / label language optional). */
+  createDefaultReceipt(companyId: Id, input?: { name?: string; branchIds?: Id[]; paper?: 'Receipt80' | 'Receipt58'; language?: ResultTemplate['language'] }): Promise<ResultTemplate>
   delete(id: Id): Promise<void>
   listAssets(companyId: Id): Promise<TemplateAsset[]>
   uploadAsset(companyId: Id, asset: Omit<TemplateAsset, 'id' | 'companyId'>): Promise<TemplateAsset>

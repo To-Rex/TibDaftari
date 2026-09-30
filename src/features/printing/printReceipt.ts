@@ -8,7 +8,7 @@ import { toast } from '@/shared/ui'
 import { api } from '@/data/http/client'
 import { buildReceiptElements } from './receiptElements'
 import { printPdfInBrowser } from './printDocument'
-import { loadPrintSettings, tprintsPrint, tprintsPrintReceiptPdf, TPrintsError, type PrintMode } from './tprints'
+import { loadPrintSettings, tprintsPrint, tprintsPrintReceiptPdf, TPrintsError, type PrintMode, type PrintSettings } from './tprints'
 
 const browserPrint = () => window.print()
 
@@ -37,10 +37,17 @@ export async function printReceipt(props: ReceiptProps, t: TFunction, force?: Ex
     } catch (e) {
       const err = e instanceof TPrintsError ? e : new TPrintsError(String(e))
       if (mode === 'auto' && err.unreachable) { toast.warning(t('staff.reception.printing.fallback')); printPdfInBrowser(blob); return 'browser' }
+      // an older TPrints without /print/pdf (404): the built-in cheque still prints on it — nobody is left without a cheque
+      if (err.status === 404) { toast.warning(t('staff.reception.printing.oldService')); return printBuiltIn(props, t, mode, s) }
       toast.error(t('staff.reception.printing.failed'), err.message)
       throw err
     }
   }
+  return printBuiltIn(props, t, mode, s)
+}
+
+/** The built-in cheque: TPrints elements, or the hidden <Receipt> sheet through the browser dialog. */
+async function printBuiltIn(props: ReceiptProps, t: TFunction, mode: PrintMode, s: PrintSettings): Promise<'service' | 'browser'> {
   if (mode === 'browser') {
     browserPrint()
     return 'browser'

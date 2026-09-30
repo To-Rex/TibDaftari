@@ -109,7 +109,7 @@ const receptionUz = {
     check: 'Ulanishni tekshirish', connected: 'Ulandi · {{n}} ta printer', notConnected: 'TPrints topilmadi — dastur ishga tushganini va portni tekshiring',
     printer: 'Printer', defaultPrinter: 'Standart printer', copies: 'Nusxalar', paper: 'Qog‘oz kengligi', paperAuto: 'Profil bo‘yicha',
     testPrint: 'Sinov cheki', testSent: 'Sinov cheki yuborildi', saved: 'Printer sozlamalari saqlandi',
-    sent: 'Chek printerga yuborildi', fallback: 'TPrints topilmadi — chek brauzer orqali chop etilmoqda', failed: 'Chek chop etilmadi',
+    sent: 'Chek printerga yuborildi', fallback: 'TPrints topilmadi — chek brauzer orqali chop etilmoqda', failed: 'Chek chop etilmadi', oldService: 'TPrints eski versiya (PDF chop etish yo‘q) — o‘rnatilgan chek chop etildi. TPrints dasturini yangilang.',
     documentPrinter: 'Natijalar (A4) printeri', documentPrinterHint: 'Tasdiqlangan natija PDF‘lari shu printerga chiqadi — oddiy/lazer printer (TPrints profili: windows)', printResult: 'Natijani chop etish', viaServiceA4: 'A4 printerda chop etish (TPrints)', viaBrowserPdf: 'Brauzer orqali chop etish (PDF)', resultSent: 'Natija printerga yuborildi', fallbackPdf: 'TPrints topilmadi — natija brauzer orqali chop etilmoqda',
   },
 }
@@ -223,7 +223,7 @@ const receptionRu = {
     check: 'Проверить подключение', connected: 'Подключено · принтеров: {{n}}', notConnected: 'TPrints не найден — проверьте, что программа запущена, и порт',
     printer: 'Принтер', defaultPrinter: 'Принтер по умолчанию', copies: 'Копий', paper: 'Ширина бумаги', paperAuto: 'По профилю',
     testPrint: 'Тестовый чек', testSent: 'Тестовый чек отправлен', saved: 'Настройки принтера сохранены',
-    sent: 'Чек отправлен на принтер', fallback: 'TPrints не найден — чек печатается через браузер', failed: 'Чек не напечатан',
+    sent: 'Чек отправлен на принтер', fallback: 'TPrints не найден — чек печатается через браузер', failed: 'Чек не напечатан', oldService: 'Старая версия TPrints (нет печати PDF) — напечатан встроенный чек. Обновите TPrints.',
     documentPrinter: 'Принтер результатов (A4)', documentPrinterHint: 'PDF подтверждённых результатов печатаются на этом принтере — обычный/лазерный (профиль TPrints: windows)', printResult: 'Печать результата', viaServiceA4: 'Печать на A4-принтере (TPrints)', viaBrowserPdf: 'Печать через браузер (PDF)', resultSent: 'Результат отправлен на принтер', fallbackPdf: 'TPrints не найден — результат печатается через браузер',
   },
 }
@@ -289,7 +289,7 @@ const receptionEn = {
     check: 'Check connection', connected: 'Connected · {{n}} printers', notConnected: 'TPrints not found — make sure the app is running and check the port',
     printer: 'Printer', defaultPrinter: 'Default printer', copies: 'Copies', paper: 'Paper width', paperAuto: 'Per profile',
     testPrint: 'Test receipt', testSent: 'Test receipt sent', saved: 'Printer settings saved',
-    sent: 'Receipt sent to the printer', fallback: 'TPrints not found — printing the receipt via the browser', failed: 'Receipt was not printed',
+    sent: 'Receipt sent to the printer', fallback: 'TPrints not found — printing the receipt via the browser', failed: 'Receipt was not printed', oldService: 'Old TPrints version (no PDF printing) — the built-in receipt was printed. Update TPrints.',
     documentPrinter: 'Results (A4) printer', documentPrinterHint: 'Approved result PDFs go to this printer — a regular/laser printer (TPrints profile: windows)', printResult: 'Print result', viaServiceA4: 'Print on the A4 printer (TPrints)', viaBrowserPdf: 'Print via the browser (PDF)', resultSent: 'Result sent to the printer', fallbackPdf: 'TPrints not found — printing the result via the browser',
   },
 }

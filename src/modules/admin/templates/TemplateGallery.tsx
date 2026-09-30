@@ -8,12 +8,12 @@ import { useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
-import { ArrowDownToLine, LayoutTemplate, Plus, ReceiptText, Upload } from 'lucide-react'
+import { ArrowDownToLine, Info, LayoutTemplate, Plus, ReceiptText, Sparkles, Upload } from 'lucide-react'
 import type { ResultTemplate } from '@/domain'
 import { usePermissions } from '@/features/auth/store'
 import { useBranches } from '@/features/org/queries'
 import { useStaffSession } from '@/features/session/useSession'
-import { useCategories, useDeleteTemplate, useDuplicateTemplate, useSaveTemplate, useServiceTypes, useTemplateAssets, useTemplateStatus, useTemplates } from '@/features/catalog/queries'
+import { useCategories, useCreateDefaultReceipt, useDeleteTemplate, useDuplicateTemplate, useSaveTemplate, useServiceTypes, useTemplateAssets, useTemplateStatus, useTemplates } from '@/features/catalog/queries'
 import { NewTemplateModal, type NewTemplateInput } from '@/features/template-editor/NewTemplateModal'
 import { ImportFromBranchModal } from '@/features/template-editor/ImportFromBranchModal'
 import { TemplateCard } from '@/features/template-editor/TemplateCard'
@@ -27,7 +27,7 @@ import { MotionList, stagger } from '@/shared/ui/Page'
 type StatusFilter = 'all' | ResultTemplate['status']
 
 export function TemplateGallery({ kind }: { kind: TemplateKind }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const nav = useNavigate()
   const { companyId, branchId } = useStaffSession()
   const { can } = usePermissions()
@@ -51,6 +51,7 @@ export function TemplateGallery({ kind }: { kind: TemplateKind }) {
   const dup = useDuplicateTemplate()
   const setStatusM = useTemplateStatus()
   const del = useDeleteTemplate()
+  const mkDefault = useCreateDefaultReceipt(companyId)
 
   const [creating, setCreating] = useState(false)
   const [fromBranch, setFromBranch] = useState(false)
@@ -92,7 +93,18 @@ export function TemplateGallery({ kind }: { kind: TemplateKind }) {
   const inScope = useMemo(() => (x: ResultTemplate) => (!branchId || x.branchIds.includes(branchId)) && templateKind(x) === kind, [branchId, kind])
   const counts = useMemo(() => { const c = { all: 0, draft: 0, active: 0, archived: 0 }; for (const x of all.filter(inScope)) { c.all++; c[x.status]++ } return c }, [all, inScope])
 
+  // the standard cheque (labels in the interface language), bound to the selected branch, opened in the editor
+  const addDefault = async (name?: string, branchIds?: string[]) => {
+    const language = (['uz', 'ru', 'en'].includes(i18n.language) ? i18n.language : 'uz') as ResultTemplate['language']
+    try {
+      const tpl = await mkDefault.mutateAsync({ name, branchIds: branchIds ?? (branchId ? [branchId] : []), language })
+      setCreating(false)
+      toast.success(t('catalog.receipts.defaultAdded'))
+      nav(templateEditorRoute(tpl))
+    } catch (e) { toast.error(errorMessage(e)) }
+  }
   const create = async (input: NewTemplateInput) => {
+    if (kind === 'receipt' && input.startFrom === 'default') return addDefault(input.name, input.branchIds)
     try {
       const tpl = await save.mutateAsync({ name: input.name, doc: input.doc, serviceTypeIds: input.serviceTypeIds, categoryIds: input.categoryIds, branchIds: input.branchIds, scope: input.scope, language: input.language })
       setCreating(false)
@@ -115,18 +127,24 @@ export function TemplateGallery({ kind }: { kind: TemplateKind }) {
             <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={(e) => void onImportFile(e.target.files?.[0])} />
             <Button variant="secondary" leftIcon={<Upload className="size-4" />} loading={importing} onClick={() => fileRef.current?.click()} title={t('catalog.templates.importHint')}>{t('catalog.templates.import')}</Button>
             {branchId && <Button variant="secondary" leftIcon={<ArrowDownToLine className="size-4" />} onClick={() => setFromBranch(true)} title={t('catalog.templates.fromBranchHint')}>{t('catalog.templates.fromBranch')}</Button>}
+            {kind === 'receipt' && <Button variant="secondary" leftIcon={<Sparkles className="size-4" />} loading={mkDefault.isPending} onClick={() => void addDefault()} title={t('catalog.receipts.addDefaultHint')}>{t('catalog.receipts.addDefault')}</Button>}
             <Button data-hotkey="n" leftIcon={<Plus className="size-4" />} onClick={() => setCreating(true)}>{t(`${K}.new`)}</Button>
           </>
         )} />
       <Toolbar actions={<Segmented size="sm" className="max-w-full overflow-x-auto no-scrollbar" value={status} onChange={setStatus} items={(['all', 'draft', 'active', 'archived'] as const).map((s) => ({ value: s, label: `${s === 'all' ? t('common.all') : t(`catalog.templates.status.${s}`)} · ${counts[s]}` }))} />}>
         <SearchInput value={search} onChange={setSearch} placeholder={t(`${K}.searchPh`)} className="w-full sm:w-72" />
       </Toolbar>
+      {kind === 'receipt' && allQ.data && !all.some((x) => x.status === 'active' && (!branchId || !x.branchIds.length || x.branchIds.includes(branchId))) && (
+        <p className="flex items-start gap-2 rounded-[var(--radius)] border border-dashed border-line bg-surface-2/40 px-3 py-2 text-[12.5px] text-ink-2"><Info className="mt-0.5 size-4 shrink-0 text-ink-3" />{t('catalog.receipts.noActive')}</p>
+      )}
 
       {templates.isLoading ? (
         <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,270px),1fr))]">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-80 rounded-[var(--radius-lg)]" />)}</div>
       ) : list.length === 0 ? (
         <EmptyState icon={emptyIcon} title={t(`${K}.emptyTitle`)} description={search || status !== 'all' ? t('common.emptyHint') : t(`${K}.emptyHint`)}
-          action={canWrite && !search && status === 'all' && <Button leftIcon={<Plus className="size-4" />} onClick={() => setCreating(true)}>{t(`${K}.new`)}</Button>} />
+          action={canWrite && !search && status === 'all' && (kind === 'receipt'
+            ? <div className="flex flex-wrap justify-center gap-2"><Button leftIcon={<Sparkles className="size-4" />} loading={mkDefault.isPending} onClick={() => void addDefault()}>{t('catalog.receipts.addDefault')}</Button><Button variant="secondary" leftIcon={<Plus className="size-4" />} onClick={() => setCreating(true)}>{t(`${K}.new`)}</Button></div>
+            : <Button leftIcon={<Plus className="size-4" />} onClick={() => setCreating(true)}>{t(`${K}.new`)}</Button>)} />
       ) : (
         <MotionList variants={stagger} initial="hidden" animate="show" className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(min(100%,270px),1fr))]">
           {list.map((tpl) => (

@@ -4,7 +4,7 @@
  * print (window.print with @page size). The backend PDF renderer will follow the
  * exact same layout rules, so this is the visual contract.
  */
-import { memo, type CSSProperties } from 'react'
+import { memo, useCallback, useEffect, useRef, useState, type CSSProperties } from 'react'
 import type { RenderContext, TemplateAsset, TemplateDoc, TemplateElement, TextStyle, TableColumn } from '@/domain'
 import { fieldFlag, fieldReference, fieldUnit, fieldDef, formatValue, interpolate, paperSize, tableRows, visibleTableRows, TABLE_NUMBER_W, tableHeaderGroups } from '@/domain'
 import { cn } from '@/shared/lib/cn'
@@ -56,16 +56,47 @@ export const DocumentRenderer = memo(function DocumentRenderer({ doc, ctx, asset
   const size = paperSize(doc)
   const assetUrl = (id?: string) => assets.find((a) => a.id === id)?.url
   const hidden = new Set(hideElementIds ?? [])
+  // grow tables (cheques): drawn at the height of their rows, measured, and everything below them shifts —
+  // never in the editor's design view, where the boxes stay where the designer put them
+  const flow = !raw
+  const [growH, setGrowH] = useState<Record<string, number>>({})
+  const observers = useRef(new Map<string, ResizeObserver>())
+  const refFns = useRef(new Map<string, (node: HTMLDivElement | null) => void>())
+  const growRefFor = useCallback((id: string) => {
+    let fn = refFns.current.get(id)
+    if (!fn) {
+      fn = (node) => {
+        observers.current.get(id)?.disconnect()
+        observers.current.delete(id)
+        if (!node) return
+        const measure = () => { const h = node.offsetHeight; setGrowH((s) => (s[id] === h ? s : { ...s, [id]: h })) }
+        const ro = new ResizeObserver(measure)
+        ro.observe(node)
+        observers.current.set(id, ro)
+        measure()
+      }
+      refFns.current.set(id, fn)
+    }
+    return fn
+  }, [])
+  useEffect(() => { const obs = observers.current; return () => obs.forEach((o) => o.disconnect()) }, [])
+  const shown = (el: TemplateElement) => !el.hidden && !hidden.has(el.id) && (!!raw || !el.showIf || !!interpolate(el.showIf, ctx).trim())
+  const shifts = growShifts(doc.elements, growH, flow, shown)
+  // a receipt strip is as long as its content (the printer cuts after the last line)
+  const contentBottom = flow && doc.paper.startsWith('Receipt') ? doc.elements.reduce((m, el) => (shown(el) ? Math.max(m, el.y + (shifts.get(el.id) ?? 0) + (el.type === 'table' && el.grow ? (growH[el.id] ?? el.h) : el.h)) : m), 0) : 0
+  const sheetH = Math.max(size.h, contentBottom + doc.margin)
   return (
-    <div className={cn('relative origin-top-left', className)} style={{ width: size.w * scale, height: size.h * scale }}>
-      <div className="absolute left-0 top-0 origin-top-left" style={{ width: size.w, height: size.h, background: doc.background, transform: `scale(${scale})` }} data-paper>
+    <div className={cn('relative origin-top-left', className)} style={{ width: size.w * scale, height: sheetH * scale }}>
+      <div className="absolute left-0 top-0 origin-top-left" style={{ width: size.w, height: sheetH, background: doc.background, transform: `scale(${scale})` }} data-paper>
         {doc.elements.map((el, z) => {
           if (el.hidden || hidden.has(el.id)) return null
+          const dy = shifts.get(el.id) ?? 0
+          const grow = flow && el.type === 'table' && !!el.grow
           const nodes: (TemplateElement & { __row?: Record<string, unknown> })[] = []
           if (el.repeat && !raw) {
             const rows = tableRows(ctx, el.repeat.fieldKey)
-            rows.forEach((row, i) => nodes.push({ ...el, id: `${el.id}#${i}`, y: el.y + i * el.repeat!.step, __row: { ...row, __i: i + 1 } }))
-          } else nodes.push(el)
+            rows.forEach((row, i) => nodes.push({ ...el, id: `${el.id}#${i}`, y: el.y + dy + i * el.repeat!.step, __row: { ...row, __i: i + 1 } }))
+          } else nodes.push(dy ? { ...el, y: el.y + dy } : el)
           if (!raw && el.showIf) {
             const keep = nodes.filter((nd) => interpolate(el.showIf!, ctx, nd.__row).trim())
             nodes.length = 0
@@ -85,7 +116,7 @@ export const DocumentRenderer = memo(function DocumentRenderer({ doc, ctx, asset
           return [
             ...ghosts.map((n) => <ElementView key={n.id} el={n} z={z} ctx={ctx} raw={false} ghost assetUrl={assetUrl} selected={false} />),
             ...nodes.map((n) => (
-              <ElementView key={n.id} el={n} z={z} ctx={ctx} raw={!!raw} assetUrl={assetUrl} selected={selectedId === el.id} onClick={onElementClick ? () => onElementClick(el.id) : undefined} />
+              <ElementView key={n.id} el={n} z={z} ctx={ctx} raw={!!raw} assetUrl={assetUrl} selected={selectedId === el.id} onClick={onElementClick ? () => onElementClick(el.id) : undefined} growRef={grow ? growRefFor(el.id) : undefined} />
             )),
           ]
         })}
@@ -94,10 +125,29 @@ export const DocumentRenderer = memo(function DocumentRenderer({ doc, ctx, asset
   )
 })
 
-function ElementView({ el, z, ctx, raw, ghost, assetUrl, selected, onClick }: { el: TemplateElement & { __row?: Record<string, unknown> }; z: number; ctx: RenderContext; raw: boolean; ghost?: boolean; assetUrl: (id?: string) => string | undefined; selected: boolean; onClick?: () => void }) {
+/**
+ * Tables with `grow` take the height of their rows: every element whose top is at or below such a table's designed
+ * bottom edge (y + h) moves by the measured difference — down for more rows, up for fewer; a grow table hidden by
+ * showIf counts as height 0. Unmeasured tables (first paint) keep their designed box.
+ */
+function growShifts(elements: TemplateElement[], heights: Record<string, number>, flow: boolean, shown: (el: TemplateElement) => boolean): Map<string, number> {
+  const out = new Map<string, number>()
+  if (!flow) return out
+  for (const g of elements) {
+    if (g.type !== 'table' || !g.grow || g.hidden) continue
+    const actual = shown(g) ? heights[g.id] : 0
+    if (actual == null) continue
+    const delta = actual - g.h
+    if (!delta) continue
+    for (const el of elements) if (el !== g && el.y >= g.y + g.h) out.set(el.id, (out.get(el.id) ?? 0) + delta)
+  }
+  return out
+}
+
+function ElementView({ el, z, ctx, raw, ghost, assetUrl, selected, onClick, growRef }: { el: TemplateElement & { __row?: Record<string, unknown> }; z: number; ctx: RenderContext; raw: boolean; ghost?: boolean; assetUrl: (id?: string) => string | undefined; selected: boolean; onClick?: () => void; /** grow table: the wrapper is measured (auto height) */ growRef?: (node: HTMLDivElement | null) => void }) {
   const base: CSSProperties = { position: 'absolute', left: el.x, top: el.y, width: el.w, height: el.h, opacity: ghost ? (el.opacity ?? 1) * 0.55 : (el.opacity ?? 1), transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined, zIndex: z, boxSizing: 'border-box', pointerEvents: ghost ? 'none' : undefined }
   const wrap = (child: React.ReactNode, extra?: CSSProperties) => (
-    <div style={{ ...base, ...extra }} data-el={ghost ? undefined : el.id} data-ghost={ghost ? '' : undefined} onMouseDown={onClick} className={cn(onClick && 'cursor-pointer', selected && 'outline outline-2 outline-[#0f7a6b] outline-offset-1', raw && !selected && 'hover:outline hover:outline-1 hover:outline-[#0f7a6b]/50')}>
+    <div ref={growRef} style={{ ...base, ...extra }} data-el={ghost ? undefined : el.id} data-ghost={ghost ? '' : undefined} onMouseDown={onClick} className={cn(onClick && 'cursor-pointer', selected && 'outline outline-2 outline-[#0f7a6b] outline-offset-1', raw && !selected && 'hover:outline hover:outline-1 hover:outline-[#0f7a6b]/50')}>
       {child}
     </div>
   )
@@ -216,7 +266,7 @@ function ElementView({ el, z, ctx, raw, ghost, assetUrl, selected, onClick }: { 
             ))}
           </tbody>
         </table>,
-        { overflow: 'hidden' },
+        growRef ? { overflow: 'visible', height: 'auto' } : { overflow: 'hidden' },
       )
     }
   }

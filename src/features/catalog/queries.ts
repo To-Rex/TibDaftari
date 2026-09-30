@@ -101,6 +101,11 @@ export function useDuplicateTemplate() {
   const inv = useInvalidate()
   return useMutation({ mutationFn: ({ id, name, branchIds }: { id: Id; name?: string; branchIds?: Id[] }) => repos.templates.duplicate(id, { name, branchIds }), onSuccess: () => inv([['templates']]) })
 }
+/** The standard cheque as a new draft receipt template of the company. */
+export function useCreateDefaultReceipt(companyId: Id) {
+  const inv = useInvalidate()
+  return useMutation({ mutationFn: (input: Parameters<typeof repos.templates.createDefaultReceipt>[1]) => repos.templates.createDefaultReceipt(companyId, input), onSuccess: () => inv([['templates']]) })
+}
 export function useDeleteTemplate() {
   const inv = useInvalidate()
   return useMutation({ mutationFn: (id: Id) => repos.templates.delete(id), onSuccess: () => inv([['templates']]) })

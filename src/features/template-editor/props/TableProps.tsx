@@ -159,6 +159,8 @@ export function TableProps({ el, schema }: { el: TableElement; schema: Attribute
         <PropRow label={t('catalog.editor.rowHeight')}><NumInput value={el.rowHeight} min={10} max={80} onChange={(v) => set({ rowHeight: v })} suffix="px" /></PropRow>
         <Checkbox checked={!!el.nowrap} onChange={(e) => set({ nowrap: e.target.checked || undefined })} label={<span className="text-[12.5px]">{t('catalog.editor.nowrap')}</span>} />
         {el.nowrap && <p className="text-[11.5px] text-ink-3">{t('catalog.editor.nowrapHint')}</p>}
+        <Checkbox checked={!!el.grow} onChange={(e) => set({ grow: e.target.checked || undefined })} label={<span className="text-[12.5px]">{t('catalog.editor.grow')}</span>} />
+        {el.grow && <p className="text-[11.5px] text-ink-3">{t('catalog.editor.growHint')}</p>}
         {el.showRowNumber && (
           <PropRow label={t('catalog.editor.numberColumn')}><TextInput value={el.numberHeader ?? '№'} onChange={(v) => set({ numberHeader: v || undefined })} className="max-w-[80px]" /><NumInput value={el.numberWidth ?? 28} min={12} max={120} onChange={(v) => set({ numberWidth: v })} suffix="px" className="max-w-[96px]" /></PropRow>
         )}

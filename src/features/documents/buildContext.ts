@@ -34,7 +34,7 @@ export function buildRenderContext(input: {
       address,
       passportNumber: p?.passportNumber ?? '',
     },
-    order: orderBlock(input.order),
+    order: { ...orderBlock(input.order), ...(input.payments ? { hasPayments: input.payments.length ? '1' : '' } : {}) },
     ...(input.cashier != null ? { cashier: { name: input.cashier } } : {}),
     ...(input.payments ? { payments: input.payments.map((pay, i) => ({ i: i + 1, date: fmtDateTime(pay.createdAt), method: paymentMethodLabel(pay.method), amount: fmtMoney(pay.amount, false), note: pay.note ?? '' })) } : {}),
     item: {
@@ -71,6 +71,8 @@ function orderBlock(o: NonNullable<Parameters<typeof buildRenderContext>[0]['ord
       subtotal: fmtMoney(o.subtotal ?? total, false), discountPercent: String(o.discountPercent ?? 0), discountAmount: fmtMoney(o.discountAmount ?? 0, false),
       total: fmtMoney(total, false), paidAmount: fmtMoney(paid, false), remaining: fmtMoney(Math.max(0, total - paid), false),
       itemCount: String(o.itemCount ?? 0), note: o.note ?? '', status: o.status ?? '',
+      // presence flags for showIf (the discount line, the balance line)
+      hasDiscount: (o.discountPercent ?? 0) > 0 || (o.discountAmount ?? 0) > 0 ? '1' : '', hasRemaining: total - paid > 0 ? '1' : '',
     })
   }
   return block

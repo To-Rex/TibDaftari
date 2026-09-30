@@ -41,6 +41,8 @@ export const templatesHttp: TemplateRepository = {
 
   duplicate: (id, opts) => api.post<ResultTemplate>(`/templates/${id}/duplicate`, compact({ name: opts?.name, branchIds: opts?.branchIds })),
 
+  createDefaultReceipt: (companyId, input) => api.post<ResultTemplate>(`/companies/${companyId}/templates/default-receipt`, compact({ name: input?.name, branchIds: input?.branchIds, paper: input?.paper, language: input?.language })),
+
   delete: (id) => api.delete<void>(`/templates/${id}`),
 
   listAssets: async (companyId: Id) => (await api.get<TemplateAsset[]>(`/companies/${companyId}/assets`)).map(withAbsoluteUrl),
