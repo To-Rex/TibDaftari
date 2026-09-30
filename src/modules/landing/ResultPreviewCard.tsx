@@ -24,7 +24,7 @@ export function ResultPreviewCard() {
         <div className="flex flex-wrap items-center gap-3 border-b border-line px-4 py-4 xs:px-5">
           <BrandMark size={34} />
           <div className="min-w-0 flex-1 basis-[150px]">
-            <p className="text-[14px] font-semibold leading-tight">Shifo Med · Markaziy filial</p>
+            <p className="text-[14px] font-semibold leading-tight">Temo Med · Markaziy filial</p>
             <p className="text-[12px] text-ink-3">Chek UR-001240 · 16.08.2026</p>
           </div>
           <Badge tone="ok" dot>Tasdiqlangan</Badge>
@@ -66,7 +66,7 @@ export function ResultPreviewCard() {
       >
         <span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand-soft text-brand-ink"><MessageSquareText className="size-4" /></span>
         <div className="min-w-0">
-          <p className="text-[12px] font-semibold">SMS · Shifo Med</p>
+          <p className="text-[12px] font-semibold">SMS · Temo Med</p>
           <p className="text-[12.5px] leading-snug text-ink-2">Bioximiyaviy qon tahlili natijasi tayyor. Portalda ko‘rishingiz mumkin.</p>
         </div>
       </motion.div>
