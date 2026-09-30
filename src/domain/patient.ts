@@ -11,6 +11,8 @@ export type Gender = 'male' | 'female'
 export interface Patient extends AuditStamp {
   id: Id
   companyId: Id
+  /** the branch that registered the patient (null: legacy, before branches owned patients) */
+  branchId?: Id | null
   fullName: string
   phone: string // normalized 998XXXXXXXXX
   phoneExtra?: string
@@ -41,6 +43,8 @@ export interface Patient extends AuditStamp {
 }
 
 export interface PatientUpsertInput {
+  /** the branch registering the patient (default: the employee's own branch) */
+  branchId?: Id
   fullName: string
   phone: string
   gender?: Gender

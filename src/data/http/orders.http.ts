@@ -120,7 +120,7 @@ export const ordersHttp: OrderRepository = {
   listDocuments: async (q) => {
     const companyId = await currentCompanyId()
     const docs = await api.get<ResultDocument[]>(`/companies/${companyId}/documents`, {
-      query: { orderId: q.orderId, patientId: q.patientId },
+      query: { orderId: q.orderId, patientId: q.patientId, branchId: q.branchId },
     })
     return docs.map(withPdfUrl)
   },

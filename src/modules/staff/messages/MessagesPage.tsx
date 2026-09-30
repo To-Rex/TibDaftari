@@ -18,7 +18,7 @@ type Tab = 'all' | MessageStatus
 
 export default function MessagesPage() {
   const { t } = useTranslation()
-  const { companyId } = useStaffSession()
+  const { companyId, branchId } = useStaffSession()
   const { can } = usePermissions()
   const [tab, setTab] = useState<Tab>('all')
   const [search, setSearch] = useState('')
@@ -26,16 +26,17 @@ export default function MessagesPage() {
   const [pageSize, setPageSize] = useState(20)
   const [compose, setCompose] = useState(false)
   const q = useDebounce(search.trim(), 300)
-  useEffect(() => setPage(1), [tab, q, pageSize])
+  useEffect(() => setPage(1), [tab, q, pageSize, branchId])
 
-  const params = { status: tab === 'all' ? undefined : tab, search: q || undefined, page, pageSize }
+  // the outbox of the selected branch (messages are stamped with the branch of their cheque / sender)
+  const params = { status: tab === 'all' ? undefined : tab, search: q || undefined, page, pageSize, branchId: branchId ?? undefined }
   const [live, setLive] = useState(false)
   const list = useOutbox(companyId, params, live ? 3000 : 30_000)
   const rows = useMemo(() => list.data?.items ?? [], [list.data])
   useEffect(() => setLive(rows.some((m) => m.status === 'queued' || m.status === 'sent')), [rows])
 
   // one GROUP BY request for every status tab
-  const countsQ = useOutboxCounts(companyId, { search: q || undefined }, live ? 3000 : 30_000)
+  const countsQ = useOutboxCounts(companyId, { search: q || undefined, branchId: branchId ?? undefined }, live ? 3000 : 30_000)
   const countOf = useMemo(() => Object.fromEntries(MESSAGE_STATUSES.map((s) => [s, countsQ.data?.[s]])) as Record<MessageStatus, number | undefined>, [countsQ.data])
 
   const columns: Column<OutboxMessage>[] = [

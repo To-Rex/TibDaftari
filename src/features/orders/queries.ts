@@ -8,7 +8,7 @@ export const orderKeys = {
   all: ['orders'] as const,
   list: (companyId: Id, q: OrderListParams) => ['orders', companyId, q] as const,
   detail: (id: Id) => ['order', id] as const,
-  documents: (q: { orderId?: Id; patientId?: Id }) => ['documents', q] as const,
+  documents: (q: { orderId?: Id; patientId?: Id; branchId?: Id }) => ['documents', q] as const,
 }
 
 export const useOrdersList = (companyId: Id, q: OrderListParams, enabled = true) =>
@@ -17,7 +17,7 @@ export const useOrdersList = (companyId: Id, q: OrderListParams, enabled = true)
 export const useOrder = (id: Id | undefined) =>
   useQuery({ queryKey: orderKeys.detail(id ?? ''), queryFn: () => repos.orders.get(id!), enabled: !!id })
 
-export const useDocuments = (q: { orderId?: Id; patientId?: Id }, enabled = true) =>
+export const useDocuments = (q: { orderId?: Id; patientId?: Id; branchId?: Id }, enabled = true) =>
   useQuery({ queryKey: orderKeys.documents(q), queryFn: () => repos.orders.listDocuments(q), enabled })
 
 /** Invalidate everything an order mutation may have touched. */

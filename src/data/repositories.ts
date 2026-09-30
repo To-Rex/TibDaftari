@@ -73,9 +73,10 @@ export interface StaffRepository {
 }
 
 export interface PatientRepository {
-  list(companyId: Id, q: PageQuery & { tag?: string }): Promise<Page<Patient>>
-  get(id: Id): Promise<Patient>
-  search(companyId: Id, query: string, limit?: number): Promise<Patient[]>
+  /** `branchId` keeps every read inside one branch (list membership, visit statistics); the API also confines pinned employees itself. */
+  list(companyId: Id, q: PageQuery & { tag?: string; branchId?: Id }): Promise<Page<Patient>>
+  get(id: Id, q?: { branchId?: Id }): Promise<Patient>
+  search(companyId: Id, query: string, limit?: number, branchId?: Id): Promise<Patient[]>
   create(companyId: Id, input: PatientUpsertInput): Promise<Patient>
   update(id: Id, input: Partial<PatientUpsertInput>): Promise<Patient>
   findDuplicates(companyId: Id, input: Partial<PatientUpsertInput>): Promise<Patient[]>
@@ -124,7 +125,7 @@ export interface OrderRepository {
   /** Items an order-scope template would cover for this order (for preview / confirmation UI). */
   orderScopeItems(orderId: Id, templateId: Id): Promise<OrderItem[]>
   rejectItem(itemId: Id, employeeId: Id, reason: string): Promise<OrderItem>
-  listDocuments(q: { orderId?: Id; patientId?: Id }): Promise<ResultDocument[]>
+  listDocuments(q: { orderId?: Id; patientId?: Id; branchId?: Id }): Promise<ResultDocument[]>
   getDocument(id: Id): Promise<ResultDocument>
 }
 
@@ -143,10 +144,10 @@ export interface TemplateRepository {
 }
 
 export interface MessagingRepository {
-  listOutbox(companyId: Id, q: PageQuery & { status?: string; kind?: string }): Promise<Page<OutboxMessage>>
+  listOutbox(companyId: Id, q: PageQuery & { status?: string; kind?: string; branchId?: Id }): Promise<Page<OutboxMessage>>
   /** Per-status counters for the same outbox filters (one request for all tabs). */
-  outboxCounts(companyId: Id, q: { kind?: string; search?: string }): Promise<Record<'all' | MessageStatus | 'sending', number>>
-  send(companyId: Id, input: { to: string[]; text: string; kind: OutboxMessage['kind']; scheduledAt?: string }): Promise<OutboxMessage[]>
+  outboxCounts(companyId: Id, q: { kind?: string; search?: string; branchId?: Id }): Promise<Record<'all' | MessageStatus | 'sending', number>>
+  send(companyId: Id, input: { to: string[]; text: string; kind: OutboxMessage['kind']; scheduledAt?: string; branchId?: Id }): Promise<OutboxMessage[]>
   notifications(): Promise<Notification[]>
   markRead(id?: Id): Promise<void>
 }

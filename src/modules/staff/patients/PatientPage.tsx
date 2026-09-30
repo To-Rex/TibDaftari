@@ -22,7 +22,7 @@ type Tab = 'orders' | 'results' | 'info'
 export default function PatientPage() {
   const { t } = useTranslation()
   const { patientId = '' } = useParams()
-  const { companyId } = useStaffSession()
+  const { companyId, branchId } = useStaffSession()
   const { can } = usePermissions()
   const q = usePatient(patientId)
   const [tab, setTab] = useState<Tab>('orders')
@@ -30,9 +30,10 @@ export default function PatientPage() {
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState('createdAt')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
-  const params = useMemo(() => ({ patientId, page, pageSize: 10, sortBy, sortDir }), [patientId, page, sortBy, sortDir])
+  // cheques and results of the selected branch only — the patient may also be a client of other branches
+  const params = useMemo(() => ({ patientId, page, pageSize: 10, sortBy, sortDir, branchId: branchId ?? undefined }), [patientId, page, sortBy, sortDir, branchId])
   const orders = useOrdersList(companyId, params, !!patientId)
-  const docs = useDocuments({ patientId }, tab === 'results')
+  const docs = useDocuments({ patientId, branchId: branchId ?? undefined }, tab === 'results')
   const newOrder = useNewOrder()
   const p = q.data
 

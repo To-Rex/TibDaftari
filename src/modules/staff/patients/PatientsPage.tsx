@@ -19,7 +19,7 @@ const TAGS = ['VIP', 'Shartnoma', 'Bola', 'Homilador']
 export default function PatientsPage() {
   const { t } = useTranslation()
   const nav = useNavigate()
-  const { companyId } = useStaffSession()
+  const { companyId, branchId } = useStaffSession()
   const { can } = usePermissions()
   const [sp, setSp] = useSearchParams()
   const [search, setSearch] = useState('')
@@ -33,7 +33,9 @@ export default function PatientsPage() {
 
   useEffect(() => { if (sp.get('new') === '1' && can('reception.patient.write')) { setDrawer(true); sp.delete('new'); setSp(sp, { replace: true }) } }, [sp, setSp, can])
 
-  const params = useMemo(() => ({ page, pageSize, search: dq || undefined, tag, sortBy, sortDir }), [page, pageSize, dq, tag, sortBy, sortDir])
+  // the top-bar branch scopes the list: patients registered in / seen at that branch (all branches for admins who chose so)
+  const params = useMemo(() => ({ page, pageSize, search: dq || undefined, tag, sortBy, sortDir, branchId: branchId ?? undefined }), [page, pageSize, dq, tag, sortBy, sortDir, branchId])
+  useEffect(() => setPage(1), [branchId])
   const q = usePatientsList(companyId, params)
   const onSort = (key: string) => { if (key === sortBy) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc')); else { setSortBy(key); setSortDir(key === 'fullName' ? 'asc' : 'desc') }; setPage(1) }
 

@@ -7,7 +7,7 @@ import type { MessagingRepository } from '@/data/repositories'
 import { api, compact } from './client'
 
 export const messagingHttp: MessagingRepository = {
-  outboxCounts: (companyId, q) => api.get(`/companies/${companyId}/outbox/counts`, { query: { kind: q.kind, search: q.search } }),
+  outboxCounts: (companyId, q) => api.get(`/companies/${companyId}/outbox/counts`, { query: { kind: q.kind, search: q.search, branchId: q.branchId } }),
 
   /** Sort is fixed server-side (createdAt desc); sortBy/sortDir are forwarded but ignored. */
   listOutbox: (companyId, q) =>
@@ -20,13 +20,14 @@ export const messagingHttp: MessagingRepository = {
         sortDir: q.sortDir,
         status: q.status,
         kind: q.kind,
+        branchId: q.branchId,
       },
     }),
 
   send: (companyId, input) =>
     api.post<OutboxMessage[]>(
       `/companies/${companyId}/messages/send`,
-      compact({ to: input.to, text: input.text, kind: input.kind, scheduledAt: input.scheduledAt }),
+      compact({ to: input.to, text: input.text, kind: input.kind, scheduledAt: input.scheduledAt, branchId: input.branchId }),
     ),
 
   notifications: () => api.get<Notification[]>('/notifications'),

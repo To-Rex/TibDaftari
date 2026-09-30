@@ -6,10 +6,10 @@ import { api, compact } from './client'
 export const patientsHttp: PatientRepository = {
   list: (companyId, q) => api.get<Page<Patient>>(`/companies/${companyId}/patients`, { query: { ...q } }),
 
-  get: (id) => api.get<Patient>(`/patients/${id}`),
+  get: (id, q) => api.get<Patient>(`/patients/${id}`, { query: { branchId: q?.branchId } }),
 
-  search: (companyId, query, limit) =>
-    api.get<Patient[]>(`/companies/${companyId}/patients/search`, { query: { q: query, limit } }),
+  search: (companyId, query, limit, branchId) =>
+    api.get<Patient[]>(`/companies/${companyId}/patients/search`, { query: { q: query, limit, branchId } }),
 
   create: (companyId, input) => api.post<Patient>(`/companies/${companyId}/patients`, compact({ ...input })),
 

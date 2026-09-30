@@ -39,11 +39,13 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
   const qc = useQueryClient()
   useEffect(() => { warmWorkspaceData(qc, staff.companyId, module); preloadRouteChunks() }, [qc, staff.companyId, module])
 
+  // the sidebar counters (lab / confirm / SMS queues) follow the selected branch like the pages they point to
+  const badgeBranchId = useAuth((s) => s.branchId)
   const pending = useQuery({
-    queryKey: ['shell-badges', staff.companyId],
+    queryKey: ['shell-badges', staff.companyId, badgeBranchId],
     queryFn: async () => {
       const today = new Date().toISOString().slice(0, 10)
-      const d = await repos.reports.dashboard(staff.companyId, { dateFrom: today, dateTo: today })
+      const d = await repos.reports.dashboard(staff.companyId, { branchId: badgeBranchId ?? undefined, dateFrom: today, dateTo: today })
       return { lab: d.pendingLab, confirm: d.pendingApproval, sms: d.smsQueued }
     },
     refetchInterval: 30_000,
