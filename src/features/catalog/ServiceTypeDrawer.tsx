@@ -37,7 +37,8 @@ export function ServiceTypeDrawer({ open, onClose, initial, categories, branches
   const nameErr = touched && !d.name.trim() ? t('common.required') : undefined
   const catErr = touched && !d.categoryId ? t('common.required') : undefined
   const published = schemas.filter((s) => s.status === 'published')
-  const boundTemplates = useMemo(() => templates.filter((tp) => tp.serviceTypeIds.length === 0 || (d.id ? tp.serviceTypeIds.includes(d.id) : false)), [templates, d.id])
+  // cheque templates are not result documents: only item/order templates apply to a service
+  const boundTemplates = useMemo(() => templates.filter((tp) => tp.scope !== 'receipt' && (tp.serviceTypeIds.length === 0 || (d.id ? tp.serviceTypeIds.includes(d.id) : false))), [templates, d.id])
   const submit = () => { setTouched(true); if (!d.name.trim() || !d.categoryId) return; onSubmit({ ...d, name: d.name.trim(), code: d.code.trim().toUpperCase() }) }
   const num = (v: string) => (v === '' ? 0 : Math.max(0, Number(v) || 0))
 

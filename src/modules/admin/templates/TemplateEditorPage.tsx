@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { Braces, Layers, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import type { TemplateAsset } from '@/domain'
@@ -22,6 +22,7 @@ import { createElement } from '@/features/template-editor/elementDefaults'
 import { useAutosaveDraft } from '@/features/template-editor/useAutosaveDraft'
 import { useEditorShortcuts } from '@/features/template-editor/useEditorShortcuts'
 import { useEditorStore, useIsDirty } from '@/features/template-editor/useEditorStore'
+import { templateKind, templateListRoute } from '@/features/template-editor/kind'
 import { useTemplateSchema } from '@/features/template-editor/useTemplateSchema'
 import { routes } from '@/shared/config/routes'
 import { cn } from '@/shared/lib/cn'
@@ -40,6 +41,9 @@ export default function TemplateEditorPage() {
   const canPublish = can('admin.template.publish')
 
   const tplQ = useTemplate(templateId)
+  // a cheque template goes back to /admin/receipts, a result document to /admin/templates
+  const { pathname } = useLocation()
+  const backTo = templateListRoute(tplQ.data ? templateKind(tplQ.data) : pathname.startsWith(routes.admin.receipts) ? 'receipt' : 'result')
   const serviceTypes = useServiceTypes(companyId, {})
   const categories = useCategories(companyId)
   const branches = useBranches(companyId)
@@ -49,6 +53,7 @@ export default function TemplateEditorPage() {
   const loaded = useEditorStore((s) => s.template?.id)
   const previewStId = useEditorStore((s) => s.previewServiceTypeId)
   const doc = useEditorStore((s) => s.doc)
+  const isReceipt = useEditorStore((s) => s.meta?.scope === 'receipt')
   const preview = useEditorStore((s) => s.preview)
   const dirty = useIsDirty()
   const { schema, ctx, assets, services } = useTemplateSchema(previewStId, companyId)
@@ -117,7 +122,7 @@ export default function TemplateEditorPage() {
   if (tplQ.isLoading || !loaded) {
     return <div className="h-[calc(100dvh-4rem)] flex flex-col"><Skeleton className="h-14 rounded-none" /><div className="flex-1 flex gap-4 p-6"><Skeleton className="w-64" /><Skeleton className="flex-1" /><Skeleton className="w-80" /></div></div>
   }
-  if (tplQ.isError || !tplQ.data) return <div className="p-10"><EmptyState title={t('common.error')} description={errorMessage(tplQ.error)} action={<Button onClick={() => nav(routes.admin.templates)}>{t('common.back')}</Button>} /></div>
+  if (tplQ.isError || !tplQ.data) return <div className="p-10"><EmptyState title={t('common.error')} description={errorMessage(tplQ.error)} action={<Button onClick={() => nav(backTo)}>{t('common.back')}</Button>} /></div>
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-[calc(100dvh-4rem)] flex flex-col overflow-hidden">
@@ -131,7 +136,7 @@ export default function TemplateEditorPage() {
             toast.success(t('catalog.templates.exported'))
           } catch (e) { toast.error(errorMessage(e)) }
         }}
-        onBack={() => nav(routes.admin.templates)} onSave={() => void doSave()} onActivate={() => setActivateAsk(true)}
+        onBack={() => nav(backTo)} onSave={() => void doSave()} onActivate={() => setActivateAsk(true)}
         onBindings={() => { setBindDraft({ ...useEditorStore.getState().meta }); setBindingsOpen(true) }} onPrint={() => setPrinting(true)} />
 
       {(() => {
@@ -147,7 +152,7 @@ export default function TemplateEditorPage() {
               {!preview && <Toolbar onPickImage={() => setAssetPick('new')} onFit={() => setFitSignal((n) => n + 1)} onOpenPanels={() => setPanelsSheet(true)} onOpenProps={() => setPropsSheet(true)} />}
               {canvas}
               <Drawer open={panelsSheet && !preview} onClose={() => setPanelsSheet(false)} side="left" width="max-w-full sm:max-w-sm" title={leftTab === 'layers' ? t('catalog.editor.layers') : t('catalog.editor.placeholders')} className="[&>div:nth-child(2)]:p-0 [&>div:nth-child(2)]:flex [&>div:nth-child(2)]:flex-col">
-                <div className="px-3 pt-3"><PreviewAsSelect serviceTypes={serviceTypes.data ?? []} /></div>
+                {!isReceipt && <div className="px-3 pt-3"><PreviewAsSelect serviceTypes={serviceTypes.data ?? []} /></div>}
                 {panelTabs}
                 <div className="flex-1 min-h-0 flex flex-col">{panelBody}</div>
               </Drawer>
@@ -194,7 +199,7 @@ export default function TemplateEditorPage() {
 
       <Modal open={bindingsOpen} onClose={() => setBindingsOpen(false)} title={t('catalog.editor.bindings')} description={t('catalog.editor.bindingsHint')} size="lg"
         footer={<><Button variant="ghost" onClick={() => setBindingsOpen(false)}>{t('common.cancel')}</Button><Button onClick={() => { if (bindDraft) useEditorStore.getState().setMeta(bindDraft); setBindingsOpen(false) }}>{t('common.done')}</Button></>}>
-        {bindDraft && <BindingsFields value={bindDraft} onChange={setBindDraft} serviceTypes={serviceTypes.data ?? []} categories={categories.data ?? []} branches={branches.data ?? []} />}
+        {bindDraft && <BindingsFields value={bindDraft} onChange={setBindDraft} kind={templateKind(bindDraft)} serviceTypes={serviceTypes.data ?? []} categories={categories.data ?? []} branches={branches.data ?? []} />}
       </Modal>
 
       <ConfirmDialog open={activateAsk} onClose={() => setActivateAsk(false)} loading={setStatus.isPending || save.isPending} title={t('catalog.templates.activateTitle', { name: useEditorStore.getState().meta.name })} description={t('catalog.templates.activateHint')} confirmText={t('catalog.templates.activate')} cancelText={t('common.cancel')} onConfirm={() => void activate()} />

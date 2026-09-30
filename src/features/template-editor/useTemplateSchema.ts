@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import type { AttributeSchema, RenderContext, ServiceType, TemplateAsset } from '@/domain'
+import type { AttributeSchema, RenderContext, ResultTemplate, ServiceType, TemplateAsset } from '@/domain'
 import { sampleOrderRenderContext, sampleReceiptRenderContext, sampleRenderContext } from '@/features/documents/buildContext'
 import { useCategories, useSchemas, useServiceTypes, useTemplateAssets } from '@/features/catalog/queries'
 import { useEditorStore } from './useEditorStore'
@@ -12,8 +12,10 @@ export interface PaletteService { code: string; name: string; serviceTypeId: str
  *   order-scope -> every bound service (serviceTypeIds + categoryIds) with its schema, exposed as
  *                  ctx.items so {svc.CODE.field} placeholders and the `items` dataset resolve.
  */
-export function useTemplateSchema(serviceTypeId: string | null | undefined, companyId: string): { schema: AttributeSchema | null; ctx: RenderContext; assets: TemplateAsset[]; loading: boolean; services: PaletteService[]; orderScope: boolean; receiptScope: boolean } {
-  const meta = useEditorStore((s) => s.meta)
+export function useTemplateSchema(serviceTypeId: string | null | undefined, companyId: string, tpl?: Pick<ResultTemplate, 'scope' | 'serviceTypeIds' | 'categoryIds'>): { schema: AttributeSchema | null; ctx: RenderContext; assets: TemplateAsset[]; loading: boolean; services: PaletteService[]; orderScope: boolean; receiptScope: boolean } {
+  const storeMeta = useEditorStore((s) => s.meta)
+  // outside the editor (gallery cards) the template itself says what to preview against
+  const meta = tpl ?? storeMeta
   const orderScope = meta?.scope === 'order'
   const receiptScope = meta?.scope === 'receipt'
   const assets = useTemplateAssets(companyId)

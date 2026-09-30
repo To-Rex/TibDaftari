@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'motion/react'
-import { ArrowRight, Building2, CheckCircle2, CircleAlert, FolderTree, GitBranch, LayoutTemplate, ListChecks, Send, ShieldCheck, UserCog, Bell } from 'lucide-react'
+import { ArrowRight, Building2, CheckCircle2, CircleAlert, FolderTree, GitBranch, LayoutTemplate, ListChecks, ReceiptText, Send, ShieldCheck, UserCog, Bell } from 'lucide-react'
 import { repos } from '@/data'
 import { useStaffSession } from '@/features/session/useSession'
 import { useCompany } from '@/features/org/queries'
@@ -37,7 +37,7 @@ export default function AdminDashboardPage() {
     const o = overview.data
     const c = company.data
     if (!o || !c) return []
-    const activeTpl = o.templates.filter((x) => x.status === 'active')
+    const activeTpl = o.templates.filter((x) => x.status === 'active' && x.scope !== 'receipt') // cheque templates are not result documents
     const generic = activeTpl.some((x) => !x.serviceTypeIds.length && !x.categoryIds.length)
     const missing = o.serviceTypes.filter((s) => s.isActive && !generic && !activeTpl.some((x) => x.serviceTypeIds.includes(s.id) || x.categoryIds.includes(s.categoryId)))
     const branchless = o.employees.filter((e) => e.status === 'active' && !e.branchIds.length)
@@ -58,6 +58,7 @@ export default function AdminDashboardPage() {
     { to: routes.admin.roles, icon: <ShieldCheck />, title: t('admin.dashboard.quickRoles'), sub: t('admin.dashboard.quickRolesSub') },
     { to: routes.admin.catalog, icon: <FolderTree />, title: t('admin.dashboard.quickCatalog'), sub: t('admin.dashboard.quickCatalogSub') },
     { to: routes.admin.templates, icon: <LayoutTemplate />, title: t('admin.dashboard.quickTemplates'), sub: t('admin.dashboard.quickTemplatesSub') },
+    { to: routes.admin.receipts, icon: <ReceiptText />, title: t('admin.dashboard.quickReceipts'), sub: t('admin.dashboard.quickReceiptsSub') },
     { to: routes.admin.sms, icon: <Send />, title: t('admin.dashboard.quickSms'), sub: t('admin.dashboard.quickSmsSub') },
   ]
 

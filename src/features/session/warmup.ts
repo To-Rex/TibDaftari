@@ -34,6 +34,7 @@ const ADMIN_ROUTE_CHUNKS = [
   () => import('@/modules/admin/schemas/SchemaEditorPage'),
   () => import('@/modules/admin/templates/TemplatesPage'),
   () => import('@/modules/admin/templates/TemplateEditorPage'),
+  () => import('@/modules/admin/templates/ReceiptTemplatesPage'),
   () => import('@/modules/admin/settings/SmsSettingsPage'),
   () => import('@/modules/admin/platform/PlatformPage'),
 ]

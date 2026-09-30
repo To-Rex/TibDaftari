@@ -36,6 +36,8 @@ export const routes = {
     schema: (id = ':schemaId') => `/admin/schemas/${id}`,
     templates: '/admin/templates',
     template: (id = ':templateId') => `/admin/templates/${id}`,
+    receipts: '/admin/receipts',
+    receipt: (id = ':templateId') => `/admin/receipts/${id}`,
     sms: '/admin/sms',
     platform: '/admin/platform',
   },

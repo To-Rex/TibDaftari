@@ -20,7 +20,7 @@ export const en: DeepPartial<Dictionary> = {
   },
   nav: {
     dashboard: 'Dashboard', reception: 'Reception', patients: 'Patients', orders: 'Orders', lab: 'Laboratory', confirm: 'Approval', reports: 'Reports', messages: 'Messages', admin: 'Administration',
-    company: 'Company', branches: 'Branches', employees: 'Employees', roles: 'Roles & permissions', catalog: 'Service catalog', schemas: 'Result schemas', templates: 'Templates',
+    company: 'Company', branches: 'Branches', employees: 'Employees', roles: 'Roles & permissions', catalog: 'Service catalog', schemas: 'Result schemas', templates: 'Templates', receipts: 'Receipt templates',
     smsSettings: 'SMS settings', platform: 'Platform', portalHome: 'Home', portalResults: 'Results', portalVisits: 'Visits', portalProfile: 'Profile', staffApp: 'Staff app',
   },
   auth: {

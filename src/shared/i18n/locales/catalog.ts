@@ -172,6 +172,16 @@ const uz = {
     allowRemoveRows: 'Qator o‘chirish mumkin',
     minRows: 'Min. qator',
   },
+  receipts: {
+    title: 'Chek andozalari',
+    subtitle: 'Kassa cheklarining ko‘rinishi — filialning faol andozasi Hisob sahifasida «Chop etish» bosilganda chiqadi. Andoza bo‘lmasa o‘rnatilgan (standart) chek chop etiladi.',
+    new: 'Yangi chek andozasi',
+    newHint: 'Bo‘sh chek varag‘idan (80 mm) yoki mavjud chek andozasi nusxasidan boshlang.',
+    namePh: 'Masalan: Kassa cheki — 80 mm',
+    searchPh: 'Chek andozasi nomi…',
+    emptyTitle: 'Chek andozalari yo‘q',
+    emptyHint: 'Birinchi chek andozasini yarating — faol qilinguncha o‘rnatilgan (standart) chek chop etiladi.',
+  },
   templates: {
     title: 'Andozalar',
     subtitle: 'Natija hujjatlari (blankalar) dizayni — xizmat turlariga bog‘lanadi va tasdiqlashda avtomatik to‘ldiriladi.',
@@ -420,6 +430,11 @@ const ru: typeof uz = {
     presetRows: 'Готовые строки', presetRowsHint: 'Предзаполненные строки (например, список паразитов или антибиотиков)', presetNeedsColumns: 'Сначала добавьте столбец',
     noPresetRows: 'Готовых строк нет', addRow: 'Добавить строку', allowAddRows: 'Можно добавлять строки', allowRemoveRows: 'Можно удалять строки', minRows: 'Мин. строк',
   },
+  receipts: {
+    title: 'Шаблоны чеков', subtitle: 'Вид кассового чека — активный шаблон филиала печатается по кнопке «Печать» на странице счёта. Без шаблона печатается встроенный (стандартный) чек.', new: 'Новый шаблон чека',
+    newHint: 'Начните с пустого чека (80 мм) или копии существующего шаблона чека.', namePh: 'Например: Кассовый чек — 80 мм', searchPh: 'Название шаблона чека…',
+    emptyTitle: 'Шаблонов чеков нет', emptyHint: 'Создайте первый шаблон чека — пока он не активирован, печатается встроенный (стандартный) чек.',
+  },
   templates: {
     title: 'Шаблоны', subtitle: 'Дизайн бланков результатов — привязываются к услугам и заполняются автоматически при подтверждении.', new: 'Новый шаблон',
     newHint: 'Начните с чистого листа или копии существующего шаблона.',
@@ -514,6 +529,11 @@ const en: typeof uz = {
     columns: 'Columns', columnsHint: 'Each column is a field of any non-table type', noColumns: 'No columns', addColumn: 'Add column', columnEditor: 'Column settings',
     presetRows: 'Preset rows', presetRowsHint: 'Pre-seeded rows (e.g. list of parasites or antibiotics)', presetNeedsColumns: 'Add a column first',
     noPresetRows: 'No preset rows', addRow: 'Add row', allowAddRows: 'Rows can be added', allowRemoveRows: 'Rows can be removed', minRows: 'Min rows',
+  },
+  receipts: {
+    title: 'Receipt templates', subtitle: 'The cashier cheque layout — the active template of the branch prints from “Print” on the order page. Without one the built-in (standard) cheque prints.', new: 'New receipt template',
+    newHint: 'Start from a blank 80 mm cheque or a copy of an existing receipt template.', namePh: 'e.g. Cash receipt — 80 mm', searchPh: 'Receipt template name…',
+    emptyTitle: 'No receipt templates', emptyHint: 'Create the first receipt template — until one is active, the built-in (standard) cheque prints.',
   },
   templates: {
     title: 'Templates', subtitle: 'Result document (form) designs — bound to service types and filled automatically on approval.', new: 'New template',

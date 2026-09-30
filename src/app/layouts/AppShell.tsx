@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'motion/react'
 import {
-  LayoutDashboard, ClipboardList, Users, FlaskConical, BadgeCheck, BarChart3, MessageSquare, Building2, GitBranch, UserCog,
+  ReceiptText, LayoutDashboard, ClipboardList, Users, FlaskConical, BadgeCheck, BarChart3, MessageSquare, Building2, GitBranch, UserCog,
   ShieldCheck, FolderTree, ListChecks, LayoutTemplate, Send, PanelLeftClose, PanelLeftOpen, Bell, LogOut, ChevronDown, Menu as MenuIcon, X, Globe2, Receipt, ArrowLeftRight,
   Check,
 } from 'lucide-react'
@@ -63,6 +63,7 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
           { to: routes.admin.catalog, label: t('nav.catalog'), icon: <FolderTree />, perm: 'admin.catalog.read', key: 'z' },
           { to: routes.admin.schemas, label: t('nav.schemas'), icon: <ListChecks />, perm: 'admin.schema.write', key: 's' },
           { to: routes.admin.templates, label: t('nav.templates'), icon: <LayoutTemplate />, perm: 'admin.template.read', key: 'a' },
+          { to: routes.admin.receipts, label: t('nav.receipts'), icon: <ReceiptText />, perm: 'admin.template.read', key: 'c' },
         ] },
         { title: t('common.settings'), items: [
           { to: routes.admin.sms, label: t('nav.smsSettings'), icon: <Send />, perm: 'admin.settings.write', key: 'm' },

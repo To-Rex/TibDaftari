@@ -9,8 +9,13 @@ import { categoryPath } from '@/features/catalog/tree'
 export interface Bindings { serviceTypeIds: string[]; categoryIds: string[]; branchIds: string[]; scope: 'item' | 'order' | 'receipt'; language: 'uz' | 'ru' | 'en' }
 
 /** Shared form body: bind template to service types (searchable multi-select) / categories, scope, language. */
-export function BindingsFields({ value, onChange, serviceTypes, categories, branches }: { value: Bindings; onChange: (b: Bindings) => void; serviceTypes: ServiceType[]; categories: Category[]; branches?: Branch[] }) {
+export function BindingsFields({ value, onChange, serviceTypes, categories, branches, kind }: {
+  value: Bindings; onChange: (b: Bindings) => void; serviceTypes: ServiceType[]; categories: Category[]; branches?: Branch[]
+  /** which library the template belongs to: a cheque keeps its scope, a result document picks item/order (default: from the scope) */
+  kind?: 'result' | 'receipt'
+}) {
   const { t } = useTranslation()
+  const receipt = (kind ?? (value.scope === 'receipt' ? 'receipt' : 'result')) === 'receipt'
   const [q, setQ] = useState('')
   const list = useMemo(() => {
     const s = q.trim().toLowerCase()
@@ -22,7 +27,9 @@ export function BindingsFields({ value, onChange, serviceTypes, categories, bran
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-3">
-        <Field label={t('catalog.templates.scope')}>{() => <Segmented value={value.scope} onChange={(v) => onChange({ ...value, scope: v })} items={[{ value: 'item', label: t('catalog.services.scopeItem') }, { value: 'order', label: t('catalog.services.scopeOrder') }, { value: 'receipt', label: t('catalog.services.scopeReceipt') }]} />}</Field>
+        {receipt
+          ? <Field label={t('catalog.templates.scope')}>{() => <div className="flex h-10 items-center"><Badge tone="accent">{t('catalog.services.scopeReceipt')}</Badge></div>}</Field>
+          : <Field label={t('catalog.templates.scope')}>{() => <Segmented value={value.scope} onChange={(v) => onChange({ ...value, scope: v })} items={[{ value: 'item', label: t('catalog.services.scopeItem') }, { value: 'order', label: t('catalog.services.scopeOrder') }]} />}</Field>}
         <Field label={t('common.language')}>{(id) => (
           <Select id={id} value={value.language} onChange={(e) => onChange({ ...value, language: e.target.value as Bindings['language'] })}>
             <option value="uz">O‘zbekcha</option><option value="ru">Русский</option><option value="en">English</option>
@@ -61,13 +68,13 @@ export function BindingsFields({ value, onChange, serviceTypes, categories, bran
           </div>
         </div>
       )}</Field>}
-      <Field label={t('catalog.templates.bindCategories')}>{() => (
+      {!receipt && <Field label={t('catalog.templates.bindCategories')}>{() => (
         <div className="flex flex-wrap gap-1.5">
           {categories.map((c) => { const on = value.categoryIds.includes(c.id); return (
             <button key={c.id} type="button" onClick={() => toggleCat(c.id)} className={cn('h-7 rounded-full border px-2.5 text-[12.5px] transition-colors', on ? 'bg-brand-soft border-brand/40 text-brand-ink' : 'border-line text-ink-2 hover:bg-surface-2')} title={categoryPath(categories, c.id).map((x) => x.name).join(' / ')}>{c.name}</button>
           ) })}
         </div>
-      )}</Field>
+      )}</Field>}
     </div>
   )
 }

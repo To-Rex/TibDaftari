@@ -40,6 +40,8 @@ export default function CatalogPage() {
   const allServices = useServiceTypes(companyId, {})
   const schemas = useSchemas(companyId)
   const templates = useTemplates(companyId)
+  // cheque templates live on their own page; the catalog only deals with result documents
+  const resultTemplates = useMemo(() => (templates.data ?? []).filter((x) => x.scope !== 'receipt'), [templates.data])
   const nav = useNavigate()
   const saveTemplate = useSaveTemplate(companyId)
   const [tplFor, setTplFor] = useState<ServiceType | null>(null)
@@ -193,7 +195,7 @@ export default function CatalogPage() {
                 rows={services.data ?? []}
                 loading={services.isLoading}
                 schemas={schemas.data ?? []}
-                templates={templates.data ?? []}
+                templates={resultTemplates}
                 categories={cats}
                 canWrite={canWrite}
                 onEdit={(s) => setStDraft(draftFromServiceType(s))}
@@ -207,7 +209,7 @@ export default function CatalogPage() {
                 onClose={() => setTplFor(null)}
                 serviceTypes={services.data ?? []}
                 categories={cats}
-                templates={templates.data ?? []}
+                templates={resultTemplates}
                 onSubmit={createTemplateFor}
                 saving={saveTemplate.isPending || saveSt.isPending}
                 initial={tplFor ? { name: `${tplFor.name} — blanka`, serviceTypeIds: [tplFor.id], categoryIds: [], branchIds: branchId ? [branchId] : [], scope: tplFor.documentScope, language: 'uz' } : undefined}
@@ -222,7 +224,7 @@ export default function CatalogPage() {
       </Drawer>
 
       <CategoryDrawer open={!!catDraft} onClose={() => setCatDraft(null)} initial={catDraft} categories={cats} onSubmit={submitCategory} saving={saveCat.isPending} />
-      <ServiceTypeDrawer open={!!stDraft} onClose={() => setStDraft(null)} initial={stDraft} categories={cats} branches={branches.data ?? []} schemas={schemas.data ?? []} templates={templates.data ?? []} onSubmit={submitService} saving={saveSt.isPending} />
+      <ServiceTypeDrawer open={!!stDraft} onClose={() => setStDraft(null)} initial={stDraft} categories={cats} branches={branches.data ?? []} schemas={schemas.data ?? []} templates={resultTemplates} onSubmit={submitService} saving={saveSt.isPending} />
 
       <ConfirmDialog open={!!catDel} onClose={() => setCatDel(null)} danger loading={delCat.isPending}
         title={t('catalog.tree.deleteTitle', { name: catDel?.name ?? '' })} description={t('catalog.tree.deleteHint')} confirmText={t('common.delete')} cancelText={t('common.cancel')}

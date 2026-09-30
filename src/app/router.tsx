@@ -42,6 +42,7 @@ const SchemasPage = lazy(() => import('@/modules/admin/schemas/SchemasPage'))
 const SchemaEditorPage = lazy(() => import('@/modules/admin/schemas/SchemaEditorPage'))
 const TemplatesPage = lazy(() => import('@/modules/admin/templates/TemplatesPage'))
 const TemplateEditorPage = lazy(() => import('@/modules/admin/templates/TemplateEditorPage'))
+const ReceiptTemplatesPage = lazy(() => import('@/modules/admin/templates/ReceiptTemplatesPage'))
 const SmsSettingsPage = lazy(() => import('@/modules/admin/settings/SmsSettingsPage'))
 const PlatformPage = lazy(() => import('@/modules/admin/platform/PlatformPage'))
 
@@ -135,6 +136,8 @@ export const router = createBrowserRouter([
           { element: <RequirePerm perm="admin.template.read" />, children: [
             { path: routes.admin.templates, element: page(<TemplatesPage />) },
             { path: routes.admin.template(), element: page(<TemplateEditorPage />) },
+            { path: routes.admin.receipts, element: page(<ReceiptTemplatesPage />) },
+            { path: routes.admin.receipt(), element: page(<TemplateEditorPage />) },
           ] },
           { element: <RequirePerm perm="admin.settings.write" />, children: [{ path: routes.admin.sms, element: page(<SmsSettingsPage />) }] },
           { element: <RequirePerm perm="platform.company.manage" />, children: [{ path: routes.admin.platform, element: page(<PlatformPage />) }] },

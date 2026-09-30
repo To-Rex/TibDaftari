@@ -22,7 +22,7 @@ export const ru: DeepPartial<Dictionary> = {
   nav: {
     dashboard: 'Главная', reception: 'Регистратура', patients: 'Пациенты', orders: 'Чеки', lab: 'Лаборатория', confirm: 'Подтверждение', reports: 'Отчёты', messages: 'Сообщения',
     admin: 'Управление', company: 'Компания', branches: 'Филиалы', employees: 'Сотрудники', roles: 'Роли и права', catalog: 'Каталог услуг', schemas: 'Схемы результатов',
-    templates: 'Шаблоны', smsSettings: 'Настройки SMS', platform: 'Платформа', portalHome: 'Кабинет', portalResults: 'Результаты', portalVisits: 'Визиты', portalProfile: 'Профиль', staffApp: 'Приложение сотрудников',
+    templates: 'Шаблоны', receipts: 'Шаблоны чеков', smsSettings: 'Настройки SMS', platform: 'Платформа', portalHome: 'Кабинет', portalResults: 'Результаты', portalVisits: 'Визиты', portalProfile: 'Профиль', staffApp: 'Приложение сотрудников',
   },
   auth: {
     staffTitle: 'Вход для сотрудников', staffSubtitle: 'Введите логин и пароль', login: 'Логин', password: 'Пароль', signIn: 'Войти', signingIn: 'Проверка…',

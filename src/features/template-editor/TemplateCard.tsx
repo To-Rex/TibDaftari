@@ -53,7 +53,8 @@ export const TemplateCard = memo(function TemplateCard({ tpl, companyId, service
               : branchNames.length > 0 ? <Badge size="sm" tone="brand">{branchNames.join(' · ')}</Badge> : <Badge size="sm">{t('catalog.templates.allBranches')}</Badge>}
           </div>
           <div className="mt-auto flex items-center gap-1 flex-wrap">
-            {chips.length === 0 ? <span className="text-[12px] text-ink-3">{t('catalog.services.generic')}</span> : chips.slice(0, 3).map((c) => <span key={c} className="h-6 rounded-full bg-surface-2 px-2 text-[11.5px] text-ink-2 truncate max-w-full sm:max-w-[140px] leading-6">{c}</span>)}
+            {tpl.scope === 'receipt' ? <span className="text-[12px] text-ink-3">{tpl.doc.paper.startsWith('Receipt') ? t('catalog.editor.receiptPaper', { mm: tpl.doc.paper.slice(7) }) : tpl.doc.paper}</span>
+              : chips.length === 0 ? <span className="text-[12px] text-ink-3">{t('catalog.services.generic')}</span> : chips.slice(0, 3).map((c) => <span key={c} className="h-6 rounded-full bg-surface-2 px-2 text-[11.5px] text-ink-2 truncate max-w-full sm:max-w-[140px] leading-6">{c}</span>)}
             {chips.length > 3 && <span className="text-[11.5px] text-ink-3">+{chips.length - 3}</span>}
           </div>
         </div>
@@ -64,7 +65,7 @@ export const TemplateCard = memo(function TemplateCard({ tpl, companyId, service
 
 /** Live mini thumbnail rendered via DocumentRenderer — scaled to the card width (phones → big monitors). */
 function Thumb({ tpl, companyId }: { tpl: ResultTemplate; companyId: string }) {
-  const { ctx, assets, loading } = useTemplateSchema(tpl.serviceTypeIds[0], companyId)
+  const { ctx, assets, loading } = useTemplateSchema(tpl.serviceTypeIds[0], companyId, tpl)
   const size = paperSize(tpl.doc)
   const ref = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(240)

@@ -106,6 +106,7 @@ export const uz = {
     catalog: 'Xizmatlar katalogi',
     schemas: 'Natija sxemalari',
     templates: 'Andozalar',
+    receipts: 'Chek andozalari',
     smsSettings: 'SMS sozlamalari',
     platform: 'Platforma',
     portalHome: 'Kabinet',
