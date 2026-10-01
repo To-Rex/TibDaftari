@@ -1,20 +1,24 @@
 import { memo, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
-import { Archive, CheckCircle2, Copy, Download, ExternalLink, MoreHorizontal, Trash2 } from 'lucide-react'
+import { Check, MoreHorizontal } from 'lucide-react'
 import type { Branch, Category, ResultTemplate, ServiceType } from '@/domain'
 import { paperSize } from '@/domain'
 import { DocumentRenderer } from '@/features/documents/DocumentRenderer'
+import { cn } from '@/shared/lib/cn'
 import { fmtRelative } from '@/shared/lib/format'
 import { Badge, Card, Menu, Skeleton } from '@/shared/ui'
 import { fadeUp } from '@/shared/ui/Page'
+import { templateMenuItems } from './templateMenu'
 import { useTemplateSchema } from './useTemplateSchema'
 
 const TONE = { draft: 'warn', active: 'ok', archived: 'neutral' } as const
 
-export const TemplateCard = memo(function TemplateCard({ tpl, companyId, serviceTypes, categories, branches, canWrite, canPublish, onOpen, onDuplicate, onSetStatus, onDelete, onExport }: {
+export const TemplateCard = memo(function TemplateCard({ tpl, companyId, serviceTypes, categories, branches, canWrite, canPublish, onOpen, onDuplicate, onSetStatus, onDelete, onExport, selecting, selected, onToggleSelect }: {
   tpl: ResultTemplate; companyId: string; serviceTypes: ServiceType[]; categories: Category[]; branches?: Branch[]; canWrite: boolean; canPublish: boolean
   onOpen: () => void; onDuplicate: () => void; onSetStatus: (s: ResultTemplate['status']) => void; onDelete: () => void; onExport?: () => void
+  /** selection mode (bulk actions): a click toggles the card instead of opening it */
+  selecting?: boolean; selected?: boolean; onToggleSelect?: () => void
 }) {
   const { t } = useTranslation()
   const bound = tpl.serviceTypeIds.map((id) => serviceTypes.find((s) => s.id === id)).filter(Boolean) as ServiceType[]
@@ -23,7 +27,13 @@ export const TemplateCard = memo(function TemplateCard({ tpl, companyId, service
   const branchNames = (tpl.branchIds ?? []).map((id) => branches?.find((b) => b.id === id)?.name ?? null).filter(Boolean) as string[]
   return (
     <motion.div variants={fadeUp} className="h-full">
-      <Card padded={false} interactive onClick={onOpen} className="group h-full flex flex-col overflow-hidden">
+      <Card padded={false} interactive onClick={selecting ? onToggleSelect : onOpen} role={selecting ? 'checkbox' : undefined} aria-checked={selecting ? !!selected : undefined} data-template-id={tpl.id}
+        className={cn('group relative h-full flex flex-col overflow-hidden', selecting && selected && 'ring-2 ring-brand border-brand')}>
+        {selecting && (
+          <span aria-hidden className={cn('absolute left-3 top-3 z-10 grid size-6 place-items-center rounded-md border-2 shadow-1 transition-colors', selected ? 'border-brand bg-brand text-white' : 'border-line-strong bg-surface/90')}>
+            {selected && <Check className="size-4" />}
+          </span>
+        )}
         <Thumb tpl={tpl} companyId={companyId} />
         <div className="p-4 flex flex-col gap-2.5 flex-1">
           <div className="flex items-start gap-2">
@@ -33,21 +43,14 @@ export const TemplateCard = memo(function TemplateCard({ tpl, companyId, service
             </div>
             <span onClick={(e) => e.stopPropagation()} className="-mr-2 -mt-1">
               <Menu trigger={() => <span className="grid size-8 place-items-center rounded-full text-ink-3 hover:bg-surface-2 hover:text-ink"><MoreHorizontal className="size-4" /></span>}
-                items={[
-                  { key: 'open', label: t('catalog.templates.open'), icon: <ExternalLink />, onSelect: onOpen },
-                  { key: 'dup', label: t('catalog.templates.duplicate'), icon: <Copy />, onSelect: onDuplicate, disabled: !canWrite },
-                  { key: 'export', label: t('catalog.templates.export'), icon: <Download />, onSelect: onExport },
-                  ...(tpl.status === 'active'
-                    ? [{ key: 'arch', label: t('catalog.templates.archive'), icon: <Archive />, onSelect: () => onSetStatus('archived'), disabled: !canPublish, separatorBefore: true }]
-                    : [{ key: 'act', label: t('catalog.templates.activate'), icon: <CheckCircle2 />, onSelect: () => onSetStatus('active'), disabled: !canPublish, separatorBefore: true }]),
-                  { key: 'del', label: t('common.delete'), icon: <Trash2 />, danger: true, onSelect: onDelete, disabled: !canWrite || tpl.status === 'active', separatorBefore: true },
-                ]} />
+                items={templateMenuItems(tpl, t, { canWrite, canPublish }, { onOpen, onDuplicate, onSetStatus, onDelete, onExport })} />
             </span>
           </div>
           <div className="flex items-center gap-1.5 flex-wrap">
             <Badge tone={TONE[tpl.status]} dot size="sm">{t(`catalog.templates.status.${tpl.status}`)}</Badge>
             <Badge size="sm">v{tpl.version}</Badge>
             <Badge size="sm">{tpl.language.toUpperCase()}</Badge>
+            {tpl.scope !== 'receipt' && tpl.doc.paper !== 'A4' && <Badge size="sm">{tpl.doc.paper}</Badge>}
             <Badge size="sm" tone={tpl.scope === 'receipt' ? 'accent' : undefined}>{tpl.scope === 'item' ? t('catalog.services.scopeItem') : tpl.scope === 'receipt' ? t('catalog.services.scopeReceipt') : t('catalog.services.scopeOrder')}</Badge>
             {branchNames.length > 2 ? <span title={branchNames.join(' · ')}><Badge size="sm" tone="brand">{t('catalog.templates.nBranches', { n: branchNames.length })}</Badge></span>
               : branchNames.length > 0 ? <Badge size="sm" tone="brand">{branchNames.join(' · ')}</Badge> : <Badge size="sm">{t('catalog.templates.allBranches')}</Badge>}
