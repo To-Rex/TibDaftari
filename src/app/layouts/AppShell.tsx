@@ -10,7 +10,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import {
   ReceiptText, LayoutDashboard, ClipboardList, Users, FlaskConical, BadgeCheck, BarChart3, MessageSquare, Building2, GitBranch, UserCog,
   ShieldCheck, FolderTree, ListChecks, LayoutTemplate, Send, PanelLeftClose, PanelLeftOpen, Bell, LogOut, ChevronDown, Menu as MenuIcon, X, Globe2, Receipt, ArrowLeftRight,
-  Check,
+  Check, Loader2,
 } from 'lucide-react'
 import type { Permission } from '@/domain'
 import { repos } from '@/data'
@@ -39,6 +39,22 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
   const qc = useQueryClient()
   useEffect(() => { warmWorkspaceData(qc, staff.companyId, module); preloadRouteChunks() }, [qc, staff.companyId, module])
 
+  // The staff app always works inside ONE branch (cheques, patients, lab, confirm, reports, messages). "All branches"
+  // is an admin-panel view only: a superadmin/admin arriving here with it gets their home branch (else the first
+  // active one) before any page loads, so no list ever mixes branches.
+  const shellBranchId = useAuth((st) => st.branchId)
+  const setBranch = useAuth((st) => st.setBranch)
+  const needsBranch = module === 'staff' && !shellBranchId && canSwitchBranch(staff)
+  const shellBranches = useQuery({ queryKey: ['branches', staff.companyId], queryFn: () => repos.tenant.listBranches(staff.companyId), enabled: needsBranch })
+  useEffect(() => {
+    if (!needsBranch || !shellBranches.data) return
+    const active = shellBranches.data.filter((b) => b.isActive)
+    const pick = active.find((b) => b.id === staff.branchId) ?? active.find((b) => (staff.branchIds ?? []).includes(b.id)) ?? active[0]
+    if (pick) setBranch(pick.id)
+  }, [needsBranch, shellBranches.data, staff, setBranch])
+  // a company without any active branch has nothing to scope to — its pages open as they are
+  const waitingForBranch = needsBranch && (!shellBranches.data || shellBranches.data.some((b) => b.isActive))
+
   // the sidebar counters (lab / confirm / SMS queues) follow the selected branch like the pages they point to
   const badgeBranchId = useAuth((s) => s.branchId)
   const pending = useQuery({
@@ -49,6 +65,7 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
       return { lab: d.pendingLab, confirm: d.pendingApproval, sms: d.smsQueued }
     },
     refetchInterval: 30_000,
+    enabled: !waitingForBranch, // never a company-wide count while the staff app is still picking its branch
   })
 
   const sections: NavSection[] = useMemo(() => {
@@ -168,7 +185,7 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
 
       <div className={cn('app-shell-content relative transition-[padding] duration-300 ease-[var(--ease-out)]', collapsed ? 'lg:pl-[72px]' : 'lg:pl-[248px]')}>
         <TopBar onMenu={() => setMobileOpen(true)} module={module} onHelp={openHelp} />
-        <Outlet />
+        {waitingForBranch ? <div className="grid min-h-[40vh] place-items-center" data-branch-pending><Loader2 className="size-6 animate-spin text-ink-3" /></div> : <Outlet />}
       </div>
     <HotkeysHelp open={help} onClose={() => setHelp(false)} nav={navHotkeys} />
       </div>
@@ -189,7 +206,7 @@ function TopBar({ onMenu, module, onHelp }: { onMenu: () => void; module: 'staff
   const unread = notif.data?.filter((n) => !n.read).length ?? 0
   const activeBranches = (branches.data ?? []).filter((b) => b.isActive)
   const current = activeBranches.find((b) => b.id === branchId)
-  // superadmin/admin: any branch or all of them; everyone else: only the branches they are assigned to
+  // superadmin/admin: any branch (and, in the admin panel, all of them); everyone else: only their assigned branches
   const switcher = canSwitchBranch(s)
   const myBranches = switcher ? activeBranches : activeBranches.filter((b) => (s.branchIds ?? []).includes(b.id))
   const pill = 'app-branch-switcher inline-flex h-9 min-w-0 shrink items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 text-[13px] font-medium shadow-1 sm:gap-2 sm:px-3'
@@ -234,7 +251,7 @@ function TopBar({ onMenu, module, onHelp }: { onMenu: () => void; module: 'staff
             </button>
           )}
           items={[
-            ...(switcher ? [{ key: 'all', label: t('common.allBranches'), onSelect: () => setBranch(null), icon: <Building2 /> }] : []),
+            ...(switcher && module === 'admin' ? [{ key: 'all', label: t('common.allBranches'), onSelect: () => setBranch(null), icon: <Building2 /> }] : []),
             ...myBranches.map((b) => ({ key: b.id, label: <span className="flex flex-col"><span>{b.name}</span><span className="text-[11.5px] text-ink-3">{b.code}</span></span>, onSelect: () => setBranch(b.id), icon: <GitBranch /> })),
           ]}
         />
