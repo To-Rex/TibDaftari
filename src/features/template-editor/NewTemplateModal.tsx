@@ -25,14 +25,17 @@ export function NewTemplateModal({ open, onClose, serviceTypes, categories, bran
   useEffect(() => {
     if (!open) return
     setName(initial?.name ?? '')
-    setB({ serviceTypeIds: initial?.serviceTypeIds ?? [], categoryIds: initial?.categoryIds ?? [], branchIds: initial?.branchIds ?? [], scope: kind === 'receipt' ? 'receipt' : (initial?.scope ?? 'item'), language: initial?.language ?? 'uz' })
+    // the new template belongs to one branch: the given one, or the only branch there is
+    const only = branches && branches.length === 1 ? [branches[0]!.id] : []
+    setB({ serviceTypeIds: initial?.serviceTypeIds ?? [], categoryIds: initial?.categoryIds ?? [], branchIds: initial?.branchIds?.length ? initial.branchIds.slice(0, 1) : only, scope: kind === 'receipt' ? 'receipt' : (initial?.scope ?? 'item'), language: initial?.language ?? 'uz' })
     setFrom(kind === 'receipt' ? 'default' : 'blank'); setCopyId(templates[0]?.id ?? ''); setTouched(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, templates])
   const err = touched && !name.trim() ? t('common.required') : undefined
+  const needsBranch = !!branches?.length && !b.branchIds.length
   const submit = () => {
     setTouched(true)
-    if (!name.trim()) return
+    if (!name.trim() || needsBranch) return
     const src = from === 'copy' ? templates.find((x) => x.id === copyId) : undefined
     onSubmit({ name: name.trim(), ...b, startFrom: from, doc: src ? structuredClone(src.doc) : emptyDoc(b.scope === 'receipt' ? 'Receipt80' : 'A4') })
   }
@@ -52,7 +55,7 @@ export function NewTemplateModal({ open, onClose, serviceTypes, categories, bran
             )}
           </div>
         )}</Field>
-        <BindingsFields value={b} onChange={setB} serviceTypes={serviceTypes} categories={categories} branches={branches} kind={kind} />
+        <BindingsFields value={b} onChange={setB} serviceTypes={serviceTypes} categories={categories} branches={branches} kind={kind} branchError={touched && needsBranch ? t('catalog.templates.branchRequired') : undefined} />
       </div>
     </Modal>
   )

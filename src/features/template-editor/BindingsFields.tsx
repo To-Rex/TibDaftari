@@ -9,8 +9,10 @@ import { categoryPath } from '@/features/catalog/tree'
 export interface Bindings { serviceTypeIds: string[]; categoryIds: string[]; branchIds: string[]; scope: 'item' | 'order' | 'receipt'; language: 'uz' | 'ru' | 'en' }
 
 /** Shared form body: bind template to service types (searchable multi-select) / categories, scope, language. */
-export function BindingsFields({ value, onChange, serviceTypes, categories, branches, kind }: {
+export function BindingsFields({ value, onChange, serviceTypes, categories, branches, kind, branchError }: {
   value: Bindings; onChange: (b: Bindings) => void; serviceTypes: ServiceType[]; categories: Category[]; branches?: Branch[]
+  /** shown under the branch picker (e.g. "choose a branch" on create) */
+  branchError?: string
   /** which library the template belongs to: a cheque keeps its scope, a result document picks item/order (default: from the scope) */
   kind?: 'result' | 'receipt'
 }) {
@@ -23,7 +25,8 @@ export function BindingsFields({ value, onChange, serviceTypes, categories, bran
   }, [serviceTypes, q])
   const toggle = (id: string) => onChange({ ...value, serviceTypeIds: value.serviceTypeIds.includes(id) ? value.serviceTypeIds.filter((x) => x !== id) : [...value.serviceTypeIds, id] })
   const toggleCat = (id: string) => onChange({ ...value, categoryIds: value.categoryIds.includes(id) ? value.categoryIds.filter((x) => x !== id) : [...value.categoryIds, id] })
-  const toggleBranch = (id: string) => onChange({ ...value, branchIds: (value.branchIds ?? []).includes(id) ? value.branchIds.filter((x) => x !== id) : [...(value.branchIds ?? []), id] })
+  // a template belongs to ONE branch (each branch owns its templates); picking another chip moves it there
+  const pickBranch = (id: string) => onChange({ ...value, branchIds: [id] })
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-3">
@@ -37,15 +40,14 @@ export function BindingsFields({ value, onChange, serviceTypes, categories, bran
         )}</Field>
       </div>
       {branches && branches.length > 1 && (
-        <Field label={t('catalog.templates.bindBranches')} hint={t('catalog.templates.bindBranchesHint')}>{() => (
-          <div className="flex flex-wrap gap-1.5">
+        <Field label={t('catalog.templates.bindBranch')} hint={t('catalog.templates.bindBranchHint')} error={branchError}>{() => (
+          <div className="flex flex-wrap gap-1.5" role="radiogroup" data-branch-picker>
             {branches.map((b) => { const on = (value.branchIds ?? []).includes(b.id); return (
-              <button key={b.id} type="button" onClick={() => toggleBranch(b.id)} aria-pressed={on}
+              <button key={b.id} type="button" onClick={() => pickBranch(b.id)} role="radio" aria-checked={on}
                 className={cn('inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium transition-colors', on ? 'border-brand bg-brand-soft/60 text-brand-ink' : 'border-line hover:border-line-strong text-ink-2')}>
                 {on && <Check className="size-3.5" />}{b.name}
               </button>
             ) })}
-            <span className="self-center text-[12px] text-ink-3">{(value.branchIds ?? []).length === 0 ? t('catalog.templates.allBranches') : ''}</span>
           </div>
         )}</Field>
       )}

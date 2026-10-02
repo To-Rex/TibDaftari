@@ -225,7 +225,7 @@ export function TemplateGallery({ kind }: { kind: TemplateKind }) {
       action={anyFilter
         ? <Button variant="secondary" leftIcon={<X className="size-4" />} onClick={clearAll}>{t(`${F}.clear`)}</Button>
         : canWrite && (kind === 'receipt'
-          ? <div className="flex flex-wrap justify-center gap-2"><Button leftIcon={<Sparkles className="size-4" />} loading={mkDefault.isPending} onClick={() => void addDefault()}>{t('catalog.receipts.addDefault')}</Button><Button variant="secondary" leftIcon={<Plus className="size-4" />} onClick={() => openCreate()}>{t(`${K}.new`)}</Button></div>
+          ? <div className="flex flex-wrap justify-center gap-2"><Button leftIcon={<Sparkles className="size-4" />} loading={mkDefault.isPending} onClick={() => (branchId ? void addDefault() : openCreate())}>{t('catalog.receipts.addDefault')}</Button><Button variant="secondary" leftIcon={<Plus className="size-4" />} onClick={() => openCreate()}>{t(`${K}.new`)}</Button></div>
           : <Button leftIcon={<Plus className="size-4" />} onClick={() => openCreate()}>{t(`${K}.new`)}</Button>)} />
   )
 
@@ -237,7 +237,7 @@ export function TemplateGallery({ kind }: { kind: TemplateKind }) {
             <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={(e) => void onImportFile(e.target.files?.[0])} />
             <Button variant="secondary" leftIcon={<Upload className="size-4" />} loading={importing} onClick={() => fileRef.current?.click()} title={t('catalog.templates.importHint')}>{t('catalog.templates.import')}</Button>
             {branchId && <Button variant="secondary" leftIcon={<ArrowDownToLine className="size-4" />} onClick={() => setFromBranch(true)} title={t('catalog.templates.fromBranchHint')}>{t('catalog.templates.fromBranch')}</Button>}
-            {kind === 'receipt' && <Button variant="secondary" leftIcon={<Sparkles className="size-4" />} loading={mkDefault.isPending} onClick={() => void addDefault()} title={t('catalog.receipts.addDefaultHint')}>{t('catalog.receipts.addDefault')}</Button>}
+            {kind === 'receipt' && <Button variant="secondary" leftIcon={<Sparkles className="size-4" />} loading={mkDefault.isPending} onClick={() => (branchId ? void addDefault() : openCreate())} title={t('catalog.receipts.addDefaultHint')}>{t('catalog.receipts.addDefault')}</Button>}
             <Button data-hotkey="n" leftIcon={<Plus className="size-4" />} onClick={() => openCreate()}>{t(`${K}.new`)}</Button>
           </>
         )} />

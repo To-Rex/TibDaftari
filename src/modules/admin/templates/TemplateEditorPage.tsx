@@ -92,7 +92,7 @@ export default function TemplateEditorPage() {
     if (!s.template || !canWrite) return null
     if (!s.meta.name.trim()) { toast.error(t('catalog.templates.nameRequired')); return null }
     try {
-      const saved = await save.mutateAsync({ id: s.template.id, name: s.meta.name.trim(), doc: s.doc, serviceTypeIds: s.meta.serviceTypeIds, categoryIds: s.meta.categoryIds, scope: s.meta.scope, language: s.meta.language })
+      const saved = await save.mutateAsync({ id: s.template.id, name: s.meta.name.trim(), doc: s.doc, serviceTypeIds: s.meta.serviceTypeIds, categoryIds: s.meta.categoryIds, branchIds: s.meta.branchIds, scope: s.meta.scope, language: s.meta.language })
       s.markSaved(saved)
       toast.success(t('catalog.templates.saved'))
       return saved
