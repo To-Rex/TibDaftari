@@ -12,7 +12,8 @@ import { useMediaQuery } from '@/shared/hooks/useMediaQuery'
 import { Badge, Button, Card, ConfirmDialog, Drawer, Page, PageHeader, SearchInput, toast } from '@/shared/ui'
 import { CategoryTree } from '@/features/catalog/CategoryTree'
 import { CategoryDrawer, draftFromCategory, type CategoryDraft } from '@/features/catalog/CategoryDrawer'
-import { ServiceTypeDrawer, draftFromServiceType, type ServiceTypeDraft } from '@/features/catalog/ServiceTypeDrawer'
+import { ServiceTypeDrawer, draftFromServiceType, type ServiceTypeDraft, type ServiceTypeSubmitOptions } from '@/features/catalog/ServiceTypeDrawer'
+import { boundToService, isGeneric } from '@/features/template-editor/galleryFilters'
 import { ServiceTypeTable } from '@/features/catalog/ServiceTypeTable'
 import { NewTemplateModal, type NewTemplateInput } from '@/features/template-editor/NewTemplateModal'
 import { useNavigate } from 'react-router-dom'
@@ -94,10 +95,21 @@ export default function CatalogPage() {
       setCatDraft(null)
     } catch (e) { toast.error(errorMessage(e)) }
   }
-  const submitService = async (d: ServiceTypeDraft) => {
+  const submitService = async (d: ServiceTypeDraft, opts?: ServiceTypeSubmitOptions) => {
     try {
-      await saveSt.mutateAsync({ id: d.id, name: d.name, code: d.code || undefined, description: d.description || undefined, categoryId: d.categoryId, price: d.price, branchPrices: d.branchPrices, turnaroundDays: d.turnaroundDays, schemaId: d.schemaId, documentScope: d.documentScope, defaultTemplateId: d.defaultTemplateId, isActive: d.isActive })
+      const saved = await saveSt.mutateAsync({ id: d.id, name: d.name, code: d.code || undefined, description: d.description || undefined, categoryId: d.categoryId, price: d.price, branchPrices: d.branchPrices, turnaroundDays: d.turnaroundDays, schemaId: d.schemaId, documentScope: d.documentScope, defaultTemplateId: d.defaultTemplateId, isActive: d.isActive })
       toast.success(t('catalog.services.saved'))
+      // a default template that is not bound to the service yet gets bound to it (and, if asked, its copies in the
+      // other branches) — so approval finds it in every branch; generic templates already cover every service
+      const chosen = d.defaultTemplateId ? resultTemplates.find((x) => x.id === d.defaultTemplateId) : undefined
+      const sid = d.id ?? saved.id
+      if (chosen && sid) {
+        const svc = { id: sid, categoryId: d.categoryId }
+        const copies = opts?.bindCopies ? resultTemplates.filter((x) => x.id !== chosen.id && x.scope === chosen.scope && x.name === chosen.name) : []
+        const targets = [chosen, ...copies].filter((x) => !isGeneric(x) && !boundToService(x, svc))
+        for (const x of targets) await saveTemplate.mutateAsync({ id: x.id, serviceTypeIds: [...x.serviceTypeIds, sid] })
+        if (targets.length) toast.success(t('catalog.services.templateBound', { n: targets.length, name: chosen.name }))
+      }
       setStDraft(null)
     } catch (e) { toast.error(errorMessage(e)) }
   }
@@ -224,7 +236,7 @@ export default function CatalogPage() {
       </Drawer>
 
       <CategoryDrawer open={!!catDraft} onClose={() => setCatDraft(null)} initial={catDraft} categories={cats} onSubmit={submitCategory} saving={saveCat.isPending} />
-      <ServiceTypeDrawer open={!!stDraft} onClose={() => setStDraft(null)} initial={stDraft} categories={cats} branches={branches.data ?? []} schemas={schemas.data ?? []} templates={resultTemplates} onSubmit={submitService} saving={saveSt.isPending} />
+      <ServiceTypeDrawer open={!!stDraft} onClose={() => setStDraft(null)} initial={stDraft} categories={cats} branches={branches.data ?? []} schemas={schemas.data ?? []} templates={resultTemplates} branchId={branchId} onSubmit={submitService} saving={saveSt.isPending} />
 
       <ConfirmDialog open={!!catDel} onClose={() => setCatDel(null)} danger loading={delCat.isPending}
         title={t('catalog.tree.deleteTitle', { name: catDel?.name ?? '' })} description={t('catalog.tree.deleteHint')} confirmText={t('common.delete')} cancelText={t('common.cancel')}

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { AttributeSchema, Branch, Category, Id, ResultTemplate, ServiceType } from '@/domain'
-import { Button, Drawer, Field, Input, Segmented, Select, Switch, Textarea } from '@/shared/ui'
+import { boundToService, isGeneric } from '@/features/template-editor/galleryFilters'
+import { Button, Checkbox, Drawer, Field, Input, Segmented, Select, Switch, Textarea } from '@/shared/ui'
 import { categoryPath } from './tree'
 
 export interface ServiceTypeDraft {
@@ -24,22 +25,52 @@ export const draftFromServiceType = (s?: ServiceType | null, categoryId: Id = ''
     ? { id: s.id, name: s.name, code: s.code ?? '', description: s.description ?? '', categoryId: s.categoryId, price: s.price, branchPrices: { ...s.branchPrices }, turnaroundDays: s.turnaroundDays, schemaId: s.schemaId, documentScope: s.documentScope, defaultTemplateId: s.defaultTemplateId, isActive: s.isActive }
     : { name: '', code: '', description: '', categoryId, price: 0, branchPrices: {}, turnaroundDays: 1, schemaId: null, documentScope: 'item', defaultTemplateId: null, isActive: true }
 
-export function ServiceTypeDrawer({ open, onClose, initial, categories, branches, schemas, templates, onSubmit, saving }: {
+/** What the drawer asks the page to do besides saving the service. */
+export interface ServiceTypeSubmitOptions {
+  /** the chosen default template is not bound to the service yet: bind its same-named copies in the other branches as well */
+  bindCopies: boolean
+}
+
+export function ServiceTypeDrawer({ open, onClose, initial, categories, branches, schemas, templates, onSubmit, saving, branchId }: {
   open: boolean; onClose: () => void; initial: ServiceTypeDraft | null; categories: Category[]; branches: Branch[]; schemas: AttributeSchema[]; templates: ResultTemplate[]
-  onSubmit: (d: ServiceTypeDraft) => void; saving?: boolean
+  onSubmit: (d: ServiceTypeDraft, opts: ServiceTypeSubmitOptions) => void; saving?: boolean
+  /** the branch selected in the top bar (templates are branch-owned); null = all branches */
+  branchId?: Id | null
 }) {
   const { t } = useTranslation()
   const [d, setD] = useState<ServiceTypeDraft>(draftFromServiceType())
   const [touched, setTouched] = useState(false)
-  useEffect(() => { if (open && initial) { setD(initial); setTouched(false) } }, [open, initial])
+  const [bindCopies, setBindCopies] = useState(true)
+  useEffect(() => { if (open && initial) { setD(initial); setTouched(false); setBindCopies(true) } }, [open, initial])
   const set = <K extends keyof ServiceTypeDraft>(k: K, v: ServiceTypeDraft[K]) => setD((s) => ({ ...s, [k]: v }))
 
   const nameErr = touched && !d.name.trim() ? t('common.required') : undefined
   const catErr = touched && !d.categoryId ? t('common.required') : undefined
   const published = schemas.filter((s) => s.status === 'published')
-  // cheque templates are not result documents: only item/order templates apply to a service
-  const boundTemplates = useMemo(() => templates.filter((tp) => tp.scope !== 'receipt' && (tp.serviceTypeIds.length === 0 || (d.id ? tp.serviceTypeIds.includes(d.id) : false))), [templates, d.id])
-  const submit = () => { setTouched(true); if (!d.name.trim() || !d.categoryId) return; onSubmit({ ...d, name: d.name.trim(), code: d.code.trim().toUpperCase() }) }
+  // "Standart andoza": every result template (cheque templates are not result documents) — those already bound to
+  // the service (or its category, or generic) first, then all the others; picking one of those binds it on save.
+  // Templates are branch-owned: with a branch selected only its templates are offered (plus the current default).
+  const svc = { id: d.id ?? '', categoryId: d.categoryId }
+  const covers = (tp: ResultTemplate) => isGeneric(tp) || boundToService(tp, svc)
+  const branchName = (id: Id) => branches.find((b) => b.id === id)?.name
+  const tplGroups = useMemo(() => {
+    const byName = (a: ResultTemplate, b: ResultTemplate) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base', numeric: true })
+    const pool = templates.filter((tp) => tp.scope !== 'receipt' && (!branchId || !tp.branchIds.length || tp.branchIds.includes(branchId) || tp.id === d.defaultTemplateId))
+    const isBound = (tp: ResultTemplate) => isGeneric(tp) || boundToService(tp, { id: d.id ?? '', categoryId: d.categoryId })
+    return { bound: pool.filter(isBound).sort(byName), others: pool.filter((tp) => !isBound(tp)).sort(byName) }
+  }, [templates, branchId, d.id, d.categoryId, d.defaultTemplateId])
+  const tplLabel = (tp: ResultTemplate) => [
+    tp.name,
+    tp.scope === 'order' ? t('catalog.services.scopeOrder') : null,
+    tp.status !== 'active' ? t(`catalog.templates.status.${tp.status}`) : null,
+    isGeneric(tp) ? t('catalog.services.generic') : null,
+    !branchId ? tp.branchIds.map(branchName).filter(Boolean).join(', ') || null : null,
+  ].filter(Boolean).join(' · ')
+  const chosen = templates.find((tp) => tp.id === d.defaultTemplateId)
+  const willBind = !!chosen && !covers(chosen)
+  // the chosen template's copies in the other branches (same name and level) that are not bound to the service yet
+  const copies = chosen ? templates.filter((tp) => tp.id !== chosen.id && tp.scope === chosen.scope && tp.name === chosen.name && !covers(tp)) : []
+  const submit = () => { setTouched(true); if (!d.name.trim() || !d.categoryId) return; onSubmit({ ...d, name: d.name.trim(), code: d.code.trim().toUpperCase() }, { bindCopies: bindCopies && copies.length > 0 }) }
   const num = (v: string) => (v === '' ? 0 : Math.max(0, Number(v) || 0))
 
   return (
@@ -90,11 +121,19 @@ export function ServiceTypeDrawer({ open, onClose, initial, categories, branches
         <Field label={t('catalog.services.docScope')} hint={t('catalog.services.docScopeHint')}>{() => (
           <Segmented value={d.documentScope} onChange={(v) => set('documentScope', v)} items={[{ value: 'item', label: t('catalog.services.scopeItem') }, { value: 'order', label: t('catalog.services.scopeOrder') }]} />
         )}</Field>
-        <Field label={t('catalog.services.defaultTemplate')}>{(id) => (
-          <Select id={id} value={d.defaultTemplateId ?? ''} onChange={(e) => set('defaultTemplateId', e.target.value || null)}>
-            <option value="">{t('catalog.services.noTemplate')}</option>
-            {boundTemplates.map((tp) => <option key={tp.id} value={tp.id}>{tp.name}{tp.serviceTypeIds.length === 0 ? ` · ${t('catalog.services.generic')}` : ''}</option>)}
-          </Select>
+        <Field label={t('catalog.services.defaultTemplate')} hint={t('catalog.services.defaultTemplateHint')}>{(id) => (
+          <div className="flex flex-col gap-2">
+            <Select id={id} value={d.defaultTemplateId ?? ''} onChange={(e) => set('defaultTemplateId', e.target.value || null)} data-default-template>
+              <option value="">{t('catalog.services.noTemplate')}</option>
+              {tplGroups.bound.length > 0 && <optgroup label={t('catalog.services.tplGroupBound')}>{tplGroups.bound.map((tp) => <option key={tp.id} value={tp.id}>{tplLabel(tp)}</option>)}</optgroup>}
+              {tplGroups.others.length > 0 && <optgroup label={t('catalog.services.tplGroupOther')}>{tplGroups.others.map((tp) => <option key={tp.id} value={tp.id}>{tplLabel(tp)}</option>)}</optgroup>}
+            </Select>
+            {willBind && <p className="text-[12px] text-brand-ink" data-will-bind>{t('catalog.services.willBind', { name: chosen!.name })}</p>}
+            {copies.length > 0 && (
+              <Checkbox checked={bindCopies} onChange={(e) => setBindCopies(e.target.checked)} data-bind-copies
+                label={<span className="text-[12.5px]">{t('catalog.services.bindCopies', { n: copies.length, branches: [...new Set(copies.flatMap((tp) => tp.branchIds.map(branchName)).filter(Boolean))].join(', ') })}</span>} />
+            )}
+          </div>
         )}</Field>
         <Switch checked={d.isActive} onChange={(v) => set('isActive', v)} label={t('common.active')} description={t('catalog.services.activeHint')} />
       </div>
