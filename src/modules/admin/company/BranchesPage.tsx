@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Clock, GitBranch, Globe, MapPin, Pencil, Phone, Plus } from 'lucide-react'
+import { Clock, Eraser, GitBranch, Globe, MapPin, Pencil, Phone, Plus } from 'lucide-react'
 import type { Branch } from '@/domain'
 import { useStaffSession } from '@/features/session/useSession'
 import { usePermissions } from '@/features/auth/store'
 import { useBranches } from '@/features/org/queries'
 import { BranchDrawer, orderNumberExample } from '@/features/org/BranchDrawer'
+import { ResetDialog } from '@/features/org/ResetDialog'
 import { locationText } from '@/features/org/LocationFields'
 import { fmtNumber } from '@/shared/lib/format'
 import { Badge, Button, Card, EmptyState, IconButton, MotionItem, MotionList, Page, PageHeader, Skeleton, fadeUp, stagger } from '@/shared/ui'
@@ -13,8 +14,9 @@ import { Badge, Button, Card, EmptyState, IconButton, MotionItem, MotionList, Pa
 export default function BranchesPage() {
   const { t } = useTranslation()
   const { companyId } = useStaffSession()
-  const { can } = usePermissions()
+  const { can, isSuperAdmin } = usePermissions()
   const canWrite = can('admin.branch.write')
+  const [resetId, setResetId] = useState<string | null>(null)
   const branches = useBranches(companyId)
   const [drawer, setDrawer] = useState<{ open: boolean; branch: Branch | null }>({ open: false, branch: null })
 
@@ -47,6 +49,7 @@ export default function BranchesPage() {
                       <p className="text-[12.5px] text-ink-3 mt-0.5 font-mono">{orderNumberExample(b.code, b.orderSeq)}</p>
                     </div>
                     {canWrite && <IconButton label={t('common.edit')} size="sm" onClick={(e) => { e.stopPropagation(); openEdit(b) }}><Pencil /></IconButton>}
+                    {isSuperAdmin && <IconButton label={t('admin.reset.branchAction')} title={t('admin.reset.branchAction')} size="sm" variant="danger" data-reset-branch={b.code} onClick={(e) => { e.stopPropagation(); setResetId(b.id) }}><Eraser /></IconButton>}
                   </div>
                   <ul className="flex flex-col gap-1.5 text-[13.5px] text-ink-2">
                     <li className="flex items-start gap-2 min-w-0"><Globe className="size-4 text-ink-3 shrink-0 mt-0.5" /><span className="break-words min-w-0">{locationText(b) || t('common.notSet')}</span></li>
@@ -65,6 +68,7 @@ export default function BranchesPage() {
         </>
       )}
 
+      <ResetDialog target="branch" id={resetId} open={!!resetId} onClose={() => setResetId(null)} />
       <BranchDrawer open={drawer.open} onClose={() => setDrawer((d) => ({ ...d, open: false }))} companyId={companyId} branch={drawer.branch} />
     </Page>
   )

@@ -4,6 +4,19 @@ import type { PermissionOverrides } from './access/permissions'
 export type SmsTemplateKind = 'payment_receipt' | 'result_ready' | 'reminder'
 export type SmsTemplateOverrides = Partial<Record<SmsTemplateKind, string>>
 
+/** Superadmin reset ("like newborn") of a company or one branch. */
+export type ResetTarget = 'company' | 'branch'
+export interface ResetPreview {
+  target: ResetTarget
+  id: string
+  name: string
+  /** what to type to confirm: the company slug / the branch code */
+  confirmWord: string
+  /** each part with the rows it would remove and the parts it pulls in */
+  parts: { key: string; counts: Record<string, number>; requires: string[] }[]
+}
+export interface ResetResult { parts: string[]; counts: Record<string, number> }
+
 export interface SmsTestResult {
   ok: boolean
   providerMessageId?: string

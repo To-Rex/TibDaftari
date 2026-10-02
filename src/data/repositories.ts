@@ -33,6 +33,9 @@ import type {
   Role,
   ServiceType,
   SmsTestResult,
+  ResetPreview,
+  ResetResult,
+  ResetTarget,
   StaffLoginInput,
   StaffSession,
   TemplateAsset,
@@ -60,6 +63,10 @@ export interface TenantRepository {
   saveBranch(input: Partial<Branch> & { companyId: Id; id?: Id }): Promise<Branch>
   /** Sends ONE real SMS through the company's Xabarchi account (default recipient: company phone). */
   testSms(companyId: Id, to?: string): Promise<SmsTestResult>
+  /** Superadmin: what a reset of the company / branch would remove (nothing changes). */
+  resetPreview(target: ResetTarget, id: Id): Promise<ResetPreview>
+  /** Superadmin: IRREVERSIBLY reset the chosen parts; `confirm` = company slug / branch code. */
+  reset(target: ResetTarget, id: Id, input: { parts: string[]; confirm: string }): Promise<ResetResult>
 }
 
 export interface StaffRepository {

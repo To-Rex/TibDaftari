@@ -1,5 +1,5 @@
 /** HTTP TenantRepository — companies + branches (`app/modules/tenant`). */
-import type { Branch, Company, Page, SmsTestResult } from '@/domain'
+import type { Branch, Company, Page, ResetPreview, ResetResult, SmsTestResult } from '@/domain'
 import type { TenantRepository } from '../repositories'
 import { api, compact } from './client'
 
@@ -25,4 +25,8 @@ export const tenantHttp: TenantRepository = {
   },
 
   testSms: (companyId, to) => api.post<SmsTestResult>(`/companies/${companyId}/sms/test`, to ? { to } : {}),
+
+  resetPreview: (target, id) => api.get<ResetPreview>(`/${target === 'company' ? 'companies' : 'branches'}/${id}/reset`),
+
+  reset: (target, id, input) => api.post<ResetResult>(`/${target === 'company' ? 'companies' : 'branches'}/${id}/reset`, input),
 }

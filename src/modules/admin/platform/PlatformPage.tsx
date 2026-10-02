@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Building2, LogIn, Pencil, Plus } from 'lucide-react'
+import { Building2, Eraser, LogIn, Pencil, Plus } from 'lucide-react'
 import type { Column } from '@/shared/ui'
 import type { Company } from '@/domain'
 import { useAuth, usePermissions } from '@/features/auth/store'
@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { routes } from '@/shared/config/routes'
 import { useCompanies, useSaveCompany } from '@/features/org/queries'
 import { CompanyDrawer } from '@/features/org/CompanyDrawer'
+import { ResetDialog } from '@/features/org/ResetDialog'
 import { locationText } from '@/features/org/LocationFields'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import { errorMessage } from '@/shared/lib/errors'
@@ -16,8 +17,9 @@ import { Avatar, Badge, Button, Card, ConfirmDialog, DataTable, EmptyState, Icon
 
 export default function PlatformPage() {
   const { t } = useTranslation()
-  const { can } = usePermissions()
+  const { can, isSuperAdmin } = usePermissions()
   const canManage = can('platform.company.manage')
+  const [resetId, setResetId] = useState<string | null>(null)
   const nav = useNavigate()
   const setActiveCompany = useAuth((s) => s.setActiveCompany)
   const enter = (c: Company) => { setActiveCompany(c.id); toast.success(t('admin.platform.switched', { name: c.name })); nav(routes.admin.root) }
@@ -65,6 +67,7 @@ export default function PlatformPage() {
       <div className="flex flex-wrap items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
         <Button size="xs" variant="soft" leftIcon={<LogIn className="size-3.5" />} onClick={() => enter(c)}>{t('admin.platform.impersonate')}</Button>
         {canManage && <IconButton label={t('common.edit')} size="sm" onClick={() => setDrawer({ open: true, company: c })}><Pencil /></IconButton>}
+        {isSuperAdmin && <IconButton label={t('admin.reset.companyAction')} title={t('admin.reset.companyAction')} size="sm" variant="danger" data-reset-company={c.slug} onClick={() => setResetId(c.id)}><Eraser /></IconButton>}
       </div>
     ) },
   ]
@@ -97,6 +100,7 @@ export default function PlatformPage() {
         )}
       </Card>
 
+      <ResetDialog target="company" id={resetId} open={!!resetId} onClose={() => setResetId(null)} />
       <CompanyDrawer open={drawer.open} onClose={() => setDrawer((d) => ({ ...d, open: false }))} company={drawer.company} />
       <ConfirmDialog open={!!confirm} onClose={() => setConfirm(null)} onConfirm={() => confirm && void toggleActive(confirm, false)} danger loading={save.isPending}
         title={t('admin.platform.deactivateConfirm', { name: confirm?.name ?? '' })} description={t('admin.platform.deactivateHint')} confirmText={t('common.confirm')} cancelText={t('common.cancel')} />
