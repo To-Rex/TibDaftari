@@ -62,7 +62,8 @@ export const toRenderItem = (x: { item: OrderItem; schema: AttributeSchema | nul
 
 /** `order.*`: number/date always; totals when the order carries them (receipts). Mirror of the backend `_order_block`. */
 function orderBlock(o: NonNullable<Parameters<typeof buildRenderContext>[0]['order']> | null | undefined): RenderContext['order'] {
-  const block: RenderContext['order'] = { number: o?.number ?? '', date: fmtDate(o?.createdAt) }
+  // {order.date} carries the time (a bare 'yyyy-MM-dd' stays a date); {order.dateOnly} is just the day
+  const block: RenderContext['order'] = { number: o?.number ?? '', date: o?.createdAt && o.createdAt.length > 10 ? fmtDateTime(o.createdAt) : fmtDate(o?.createdAt), dateOnly: fmtDate(o?.createdAt) }
   if (!o) return block
   if (o.createdAt) block.dateTime = fmtDateTime(o.createdAt)
   if (o.total != null) {

@@ -39,7 +39,7 @@ export interface RenderContext {
     ageMonths?: number
   }
   /** money fields are present for receipts (formatted like `305,000`) */
-  order: { number: string; date: string; dateTime?: string; subtotal?: string; discountPercent?: string; discountAmount?: string; total?: string; paidAmount?: string; remaining?: string; itemCount?: string; note?: string; status?: string; /** presence flags for showIf: '1' or '' */ hasDiscount?: string; hasRemaining?: string; hasPayments?: string }
+  order: { number: string; /** dd.MM.yyyy HH:mm */ date: string; /** dd.MM.yyyy */ dateOnly?: string; dateTime?: string; subtotal?: string; discountPercent?: string; discountAmount?: string; total?: string; paidAmount?: string; remaining?: string; itemCount?: string; note?: string; status?: string; /** presence flags for showIf: '1' or '' */ hasDiscount?: string; hasRemaining?: string; hasPayments?: string }
   cashier?: { name: string }
   /** receipts: one row per (non-refunded) payment */
   payments?: { i: number; date: string; method: string; amount: string; note?: string }[]

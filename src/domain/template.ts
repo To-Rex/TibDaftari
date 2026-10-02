@@ -259,7 +259,8 @@ export const STANDARD_PLACEHOLDERS: { group: string; items: { key: string; label
     group: 'order',
     items: [
       { key: 'order.number', label: 'Chek raqami' },
-      { key: 'order.date', label: 'Chek sanasi' },
+      { key: 'order.date', label: 'Chek sanasi va vaqti' },
+      { key: 'order.dateOnly', label: 'Chek sanasi (faqat sana)' },
       { key: 'item.serviceName', label: 'Xizmat nomi' },
       { key: 'item.approvedAt', label: 'Tasdiqlangan sana' },
       { key: 'item.technician', label: 'Laborant' },
@@ -313,7 +314,8 @@ export const RECEIPT_PLACEHOLDERS: { group: string; items: { key: string; label:
     group: 'receipt',
     items: [
       { key: 'order.number', label: 'Chek raqami' },
-      { key: 'order.date', label: 'Chek sanasi' },
+      { key: 'order.date', label: 'Chek sanasi va vaqti' },
+      { key: 'order.dateOnly', label: 'Chek sanasi (faqat sana)' },
       { key: 'order.dateTime', label: 'Sana va vaqt' },
       { key: 'order.subtotal', label: 'Xizmatlar summasi' },
       { key: 'order.discountPercent', label: 'Chegirma %' },
