@@ -61,7 +61,7 @@ export interface Company extends AuditStamp {
     defaultPriority: 'urgent' | 'transactional' | 'bulk'
     senderNote?: string
   }
-  /** Per-company SMS text overrides ({patient} {order} {service} {company}; result text also {link}); empty = platform default. */
+  /** Per-company SMS text overrides ({patient} {order} {service} {company} {branch}; result text also {link}); empty = platform default. */
   smsTemplates?: SmsTemplateOverrides
   /** Company Telegram bot (token stays on the backend). */
   telegram?: { botUsername: string | null; connected: boolean }

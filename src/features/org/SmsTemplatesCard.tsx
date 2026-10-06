@@ -17,13 +17,14 @@ import { useBranches, useBranchSmsTemplates, useSaveBranchSmsTemplates } from '.
 export type { SmsTemplateKind }
 export type SmsTemplates = Record<SmsTemplateKind, string>
 const KINDS: SmsTemplateKind[] = ['payment_receipt', 'result_ready', 'reminder']
-const PLACEHOLDERS = ['{patient}', '{order}', '{service}', '{company}'] as const
+/** {branch} = the name of the branch the message is sent for */
+const PLACEHOLDERS = ['{patient}', '{order}', '{service}', '{company}', '{branch}'] as const
 /** {link} — the public result PDF — exists only in the "result ready" text */
 const RESULT_PLACEHOLDERS = [...PLACEHOLDERS, '{link}'] as const
 /** Pre-backend drafts lived in localStorage; they are offered once as the initial draft, then dropped. */
 const LEGACY_STORAGE_KEY = (companyId: string) => `clinic.sms.templates.${companyId}`
 
-const SAMPLE = { patient: 'Karimova Aziza', order: 'UR-001241', service: 'Umumiy qon tahlili', company: '', link: '' }
+const SAMPLE = { patient: 'Karimova Aziza', order: 'UR-001241', service: 'Umumiy qon tahlili', company: '', branch: '', link: '' }
 /** a link as long as the real one (32-character token) so the SMS length counter is honest */
 const sampleLink = () => `${typeof window !== 'undefined' ? window.location.origin : 'https://temo.uz'}/d/Xk3vQ9pL2mT8aR5wZ1cY7nB4hJ6dF0sE`
 
@@ -101,7 +102,7 @@ function BranchTemplatesEditor({ companyId, companyName, branch, readOnly, branc
   const canApplyAll = !readOnly && branchCount > 1
 
   const labels: Record<SmsTemplateKind, string> = { payment_receipt: t('admin.sms.tplPayment'), result_ready: t('admin.sms.tplResult'), reminder: t('admin.sms.tplReminder') }
-  const preview = (text: string) => text.replace(/\{(patient|order|service|company|link)\}/g, (_, k: keyof typeof SAMPLE) => (k === 'company' ? companyName : k === 'link' ? sampleLink() : SAMPLE[k]))
+  const preview = (text: string) => text.replace(/\{(patient|order|service|company|branch|link)\}/g, (_, k: keyof typeof SAMPLE) => (k === 'company' ? companyName : k === 'branch' ? branch.name : k === 'link' ? sampleLink() : SAMPLE[k]))
   const seg = smsSegments(preview(draft[active]))
 
   const save = async (applyToAll = false) => {
