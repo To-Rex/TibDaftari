@@ -12,10 +12,14 @@ export type { SmsTemplateKind }
 export type SmsTemplates = Record<SmsTemplateKind, string>
 const KINDS: SmsTemplateKind[] = ['payment_receipt', 'result_ready', 'reminder']
 const PLACEHOLDERS = ['{patient}', '{order}', '{service}', '{company}'] as const
+/** {link} — the public result PDF — exists only in the "result ready" text */
+const RESULT_PLACEHOLDERS = [...PLACEHOLDERS, '{link}'] as const
 /** Pre-backend drafts lived in localStorage; they are offered once as the initial draft, then dropped. */
 const LEGACY_STORAGE_KEY = (companyId: string) => `clinic.sms.templates.${companyId}`
 
-const SAMPLE = { patient: 'Karimova Aziza', order: 'UR-001241', service: 'Umumiy qon tahlili', company: '' }
+const SAMPLE = { patient: 'Karimova Aziza', order: 'UR-001241', service: 'Umumiy qon tahlili', company: '', link: '' }
+/** a link as long as the real one (32-character token) so the SMS length counter is honest */
+const sampleLink = () => `${typeof window !== 'undefined' ? window.location.origin : 'https://temo.uz'}/d/Xk3vQ9pL2mT8aR5wZ1cY7nB4hJ6dF0sE`
 
 /** GSM-7 vs UCS-2 segment counter (approximate, mirrors what Xabarchi bills). */
 export function smsSegments(text: string): { chars: number; segments: number; unicode: boolean } {
@@ -43,7 +47,7 @@ export function SmsTemplatesCard({ companyId, companyName, readOnly, templates }
   const dirty = KINDS.some((k) => draft[k] !== saved[k])
 
   const labels: Record<SmsTemplateKind, string> = { payment_receipt: t('admin.sms.tplPayment'), result_ready: t('admin.sms.tplResult'), reminder: t('admin.sms.tplReminder') }
-  const preview = (text: string) => text.replace(/\{(patient|order|service|company)\}/g, (_, k: keyof typeof SAMPLE) => (k === 'company' ? companyName : SAMPLE[k]))
+  const preview = (text: string) => text.replace(/\{(patient|order|service|company|link)\}/g, (_, k: keyof typeof SAMPLE) => (k === 'company' ? companyName : k === 'link' ? sampleLink() : SAMPLE[k]))
   const seg = smsSegments(preview(draft[active]))
 
   const save = async () => {
@@ -82,10 +86,11 @@ export function SmsTemplatesCard({ companyId, companyName, readOnly, templates }
           <Textarea value={draft[active]} disabled={readOnly} rows={3} onChange={(e) => edit((d) => ({ ...d, [active]: e.target.value }))} className="font-mono text-[13.5px]" />
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-[12.5px] text-ink-3 mr-1">{t('admin.sms.placeholders')}:</span>
-            {PLACEHOLDERS.map((p) => (
+            {(active === 'result_ready' ? RESULT_PLACEHOLDERS : PLACEHOLDERS).map((p) => (
               <button key={p} type="button" disabled={readOnly} onClick={() => insert(p)} className="h-6 rounded-md border border-line bg-surface px-2 font-mono text-[12px] text-ink-2 hover:border-brand hover:text-brand-ink transition-colors disabled:opacity-50">{p}</button>
             ))}
           </div>
+          {active === 'result_ready' && <p className="text-[12px] text-ink-3" data-sms-link-hint>{t('admin.sms.linkHint')}</p>}
           <div className="rounded-[var(--radius)] border border-line bg-surface-2/50 p-4">
             <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-2">
               <span className="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-3">{t('admin.sms.preview')}</span>

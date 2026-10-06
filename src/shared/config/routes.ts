@@ -3,6 +3,8 @@ export const routes = {
   home: '/',
   patientLogin: '/login',
   staffLogin: '/staff/login',
+  /** the public result link sent by SMS / Telegram (no sign-in; the token is the key) */
+  publicResult: (token = ':token') => `/d/${token}`,
   portal: {
     root: '/me',
     results: '/me/results',

@@ -11,6 +11,7 @@ import { PageSpinner } from './PageSpinner'
 const LandingPage = lazy(() => import('@/modules/landing/LandingPage'))
 const PatientLoginPage = lazy(() => import('@/modules/landing/PatientLoginPage'))
 const StaffLoginPage = lazy(() => import('@/modules/landing/StaffLoginPage'))
+const PublicResultPage = lazy(() => import('@/modules/landing/PublicResultPage'))
 /* Patient portal */
 const PortalHome = lazy(() => import('@/modules/portal/PortalHomePage'))
 const PortalResults = lazy(() => import('@/modules/portal/PortalResultsPage'))
@@ -72,6 +73,7 @@ export const router = createBrowserRouter([
   { path: routes.home, element: page(<LandingPage />), errorElement: <RouteError /> },
   { path: routes.patientLogin, element: page(<PatientLoginPage />), errorElement: <RouteError /> },
   { path: routes.staffLogin, element: page(<StaffLoginPage />), errorElement: <RouteError /> },
+  { path: routes.publicResult(), element: page(<PublicResultPage />), errorElement: <RouteError /> },
   {
     element: <RequirePatient />,
     errorElement: <RouteError />,
