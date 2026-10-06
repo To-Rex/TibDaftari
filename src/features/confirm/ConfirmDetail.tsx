@@ -85,8 +85,9 @@ export function ConfirmDetail({ companyId, itemId, onBack, onApprove, onReject, 
           <div className="space-y-3"><Skeleton className="h-6 w-64" /><Skeleton className="h-4 w-48" /><Skeleton className="h-4 w-80" /></div>
         ) : (
           <>
-            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-              <div className="min-w-0">
+            {/* title and actions share a row only while both fit: the title keeps ≥ 16rem, the actions wrap below it otherwise */}
+            <div className="flex flex-wrap items-start justify-between gap-3" data-confirm-header>
+              <div className="min-w-0 flex-[1_1_16rem]">
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="text-[18px] font-semibold tracking-tight">{it.serviceName}</h2>
                   <ItemStatusBadge status={it.status} />
@@ -95,9 +96,10 @@ export function ConfirmDetail({ companyId, itemId, onBack, onApprove, onReject, 
                   <span className="font-mono tabular">{order.data?.order.number}</span>
                   <span>{it.categoryName}</span>
                   {it.technicianName && <span>{t('clinical.confirm.technician')}: <span className="text-ink-2">{it.technicianName}</span></span>}
+                  {it.status === 'approved' && <span>{t('clinical.confirm.approvedBy', { name: it.doctorName ?? '—' })}</span>}
                 </div>
               </div>
-              <div className={cn('flex shrink-0 flex-wrap items-center gap-2', canApprove && 'max-lg:hidden')}>
+              <div className={cn('flex max-w-full flex-wrap items-center gap-2', canApprove && 'max-lg:hidden')} data-confirm-actions>
                 {canApprove ? (
                   <>
                     <Button variant="secondary" leftIcon={<Undo2 className="size-4" />} onClick={onReject}>{t('clinical.confirm.reject')}</Button>
@@ -105,7 +107,6 @@ export function ConfirmDetail({ companyId, itemId, onBack, onApprove, onReject, 
                   </>
                 ) : it.status === 'approved' ? (
                   <>
-                    <span className="text-[13px] text-ink-3">{t('clinical.confirm.approvedBy', { name: it.doctorName ?? '—' })}</span>
                     {it.documentId && <PrintDocumentButton doc={{ id: it.documentId, title: doc.data?.title ?? it.serviceName }} hotkey="p" />}
                     {it.documentId && can(['confirm.result.approve', 'messaging.send']) && <ResendSmsButton documentId={it.documentId} deliveries={doc.data?.deliveries} />}
                   </>
