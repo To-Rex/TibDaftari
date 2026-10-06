@@ -4,6 +4,17 @@ import type { PermissionOverrides } from './access/permissions'
 export type SmsTemplateKind = 'payment_receipt' | 'result_ready' | 'reminder'
 export type SmsTemplateOverrides = Partial<Record<SmsTemplateKind, string>>
 
+/** A branch's SMS texts: its own once it saved them, otherwise the company's (`inherited`). */
+export interface BranchSmsTemplates {
+  branchId: Id
+  /** empty = platform default text */
+  templates: SmsTemplateOverrides
+  /** the branch has not saved its own texts yet — the company's are used */
+  inherited: boolean
+  /** how many branches a save changed (1, or every branch with `applyToAll`) */
+  applied?: number
+}
+
 /** Superadmin reset ("like newborn") of a company or one branch. */
 export type ResetTarget = 'company' | 'branch'
 export interface ResetPreview {

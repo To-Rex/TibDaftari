@@ -1,5 +1,5 @@
 /** HTTP TenantRepository — companies + branches (`app/modules/tenant`). */
-import type { Branch, Company, Page, ResetPreview, ResetResult, SmsTestResult } from '@/domain'
+import type { Branch, BranchSmsTemplates, Company, Page, ResetPreview, ResetResult, SmsTestResult } from '@/domain'
 import type { TenantRepository } from '../repositories'
 import { api, compact } from './client'
 
@@ -25,6 +25,11 @@ export const tenantHttp: TenantRepository = {
   },
 
   testSms: (companyId, to) => api.post<SmsTestResult>(`/companies/${companyId}/sms/test`, to ? { to } : {}),
+
+  getBranchSmsTemplates: (branchId) => api.get<BranchSmsTemplates>(`/branches/${branchId}/sms-templates`),
+
+  saveBranchSmsTemplates: (branchId, { templates, applyToAll }) =>
+    api.put<BranchSmsTemplates>(`/branches/${branchId}/sms-templates`, { templates, applyToAll: !!applyToAll }),
 
   resetPreview: (target, id) => api.get<ResetPreview>(`/${target === 'company' ? 'companies' : 'branches'}/${id}/reset`),
 

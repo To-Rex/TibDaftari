@@ -17,9 +17,12 @@ export function Card({ className, padded = true, interactive, ...rest }: HTMLAtt
   )
 }
 export function CardHeader({ title, description, actions, className }: { title: ReactNode; description?: ReactNode; actions?: ReactNode; className?: string }) {
+  // a header that stacks on small screens (`max-xs:flex-col` …) drops the 200px basis there — in a column it is a
+  // height, and left a tall blank gap under the title on phones
+  const stacked = /(?:^|\s)max-(xs|sm|md):flex-col(?:\s|$)/.exec(className ?? '')?.[1]
   return (
     <div className={cn('app-card-header mb-4 flex flex-wrap items-start justify-between gap-x-4 gap-y-2', className)}>
-      <div className="min-w-0 flex-1 basis-[200px]">
+      <div className={cn('min-w-0 flex-1 basis-[200px]', stacked === 'xs' && 'max-xs:basis-auto', stacked === 'sm' && 'max-sm:basis-auto', stacked === 'md' && 'max-md:basis-auto')}>
         <h3 className="text-[15px] font-semibold text-ink leading-6">{title}</h3>
         {description && <p className="text-[13px] text-ink-3 mt-0.5">{description}</p>}
       </div>

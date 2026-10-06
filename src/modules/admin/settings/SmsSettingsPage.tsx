@@ -160,7 +160,7 @@ export default function SmsSettingsPage() {
             </Card>
           </form>
 
-          <SmsTemplatesCard companyId={companyId} companyName={c.name} readOnly={!canWrite} templates={c.smsTemplates} />
+          <SmsTemplatesCard companyId={companyId} companyName={c.name} readOnly={!canWrite} />
 
           <Card>
             <CardHeader className="max-xs:flex-col max-xs:items-start" title={t('admin.sms.docsTitle')} description={t('admin.sms.docsText')}

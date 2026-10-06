@@ -1,12 +1,18 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+/**
+ * SMS text templates — per branch. The card edits the branch selected in the top bar (a pinned branch admin:
+ * their own branch); with "All branches" a picker chooses which one. A branch that never saved its own texts
+ * shows (and sends) the company's shared texts until it does. A company admin can write one set to every branch.
+ */
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MessageSquareText, RotateCcw } from 'lucide-react'
-import type { SmsTemplateKind, SmsTemplateOverrides } from '@/domain'
+import { CopyCheck, GitBranch, MessageSquareText, RotateCcw } from 'lucide-react'
+import type { Branch, SmsTemplateKind, SmsTemplateOverrides } from '@/domain'
+import { canSwitchBranch, useAuth } from '@/features/auth/store'
 import { storage } from '@/shared/lib/storage'
 import { cn } from '@/shared/lib/cn'
 import { errorMessage } from '@/shared/lib/errors'
-import { Badge, Button, Card, CardHeader, Textarea, toast } from '@/shared/ui'
-import { useSaveCompany } from './queries'
+import { Badge, Button, Card, CardHeader, ConfirmDialog, Select, Skeleton, Textarea, toast } from '@/shared/ui'
+import { useBranches, useBranchSmsTemplates, useSaveBranchSmsTemplates } from './queries'
 
 export type { SmsTemplateKind }
 export type SmsTemplates = Record<SmsTemplateKind, string>
@@ -31,11 +37,58 @@ export function smsSegments(text: string): { chars: number; segments: number; un
   return { chars, segments, unicode }
 }
 
-export function SmsTemplatesCard({ companyId, companyName, readOnly, templates }: { companyId: string; companyName: string; readOnly?: boolean; templates?: SmsTemplateOverrides }) {
+export function SmsTemplatesCard({ companyId, companyName, readOnly }: { companyId: string; companyName: string; readOnly?: boolean }) {
   const { t } = useTranslation()
-  const saveCompany = useSaveCompany()
+  const staff = useAuth((s) => s.staff)
+  const shellBranchId = useAuth((s) => s.branchId)
+  const branches = useBranches(companyId)
+  const switcher = !!staff && canSwitchBranch(staff)
+  const all = useMemo(() => branches.data ?? [], [branches.data])
+  // the branches this user may edit: switchers (and staff without assigned branches) every one, others their own
+  const mine = useMemo(() => {
+    const assigned = staff?.branchIds ?? []
+    const list = switcher || !assigned.length ? all : all.filter((b) => assigned.includes(b.id))
+    const active = list.filter((b) => b.isActive)
+    return active.length ? active : list
+  }, [all, staff, switcher])
+  const [picked, setPicked] = useState<string | null>(null)
+  const branch: Branch | undefined = shellBranchId
+    ? all.find((b) => b.id === shellBranchId)
+    : mine.find((b) => b.id === picked) ?? mine.find((b) => b.id === staff?.branchId) ?? mine[0]
+
+  if (branches.isLoading) return <Skeleton className="h-72" />
+  if (!branch) {
+    return (
+      <Card>
+        <CardHeader title={t('admin.sms.templatesTitle')} description={t('admin.sms.templatesSub')} />
+        <p className="text-[13.5px] text-ink-3" data-sms-no-branch>{t('admin.sms.noBranches')}</p>
+      </Card>
+    )
+  }
+
+  // "All branches" in the top bar: choose here which branch's texts to edit; otherwise the top-bar branch
+  const branchSlot = !shellBranchId && mine.length > 1 ? (
+    <Select value={branch.id} onChange={(e) => setPicked(e.target.value)} aria-label={t('admin.sms.branchTexts')} className="h-9 w-auto min-w-0 max-w-full text-[13.5px]" data-sms-branch-select>
+      {mine.map((b) => <option key={b.id} value={b.id}>{b.name} · {b.code}</option>)}
+    </Select>
+  ) : (
+    <span className="inline-flex min-w-0 max-w-full items-center gap-1.5 text-[13.5px] font-medium text-ink">
+      <GitBranch className="size-4 shrink-0 text-brand" /><span className="truncate">{branch.name}</span><span className="shrink-0 font-mono text-[12px] text-ink-3">{branch.code}</span>
+    </span>
+  )
+
+  // keyed by branch: switching branches starts from that branch's saved texts
+  return <BranchTemplatesEditor key={branch.id} companyId={companyId} companyName={companyName} branch={branch} readOnly={readOnly} branchSlot={branchSlot} branchCount={switcher ? all.length : 0} />
+}
+
+function BranchTemplatesEditor({ companyId, companyName, branch, readOnly, branchSlot, branchCount }: { companyId: string; companyName: string; branch: Branch; readOnly?: boolean; branchSlot: ReactNode; branchCount: number }) {
+  const { t } = useTranslation()
+  const current = useBranchSmsTemplates(branch.id)
+  const saveTexts = useSaveBranchSmsTemplates()
+  const [confirmAll, setConfirmAll] = useState(false)
   const defaults = useMemo<SmsTemplates>(() => ({ payment_receipt: t('admin.sms.defaultPayment'), result_ready: t('admin.sms.defaultResult'), reminder: t('admin.sms.defaultReminder') }), [t])
-  /** what the backend currently has (empty override = platform default text) */
+  const templates = current.data?.templates
+  /** what the branch currently sends (empty override = platform default text) */
   const saved = useMemo<SmsTemplates>(() => ({ ...defaults, ...Object.fromEntries(Object.entries(templates ?? {}).filter(([, v]) => !!v)) }), [defaults, templates])
   const legacy = useMemo(() => storage.get<Partial<SmsTemplates> | null>(LEGACY_STORAGE_KEY(companyId), null), [companyId])
   const [draft, setDraft] = useState<SmsTemplates>(() => ({ ...saved, ...(legacy ?? {}) }))
@@ -45,19 +98,22 @@ export function SmsTemplatesCard({ companyId, companyName, readOnly, templates }
   const edit = (next: (d: SmsTemplates) => SmsTemplates) => { touched.current = true; setDraft(next) }
   const [active, setActive] = useState<SmsTemplateKind>('payment_receipt')
   const dirty = KINDS.some((k) => draft[k] !== saved[k])
+  const canApplyAll = !readOnly && branchCount > 1
 
   const labels: Record<SmsTemplateKind, string> = { payment_receipt: t('admin.sms.tplPayment'), result_ready: t('admin.sms.tplResult'), reminder: t('admin.sms.tplReminder') }
   const preview = (text: string) => text.replace(/\{(patient|order|service|company|link)\}/g, (_, k: keyof typeof SAMPLE) => (k === 'company' ? companyName : k === 'link' ? sampleLink() : SAMPLE[k]))
   const seg = smsSegments(preview(draft[active]))
 
-  const save = async () => {
+  const save = async (applyToAll = false) => {
     // texts equal to the platform default are stored as empty overrides (backend falls back)
     const overrides: SmsTemplateOverrides = Object.fromEntries(KINDS.map((k) => [k, draft[k] !== defaults[k] ? draft[k] : ''])) as SmsTemplateOverrides
     try {
-      await saveCompany.mutateAsync({ id: companyId, smsTemplates: overrides })
+      const r = await saveTexts.mutateAsync({ branchId: branch.id, templates: overrides, applyToAll })
       storage.remove(LEGACY_STORAGE_KEY(companyId))
       touched.current = false
-      toast.success(t('admin.sms.templatesSaved'))
+      setConfirmAll(false)
+      if (applyToAll) toast.success(t('admin.sms.appliedToAll', { count: r.applied ?? branchCount }))
+      else toast.success(t('admin.sms.templatesSaved'), branch.name)
     } catch (e) {
       toast.error(errorMessage(e))
     }
@@ -69,37 +125,61 @@ export function SmsTemplatesCard({ companyId, companyName, readOnly, templates }
       <CardHeader className="max-sm:flex-col max-sm:items-start" title={t('admin.sms.templatesTitle')} description={t('admin.sms.templatesSub')}
         actions={!readOnly && (
           <div className="flex flex-wrap items-center gap-2 max-w-full">
-            <Button size="sm" variant="ghost" leftIcon={<RotateCcw className="size-3.5" />} onClick={() => edit(() => defaults)}>{t('admin.sms.resetDefaults')}</Button>
-            <Button size="sm" disabled={!dirty} loading={saveCompany.isPending} onClick={() => void save()}>{t('common.save')}</Button>
+            <Button size="sm" variant="ghost" leftIcon={<RotateCcw className="size-3.5" />} onClick={() => edit(() => defaults)} disabled={!current.data}>{t('admin.sms.resetDefaults')}</Button>
+            {canApplyAll && <Button size="sm" variant="secondary" leftIcon={<CopyCheck className="size-3.5" />} onClick={() => setConfirmAll(true)} disabled={!current.data} data-sms-apply-all>{t('admin.sms.applyToAll')}</Button>}
+            <Button size="sm" disabled={!dirty || !current.data} loading={saveTexts.isPending && !confirmAll} onClick={() => void save()} data-sms-save>{t('common.save')}</Button>
           </div>
         )} />
-      <div className="grid gap-5 md:grid-cols-[200px_minmax(0,1fr)]">
-        <div className="flex flex-wrap md:flex-col gap-1">
-          {KINDS.map((k) => (
-            <button key={k} type="button" onClick={() => setActive(k)} className={cn('flex items-center gap-2 rounded-[10px] px-3 h-10 text-[13.5px] font-medium whitespace-nowrap transition-colors text-left', active === k ? 'bg-brand-soft text-brand-ink' : 'text-ink-2 hover:bg-surface-2')}>
-              <MessageSquareText className="size-4 shrink-0" />{labels[k]}
-              {draft[k] !== saved[k] && <span className="ml-auto size-1.5 rounded-full bg-warn" />}
-            </button>
-          ))}
+
+      {/* whose texts these are: the branch, and whether it already has its own */}
+      <div className="mb-5 flex flex-col gap-1.5 rounded-[var(--radius)] border border-line bg-surface-2/40 px-3.5 py-3" data-sms-branch={branch.id}>
+        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+          <span className="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-3">{t('admin.sms.branchTexts')}</span>
+          <div className="min-w-0 max-w-full">{branchSlot}</div>
+          {current.data && (
+            current.data.inherited
+              ? <span className="inline-flex" data-sms-inherited><Badge size="sm" tone="neutral">{t('admin.sms.inherited')}</Badge></span>
+              : <span className="inline-flex" data-sms-own><Badge size="sm" tone="brand" dot>{t('admin.sms.ownTexts')}</Badge></span>
+          )}
         </div>
-        <div className="flex flex-col gap-3 min-w-0">
-          <Textarea value={draft[active]} disabled={readOnly} rows={3} onChange={(e) => edit((d) => ({ ...d, [active]: e.target.value }))} className="font-mono text-[13.5px]" />
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-[12.5px] text-ink-3 mr-1">{t('admin.sms.placeholders')}:</span>
-            {(active === 'result_ready' ? RESULT_PLACEHOLDERS : PLACEHOLDERS).map((p) => (
-              <button key={p} type="button" disabled={readOnly} onClick={() => insert(p)} className="h-6 rounded-md border border-line bg-surface px-2 font-mono text-[12px] text-ink-2 hover:border-brand hover:text-brand-ink transition-colors disabled:opacity-50">{p}</button>
-            ))}
-          </div>
-          {active === 'result_ready' && <p className="text-[12px] text-ink-3" data-sms-link-hint>{t('admin.sms.linkHint')}</p>}
-          <div className="rounded-[var(--radius)] border border-line bg-surface-2/50 p-4">
-            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-2">
-              <span className="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-3">{t('admin.sms.preview')}</span>
-              <Badge tone={seg.segments > 2 ? 'warn' : 'neutral'} size="sm">{t('admin.sms.segments', { chars: seg.chars, segments: seg.segments })}{seg.unicode ? ' · UCS-2' : ' · GSM-7'}</Badge>
-            </div>
-            <div className="max-w-sm rounded-2xl rounded-tl-md bg-surface border border-line px-3.5 py-2.5 text-[14px] leading-relaxed shadow-1 break-words">{preview(draft[active]) || '…'}</div>
-          </div>
-        </div>
+        <p className="text-[12.5px] text-ink-3">{current.data?.inherited ? t('admin.sms.inheritedHint') : t('admin.sms.branchHint')}</p>
       </div>
+
+      {current.isLoading ? <div className="grid gap-5 md:grid-cols-[200px_minmax(0,1fr)]"><Skeleton className="h-32" /><Skeleton className="h-44" /></div>
+        : current.isError ? <p className="text-[13px] text-danger">{errorMessage(current.error)}</p>
+        : (
+          <div className="grid gap-5 md:grid-cols-[200px_minmax(0,1fr)]">
+            <div className="flex flex-wrap md:flex-col gap-1">
+              {KINDS.map((k) => (
+                <button key={k} type="button" onClick={() => setActive(k)} className={cn('flex items-center gap-2 rounded-[10px] px-3 h-10 text-[13.5px] font-medium whitespace-nowrap transition-colors text-left', active === k ? 'bg-brand-soft text-brand-ink' : 'text-ink-2 hover:bg-surface-2')}>
+                  <MessageSquareText className="size-4 shrink-0" />{labels[k]}
+                  {draft[k] !== saved[k] && <span className="ml-auto size-1.5 rounded-full bg-warn" />}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-col gap-3 min-w-0">
+              <Textarea value={draft[active]} disabled={readOnly} rows={3} onChange={(e) => edit((d) => ({ ...d, [active]: e.target.value }))} className="font-mono text-[13.5px]" />
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-[12.5px] text-ink-3 mr-1">{t('admin.sms.placeholders')}:</span>
+                {(active === 'result_ready' ? RESULT_PLACEHOLDERS : PLACEHOLDERS).map((p) => (
+                  <button key={p} type="button" disabled={readOnly} onClick={() => insert(p)} className="h-6 rounded-md border border-line bg-surface px-2 font-mono text-[12px] text-ink-2 hover:border-brand hover:text-brand-ink transition-colors disabled:opacity-50">{p}</button>
+                ))}
+              </div>
+              {active === 'result_ready' && <p className="text-[12px] text-ink-3" data-sms-link-hint>{t('admin.sms.linkHint')}</p>}
+              <div className="rounded-[var(--radius)] border border-line bg-surface-2/50 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-2">
+                  <span className="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-3">{t('admin.sms.preview')}</span>
+                  <Badge tone={seg.segments > 2 ? 'warn' : 'neutral'} size="sm">{t('admin.sms.segments', { chars: seg.chars, segments: seg.segments })}{seg.unicode ? ' · UCS-2' : ' · GSM-7'}</Badge>
+                </div>
+                <div className="max-w-sm rounded-2xl rounded-tl-md bg-surface border border-line px-3.5 py-2.5 text-[14px] leading-relaxed shadow-1 break-words">{preview(draft[active]) || '…'}</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+      <ConfirmDialog open={confirmAll} onClose={() => !saveTexts.isPending && setConfirmAll(false)} onConfirm={() => void save(true)} loading={saveTexts.isPending}
+        title={t('admin.sms.applyToAllTitle')} description={t('admin.sms.applyToAllText', { count: branchCount })}
+        confirmText={t('admin.sms.applyToAllConfirm')} cancelText={t('common.cancel')} />
     </Card>
   )
 }

@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { Branch, Company, Id, PageQuery } from '@/domain'
+import type { Branch, Company, Id, PageQuery, SmsTemplateOverrides } from '@/domain'
 import { repos } from '@/data'
 
 export const orgKeys = {
   company: (id: Id) => ['company', id] as const,
   companies: (q: PageQuery) => ['companies', q] as const,
   branches: (companyId: Id) => ['branches', companyId] as const,
+  branchSms: (branchId: Id) => ['branch-sms-templates', branchId] as const,
 }
 
 export const useCompany = (id: Id) =>
@@ -36,6 +37,25 @@ export function useSaveBranch() {
     onSuccess: (b) => {
       void qc.invalidateQueries({ queryKey: orgKeys.branches(b.companyId) })
       void qc.invalidateQueries({ queryKey: ['company', b.companyId] })
+    },
+  })
+}
+
+/** A branch's SMS texts (its own, or the company's while it has none). */
+export const useBranchSmsTemplates = (branchId: Id | null) =>
+  useQuery({ queryKey: orgKeys.branchSms(branchId ?? ''), queryFn: () => repos.tenant.getBranchSmsTemplates(branchId as Id), enabled: !!branchId })
+
+export function useSaveBranchSmsTemplates() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ branchId, ...input }: { branchId: Id; templates: SmsTemplateOverrides; applyToAll?: boolean }) => repos.tenant.saveBranchSmsTemplates(branchId, input),
+    onSuccess: (r, v) => {
+      qc.setQueryData(orgKeys.branchSms(r.branchId), r)
+      // every branch (and the company default) changed
+      if (v.applyToAll) {
+        void qc.invalidateQueries({ queryKey: ['branch-sms-templates'] })
+        void qc.invalidateQueries({ queryKey: ['company'] })
+      }
     },
   })
 }
