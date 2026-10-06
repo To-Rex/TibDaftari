@@ -30,6 +30,9 @@ export function printPdfInBrowser(blob: Blob): void {
   document.body.appendChild(frame)
 }
 
+/** Printing hands the result over on paper — recorded for the "results received" reports (never blocks printing). */
+const markPrinted = (documentId: string) => { void api.post(`/documents/${documentId}/printed`).catch(() => undefined) }
+
 export async function fetchDocumentPdf(documentId: string): Promise<Blob> {
   return api.get<Blob>(`/documents/${documentId}/pdf`, { blob: true })
 }
@@ -41,17 +44,20 @@ export async function printDocument(doc: PrintableDocument, t: TFunction, force?
   const blob = await fetchDocumentPdf(doc.id)
   if (mode === 'browser') {
     printPdfInBrowser(blob)
+    markPrinted(doc.id)
     return 'browser'
   }
   try {
     await tprintsPrintPdf(s, toBase64(await blob.arrayBuffer()), doc.title)
     toast.success(t('staff.reception.printing.resultSent'), s.documentPrinter || undefined)
+    markPrinted(doc.id)
     return 'service'
   } catch (e) {
     const err = e instanceof TPrintsError ? e : new TPrintsError(String(e))
     if (mode === 'auto' && err.unreachable) {
       toast.warning(t('staff.reception.printing.fallbackPdf'))
       printPdfInBrowser(blob)
+      markPrinted(doc.id)
       return 'browser'
     }
     toast.error(t('staff.reception.printing.failed'), err.message)

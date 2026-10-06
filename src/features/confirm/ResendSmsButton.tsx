@@ -12,7 +12,7 @@ import { repos } from '@/data'
 import { smsSegments } from '@/features/org/SmsTemplatesCard'
 import { errorMessage } from '@/shared/lib/errors'
 import { fmtDateTime } from '@/shared/lib/format'
-import { Badge, Button, Field, Input, Modal, Skeleton, toast } from '@/shared/ui'
+import { Badge, Button, Field, IconButton, Input, Modal, Skeleton, toast } from '@/shared/ui'
 
 const R = 'clinical.confirm.resend'
 const TONE = { queued: 'info', sent: 'ok', delivered: 'ok', failed: 'danger' } as const
@@ -25,7 +25,7 @@ const normalize = (raw: string): string | null => {
   return null
 }
 
-export function ResendSmsButton({ documentId, deliveries, size = 'md' }: { documentId: Id; deliveries?: DocumentDelivery[]; size?: 'sm' | 'md' }) {
+export function ResendSmsButton({ documentId, deliveries, size = 'md', variant = 'button' }: { documentId: Id; deliveries?: DocumentDelivery[]; size?: 'sm' | 'md'; /** 'icon': a compact icon button (tables) */ variant?: 'button' | 'icon' }) {
   const { t } = useTranslation()
   const qc = useQueryClient()
   const [open, setOpen] = useState(false)
@@ -48,7 +48,9 @@ export function ResendSmsButton({ documentId, deliveries, size = 'md' }: { docum
 
   return (
     <>
-      <Button variant="secondary" size={size} leftIcon={<MessageSquareShare className="size-4" />} onClick={() => setOpen(true)} data-hotkey="m" data-resend-sms>{t(`${R}.button`)}</Button>
+      {variant === 'icon'
+        ? <IconButton label={t(`${R}.button`)} size={size} onClick={() => setOpen(true)} data-resend-sms><MessageSquareShare /></IconButton>
+        : <Button variant="secondary" size={size} leftIcon={<MessageSquareShare className="size-4" />} onClick={() => setOpen(true)} data-hotkey="m" data-resend-sms>{t(`${R}.button`)}</Button>}
       <Modal open={open} onClose={() => !send.isPending && setOpen(false)} title={t(`${R}.title`)} description={t(`${R}.hint`)}
         footer={<>
           <Button variant="ghost" onClick={() => setOpen(false)} disabled={send.isPending}>{t('common.cancel')}</Button>

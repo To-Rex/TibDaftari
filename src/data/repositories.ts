@@ -45,6 +45,11 @@ import type {
   ValueMap,
   ItemStatus,
   PermissionOverrides,
+  PatientReport,
+  ResultListStatus,
+  ResultRow,
+  ResultsReport,
+  ServicesReport,
 } from '@/domain'
 
 export type WorklistCounts = Record<'all' | ItemStatus, number>
@@ -171,7 +176,18 @@ export interface MessagingRepository {
 export interface ReportRepository {
   dashboard(companyId: Id, q: { branchId?: Id; dateFrom: string; dateTo: string }): Promise<DashboardSummary>
   breakdown(companyId: Id, q: { by: 'category' | 'service' | 'branch' | 'employee'; dateFrom: string; dateTo: string; branchId?: Id }): Promise<{ name: string; count: number; revenue: number }[]>
+  /** Patients of the period: new / returning, demographics, districts, most frequent, debts (finance only). */
+  patients(companyId: Id, q: ReportRange): Promise<PatientReport>
+  /** Results of the period's cheques: ready, overdue, turnaround, received by the patient or not. */
+  results(companyId: Id, q: ReportRange): Promise<ResultsReport>
+  /** Rows behind `results`: results (not) received, or cheques still waiting — paged. */
+  resultList(companyId: Id, q: ReportRange & { status: ResultListStatus; page: number; pageSize: number; search?: string }): Promise<Page<ResultRow>>
+  /** Service usage vs the previous period; active services nobody ordered. */
+  services(companyId: Id, q: ReportRange): Promise<ServicesReport>
 }
+
+/** Inclusive calendar days (`YYYY-MM-DD`, clinic timezone) + optional branch. */
+export type ReportRange = { branchId?: Id; dateFrom: string; dateTo: string }
 
 /** Public clinic card shown in the portal (letterhead data only — no settings/secrets). */
 export type PortalCompany = Pick<Company, 'id' | 'name' | 'logoUrl' | 'phone' | 'address'>

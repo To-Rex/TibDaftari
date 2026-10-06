@@ -1,11 +1,15 @@
-/** Finance & operations reports: KPIs, trend, breakdowns, CSV export. */
+/** Reports: finance & operations (KPIs, trend, breakdowns, CSV) + patients, results and services sections (`?tab=`). */
 import { useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Download, Receipt, Wallet, FlaskConical, BadgeCheck, Users } from 'lucide-react'
 import { useStaffSession } from '@/features/session/useSession'
 import { usePermissions } from '@/features/auth/store'
 import { DateRangeFilter, initialRange, type RangeState } from '@/features/lab/DateRangeFilter'
 import { BreakdownTable } from '@/features/reports/BreakdownTable'
+import { PatientsReport } from '@/features/reports/PatientsReport'
+import { ResultsReport } from '@/features/reports/ResultsReport'
+import { ServicesReport } from '@/features/reports/ServicesReport'
 import { TrendChart } from '@/features/reports/TrendChart'
 import { downloadCsv } from '@/features/reports/csv'
 import { useBreakdown, useDashboard, type BreakdownBy } from '@/features/reports/queries'
@@ -13,12 +17,17 @@ import { fmtMoney, fmtNumber } from '@/shared/lib/format'
 import { Button, Card, CardHeader, Page, PageHeader, Segmented, Skeleton, Stat, Tabs, toast } from '@/shared/ui'
 
 const BYS: BreakdownBy[] = ['category', 'service', 'branch', 'employee']
+const SECTIONS = ['overview', 'patients', 'results', 'services'] as const
+type Section = (typeof SECTIONS)[number]
 
 export default function ReportsPage() {
   const { t } = useTranslation()
   const { companyId, branchId } = useStaffSession()
   const { can } = usePermissions()
   const finance = can('reports.finance.read')
+  const [params, setParams] = useSearchParams()
+  const section: Section = (SECTIONS as readonly string[]).includes(params.get('tab') ?? '') ? (params.get('tab') as Section) : 'overview'
+  const setSection = (s: Section) => setParams((p) => { const n = new URLSearchParams(p); if (s === 'overview') n.delete('tab'); else n.set('tab', s); return n }, { replace: true })
   const [range, setRange] = useState<RangeState>(() => initialRange('last30'))
   const [by, setBy] = useState<BreakdownBy>('category')
   const [metric, setMetric] = useState<'revenue' | 'count'>(finance ? 'revenue' : 'count')
@@ -54,9 +63,16 @@ export default function ReportsPage() {
       <PageHeader
         title={t('clinical.reports.title')}
         description={t('clinical.reports.subtitle')}
-        actions={can('reports.export') && <Button variant="secondary" leftIcon={<Download className="size-4" />} onClick={exportCsv}>{t('clinical.reports.export')}</Button>}
+        actions={section === 'overview' && can('reports.export') && <Button variant="secondary" leftIcon={<Download className="size-4" />} onClick={exportCsv}>{t('clinical.reports.export')}</Button>}
       />
+      <Tabs<Section> className="mb-4" value={section} onChange={setSection} items={SECTIONS.map((s) => ({ value: s, label: t(`clinical.reports.sections.${s}`) }))} />
       <div className="mb-5"><DateRangeFilter value={range} onChange={setRange} allowCustom /></div>
+
+      {section === 'patients' && <PatientsReport companyId={companyId} range={q} finance={finance} canExport={can('reports.export')} />}
+      {section === 'results' && <ResultsReport companyId={companyId} range={q} canExport={can('reports.export')} />}
+      {section === 'services' && <ServicesReport companyId={companyId} range={q} finance={finance} canExport={can('reports.export')} />}
+
+      {section === 'overview' && (<>
 
       <div className="mb-5 grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3 max-xs:grid-cols-1">
         {stat(t('clinical.reports.kpiOrders'), d && fmtNumber(totals.orders), <Receipt />, 'brand', t('clinical.reports.inRange'))}
@@ -92,6 +108,7 @@ export default function ReportsPage() {
           <BreakdownTable rows={bd.data} loading={bd.isLoading} metric={metric} showRevenue={finance} />
         </div>
       </Card>
+      </>)}
     </Page>
   )
 }
