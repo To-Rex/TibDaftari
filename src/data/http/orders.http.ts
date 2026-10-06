@@ -4,9 +4,9 @@
  *  - `employeeId` arguments are ignored: the backend takes the actor from the bearer token.
  *  - `ResultDocument.pdfUrl` comes back relative (`/api/v1/documents/{id}/pdf`) and is absolutised here.
  */
-import type { Id, Order, OrderItem, Page, Payment, ResultDocument } from '@/domain'
+import type { Id, Order, OrderItem, Page, Payment, ResultDocument, ResultSms } from '@/domain'
 import type { OrderRepository, WorklistCounts } from '@/data/repositories'
-import { absoluteUrl, api, ApiError } from './client'
+import { absoluteUrl, api, ApiError, compact } from './client'
 
 /** Worklist row: OrderItem + order/patient join columns (matches backend `WorklistItemOut`). */
 export type WorklistRow = OrderItem & {
@@ -126,4 +126,6 @@ export const ordersHttp: OrderRepository = {
   },
 
   getDocument: async (id) => withPdfUrl(await api.get<ResultDocument>(`/documents/${id}`)),
+
+  resendResultSms: (documentId, input) => api.post<ResultSms>(`/documents/${documentId}/sms`, compact({ to: input?.to, dryRun: input?.dryRun })),
 }

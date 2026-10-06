@@ -15,6 +15,7 @@ import { ageMonthsFrom } from '@/shared/lib/format'
 import { Button, Card, EmptyState, Segmented, Skeleton } from '@/shared/ui'
 import { DocumentPreview } from './DocumentPreview'
 import { PrintDocumentButton } from '@/features/printing/PrintDocumentButton'
+import { ResendSmsButton } from './ResendSmsButton'
 import { OrderScopePanel } from './OrderScopePanel'
 import { useOrderScopeItems } from './orderScope'
 import { useStaffSession } from '@/features/session/useSession'
@@ -106,6 +107,7 @@ export function ConfirmDetail({ companyId, itemId, onBack, onApprove, onReject, 
                   <>
                     <span className="text-[13px] text-ink-3">{t('clinical.confirm.approvedBy', { name: it.doctorName ?? '—' })}</span>
                     {it.documentId && <PrintDocumentButton doc={{ id: it.documentId, title: doc.data?.title ?? it.serviceName }} hotkey="p" />}
+                    {it.documentId && can(['confirm.result.approve', 'messaging.send']) && <ResendSmsButton documentId={it.documentId} deliveries={doc.data?.deliveries} />}
                   </>
                 ) : null}
               </div>

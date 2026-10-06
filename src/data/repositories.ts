@@ -29,6 +29,7 @@ import type {
   CreateOrderInput,
   Region,
   ResultDocument,
+  ResultSms,
   ResultTemplate,
   Role,
   ServiceType,
@@ -134,6 +135,8 @@ export interface OrderRepository {
   rejectItem(itemId: Id, employeeId: Id, reason: string): Promise<OrderItem>
   listDocuments(q: { orderId?: Id; patientId?: Id; branchId?: Id }): Promise<ResultDocument[]>
   getDocument(id: Id): Promise<ResultDocument>
+  /** Re-send the result-ready SMS (with the result link); `dryRun` only returns the recipient and the text. */
+  resendResultSms(documentId: Id, input?: { to?: string; dryRun?: boolean }): Promise<ResultSms>
 }
 
 export interface TemplateRepository {

@@ -112,6 +112,17 @@ export interface ResultDocument extends AuditStamp {
   deliveries: DocumentDelivery[]
 }
 
+/** The "result ready" SMS that was (or, on a dry run, would be) queued again. */
+export interface ResultSms {
+  to: string
+  text: string
+  /** the company has an SMS provider; without one the message is only recorded as failed */
+  configured: boolean
+  queued: boolean
+  status?: string | null
+  messageId?: string | null
+}
+
 export interface DocumentDelivery {
   channel: 'sms' | 'telegram' | 'portal' | 'print'
   status: 'queued' | 'sent' | 'delivered' | 'failed'
