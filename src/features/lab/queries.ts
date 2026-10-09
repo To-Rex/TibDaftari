@@ -117,6 +117,18 @@ export function useRejectItem() {
   })
 }
 
+export function useRevokeItem() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (p: { itemId: Id; reason: string }) => repos.orders.revokeItem(p.itemId, p.reason),
+    onSuccess: (r) => {
+      for (const it of r.items) { qc.setQueryData(labKeys.item(it.id), it); invalidateItem(qc, it.id) }
+      if (r.documentId) void qc.invalidateQueries({ queryKey: ['document', r.documentId] })
+      void qc.invalidateQueries({ queryKey: ['reports'] })
+    },
+  })
+}
+
 /** Item + its order + patient + schema — everything the entry / confirm views need. */
 export function useItemContext(itemId: Id | undefined) {
   const item = useItem(itemId)

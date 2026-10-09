@@ -117,6 +117,8 @@ export const ordersHttp: OrderRepository = {
 
   rejectItem: (itemId, _employeeId, reason) => api.post<OrderItem>(`/items/${itemId}/reject`, { reason }),
 
+  revokeItem: (itemId, reason) => api.post<{ item: OrderItem; items: OrderItem[]; documentId?: string | null }>(`/items/${itemId}/revoke`, { reason }),
+
   listDocuments: async (q) => {
     const companyId = await currentCompanyId()
     const docs = await api.get<ResultDocument[]>(`/companies/${companyId}/documents`, {

@@ -5,6 +5,7 @@ import { BadgeCheck } from 'lucide-react'
 import type { Id } from '@/domain'
 import type { WorklistRow } from '@/features/lab/WorklistTable'
 import { usePermissions } from '@/features/auth/store'
+import { historyCounts } from '@/features/lab/ItemHistory'
 import { cn } from '@/shared/lib/cn'
 import { fmtRelative, fmtTime } from '@/shared/lib/format'
 import { Avatar, EmptyState, Kbd, SkeletonRows, fadeUp, stagger } from '@/shared/ui'
@@ -46,6 +47,7 @@ export function ConfirmList({ rows, loading, selectedId, onSelect, categoryColor
                   <span className="font-mono">{r.orderNumber}</span>
                   <span className="opacity-50">·</span>
                   <span className="truncate">{r.technicianName ?? '—'}</span>
+                  {historyCounts(r.history).returns > 0 && <span className="shrink-0 rounded-full bg-warn-soft px-1.5 font-medium text-warn" title={t('clinical.confirm.returnedTimes', { n: historyCounts(r.history).returns })} data-returns>↺ {historyCounts(r.history).returns}</span>}
                   <span className="ml-auto">{fmtRelative(r.submittedAt ?? r.updatedAt)}</span>
                 </div>
               </div>

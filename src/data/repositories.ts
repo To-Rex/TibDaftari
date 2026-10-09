@@ -144,6 +144,8 @@ export interface OrderRepository {
   /** Items an order-scope template would cover for this order (for preview / confirmation UI). */
   orderScopeItems(orderId: Id, templateId: Id): Promise<OrderItem[]>
   rejectItem(itemId: Id, employeeId: Id, reason: string): Promise<OrderItem>
+  /** Doctor takes back an approved result: document withdrawn, result back to the lab (`items` = every item that changed). */
+  revokeItem(itemId: Id, reason: string): Promise<{ item: OrderItem; items: OrderItem[]; documentId?: Id | null }>
   listDocuments(q: { orderId?: Id; patientId?: Id; branchId?: Id }): Promise<ResultDocument[]>
   getDocument(id: Id): Promise<ResultDocument>
   /** Re-send the result-ready SMS (with the result link); `dryRun` only returns the recipient and the text. */

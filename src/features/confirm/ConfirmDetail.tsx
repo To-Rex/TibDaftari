@@ -2,13 +2,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowLeft, BadgeCheck, Check, FileText, ListChecks, Undo2 } from 'lucide-react'
+import { ArrowLeft, BadgeCheck, Check, FileText, ListChecks, RotateCcw, Undo2 } from 'lucide-react'
 import type { Id } from '@/domain'
 import { DynamicForm } from '@/features/dynamic-form'
 import { usePermissions } from '@/features/auth/store'
 import { useItemContext } from '@/features/lab/queries'
 import { ItemStatusBadge } from '@/features/lab/ItemStatusBadge'
 import { ItemTimeline } from '@/features/lab/ItemTimeline'
+import { ItemHistory } from '@/features/lab/ItemHistory'
 import { PatientCard } from '@/features/lab/PatientCard'
 import { cn } from '@/shared/lib/cn'
 import { ageMonthsFrom } from '@/shared/lib/format'
@@ -23,7 +24,7 @@ import { useTemplate } from './queries'
 import { useQuery } from '@tanstack/react-query'
 import { repos } from '@/data'
 
-export function ConfirmDetail({ companyId, itemId, approvedOnly, onBack, onApprove, onReject, approving, justApproved, onOrderApproved }: {
+export function ConfirmDetail({ companyId, itemId, approvedOnly, onBack, onApprove, onReject, onRevoke, approving, justApproved, onOrderApproved }: {
   companyId: Id
   itemId: Id | null
   /** the registrar desk: only approved results are shown (anything else — e.g. an old link — is not opened) */
@@ -32,6 +33,8 @@ export function ConfirmDetail({ companyId, itemId, approvedOnly, onBack, onAppro
   onBack?: () => void
   onApprove: (templateId: string | undefined) => void
   onReject: () => void
+  /** approved result: take the approval back and send it to the lab */
+  onRevoke?: () => void
   approving?: boolean
   /** id of the item that was just approved — triggers the success animation */
   justApproved?: Id | null
@@ -126,6 +129,7 @@ export function ConfirmDetail({ companyId, itemId, approvedOnly, onBack, onAppro
                   <>
                     {it.documentId && <PrintDocumentButton doc={{ id: it.documentId, title: doc.data?.title ?? it.serviceName }} hotkey="p" />}
                     {it.documentId && can(['confirm.result.approve', 'messaging.send', 'confirm.result.resend']) && <ResendSmsButton documentId={it.documentId} deliveries={doc.data?.deliveries} />}
+                    {onRevoke && can('confirm.result.approve') && <Button variant="secondary" leftIcon={<RotateCcw className="size-4" />} onClick={onRevoke} className="text-danger" data-revoke>{t('clinical.confirm.revoke')}</Button>}
                   </>
                 ) : null}
               </div>
@@ -135,6 +139,7 @@ export function ConfirmDetail({ companyId, itemId, approvedOnly, onBack, onAppro
               <PatientCard patient={patient.data} loading={patient.isLoading || order.isLoading} compact />
             </div>
             {it.labNote && <p className="rounded-lg bg-surface-2/70 px-3 py-2 text-[13px] text-ink-2"><span className="font-medium text-ink-3">{t('clinical.lab.labNote')}:</span> {it.labNote}</p>}
+            <ItemHistory history={it.history} className="border-t border-line pt-4" />
           </>
         )}
       </Card>

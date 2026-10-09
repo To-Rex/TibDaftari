@@ -66,6 +66,19 @@ export interface OrderItem extends AuditStamp {
   rejectReason?: string
   documentId?: Id // generated result document
   labNote?: string
+  /** the result's trail, oldest first (never sent to the patient portal) */
+  history?: ItemEvent[]
+}
+
+/** One step of a result's trail. `returned` = sent back before approval, `revoked` = approval taken back,
+ * `reopened` = back to approval because the order document it shared was revoked. */
+export interface ItemEvent {
+  type: 'submitted' | 'unsubmitted' | 'returned' | 'approved' | 'revoked' | 'reopened'
+  at: IsoDateTime
+  byId?: Id | null
+  byName?: string | null
+  reason?: string | null
+  documentId?: Id | null
 }
 
 export type PaymentMethod = 'cash' | 'card' | 'transfer' | 'insurance'

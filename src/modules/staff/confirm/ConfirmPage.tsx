@@ -7,7 +7,7 @@ import { useStaffSession } from '@/features/session/useSession'
 import { usePermissions } from '@/features/auth/store'
 import { CategoryTabs, type CategorySelection } from '@/features/lab/CategoryTabs'
 import { DateRangeFilter, initialRange, type RangeState } from '@/features/lab/DateRangeFilter'
-import { useApproveItem, useLabCategories, useRejectItem, useWorklist } from '@/features/lab/queries'
+import { useApproveItem, useLabCategories, useRejectItem, useRevokeItem, useWorklist } from '@/features/lab/queries'
 import { ConfirmList } from '@/features/confirm/ConfirmList'
 import { ConfirmDetail } from '@/features/confirm/ConfirmDetail'
 import { useDebounce } from '@/shared/hooks/useDebounce'
@@ -35,6 +35,8 @@ export default function ConfirmPage() {
   const q = useDebounce(search.trim(), 300)
   const [rejectOpen, setRejectOpen] = useState(false)
   const [reason, setReason] = useState('')
+  const [revokeOpen, setRevokeOpen] = useState(false)
+  const [revokeReason, setRevokeReason] = useState('')
   const [approveOpen, setApproveOpen] = useState<{ templateId?: string } | null>(null)
   const [justApproved, setJustApproved] = useState<string | null>(null)
 
@@ -52,6 +54,7 @@ export default function ConfirmPage() {
 
   const approve = useApproveItem()
   const reject = useRejectItem()
+  const revoke = useRevokeItem()
 
   const moveSelection = useCallback((dir: 1 | -1) => {
     if (!rows.length) return
@@ -87,6 +90,16 @@ export default function ConfirmPage() {
     } catch (e) { toast.error(errorMessage(e)) }
   }
 
+  const doRevoke = async () => {
+    if (!selectedId || !revokeReason.trim()) return
+    try {
+      const r = await revoke.mutateAsync({ itemId: selectedId, reason: revokeReason.trim() })
+      setRevokeOpen(false); setRevokeReason('')
+      // the result stays open (now back in the lab) so its trail is in view
+      toast.success(t('clinical.confirm.revoked'), r.items.length > 1 ? t('clinical.confirm.revokedReopened', { n: r.items.length - 1 }) : undefined)
+    } catch (e) { toast.error(errorMessage(e)) }
+  }
+
   // keyboard: J/K move, A approve
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
@@ -94,11 +107,11 @@ export default function ConfirmPage() {
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) || e.metaKey || e.ctrlKey || e.altKey) return
       if (e.key === 'j' || e.key === 'J') moveSelection(1)
       else if (e.key === 'k' || e.key === 'K') moveSelection(-1)
-      else if ((e.key === 'a' || e.key === 'A') && selectedId && queue === 'submitted' && can('confirm.result.approve') && !rejectOpen && !approveOpen) setApproveOpen({})
+      else if ((e.key === 'a' || e.key === 'A') && selectedId && queue === 'submitted' && can('confirm.result.approve') && !rejectOpen && !revokeOpen && !approveOpen) setApproveOpen({})
     }
     window.addEventListener('keydown', h)
     return () => window.removeEventListener('keydown', h)
-  }, [moveSelection, selectedId, queue, can, rejectOpen, approveOpen])
+  }, [moveSelection, selectedId, queue, can, rejectOpen, revokeOpen, approveOpen])
 
   // < lg: opening a detail replaces the list — start it from the top
   useEffect(() => {
@@ -139,12 +152,22 @@ export default function ConfirmPage() {
           )}
         </Card>
         <div className={cn('min-w-0', !selectedId && 'max-lg:hidden')}>
-          <ConfirmDetail companyId={companyId} itemId={selectedId} approvedOnly={approvedOnly} onBack={() => select(null)} onApprove={(tid) => setApproveOpen({ templateId: tid })} onReject={() => setRejectOpen(true)} approving={approve.isPending} justApproved={justApproved}
+          <ConfirmDetail companyId={companyId} itemId={selectedId} approvedOnly={approvedOnly} onBack={() => select(null)} onApprove={(tid) => setApproveOpen({ templateId: tid })} onReject={() => setRejectOpen(true)} onRevoke={() => setRevokeOpen(true)} approving={approve.isPending} justApproved={justApproved}
             onOrderApproved={(ids) => { if (selectedId) { setJustApproved(selectedId); setTimeout(() => { setJustApproved(null); const next = rows.find((r) => !ids.includes(r.id)); select(next?.id ?? null) }, 900) } }} />
         </div>
       </div>
 
       <ConfirmDialog open={!!approveOpen} onClose={() => setApproveOpen(null)} onConfirm={() => void doApprove(approveOpen?.templateId)} loading={approve.isPending} title={t('clinical.confirm.approveTitle')} description={t('clinical.confirm.approveHint')} confirmText={t('clinical.confirm.approve')} cancelText={t('common.cancel')} />
+
+      <Modal open={revokeOpen} onClose={() => !revoke.isPending && setRevokeOpen(false)} title={t('clinical.confirm.revokeTitle')} description={t('clinical.confirm.revokeHint')} size="sm"
+        footer={<>
+          <Button variant="ghost" onClick={() => setRevokeOpen(false)} disabled={revoke.isPending}>{t('common.cancel')}</Button>
+          <Button variant="danger" onClick={() => void doRevoke()} loading={revoke.isPending} disabled={!revokeReason.trim()} data-revoke-confirm>{t('clinical.confirm.revokeConfirm')}</Button>
+        </>}>
+        <Field label={t('clinical.confirm.reason')} required>
+          {(id) => <Textarea id={id} value={revokeReason} onChange={(e) => setRevokeReason(e.target.value)} placeholder={t('clinical.confirm.revokePlaceholder')} autoFocus data-revoke-reason />}
+        </Field>
+      </Modal>
 
       <Modal open={rejectOpen} onClose={() => setRejectOpen(false)} title={t('clinical.confirm.rejectTitle')} description={t('clinical.confirm.rejectHint')} size="sm"
         footer={<>

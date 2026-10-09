@@ -13,6 +13,7 @@ import { useUnsavedGuard } from '@/features/lab/useUnsavedGuard'
 import { ItemStatusBadge } from '@/features/lab/ItemStatusBadge'
 import { ItemTimeline } from '@/features/lab/ItemTimeline'
 import { PatientCard } from '@/features/lab/PatientCard'
+import { ItemHistory } from '@/features/lab/ItemHistory'
 import { DocumentPreview } from '@/features/confirm/DocumentPreview'
 import { useTemplate } from '@/features/confirm/queries'
 import { routes } from '@/shared/config/routes'
@@ -121,7 +122,7 @@ export default function LabItemPage() {
         {it?.status === 'rejected' && it.rejectReason && (
           <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mb-4 flex items-start gap-3 rounded-[var(--radius)] border border-danger/30 bg-danger-soft/60 px-4 py-3 text-[13.5px]">
             <Undo2 className="mt-0.5 size-4 shrink-0 text-danger" />
-            <div><span className="font-semibold text-danger">{t('clinical.lab.rejectedBanner')}</span> <span className="text-ink-2">{it.rejectReason}</span></div>
+            <div><span className="font-semibold text-danger">{it.history?.[it.history.length - 1]?.type === 'revoked' ? t('clinical.lab.revokedBanner') : t('clinical.lab.rejectedBanner')}</span> <span className="text-ink-2">{it.rejectReason}</span></div>
           </motion.div>
         )}
         {approved && (
@@ -159,6 +160,7 @@ export default function LabItemPage() {
             {it && (it.technicianName || it.enteredAt) && (
               <div className="text-[12.5px] text-ink-3">{t('clinical.lab.enteredBy', { name: it.technicianName ?? '—' })}</div>
             )}
+            <ItemHistory history={it?.history} className="border-t border-line pt-4" />
             {!approved && (
               <div className="flex flex-col gap-2 border-t border-line pt-4 max-lg:hidden">
                 {canWrite && (

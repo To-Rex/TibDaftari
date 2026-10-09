@@ -13,7 +13,7 @@ import { routes } from '@/shared/config/routes'
 import { cn } from '@/shared/lib/cn'
 import { LanguageSwitcher, Logo, ThemeToggle } from '@/shared/ui'
 
-type State = { status: 'loading' } | { status: 'ready'; blobUrl: string; filename: string } | { status: 'error'; notFound: boolean }
+type State = { status: 'loading' } | { status: 'ready'; blobUrl: string; filename: string } | { status: 'error'; notFound: boolean; revoked?: boolean }
 
 const btn = 'inline-flex h-12 items-center justify-center gap-2 rounded-[var(--radius)] px-5 text-[15px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand/25'
 
@@ -29,7 +29,8 @@ export default function PublicResultPage() {
     setState({ status: 'loading' })
     fetch(pdfUrl)
       .then(async (r) => {
-        if (!r.ok) { if (alive) setState({ status: 'error', notFound: r.status === 404 }); return }
+        // 410: the doctor took this result back to correct it — the corrected one comes in a new SMS
+        if (!r.ok) { if (alive) setState({ status: 'error', notFound: r.status === 404, revoked: r.status === 410 }); return }
         const blob = await r.blob()
         made = URL.createObjectURL(blob)
         const name = /filename="([^"]+)"/.exec(r.headers.get('content-disposition') ?? '')?.[1] ?? 'natija.pdf'
@@ -52,8 +53,8 @@ export default function PublicResultPage() {
         {state.status === 'error' && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mx-auto mt-10 flex max-w-md flex-col items-center gap-3 text-center">
             <span className="grid size-14 place-items-center rounded-full bg-danger-soft text-danger"><FileX2 className="size-7" /></span>
-            <h1 className="text-[20px] font-semibold">{state.notFound ? t('portal.publicResult.notFound') : t('portal.publicResult.failed')}</h1>
-            <p className="text-[14px] text-ink-3">{state.notFound ? t('portal.publicResult.notFoundHint') : t('portal.publicResult.failedHint')}</p>
+            <h1 className="text-[20px] font-semibold" data-public-error={state.revoked ? 'revoked' : state.notFound ? 'not-found' : 'failed'}>{state.revoked ? t('portal.publicResult.revoked') : state.notFound ? t('portal.publicResult.notFound') : t('portal.publicResult.failed')}</h1>
+            <p className="text-[14px] text-ink-3">{state.revoked ? t('portal.publicResult.revokedHint') : state.notFound ? t('portal.publicResult.notFoundHint') : t('portal.publicResult.failedHint')}</p>
             <Link to={routes.patientLogin} className={cn(btn, 'mt-2 border border-line-strong/70 bg-surface text-ink shadow-1 hover:bg-surface-2')}>{t('portal.publicResult.portal')}</Link>
           </motion.div>
         )}
