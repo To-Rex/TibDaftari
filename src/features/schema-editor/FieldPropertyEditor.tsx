@@ -125,7 +125,7 @@ function TypeSpecific({ field, onChange }: { field: FieldDef; onChange: (f: Fiel
             <Field label={t('catalog.schemas.min')}>{(id) => <Input id={id} type="number" step="any" mono value={field.min ?? ''} onChange={(e) => onChange({ ...field, min: numOrUndef(e.target.value) })} />}</Field>
             <Field label={t('catalog.schemas.max')}>{(id) => <Input id={id} type="number" step="any" mono value={field.max ?? ''} onChange={(e) => onChange({ ...field, max: numOrUndef(e.target.value) })} />}</Field>
           </div>
-          <Field label={t('catalog.schemas.references')} hint={t('catalog.schemas.referencesHint')}>{() => <ReferenceRangesEditor value={field.references} unit={field.unit} onChange={(references) => onChange({ ...field, references })} />}</Field>
+          <Field label={t('catalog.schemas.references')} hint={t('catalog.schemas.referencesHint')}>{() => <ReferenceRangesEditor value={field.references ?? []} unit={field.unit} onChange={(references) => onChange({ ...field, references })} />}</Field>
         </div>
       )
     case 'select':

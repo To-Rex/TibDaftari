@@ -34,13 +34,15 @@ export function fieldValueFlag(field: FieldDef, value: FieldValue | undefined, p
 
 /** Reference text for the patient (gender + age aware, unlike domain.referenceText). */
 export function referenceFor(field: NumberField, patient?: PatientCtx): string {
+  // a schema written through the API may leave `references` out — no reference then, not a crash
+  const refs = field.references ?? []
   const ref =
-    field.references.find((r) => {
+    refs.find((r) => {
       if (r.gender && patient?.gender && r.gender !== patient.gender) return false
       if (r.ageFromMonths != null && patient?.ageMonths != null && patient.ageMonths < r.ageFromMonths) return false
       if (r.ageToMonths != null && patient?.ageMonths != null && patient.ageMonths > r.ageToMonths) return false
       return true
-    }) ?? field.references[0]
+    }) ?? refs[0]
   if (!ref) return ''
   if (ref.text) return ref.text
   if (ref.min != null && ref.max != null) return `${ref.min} – ${ref.max}`

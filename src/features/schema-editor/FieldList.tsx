@@ -44,7 +44,7 @@ const FieldRow = memo(function FieldRow({ field, index, last, selected, onSelect
   const I = FIELD_TYPE_ICONS[field.type]
   const meta = field.type === 'select' || field.type === 'multiselect' ? t('catalog.schemas.nOptions', { n: field.options.length })
     : field.type === 'table' ? t('catalog.schemas.nColumns', { n: field.columns.length })
-    : field.type === 'number' && field.references.length ? t('catalog.schemas.nRanges', { n: field.references.length }) : null
+    : field.type === 'number' && field.references?.length ? t('catalog.schemas.nRanges', { n: field.references.length }) : null
   return (
     <motion.div layout initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.18 }}
       onClick={onSelect}

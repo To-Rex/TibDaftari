@@ -162,7 +162,7 @@ export function evaluateNumber(
   value: number,
   ctx: { gender?: 'male' | 'female'; ageMonths?: number },
 ): 'normal' | 'low' | 'high' | 'unknown' {
-  const ref = field.references.find((r) => {
+  const ref = (field.references ?? []).find((r) => {
     if (r.gender && ctx.gender && r.gender !== ctx.gender) return false
     if (r.ageFromMonths != null && ctx.ageMonths != null && ctx.ageMonths < r.ageFromMonths)
       return false
@@ -176,7 +176,7 @@ export function evaluateNumber(
 }
 
 export function referenceText(field: NumberField, ctx: { gender?: 'male' | 'female' }): string {
-  const ref = field.references.find((r) => !r.gender || !ctx.gender || r.gender === ctx.gender)
+  const ref = (field.references ?? []).find((r) => !r.gender || !ctx.gender || r.gender === ctx.gender)
   if (!ref) return ''
   if (ref.text) return ref.text
   if (ref.min != null && ref.max != null) return `${ref.min} – ${ref.max}`

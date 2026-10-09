@@ -44,7 +44,7 @@ export function NumberInput({ field, value, onChange, patient, compact, id, inva
   const abnormal = flag === 'abnormal' || flag === 'critical'
   const ref = referenceFor(field, patient)
   const step = field.decimals ? Number(`0.${'0'.repeat(field.decimals - 1)}1`) : 1
-  const low = typeof value === 'number' && field.references.some((r) => r.min != null && value < r.min)
+  const low = typeof value === 'number' && (field.references ?? []).some((r) => r.min != null && value < r.min)
   return (
     <div className={cn('flex min-w-0 items-center', compact ? 'gap-1.5' : 'gap-3')}>
       <div className={cn('relative shrink-0', compact ? 'w-full' : 'w-40')}>

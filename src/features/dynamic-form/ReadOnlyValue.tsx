@@ -24,7 +24,7 @@ export function ReadOnlyValue({ field, value, patient, compact }: { field: Field
           {field.unit && <span className="text-[12px] text-ink-3">{field.unit}</span>}
           {!compact && ref && <span className="text-[12px] tabular text-ink-3">({ref})</span>}
           {flag !== 'unknown' && !compact && (
-            <span className={cn('inline-flex h-5 items-center rounded-full border px-1.5 text-[11px] font-medium', flagPill[flag])}>{flag === 'normal' ? '✓' : (field.references.some((r) => r.min != null && n < r.min) ? '↓' : '↑')}</span>
+            <span className={cn('inline-flex h-5 items-center rounded-full border px-1.5 text-[11px] font-medium', flagPill[flag])}>{flag === 'normal' ? '✓' : ((field.references ?? []).some((r) => r.min != null && n < r.min) ? '↓' : '↑')}</span>
           )}
         </span>
       )
