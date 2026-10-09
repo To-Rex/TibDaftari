@@ -172,6 +172,8 @@ const ordersUz = {
   count: '{{n}} ta chek',
   searchPh: 'Chek raqami, bemor yoki telefon…',
   allPayments: 'To‘lov: barchasi',
+  dateFrom: 'Qaysi kundan',
+  dateTo: 'Qaysi kungacha',
   colNumber: 'Chek',
   colPatient: 'Bemor',
   colItems: 'Xizmat',
@@ -243,7 +245,7 @@ const patientsRu = {
   },
 }
 const ordersRu = {
-  title: 'Чеки', subtitle: 'Все чеки и оплаты', count: '{{n}} чеков', searchPh: 'Номер чека, пациент или телефон…', allPayments: 'Оплата: все',
+  title: 'Чеки', subtitle: 'Все чеки и оплаты', count: '{{n}} чеков', searchPh: 'Номер чека, пациент или телефон…', allPayments: 'Оплата: все', dateFrom: 'С какого дня', dateTo: 'По какой день',
   colNumber: 'Чек', colPatient: 'Пациент', colItems: 'Услуг', colPaid: 'Оплачено', colPayment: 'Оплата', pageSum: 'По странице:', remaining: 'Остаток',
 }
 const commonRu = {
@@ -309,7 +311,7 @@ const patientsEn = {
   },
 }
 const ordersEn = {
-  title: 'Orders', subtitle: 'All orders and payments', count: '{{n}} orders', searchPh: 'Order number, patient or phone…', allPayments: 'Payment: all',
+  title: 'Orders', subtitle: 'All orders and payments', count: '{{n}} orders', searchPh: 'Order number, patient or phone…', allPayments: 'Payment: all', dateFrom: 'From day', dateTo: 'To day',
   colNumber: 'Order', colPatient: 'Patient', colItems: 'Items', colPaid: 'Paid', colPayment: 'Payment', pageSum: 'This page:', remaining: 'Remaining',
 }
 const commonEn = {
