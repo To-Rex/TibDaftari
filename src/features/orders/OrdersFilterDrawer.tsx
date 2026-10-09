@@ -83,6 +83,21 @@ export function OrdersFilterDrawer({ open, onClose, value, onChange, categories,
         <Field label={t(`${O}.discount`)}>
           {() => <Segmented<Tri> size="sm" value={tri(value.discount)} onChange={(v) => set({ discount: fromTri(v) })} className="max-w-full flex-wrap" items={[{ value: 'all', label: t(`${O}.any`) }, { value: 'yes', label: t(`${O}.discountYes`) }, { value: 'no', label: t(`${O}.discountNo`) }]} />}
         </Field>
+        <Field label={t(`${O}.results`)}>
+          {() => <Segmented<'all' | 'ready' | 'partial' | 'none'> size="sm" value={value.results ?? 'all'} onChange={(v) => set({ results: v === 'all' ? undefined : v })} className="max-w-full flex-wrap" items={[{ value: 'all', label: t(`${O}.any`) }, { value: 'ready', label: t(`${O}.resultsReady`) }, { value: 'partial', label: t(`${O}.resultsPartial`) }, { value: 'none', label: t(`${O}.resultsNone`) }]} />}
+        </Field>
+        <Field label={t(`${O}.items`)}>
+          {(id) => (
+            <div className="flex items-center gap-2">
+              <Input id={id} inputMode="numeric" placeholder={t(`${O}.amountFrom`)} value={value.minItems != null ? String(value.minItems) : ''} onChange={(e) => set({ minItems: num(e.target.value) })} className="tabular" data-min-items />
+              <span className="text-ink-3">–</span>
+              <Input inputMode="numeric" placeholder={t(`${O}.amountTo`)} value={value.maxItems != null ? String(value.maxItems) : ''} onChange={(e) => set({ maxItems: num(e.target.value) })} className="tabular" data-max-items />
+            </div>
+          )}
+        </Field>
+        <Field label={t(`${O}.refunded`)}>
+          {() => <Segmented<Tri> size="sm" value={tri(value.refunded)} onChange={(v) => set({ refunded: fromTri(v) })} className="max-w-full flex-wrap" items={[{ value: 'all', label: t(`${O}.any`) }, { value: 'yes', label: t(`${O}.refundedYes`) }, { value: 'no', label: t(`${O}.refundedNo`) }]} />}
+        </Field>
         <Field label={t(`${O}.category`)}>
           {(id) => (
             <Select id={id} value={value.categoryId ?? ''} onChange={(e) => set({ categoryId: e.target.value || undefined, serviceTypeId: undefined })} data-category>

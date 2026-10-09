@@ -6,7 +6,7 @@ import { Badge, DataTable, EmptyState, Pagination, type Column } from '@/shared/
 import { fmtDateTime, fmtMoney, fmtPhone } from '@/shared/lib/format'
 import { routes } from '@/shared/config/routes'
 import { cn } from '@/shared/lib/cn'
-import { orderStatusMeta, paymentStatusMeta } from './status'
+import { orderStatusMeta, paymentMethodLabel, paymentStatusMeta } from './status'
 
 export interface OrdersTableProps {
   page?: Page<Order>
@@ -33,6 +33,13 @@ export function OrdersTable({ page, loading, sortBy, sortDir, onSort, onPage, on
     { key: 'itemCount', header: t('staff.orders.colItems'), align: 'center', cell: (o) => <span className="tabular">{o.itemCount}</span>, hideBelow: 'sm', width: '80px', className: showPatient ? 'max-xl:hidden' : undefined },
     { key: 'total', header: t('common.total'), sortable: true, align: 'right', cell: (o) => <span className="font-semibold whitespace-nowrap">{fmtMoney(o.total, false)}</span> },
     { key: 'paidAmount', header: t('staff.orders.colPaid'), sortable: true, align: 'right', cell: (o) => <span className={cn('whitespace-nowrap', o.paidAmount < o.total && 'text-ink-3')}>{fmtMoney(o.paidAmount, false)}</span>, hideBelow: 'md', className: showPatient ? 'max-xl:hidden' : undefined },
+    {
+      key: 'methods', header: t('staff.orders.colMethods'), card: 'field',
+      // how the cheque was paid; with several methods each shows its amount
+      cell: (o) => o.paymentsByMethod?.length
+        ? <span className="flex flex-wrap gap-1" data-methods>{o.paymentsByMethod.map((m) => <span key={m.method} title={fmtMoney(m.amount)}><Badge tone="neutral" size="sm">{paymentMethodLabel(m.method)}{o.paymentsByMethod!.length > 1 && <span className="tabular opacity-70">{fmtMoney(m.amount, false)}</span>}</Badge></span>)}</span>
+        : <span className="text-ink-3">—</span>,
+    },
     { key: 'status', header: t('common.status'), cell: (o) => { const m = orderStatusMeta(o.status); return <Badge tone={m.tone} size="sm" dot>{m.label}</Badge> }, card: 'actions' },
     { key: 'payment', header: t('staff.orders.colPayment'), cell: (o) => { const m = paymentStatusMeta(o.payment); return <Badge tone={m.tone} size="sm">{m.label}</Badge> }, card: 'actions' },
   ]

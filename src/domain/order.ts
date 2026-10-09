@@ -39,6 +39,8 @@ export interface Order extends AuditStamp {
   /** Cancellation (reason kept separately; `note` is never overwritten). */
   cancelReason?: string
   cancelledAt?: IsoDateTime
+  /** non-refunded payments by method (the cheque list fills it) */
+  paymentsByMethod?: { method: PaymentMethod; amount: Money }[]
 }
 
 export interface OrderItem extends AuditStamp {
@@ -98,6 +100,12 @@ export interface OrderListFilters {
   categoryIds?: Id[]
   /** the employee who opened the cheque */
   createdBy?: Id
+  /** ready = every service approved; partial = some; none = none yet */
+  results?: 'ready' | 'partial' | 'none'
+  minItems?: number
+  maxItems?: number
+  /** true: has a refunded payment; false: none */
+  refunded?: boolean
 }
 
 /** The filtered cheques at a glance (money over the non-cancelled ones). */

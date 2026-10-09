@@ -2,12 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowDownUp, CalendarRange, SlidersHorizontal } from 'lucide-react'
+import { ArrowDownUp, CalendarRange, FileSpreadsheet, SlidersHorizontal } from 'lucide-react'
 import { repos } from '@/data'
 import type { OrderStatus, PaymentStatus } from '@/domain'
-import { Button, Card, Input, Page, PageHeader, SearchInput, Segmented, Select, Toolbar } from '@/shared/ui'
+import { Button, Card, Input, Page, PageHeader, SearchInput, Segmented, Select, Toolbar, toast } from '@/shared/ui'
 import { presetRange, type DateRange } from '@/shared/lib/dates'
-import { fmtNumber } from '@/shared/lib/format'
+import { fmtDate, fmtMoney, fmtNumber } from '@/shared/lib/format'
+import { errorMessage } from '@/shared/lib/errors'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import { useStaffSession } from '@/features/session/useSession'
 import { useCategories, useServiceTypes } from '@/features/catalog/queries'
@@ -16,10 +17,10 @@ import { OrdersTable } from '@/features/orders/OrdersTable'
 import { OrdersFilterDrawer } from '@/features/orders/OrdersFilterDrawer'
 import { OrdersFilterChips, OrdersSummaryBar } from '@/features/orders/OrdersFilterChips'
 import { activeExtraCount, extraToQuery, loadView, saveView, SORTS, type ExtraFilters, type OrdersRange } from '@/features/orders/ordersFilters'
-import { ORDER_STATUSES, PAYMENT_STATUSES, orderStatusMeta, paymentStatusMeta } from '@/features/orders/status'
+import { ORDER_STATUSES, PAYMENT_STATUSES, orderStatusMeta, paymentMethodLabel, paymentStatusMeta } from '@/features/orders/status'
 
 export default function OrdersPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { companyId, branchId } = useStaffSession()
   // the list as it was left in this tab (filters, period, sort, page size) — coming back from a cheque keeps it
   const [initial] = useState(loadView)
@@ -42,7 +43,6 @@ export default function OrdersPage() {
   const services = useServiceTypes(companyId, {})
 
   const dates = useMemo(() => {
-    if (range === 'all') return {}
     if (range === 'custom') {
       // a reversed range is read the other way round
       const [from, to] = custom.from && custom.to && custom.from > custom.to ? [custom.to, custom.from] : [custom.from, custom.to]
@@ -60,22 +60,65 @@ export default function OrdersPage() {
   const branches = useQuery({ queryKey: ['branches', companyId], queryFn: () => repos.tenant.listBranches(companyId), staleTime: 300_000 })
 
   const reset = <T,>(setter: (v: T) => void) => (v: T) => { setter(v); setPage(1) }
-  // "Oraliq" starts from the period shown so far (the last 7 days after "all")
-  const pickRange = (r: OrdersRange) => { if (r === 'custom' && range !== 'custom' && range !== 'all') setCustom(presetRange(range)); setRange(r); setPage(1) }
+  // "Oraliq" starts from the period shown so far
+  const pickRange = (r: OrdersRange) => { if (r === 'custom' && range !== 'custom') setCustom(presetRange(range)); setRange(r); setPage(1) }
   const setDay = (end: keyof DateRange) => (value: string) => { setCustom((c) => ({ ...c, [end]: value })); setPage(1) }
   const onSort = (key: string) => { if (key === sortBy) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc')); else { setSortBy(key); setSortDir('desc') }; setPage(1) }
   const changeExtra = (next: ExtraFilters) => { setExtra(next); setPage(1) }
   const nExtra = activeExtraCount(extra)
+  const [exporting, setExporting] = useState(false)
+  /** The filters + sort in the user's words — written above the table in the Excel file. */
+  const caption = () => {
+    const O = 'staff.orders'
+    const period = range === 'custom'
+      ? (dates.dateFrom || dates.dateTo ? `${dates.dateFrom ? fmtDate(dates.dateFrom) : '…'} – ${dates.dateTo ? fmtDate(dates.dateTo) : '…'}` : t(`${O}.capAllDays`))
+      : `${t(`common.${range}`)} (${fmtDate(dates.dateFrom)}${dates.dateTo !== dates.dateFrom ? ` – ${fmtDate(dates.dateTo)}` : ''})`
+    const parts = [`${t(`${O}.capPeriod`)}: ${period}`]
+    if (status !== 'all') parts.push(`${t(`${O}.capStatus`)}: ${orderStatusMeta(status).label}`)
+    if (payment !== 'all') parts.push(`${t(`${O}.capPayment`)}: ${paymentStatusMeta(payment).label}`)
+    if (dq) parts.push(`${t(`${O}.capSearch`)}: «${dq}»`)
+    if (extra.methods.length) parts.push(t(`${O}.chipMethod`, { v: extra.methods.map(paymentMethodLabel).join(', ') }))
+    if (extra.minTotal != null || extra.maxTotal != null) parts.push(t(`${O}.chipAmount`, { v: `${extra.minTotal != null ? fmtMoney(extra.minTotal, false) : '…'} – ${extra.maxTotal != null ? fmtMoney(extra.maxTotal, false) : '…'}` }))
+    if (extra.debt != null) parts.push(extra.debt ? t(`${O}.debtYes`) : t(`${O}.debtNo`))
+    if (extra.discount != null) parts.push(extra.discount ? t(`${O}.discountYes`) : t(`${O}.discountNo`))
+    if (extra.results) parts.push(`${t(`${O}.results`)}: ${t(`${O}.results${extra.results[0]!.toUpperCase()}${extra.results.slice(1)}`)}`)
+    if (extra.minItems != null || extra.maxItems != null) parts.push(`${t(`${O}.items`)}: ${extra.minItems ?? '…'} – ${extra.maxItems ?? '…'}`)
+    if (extra.refunded != null) parts.push(extra.refunded ? t(`${O}.refundedYes`) : t(`${O}.refundedNo`))
+    if (extra.categoryId) parts.push(`${t(`${O}.category`)}: ${categories.data?.find((c) => c.id === extra.categoryId)?.name ?? ''}`)
+    if (extra.serviceTypeId) parts.push(`${t(`${O}.service`)}: ${services.data?.find((x) => x.id === extra.serviceTypeId)?.name ?? ''}`)
+    if (extra.createdBy) parts.push(`${t(`${O}.createdBy`)}: ${summary.data?.cashiers.find((c) => c.id === extra.createdBy)?.name ?? ''}`)
+    parts.push(`${t(`${O}.capSort`)}: ${sortKnown ? t(`${O}.sort_${sortBy}_${sortDir}`) : `${sortBy} ${sortDir}`}`)
+    return parts.join(' · ').slice(0, 600)
+  }
+  const exportXlsx = async () => {
+    setExporting(true)
+    try {
+      const lang = (['uz', 'ru', 'en'] as const).find((l) => i18n.language?.startsWith(l)) ?? 'uz'
+      const blob = await repos.orders.exportXlsx(companyId, { ...filters, sortBy, sortDir, lang, caption: caption() })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `cheklar${dates.dateFrom ? `-${dates.dateFrom}` : ''}${dates.dateTo && dates.dateTo !== dates.dateFrom ? `_${dates.dateTo}` : ''}.xlsx`
+      document.body.appendChild(a); a.click(); a.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 5000)
+      toast.success(t('staff.orders.exported', { n: fmtNumber(Math.min(summary.data?.count ?? q.data?.total ?? 0, 20000)) }))
+    } catch (e) {
+      toast.error(errorMessage(e))
+    } finally {
+      setExporting(false)
+    }
+  }
   const sortValue = `${sortBy}:${sortDir}`
   const sortKnown = SORTS.some((s) => `${s.sortBy}:${s.sortDir}` === sortValue)
 
   return (
     <Page>
-      <PageHeader title={t('staff.orders.title')} description={q.data ? t('staff.orders.count', { n: fmtNumber(q.data.total) }) : t('staff.orders.subtitle')} />
+      <PageHeader title={t('staff.orders.title')} description={q.data ? t('staff.orders.count', { n: fmtNumber(q.data.total) }) : t('staff.orders.subtitle')}
+        actions={<Button variant="secondary" leftIcon={<FileSpreadsheet className="size-4" />} loading={exporting} onClick={() => void exportXlsx()} title={t('staff.orders.exportTitle')} data-orders-export>{exporting ? t('staff.orders.exporting') : t('staff.orders.export')}</Button>} />
       <Toolbar className="min-w-0 [&>div]:min-w-0 [&>div]:max-w-full"
         actions={
           <div className="flex min-w-0 max-w-full flex-col items-start gap-2 md:items-end">
-            <Segmented<OrdersRange> size="sm" value={range} onChange={pickRange} className="max-w-full flex-wrap" items={[{ value: 'all', label: t('common.all') }, { value: 'today', label: t('common.today') }, { value: 'yesterday', label: t('common.yesterday') }, { value: 'last7', label: t('common.last7') }, { value: 'last30', label: t('common.last30') }, { value: 'thisMonth', label: t('common.thisMonth') }, { value: 'custom', label: t('clinical.reports.custom'), icon: <CalendarRange /> }]} />
+            <Segmented<OrdersRange> size="sm" value={range} onChange={pickRange} className="max-w-full flex-wrap" items={[{ value: 'today', label: t('common.today') }, { value: 'yesterday', label: t('common.yesterday') }, { value: 'last7', label: t('common.last7') }, { value: 'last30', label: t('common.last30') }, { value: 'thisMonth', label: t('common.thisMonth') }, { value: 'custom', label: t('clinical.reports.custom'), icon: <CalendarRange /> }]} />
             <AnimatePresence initial={false}>
               {range === 'custom' && (
                 <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18 }} className="flex min-w-0 max-w-full flex-wrap items-center gap-1.5" data-orders-range>

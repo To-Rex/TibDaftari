@@ -128,6 +128,8 @@ export interface OrderRepository {
   list(companyId: Id, q: OrderListQuery): Promise<Page<Order>>
   /** Count, money and payments by method of the cheques the same filters select. */
   summary(companyId: Id, q: Omit<OrderListQuery, 'page' | 'pageSize' | 'sortBy' | 'sortDir'>): Promise<OrderSummary>
+  /** Every cheque the filters + sort select, as an Excel workbook (`caption` = the filters in the user's words). */
+  exportXlsx(companyId: Id, q: Omit<OrderListQuery, 'page' | 'pageSize'> & { lang: 'uz' | 'ru' | 'en'; caption?: string }): Promise<Blob>
   get(id: Id): Promise<{ order: Order; items: OrderItem[]; payments: Payment[] }>
   create(companyId: Id, employeeId: Id, input: CreateOrderInput): Promise<{ order: Order; items: OrderItem[] }>
   addItems(orderId: Id, serviceTypeIds: Id[]): Promise<{ order: Order; items: OrderItem[] }>

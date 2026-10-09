@@ -35,6 +35,7 @@ const currentCompanyId = async (): Promise<Id> => {
 const extraFilters = (q: OrderListFilters) => ({
   methods: q.methods, minTotal: q.minTotal, maxTotal: q.maxTotal, debt: q.debt, discount: q.discount,
   serviceTypeId: q.serviceTypeId, categoryIds: q.categoryIds, createdBy: q.createdBy,
+  results: q.results, minItems: q.minItems, maxItems: q.maxItems, refunded: q.refunded,
 })
 
 export const ordersHttp: OrderRepository = {
@@ -54,6 +55,12 @@ export const ordersHttp: OrderRepository = {
         patientId: q.patientId,
         ...extraFilters(q),
       },
+    }),
+
+  exportXlsx: (companyId, q) =>
+    api.get<Blob>(`/companies/${companyId}/orders/export.xlsx`, {
+      blob: true,
+      query: { search: q.search, sortBy: q.sortBy, sortDir: q.sortDir, branchId: q.branchId, status: q.status, payment: q.payment, dateFrom: q.dateFrom, dateTo: q.dateTo, patientId: q.patientId, ...extraFilters(q), lang: q.lang, caption: q.caption },
     }),
 
   summary: (companyId, q) =>

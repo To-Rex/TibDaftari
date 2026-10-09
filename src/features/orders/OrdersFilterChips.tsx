@@ -26,6 +26,12 @@ export function OrdersFilterChips({ value, onChange, categories, services, summa
   if (value.discount != null) chips.push({ key: 'discount', label: value.discount ? t(`${O}.discountYes`) : t(`${O}.discountNo`), clear: { discount: undefined } })
   if (value.categoryId) chips.push({ key: 'category', label: `${t(`${O}.category`)}: ${categories?.find((c) => c.id === value.categoryId)?.name ?? '…'}`, clear: { categoryId: undefined, serviceTypeId: undefined } })
   if (value.serviceTypeId) chips.push({ key: 'service', label: `${t(`${O}.service`)}: ${services?.find((s) => s.id === value.serviceTypeId)?.name ?? '…'}`, clear: { serviceTypeId: undefined } })
+  if (value.results) chips.push({ key: 'results', label: `${t(`${O}.results`)}: ${t(`${O}.results${value.results[0]!.toUpperCase()}${value.results.slice(1)}`)}`, clear: { results: undefined } })
+  if (value.minItems != null || value.maxItems != null) {
+    const v = value.minItems != null && value.maxItems != null ? `${value.minItems} – ${value.maxItems}` : value.minItems != null ? `≥ ${value.minItems}` : `≤ ${value.maxItems}`
+    chips.push({ key: 'items', label: `${t(`${O}.items`)}: ${v}`, clear: { minItems: undefined, maxItems: undefined } })
+  }
+  if (value.refunded != null) chips.push({ key: 'refunded', label: value.refunded ? t(`${O}.refundedYes`) : t(`${O}.refundedNo`), clear: { refunded: undefined } })
   if (value.createdBy) chips.push({ key: 'createdBy', label: `${t(`${O}.createdBy`)}: ${summary?.cashiers.find((c) => c.id === value.createdBy)?.name ?? '…'}`, clear: { createdBy: undefined } })
   if (!chips.length) return null
   return (
