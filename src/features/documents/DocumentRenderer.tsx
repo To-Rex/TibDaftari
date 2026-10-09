@@ -211,6 +211,13 @@ function ElementView({ el, z, ctx, raw, ghost, assetUrl, selected, onClick, grow
       const groups = tableHeaderGroups(el.columns)
       // single-line mode: no vertical padding so a row is exactly `rowHeight` (legacy blanks)
       const nowrap: CSSProperties = el.nowrap ? { whiteSpace: 'nowrap', overflow: 'hidden', padding: '0 6px' } : {}
+      // multi-line cells: data rows keep room for `minLines` lines; `maxLines` cuts longer text with "…" (0 = all lines).
+      // Same rule as the PDF renderer: row height = max(rowHeight, minLines × line height + 6px padding).
+      const minLines = el.nowrap ? 0 : Math.max(0, Math.floor(el.minLines ?? 0))
+      const maxLinesSet = el.nowrap ? 0 : Math.max(0, Math.floor(el.maxLines ?? 0))
+      const maxLines = maxLinesSet ? Math.max(maxLinesSet, minLines) : 0
+      const bodyRowH = minLines ? Math.max(el.rowHeight, minLines * el.cellStyle.fontSize * (el.cellStyle.lineHeight ?? 1.35) + 6) : el.rowHeight
+      const clampText = (text: string) => (maxLines ? <span data-line-clamp={maxLines} style={{ display: '-webkit-box', WebkitLineClamp: maxLines, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{text}</span> : text)
       // header cells follow the column alignment unless the header style asks for centre/right explicitly
       const headAlign = (c: TableColumn) => (el.headerStyle.align === 'center' || el.headerStyle.align === 'right' ? el.headerStyle.align : c.align)
       const hasGroups = groups.some((g) => g.group)
@@ -256,11 +263,11 @@ function ElementView({ el, z, ctx, raw, ghost, assetUrl, selected, onClick, grow
           <tbody>
             {rows.map((r, i) => (
               <tr key={i} style={{ background: el.zebra && i % 2 === 1 ? el.zebra : undefined }}>
-                {el.showRowNumber && <td style={{ ...cellStyle, display: 'table-cell', border, padding: '3px 6px', height: el.rowHeight, textAlign: 'center', ...nowrap }}>{i + 1}</td>}
+                {el.showRowNumber && <td style={{ ...cellStyle, display: 'table-cell', border, padding: '3px 6px', height: bodyRowH, textAlign: 'center', ...nowrap }}>{i + 1}</td>}
                 {el.columns.map((c, ci) => {
                   const ghost = raw && !!r[GHOST]
                   const cell = raw && !ghost ? { text: el.fieldKey ? `{${c.bind}}` : String(r[keyOf(c, ci)] ?? ''), abnormal: false } : fmtCell(r, keyOf(c, ci))
-                  return <td key={c.id} style={{ ...cellStyle, display: 'table-cell', border, padding: '3px 6px', height: el.rowHeight, textAlign: c.align, color: el.highlightAbnormal && cell.abnormal ? ABN : cellStyle.color, fontWeight: el.highlightAbnormal && cell.abnormal ? 600 : cellStyle.fontWeight, background: c.fillIfSet && (ghost || !raw) && cell.text.trim() ? c.fillIfSet : undefined, opacity: ghost ? 0.55 : undefined, ...nowrap }}>{cell.text}</td>
+                  return <td key={c.id} style={{ ...cellStyle, display: 'table-cell', border, padding: '3px 6px', height: bodyRowH, textAlign: c.align, color: el.highlightAbnormal && cell.abnormal ? ABN : cellStyle.color, fontWeight: el.highlightAbnormal && cell.abnormal ? 600 : cellStyle.fontWeight, background: c.fillIfSet && (ghost || !raw) && cell.text.trim() ? c.fillIfSet : undefined, opacity: ghost ? 0.55 : undefined, ...nowrap }}>{clampText(cell.text)}</td>
                 })}
               </tr>
             ))}

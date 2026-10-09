@@ -157,8 +157,28 @@ export function TableProps({ el, schema }: { el: TableElement; schema: Attribute
           <Checkbox checked={el.highlightAbnormal} onChange={(e) => set({ highlightAbnormal: e.target.checked })} label={<span className="text-[12.5px]">{t('catalog.editor.highlightAbnormal')}</span>} />
         </div>
         <PropRow label={t('catalog.editor.rowHeight')}><NumInput value={el.rowHeight} min={10} max={80} onChange={(v) => set({ rowHeight: v })} suffix="px" /></PropRow>
-        <Checkbox checked={!!el.nowrap} onChange={(e) => set({ nowrap: e.target.checked || undefined })} label={<span className="text-[12.5px]">{t('catalog.editor.nowrap')}</span>} />
-        {el.nowrap && <p className="text-[11.5px] text-ink-3">{t('catalog.editor.nowrapHint')}</p>}
+        {/* how much text a row holds: one clipped line (legacy blanks) or wrapped lines between a minimum and a maximum */}
+        <PropRow label={t('catalog.editor.rowText')}>
+          <SelectInput<'wrap' | 'single'> value={el.nowrap ? 'single' : 'wrap'} onChange={(m) => set(m === 'single' ? { nowrap: true, minLines: undefined, maxLines: undefined } : { nowrap: undefined })}
+            options={[{ value: 'wrap', label: t('catalog.editor.rowTextWrap') }, { value: 'single', label: t('catalog.editor.nowrap') }]} />
+        </PropRow>
+        {el.nowrap ? <p className="text-[11.5px] text-ink-3">{t('catalog.editor.nowrapHint')}</p> : (
+          <div className="flex flex-col gap-1.5" data-row-lines>
+            <PropRow label={t('catalog.editor.minLines')}>
+              <NumInput value={el.minLines ?? 1} min={1} max={20} onChange={(v) => { const min = Math.min(20, Math.max(1, v)); set({ minLines: min > 1 ? min : undefined, ...(el.maxLines && el.maxLines < min ? { maxLines: min } : {}) }) }} suffix={t('catalog.editor.linesUnit')} />
+            </PropRow>
+            <PropRow label={t('catalog.editor.maxLines')}>
+              <NumInput value={el.maxLines ?? 0} min={0} max={50} onChange={(v) => { const max = Math.min(50, Math.max(0, v)); set({ maxLines: max > 0 ? Math.max(max, el.minLines ?? 1) : undefined }) }} suffix={el.maxLines ? t('catalog.editor.linesUnit') : t('catalog.editor.unlimited')} />
+            </PropRow>
+            <p className="text-[11.5px] text-ink-3">{t('catalog.editor.linesHint')}</p>
+            {!el.grow && (
+              <p className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md bg-warn-soft/50 px-2 py-1.5 text-[11.5px] text-ink-2" data-grow-tip>
+                {t('catalog.editor.growTip')}
+                <button type="button" onClick={() => set({ grow: true })} className="font-medium text-brand-ink hover:underline">{t('catalog.editor.growTipAction')}</button>
+              </p>
+            )}
+          </div>
+        )}
         <Checkbox checked={!!el.grow} onChange={(e) => set({ grow: e.target.checked || undefined })} label={<span className="text-[12.5px]">{t('catalog.editor.grow')}</span>} />
         {el.grow && <p className="text-[11.5px] text-ink-3">{t('catalog.editor.growHint')}</p>}
         {el.showRowNumber && (

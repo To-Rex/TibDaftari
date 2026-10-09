@@ -136,6 +136,10 @@ export interface TableElement extends ElementBase {
   numberWidth?: number
   /** single-line cells: text never wraps, overflow is clipped, every row is exactly `rowHeight` (legacy SES blanks) */
   nowrap?: boolean
+  /** multi-line cells: every data row keeps room for at least this many text lines (ignored with `nowrap`) */
+  minLines?: number
+  /** multi-line cells: at most this many lines per cell, longer text ends with "…"; absent/0 = as many as needed */
+  maxLines?: number
   /** the table takes the height of its rows and everything below it moves along (cheques, order documents) */
   grow?: boolean
 }
