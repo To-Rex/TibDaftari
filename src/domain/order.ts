@@ -143,6 +143,8 @@ export interface PayOrderInput {
   amount: Money
   method: PaymentMethod
   sendSms: boolean
+  /** one payment split over several methods (their sum = `amount`); absent = the whole amount by `method` */
+  parts?: { method: PaymentMethod; amount: Money }[]
 }
 
 /** Result document delivered to the patient (PDF), rendered from a template. */

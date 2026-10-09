@@ -89,6 +89,7 @@ export const ordersHttp: OrderRepository = {
       amount: input.amount,
       method: input.method,
       sendSms: input.sendSms,
+      parts: input.parts,
     }),
 
   cancel: (orderId, reason) => api.post<Order>(`/orders/${orderId}/cancel`, { reason }),
