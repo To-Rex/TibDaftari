@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'motion/react'
 import {
-  ReceiptText, LayoutDashboard, ClipboardList, Users, FlaskConical, BadgeCheck, BarChart3, MessageSquare, Building2, GitBranch, UserCog,
+  ReceiptText, FileCheck2, LayoutDashboard, ClipboardList, Users, FlaskConical, BadgeCheck, BarChart3, MessageSquare, Building2, GitBranch, UserCog,
   ShieldCheck, FolderTree, ListChecks, LayoutTemplate, Send, PanelLeftClose, PanelLeftOpen, Bell, LogOut, ChevronDown, Menu as MenuIcon, X, Globe2, Receipt, ArrowLeftRight,
   Check, Loader2,
 } from 'lucide-react'
@@ -99,14 +99,17 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
       ] },
       { title: t('nav.lab'), items: [
         { to: routes.app.lab, label: t('nav.lab'), icon: <FlaskConical />, perm: 'lab.worklist.read', badge: pending.data?.lab, key: 'l' },
-        { to: routes.app.confirm, label: t('nav.confirm'), icon: <BadgeCheck />, perm: 'confirm.result.read', badge: pending.data?.confirm, key: 't' },
+        // the registrar desk (approved results only) reaches the same page as "Natijalar"
+        can('confirm.result.read')
+          ? { to: routes.app.confirm, label: t('nav.confirm'), icon: <BadgeCheck />, perm: 'confirm.result.read', badge: pending.data?.confirm, key: 't' }
+          : { to: routes.app.confirm, label: t('nav.results'), icon: <FileCheck2 />, perm: 'confirm.result.view', key: 't' },
       ] },
       { items: [
         { to: routes.app.reports, label: t('nav.reports'), icon: <BarChart3 />, perm: ['reports.finance.read', 'reports.operations.read'], key: 'h' },
         { to: routes.app.messages, label: t('nav.messages'), icon: <MessageSquare />, perm: ['messaging.send', 'messaging.broadcast'], badge: pending.data?.sms, key: 'x' },
       ] },
     ]
-  }, [module, t, isSuperAdmin, pending.data])
+  }, [module, t, isSuperAdmin, pending.data, can])
 
   const visible = sections.map((s) => ({ ...s, items: s.items.filter((i) => !i.perm || can(i.perm)) })).filter((s) => s.items.length)
   // keyboard: "G" + letter jumps to a page the user may open; "?" opens the reference

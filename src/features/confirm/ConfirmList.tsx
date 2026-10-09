@@ -4,6 +4,7 @@ import { motion } from 'motion/react'
 import { BadgeCheck } from 'lucide-react'
 import type { Id } from '@/domain'
 import type { WorklistRow } from '@/features/lab/WorklistTable'
+import { usePermissions } from '@/features/auth/store'
 import { cn } from '@/shared/lib/cn'
 import { fmtRelative, fmtTime } from '@/shared/lib/format'
 import { Avatar, EmptyState, Kbd, SkeletonRows, fadeUp, stagger } from '@/shared/ui'
@@ -16,6 +17,7 @@ export function ConfirmList({ rows, loading, selectedId, onSelect, categoryColor
   categoryColor: (categoryId: Id) => string | undefined
 }) {
   const { t } = useTranslation()
+  const { can } = usePermissions()
   if (loading && rows.length === 0) return <div className="p-4"><SkeletonRows rows={8} /></div>
   if (rows.length === 0) return <EmptyState icon={<BadgeCheck />} title={t('clinical.confirm.empty')} description={t('clinical.confirm.emptyHint')} />
   return (
@@ -52,7 +54,7 @@ export function ConfirmList({ rows, loading, selectedId, onSelect, categoryColor
         )
       })}
       <li className="flex items-center justify-center gap-2 px-4 py-2.5 text-[11.5px] text-ink-3">
-        <Kbd>J</Kbd><Kbd>K</Kbd> {t('clinical.confirm.kbdMove')} <span className="mx-1 opacity-40">|</span> <Kbd>A</Kbd> {t('clinical.confirm.kbdApprove')}
+        <Kbd>J</Kbd><Kbd>K</Kbd> {t('clinical.confirm.kbdMove')}{can('confirm.result.approve') && <> <span className="mx-1 opacity-40">|</span> <Kbd>A</Kbd> {t('clinical.confirm.kbdApprove')}</>}
       </li>
     </motion.ul>
   )

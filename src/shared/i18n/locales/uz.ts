@@ -96,6 +96,7 @@ export const uz = {
     orders: 'Cheklar',
     lab: 'Laboratoriya',
     confirm: 'Tasdiqlash',
+    results: 'Natijalar',
     reports: 'Hisobotlar',
     messages: 'Xabarlar',
     admin: 'Boshqaruv',

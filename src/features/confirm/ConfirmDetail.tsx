@@ -23,9 +23,11 @@ import { useTemplate } from './queries'
 import { useQuery } from '@tanstack/react-query'
 import { repos } from '@/data'
 
-export function ConfirmDetail({ companyId, itemId, onBack, onApprove, onReject, approving, justApproved, onOrderApproved }: {
+export function ConfirmDetail({ companyId, itemId, approvedOnly, onBack, onApprove, onReject, approving, justApproved, onOrderApproved }: {
   companyId: Id
   itemId: Id | null
+  /** the registrar desk: only approved results are shown (anything else — e.g. an old link — is not opened) */
+  approvedOnly?: boolean
   /** < lg: return to the list (detail is shown full-width instead of the list) */
   onBack?: () => void
   onApprove: (templateId: string | undefined) => void
@@ -56,6 +58,21 @@ export function ConfirmDetail({ companyId, itemId, onBack, onApprove, onReject, 
       <Card className="flex min-h-[420px] items-center justify-center">
         <EmptyState icon={<BadgeCheck />} title={t('clinical.confirm.pickItem')} description={t('clinical.confirm.pickItemHint')} />
       </Card>
+    )
+  }
+
+  if (approvedOnly && it && it.status !== 'approved') {
+    return (
+      <div className="flex flex-col gap-4">
+        {onBack && (
+          <button type="button" onClick={onBack} className="inline-flex h-9 w-fit items-center gap-1.5 rounded-lg text-[13px] text-ink-3 transition-colors hover:text-ink lg:hidden">
+            <ArrowLeft className="size-4" />{t('clinical.lab.backToList')}
+          </button>
+        )}
+        <Card className="flex min-h-[420px] items-center justify-center" data-not-approved>
+          <EmptyState icon={<BadgeCheck />} title={t('clinical.confirm.notApproved')} description={t('clinical.confirm.notApprovedHint')} />
+        </Card>
+      </div>
     )
   }
 
@@ -108,7 +125,7 @@ export function ConfirmDetail({ companyId, itemId, onBack, onApprove, onReject, 
                 ) : it.status === 'approved' ? (
                   <>
                     {it.documentId && <PrintDocumentButton doc={{ id: it.documentId, title: doc.data?.title ?? it.serviceName }} hotkey="p" />}
-                    {it.documentId && can(['confirm.result.approve', 'messaging.send']) && <ResendSmsButton documentId={it.documentId} deliveries={doc.data?.deliveries} />}
+                    {it.documentId && can(['confirm.result.approve', 'messaging.send', 'confirm.result.resend']) && <ResendSmsButton documentId={it.documentId} deliveries={doc.data?.deliveries} />}
                   </>
                 ) : null}
               </div>

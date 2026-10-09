@@ -17,6 +17,8 @@ export const PERMISSIONS = [
   'lab.result.submit',
   // Doctor confirmation
   'confirm.result.read',
+  /** approved results only: view, print, re-send the SMS (the registrar desk) */
+  'confirm.result.view',
   'confirm.result.approve',
   'confirm.result.resend',
   // Reports

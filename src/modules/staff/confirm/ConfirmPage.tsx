@@ -1,4 +1,5 @@
-/** Doctor's confirmation queue — master/detail with live document preview. */
+/** Doctor's confirmation queue — master/detail with live document preview. With `confirm.result.view` only (the
+ * registrar desk) it is "Natijalar": approved results only — view, print and re-send the SMS, nothing to approve. */
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
@@ -24,7 +25,9 @@ export default function ConfirmPage() {
   const selectedId = sp.get('item')
   const select = useCallback((id: string | null) => setSp((p) => { if (id) p.set('item', id); else p.delete('item'); return p }, { replace: true }), [setSp])
 
-  const [queue, setQueue] = useState<Queue>('submitted')
+  const approvedOnly = !can('confirm.result.read')
+  const [pickedQueue, setQueue] = useState<Queue>('submitted')
+  const queue: Queue = approvedOnly ? 'approved' : pickedQueue
   const [cat, setCat] = useState<CategorySelection>({ rootId: 'all', childId: null })
   const [range, setRange] = useState<RangeState>(() => initialRange('last7'))
   const [search, setSearch] = useState('')
@@ -106,7 +109,7 @@ export default function ConfirmPage() {
 
   return (
     <Page width="full" className={cn(selectedId && queue === 'submitted' && 'max-lg:pb-24')}>
-      <PageHeader title={t('clinical.confirm.title')} description={t('clinical.confirm.subtitle')} className={cn(selectedId && 'max-lg:hidden')} />
+      <PageHeader title={approvedOnly ? t('clinical.confirm.viewTitle') : t('clinical.confirm.title')} description={approvedOnly ? t('clinical.confirm.viewSubtitle') : t('clinical.confirm.subtitle')} className={cn(selectedId && 'max-lg:hidden')} />
       {/* < lg: master OR detail (detail opens full-width with a back button) */}
       <div className={cn(selectedId && 'max-lg:hidden')}>
         <div className="mb-4"><CategoryTabs roots={cats.data?.roots} loading={cats.isLoading} value={cat} onChange={setCat} /></div>
@@ -115,12 +118,14 @@ export default function ConfirmPage() {
           actions={<DateRangeFilter value={range} onChange={setRange} size="sm" allowCustom />}
         >
           <SearchInput value={search} onChange={setSearch} placeholder={t('clinical.lab.searchPlaceholder')} className="h-9 w-full sm:w-64" />
-          <div className="min-w-0 max-w-full overflow-x-auto no-scrollbar">
-            <Segmented<Queue> size="sm" value={queue} onChange={setQueue} className="shrink-0" items={[
-              { value: 'submitted', label: t('clinical.confirm.queueSubmitted') },
-              { value: 'approved', label: t('clinical.confirm.queueApproved') },
-            ]} />
-          </div>
+          {!approvedOnly && (
+            <div className="min-w-0 max-w-full overflow-x-auto no-scrollbar">
+              <Segmented<Queue> size="sm" value={queue} onChange={setQueue} className="shrink-0" items={[
+                { value: 'submitted', label: t('clinical.confirm.queueSubmitted') },
+                { value: 'approved', label: t('clinical.confirm.queueApproved') },
+              ]} />
+            </div>
+          )}
         </Toolbar>
       </div>
 
@@ -134,7 +139,7 @@ export default function ConfirmPage() {
           )}
         </Card>
         <div className={cn('min-w-0', !selectedId && 'max-lg:hidden')}>
-          <ConfirmDetail companyId={companyId} itemId={selectedId} onBack={() => select(null)} onApprove={(tid) => setApproveOpen({ templateId: tid })} onReject={() => setRejectOpen(true)} approving={approve.isPending} justApproved={justApproved}
+          <ConfirmDetail companyId={companyId} itemId={selectedId} approvedOnly={approvedOnly} onBack={() => select(null)} onApprove={(tid) => setApproveOpen({ templateId: tid })} onReject={() => setRejectOpen(true)} approving={approve.isPending} justApproved={justApproved}
             onOrderApproved={(ids) => { if (selectedId) { setJustApproved(selectedId); setTimeout(() => { setJustApproved(null); const next = rows.find((r) => !ids.includes(r.id)); select(next?.id ?? null) }, 900) } }} />
         </div>
       </div>

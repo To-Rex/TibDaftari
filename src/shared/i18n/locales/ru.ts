@@ -20,7 +20,7 @@ export const ru: DeepPartial<Dictionary> = {
     leaveConfirm: 'Несохранённые изменения будут потеряны. Выйти?', more: 'Ещё', less: 'Меньше', select: 'Выберите', notSet: '—',
   },
   nav: {
-    dashboard: 'Главная', reception: 'Регистратура', patients: 'Пациенты', orders: 'Чеки', lab: 'Лаборатория', confirm: 'Подтверждение', reports: 'Отчёты', messages: 'Сообщения',
+    dashboard: 'Главная', reception: 'Регистратура', patients: 'Пациенты', orders: 'Чеки', lab: 'Лаборатория', confirm: 'Подтверждение', results: 'Результаты', reports: 'Отчёты', messages: 'Сообщения',
     admin: 'Управление', company: 'Компания', branches: 'Филиалы', employees: 'Сотрудники', roles: 'Роли и права', catalog: 'Каталог услуг', schemas: 'Схемы результатов',
     templates: 'Шаблоны', receipts: 'Шаблоны чеков', smsSettings: 'Настройки SMS', platform: 'Платформа', portalHome: 'Кабинет', portalResults: 'Результаты', portalVisits: 'Визиты', portalProfile: 'Профиль', staffApp: 'Приложение сотрудников',
   },

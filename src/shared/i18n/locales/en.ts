@@ -19,7 +19,7 @@ export const en: DeepPartial<Dictionary> = {
     days: 'days', seeAll: 'See all', new: 'New', unsaved: 'You have unsaved changes', leaveConfirm: 'Unsaved changes will be lost. Leave?', more: 'More', less: 'Less', select: 'Select', notSet: '—',
   },
   nav: {
-    dashboard: 'Dashboard', reception: 'Reception', patients: 'Patients', orders: 'Orders', lab: 'Laboratory', confirm: 'Approval', reports: 'Reports', messages: 'Messages', admin: 'Administration',
+    dashboard: 'Dashboard', reception: 'Reception', patients: 'Patients', orders: 'Orders', lab: 'Laboratory', confirm: 'Approval', results: 'Results', reports: 'Reports', messages: 'Messages', admin: 'Administration',
     company: 'Company', branches: 'Branches', employees: 'Employees', roles: 'Roles & permissions', catalog: 'Service catalog', schemas: 'Result schemas', templates: 'Templates', receipts: 'Receipt templates',
     smsSettings: 'SMS settings', platform: 'Platform', portalHome: 'Home', portalResults: 'Results', portalVisits: 'Visits', portalProfile: 'Profile', staffApp: 'Staff app',
   },

@@ -113,7 +113,7 @@ export const router = createBrowserRouter([
             { path: routes.app.lab, element: page(<LabPage />) },
             { path: routes.app.labItem(), element: page(<LabItemPage />) },
           ] },
-          { element: <RequirePerm perm="confirm.result.read" />, children: [{ path: routes.app.confirm, element: page(<ConfirmPage />) }] },
+          { element: <RequirePerm perm={['confirm.result.read', 'confirm.result.view']} />, children: [{ path: routes.app.confirm, element: page(<ConfirmPage />) }] },
           { element: <RequirePerm perm={['reports.finance.read', 'reports.operations.read']} />, children: [{ path: routes.app.reports, element: page(<ReportsPage />) }] },
           { element: <RequirePerm perm={['messaging.send', 'messaging.broadcast']} />, children: [{ path: routes.app.messages, element: page(<MessagesPage />) }] },
         ],

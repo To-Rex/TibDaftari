@@ -31,7 +31,7 @@ export function ResultsReport({ companyId, range, canExport }: { companyId: Id; 
   const { t } = useTranslation()
   const { can } = usePermissions()
   const palette = useChartPalette()
-  const canResend = can(['confirm.result.approve', 'messaging.send'])
+  const canResend = can(['confirm.result.approve', 'messaging.send', 'confirm.result.resend'])
   const q = useResultsReport(companyId, range)
   const d = q.data
   const [status, setStatus] = useState<ResultListStatus>('not_received')
