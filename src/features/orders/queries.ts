@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { repos } from '@/data'
-import type { CreateOrderInput, Id, PageQuery, PayOrderInput } from '@/domain'
+import type { CreateOrderInput, Id, PageQuery, PayOrderInput, OrderListFilters } from '@/domain'
 
-export type OrderListParams = PageQuery & { branchId?: Id; status?: string; payment?: string; dateFrom?: string; dateTo?: string; patientId?: Id }
+export type OrderListParams = PageQuery & OrderListFilters & { branchId?: Id; status?: string; payment?: string; dateFrom?: string; dateTo?: string; patientId?: Id }
 
 export const orderKeys = {
   all: ['orders'] as const,
@@ -13,6 +13,10 @@ export const orderKeys = {
 
 export const useOrdersList = (companyId: Id, q: OrderListParams, enabled = true) =>
   useQuery({ queryKey: orderKeys.list(companyId, q), queryFn: () => repos.orders.list(companyId, q), enabled, placeholderData: (prev) => prev })
+
+/** Count + money + payments by method of the cheques the list's filters select. */
+export const useOrdersSummary = (companyId: Id, q: Omit<OrderListParams, 'page' | 'pageSize' | 'sortBy' | 'sortDir'>, enabled = true) =>
+  useQuery({ queryKey: ['orders', 'summary', companyId, q], queryFn: () => repos.orders.summary(companyId, q), enabled, placeholderData: (prev) => prev })
 
 export const useOrder = (id: Id | undefined) =>
   useQuery({ queryKey: orderKeys.detail(id ?? ''), queryFn: () => repos.orders.get(id!), enabled: !!id })

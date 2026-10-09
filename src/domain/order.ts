@@ -83,6 +83,34 @@ export interface ItemEvent {
 
 export type PaymentMethod = 'cash' | 'card' | 'transfer' | 'insurance'
 
+/** The cheque list's extra filters (all optional; combine with the basic ones). */
+export interface OrderListFilters {
+  /** cheques with a (non-refunded) payment of any of these methods */
+  methods?: PaymentMethod[]
+  minTotal?: Money
+  maxTotal?: Money
+  /** true: something is still to pay; false: nothing is */
+  debt?: boolean
+  /** true: with a discount; false: without */
+  discount?: boolean
+  serviceTypeId?: Id
+  /** a category and its sub-categories */
+  categoryIds?: Id[]
+  /** the employee who opened the cheque */
+  createdBy?: Id
+}
+
+/** The filtered cheques at a glance (money over the non-cancelled ones). */
+export interface OrderSummary {
+  count: number
+  total: Money
+  paid: Money
+  debt: Money
+  methods: { method: PaymentMethod; amount: Money }[]
+  /** who opened the filtered cheques (ignores the createdBy filter) */
+  cashiers: { id: Id; name: string; count: number }[]
+}
+
 export interface Payment extends AuditStamp {
   id: Id
   orderId: Id

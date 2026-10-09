@@ -50,6 +50,8 @@ import type {
   ResultRow,
   ResultsReport,
   ServicesReport,
+  OrderListFilters,
+  OrderSummary,
 } from '@/domain'
 
 export type WorklistCounts = Record<'all' | ItemStatus, number>
@@ -119,8 +121,13 @@ export interface CatalogRepository {
   publishSchema(id: Id): Promise<AttributeSchema>
 }
 
+/** Cheque list query: paging + the basic filters + the extra ones. */
+export type OrderListQuery = PageQuery & OrderListFilters & { branchId?: Id; status?: string; payment?: string; dateFrom?: string; dateTo?: string; patientId?: Id }
+
 export interface OrderRepository {
-  list(companyId: Id, q: PageQuery & { branchId?: Id; status?: string; payment?: string; dateFrom?: string; dateTo?: string; patientId?: Id }): Promise<Page<Order>>
+  list(companyId: Id, q: OrderListQuery): Promise<Page<Order>>
+  /** Count, money and payments by method of the cheques the same filters select. */
+  summary(companyId: Id, q: Omit<OrderListQuery, 'page' | 'pageSize' | 'sortBy' | 'sortDir'>): Promise<OrderSummary>
   get(id: Id): Promise<{ order: Order; items: OrderItem[]; payments: Payment[] }>
   create(companyId: Id, employeeId: Id, input: CreateOrderInput): Promise<{ order: Order; items: OrderItem[] }>
   addItems(orderId: Id, serviceTypeIds: Id[]): Promise<{ order: Order; items: OrderItem[] }>

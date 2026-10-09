@@ -4,7 +4,7 @@
  *  - `employeeId` arguments are ignored: the backend takes the actor from the bearer token.
  *  - `ResultDocument.pdfUrl` comes back relative (`/api/v1/documents/{id}/pdf`) and is absolutised here.
  */
-import type { Id, Order, OrderItem, Page, Payment, ResultDocument, ResultSms } from '@/domain'
+import type { Id, Order, OrderItem, Page, Payment, ResultDocument, ResultSms, OrderListFilters, OrderSummary } from '@/domain'
 import type { OrderRepository, WorklistCounts } from '@/data/repositories'
 import { absoluteUrl, api, ApiError, compact } from './client'
 
@@ -31,6 +31,12 @@ const currentCompanyId = async (): Promise<Id> => {
   return cid
 }
 
+/** The list's extra filters as query params (arrays repeat the key, empty ones are skipped). */
+const extraFilters = (q: OrderListFilters) => ({
+  methods: q.methods, minTotal: q.minTotal, maxTotal: q.maxTotal, debt: q.debt, discount: q.discount,
+  serviceTypeId: q.serviceTypeId, categoryIds: q.categoryIds, createdBy: q.createdBy,
+})
+
 export const ordersHttp: OrderRepository = {
   list: (companyId, q) =>
     api.get<Page<Order>>(`/companies/${companyId}/orders`, {
@@ -46,7 +52,13 @@ export const ordersHttp: OrderRepository = {
         dateFrom: q.dateFrom,
         dateTo: q.dateTo,
         patientId: q.patientId,
+        ...extraFilters(q),
       },
+    }),
+
+  summary: (companyId, q) =>
+    api.get<OrderSummary>(`/companies/${companyId}/orders/summary`, {
+      query: { search: q.search, branchId: q.branchId, status: q.status, payment: q.payment, dateFrom: q.dateFrom, dateTo: q.dateTo, patientId: q.patientId, ...extraFilters(q) },
     }),
 
   get: (id) => api.get<{ order: Order; items: OrderItem[]; payments: Payment[] }>(`/orders/${id}`),
