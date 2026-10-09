@@ -21,10 +21,14 @@ const KINDS: SmsTemplateKind[] = ['payment_receipt', 'result_ready', 'reminder']
 const PLACEHOLDERS = ['{patient}', '{order}', '{service}', '{company}', '{branch}'] as const
 /** {link} — the public result PDF — exists only in the "result ready" text */
 const RESULT_PLACEHOLDERS = [...PLACEHOLDERS, '{link}'] as const
+/** the payment receipt also knows the money: this payment, the cheque total and what is still to pay */
+const PAYMENT_PLACEHOLDERS = [...PLACEHOLDERS, '{amount}', '{total}', '{remaining}'] as const
+const PLACEHOLDERS_OF: Record<SmsTemplateKind, readonly string[]> = { payment_receipt: PAYMENT_PLACEHOLDERS, result_ready: RESULT_PLACEHOLDERS, reminder: PLACEHOLDERS }
 /** Pre-backend drafts lived in localStorage; they are offered once as the initial draft, then dropped. */
 const LEGACY_STORAGE_KEY = (companyId: string) => `clinic.sms.templates.${companyId}`
 
-const SAMPLE = { patient: 'Karimova Aziza', order: 'UR-001241', service: 'Umumiy qon tahlili', company: '', branch: '', link: '' }
+// money as the API writes it in an SMS (thousands grouped with a no-break space)
+const SAMPLE = { patient: 'Karimova Aziza', order: 'UR-001241', service: 'Umumiy qon tahlili', company: '', branch: '', link: '', amount: '120 000', total: '150 000', remaining: '30 000' }
 /** a link as long as the real one (32-character token) so the SMS length counter is honest */
 const sampleLink = () => `${typeof window !== 'undefined' ? window.location.origin : 'https://temo.uz'}/d/Xk3vQ9pL2mT8aR5wZ1cY7nB4hJ6dF0sE`
 
@@ -102,7 +106,7 @@ function BranchTemplatesEditor({ companyId, companyName, branch, readOnly, branc
   const canApplyAll = !readOnly && branchCount > 1
 
   const labels: Record<SmsTemplateKind, string> = { payment_receipt: t('admin.sms.tplPayment'), result_ready: t('admin.sms.tplResult'), reminder: t('admin.sms.tplReminder') }
-  const preview = (text: string) => text.replace(/\{(patient|order|service|company|branch|link)\}/g, (_, k: keyof typeof SAMPLE) => (k === 'company' ? companyName : k === 'branch' ? branch.name : k === 'link' ? sampleLink() : SAMPLE[k]))
+  const preview = (text: string) => text.replace(/\{(patient|order|service|company|branch|link|amount|total|remaining)\}/g, (_, k: keyof typeof SAMPLE) => (k === 'company' ? companyName : k === 'branch' ? branch.name : k === 'link' ? sampleLink() : SAMPLE[k]))
   const seg = smsSegments(preview(draft[active]))
 
   const save = async (applyToAll = false) => {
@@ -162,11 +166,12 @@ function BranchTemplatesEditor({ companyId, companyName, branch, readOnly, branc
               <Textarea value={draft[active]} disabled={readOnly} rows={3} onChange={(e) => edit((d) => ({ ...d, [active]: e.target.value }))} className="font-mono text-[13.5px]" />
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className="text-[12.5px] text-ink-3 mr-1">{t('admin.sms.placeholders')}:</span>
-                {(active === 'result_ready' ? RESULT_PLACEHOLDERS : PLACEHOLDERS).map((p) => (
+                {PLACEHOLDERS_OF[active].map((p) => (
                   <button key={p} type="button" disabled={readOnly} onClick={() => insert(p)} className="h-6 rounded-md border border-line bg-surface px-2 font-mono text-[12px] text-ink-2 hover:border-brand hover:text-brand-ink transition-colors disabled:opacity-50">{p}</button>
                 ))}
               </div>
               {active === 'result_ready' && <p className="text-[12px] text-ink-3" data-sms-link-hint>{t('admin.sms.linkHint')}</p>}
+              {active === 'payment_receipt' && <p className="text-[12px] text-ink-3" data-sms-amount-hint>{t('admin.sms.amountHint')}</p>}
               <div className="rounded-[var(--radius)] border border-line bg-surface-2/50 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-2">
                   <span className="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-3">{t('admin.sms.preview')}</span>
