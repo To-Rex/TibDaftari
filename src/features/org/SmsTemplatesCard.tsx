@@ -5,14 +5,14 @@
  */
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CopyCheck, GitBranch, MessageSquareText, RotateCcw } from 'lucide-react'
+import { CopyCheck, MessageSquareText, RotateCcw } from 'lucide-react'
 import type { Branch, SmsTemplateKind, SmsTemplateOverrides } from '@/domain'
-import { canSwitchBranch, useAuth } from '@/features/auth/store'
 import { storage } from '@/shared/lib/storage'
 import { cn } from '@/shared/lib/cn'
 import { errorMessage } from '@/shared/lib/errors'
-import { Badge, Button, Card, CardHeader, ConfirmDialog, Select, Skeleton, Textarea, toast } from '@/shared/ui'
-import { useBranches, useBranchSmsTemplates, useSaveBranchSmsTemplates } from './queries'
+import { Badge, Button, Card, CardHeader, ConfirmDialog, Skeleton, Textarea, toast } from '@/shared/ui'
+import { useBranchSmsTemplates, useSaveBranchSmsTemplates } from './queries'
+import { SmsBranchPicker, useSmsBranch, type SmsBranchSelection } from './smsBranch'
 
 export type { SmsTemplateKind }
 export type SmsTemplates = Record<SmsTemplateKind, string>
@@ -42,26 +42,14 @@ export function smsSegments(text: string): { chars: number; segments: number; un
   return { chars, segments, unicode }
 }
 
-export function SmsTemplatesCard({ companyId, companyName, readOnly }: { companyId: string; companyName: string; readOnly?: boolean }) {
+export function SmsTemplatesCard({ companyId, companyName, readOnly, selection }: { companyId: string; companyName: string; readOnly?: boolean; selection?: SmsBranchSelection }) {
   const { t } = useTranslation()
-  const staff = useAuth((s) => s.staff)
-  const shellBranchId = useAuth((s) => s.branchId)
-  const branches = useBranches(companyId)
-  const switcher = !!staff && canSwitchBranch(staff)
-  const all = useMemo(() => branches.data ?? [], [branches.data])
-  // the branches this user may edit: switchers (and staff without assigned branches) every one, others their own
-  const mine = useMemo(() => {
-    const assigned = staff?.branchIds ?? []
-    const list = switcher || !assigned.length ? all : all.filter((b) => assigned.includes(b.id))
-    const active = list.filter((b) => b.isActive)
-    return active.length ? active : list
-  }, [all, staff, switcher])
-  const [picked, setPicked] = useState<string | null>(null)
-  const branch: Branch | undefined = shellBranchId
-    ? all.find((b) => b.id === shellBranchId)
-    : mine.find((b) => b.id === picked) ?? mine.find((b) => b.id === staff?.branchId) ?? mine[0]
+  // the page passes its selection so the key card and this card edit the same branch
+  const own = useSmsBranch(companyId)
+  const sel = selection ?? own
+  const { branch } = sel
 
-  if (branches.isLoading) return <Skeleton className="h-72" />
+  if (sel.isLoading) return <Skeleton className="h-72" />
   if (!branch) {
     return (
       <Card>
@@ -72,18 +60,10 @@ export function SmsTemplatesCard({ companyId, companyName, readOnly }: { company
   }
 
   // "All branches" in the top bar: choose here which branch's texts to edit; otherwise the top-bar branch
-  const branchSlot = !shellBranchId && mine.length > 1 ? (
-    <Select value={branch.id} onChange={(e) => setPicked(e.target.value)} aria-label={t('admin.sms.branchTexts')} className="h-9 w-auto min-w-0 max-w-full text-[13.5px]" data-sms-branch-select>
-      {mine.map((b) => <option key={b.id} value={b.id}>{b.name} · {b.code}</option>)}
-    </Select>
-  ) : (
-    <span className="inline-flex min-w-0 max-w-full items-center gap-1.5 text-[13.5px] font-medium text-ink">
-      <GitBranch className="size-4 shrink-0 text-brand" /><span className="truncate">{branch.name}</span><span className="shrink-0 font-mono text-[12px] text-ink-3">{branch.code}</span>
-    </span>
-  )
+  const branchSlot = <SmsBranchPicker sel={sel} label={t('admin.sms.branchTexts')} />
 
   // keyed by branch: switching branches starts from that branch's saved texts
-  return <BranchTemplatesEditor key={branch.id} companyId={companyId} companyName={companyName} branch={branch} readOnly={readOnly} branchSlot={branchSlot} branchCount={switcher ? all.length : 0} />
+  return <BranchTemplatesEditor key={branch.id} companyId={companyId} companyName={companyName} branch={branch} readOnly={readOnly} branchSlot={branchSlot} branchCount={sel.switcher ? sel.all.length : 0} />
 }
 
 function BranchTemplatesEditor({ companyId, companyName, branch, readOnly, branchSlot, branchCount }: { companyId: string; companyName: string; branch: Branch; readOnly?: boolean; branchSlot: ReactNode; branchCount: number }) {

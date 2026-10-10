@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
-import { Check, Copy, Eye, EyeOff, KeyRound, PlugZap, Send, ShieldCheck } from 'lucide-react'
+import { Check, Copy, Eye, EyeOff, Info, KeyRound, PlugZap, Send, ShieldCheck } from 'lucide-react'
 import type { Company } from '@/domain'
 import { useStaffSession } from '@/features/session/useSession'
 import { usePermissions } from '@/features/auth/store'
 import { useCompany, useSaveCompany } from '@/features/org/queries'
 import { SmsTemplatesCard } from '@/features/org/SmsTemplatesCard'
+import { BranchSmsAccountCard } from '@/features/org/BranchSmsAccountCard'
+import { useSmsBranch } from '@/features/org/smsBranch'
 import { repos } from '@/data'
 import { errorMessage } from '@/shared/lib/errors'
 import { fmtPhone } from '@/shared/lib/format'
@@ -44,6 +47,9 @@ export default function SmsSettingsPage() {
   const canWrite = can('admin.settings.write')
   const company = useCompany(companyId)
   const save = useSaveCompany()
+  const qc = useQueryClient()
+  // one branch for the whole page: its own key (card 1) and its texts (card 3)
+  const sel = useSmsBranch(companyId)
   const [showKey, setShowKey] = useState(false)
   const [testing, setTesting] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -65,6 +71,7 @@ export default function SmsSettingsPage() {
         apiKey: v.provider !== 'none' && v.apiKey ? v.apiKey : undefined,
       }
       await save.mutateAsync({ id: companyId, sms })
+      void qc.invalidateQueries({ queryKey: ['branch-sms-account'] }) // branches on the shared key show it
       toast.success(t('admin.sms.saved'))
     } catch (e) {
       toast.error(errorMessage(e))
@@ -105,15 +112,21 @@ export default function SmsSettingsPage() {
 
   return (
     <Page width="medium">
-      <PageHeader title={t('admin.sms.title')} description={t('admin.sms.subtitle')}
-        actions={canWrite && <Button form="sms-form" type="submit" loading={save.isPending} disabled={!isDirty}>{t('common.save')}</Button>} />
+      <PageHeader title={t('admin.sms.title')} description={t('admin.sms.subtitle')} />
 
       {!c ? <div className="space-y-4"><Skeleton className="h-64" /><Skeleton className="h-64" /></div> : (
         <div className="flex flex-col gap-5">
-          <form id="sms-form" onSubmit={submit} onKeyDown={formKeyDown}>
+          <BranchSmsAccountCard companyId={companyId} selection={sel} readOnly={!canWrite} />
+
+          <form id="sms-form" onSubmit={submit} onKeyDown={formKeyDown} data-company-sms>
             <Card>
               <CardHeader className="max-xs:flex-col max-xs:items-start" title={t('admin.sms.providerTitle')} description={t('admin.sms.providerText')}
                 actions={<Badge tone={connected ? 'ok' : 'neutral'} dot>{connected ? t('admin.sms.connected') : t('admin.sms.notConnected')}</Badge>} />
+              {sel.all.length > 1 && (
+                <p className="mb-5 flex items-start gap-2 rounded-[var(--radius)] border border-warn/30 bg-warn-soft/50 px-3.5 py-2.5 text-[12.5px] text-ink-2" data-sms-shared-warn>
+                  <Info className="mt-0.5 size-4 shrink-0 text-warn" />{t('admin.sms.sharedWarn')}
+                </p>
+              )}
               <fieldset disabled={!canWrite} className="flex flex-col gap-5 min-w-0">
                 <Field label={t('admin.sms.provider')}>
                   {() => (
@@ -151,16 +164,17 @@ export default function SmsSettingsPage() {
                     <Field label={t('admin.sms.senderNote')} hint={t('admin.sms.senderNoteHint')} optionalText={t('common.optional')}>
                       {(id) => <Input id={id} maxLength={40} {...register('senderNote')} />}
                     </Field>
-                    <div className="flex justify-end">
-                      <Button type="button" variant="secondary" className="max-sm:w-full" leftIcon={<PlugZap className="size-4" />} loading={testing} onClick={testConnection}>{t('admin.sms.test')}</Button>
-                    </div>
                   </>
                 )}
+                <div className="flex flex-wrap justify-end gap-2">
+                  {provider === 'xabarchi' && <Button type="button" variant="secondary" className="max-sm:w-full" leftIcon={<PlugZap className="size-4" />} loading={testing} onClick={testConnection}>{t('admin.sms.test')}</Button>}
+                  {canWrite && <Button type="submit" className="max-sm:w-full" loading={save.isPending && !testing} disabled={!isDirty} data-company-sms-save>{t('common.save')}</Button>}
+                </div>
               </fieldset>
             </Card>
           </form>
 
-          <SmsTemplatesCard companyId={companyId} companyName={c.name} readOnly={!canWrite} />
+          <SmsTemplatesCard companyId={companyId} companyName={c.name} readOnly={!canWrite} selection={sel} />
 
           <Card>
             <CardHeader className="max-xs:flex-col max-xs:items-start" title={t('admin.sms.docsTitle')} description={t('admin.sms.docsText')}

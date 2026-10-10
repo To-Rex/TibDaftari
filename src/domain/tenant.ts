@@ -15,6 +15,31 @@ export interface BranchSmsTemplates {
   applied?: number
 }
 
+/** Whose Xabarchi key a branch's SMS use: the company's shared key, the branch's own, or none (SMS off). */
+export type BranchSmsMode = 'company' | 'own' | 'off'
+export type SmsPriority = 'urgent' | 'transactional' | 'bulk'
+
+/** A branch's SMS account — every branch may send through its own Xabarchi key. */
+export interface BranchSms {
+  branchId: Id
+  mode: BranchSmsMode
+  /** the branch's own key (mask); plaintext never leaves the backend */
+  apiKeyMasked?: string | null
+  defaultPriority: SmsPriority
+  senderNote?: string | null
+  /** where the branch's SMS really go out from: its own key, the company's, or nowhere (null) */
+  effective?: 'branch' | 'company' | null
+  /** the company's shared key (mask) — what 'company' mode uses */
+  companyApiKeyMasked?: string | null
+}
+export interface BranchSmsInput {
+  mode: BranchSmsMode
+  /** write-only plaintext; omitted = keep the saved key */
+  apiKey?: string
+  defaultPriority?: SmsPriority
+  senderNote?: string
+}
+
 /** Superadmin reset ("like newborn") of a company or one branch. */
 export type ResetTarget = 'company' | 'branch'
 export interface ResetPreview {
@@ -87,6 +112,9 @@ export interface Branch extends AuditStamp {
   isActive: boolean
   /** Sequence for human-readable order numbers, per branch. */
   orderSeq: number
+  /** whose key the branch's SMS use (details: `getBranchSms`) */
+  smsMode?: BranchSmsMode
+  smsApiKeyMasked?: string | null
 }
 
 export type EmployeeStatus = 'active' | 'inactive'

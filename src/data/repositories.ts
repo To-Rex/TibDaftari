@@ -5,6 +5,8 @@
 import type {
   AttributeSchema,
   Branch,
+  BranchSms,
+  BranchSmsInput,
   BranchSmsTemplates,
   Category,
   Company,
@@ -77,6 +79,12 @@ export interface TenantRepository {
   getBranchSmsTemplates(branchId: Id): Promise<BranchSmsTemplates>
   /** Save the branch's own SMS texts; `applyToAll` (superadmin / company admin) writes them to every branch. */
   saveBranchSmsTemplates(branchId: Id, input: { templates: SmsTemplateOverrides; applyToAll?: boolean }): Promise<BranchSmsTemplates>
+  /** The branch's SMS account: its own Xabarchi key, the company's shared one, or off. */
+  getBranchSms(branchId: Id): Promise<BranchSms>
+  /** Save the branch's own SMS account — other branches and the company keep theirs. */
+  saveBranchSms(branchId: Id, input: BranchSmsInput): Promise<BranchSms>
+  /** Sends ONE real SMS with the key the branch's messages use (default recipient: branch / company phone). */
+  testBranchSms(branchId: Id, to?: string): Promise<SmsTestResult>
   /** Superadmin: what a reset of the company / branch would remove (nothing changes). */
   resetPreview(target: ResetTarget, id: Id): Promise<ResetPreview>
   /** Superadmin: IRREVERSIBLY reset the chosen parts; `confirm` = company slug / branch code. */

@@ -42,7 +42,11 @@ export default function AdminDashboardPage() {
     const missing = o.serviceTypes.filter((s) => s.isActive && !generic && !activeTpl.some((x) => x.serviceTypeIds.includes(s.id) || x.categoryIds.includes(s.categoryId)))
     const branchless = o.employees.filter((e) => e.status === 'active' && !e.branchIds.length)
     const published = o.schemas.filter((s) => s.status === 'published').length
-    const smsOk = c.sms.provider === 'xabarchi' && !!c.sms.apiKeyMasked
+    // every active branch sends: with its own key, or on the shared company key (a branch switched off on purpose is fine)
+    const companyKey = c.sms.provider === 'xabarchi' && !!c.sms.apiKeyMasked
+    const liveBranches = o.branches.filter((b) => b.isActive)
+    const sends = (b: (typeof liveBranches)[number]) => b.smsMode === 'own' || (b.smsMode !== 'off' && companyKey)
+    const smsOk = liveBranches.length ? liveBranches.every((b) => b.smsMode === 'off' || sends(b)) && liveBranches.some(sends) : companyKey
     return [
       { key: 'sms', ok: smsOk, label: t('admin.dashboard.checkSms'), fail: t('admin.dashboard.checkSmsFail'), to: routes.admin.sms },
       { key: 'tpl', ok: !missing.length, label: t('admin.dashboard.checkTemplates'), fail: t('admin.dashboard.checkTemplatesFail', { count: missing.length }), to: routes.admin.templates },

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { Branch, Company, Id, PageQuery, SmsTemplateOverrides } from '@/domain'
+import type { Branch, BranchSmsInput, Company, Id, PageQuery, SmsTemplateOverrides } from '@/domain'
 import { repos } from '@/data'
 
 export const orgKeys = {
@@ -7,6 +7,7 @@ export const orgKeys = {
   companies: (q: PageQuery) => ['companies', q] as const,
   branches: (companyId: Id) => ['branches', companyId] as const,
   branchSms: (branchId: Id) => ['branch-sms-templates', branchId] as const,
+  branchSmsAccount: (branchId: Id) => ['branch-sms-account', branchId] as const,
 }
 
 export const useCompany = (id: Id) =>
@@ -56,6 +57,21 @@ export function useSaveBranchSmsTemplates() {
         void qc.invalidateQueries({ queryKey: ['branch-sms-templates'] })
         void qc.invalidateQueries({ queryKey: ['company'] })
       }
+    },
+  })
+}
+
+/** A branch's SMS account (its own Xabarchi key, the company's shared one, or off). */
+export const useBranchSms = (branchId: Id | null) =>
+  useQuery({ queryKey: orgKeys.branchSmsAccount(branchId ?? ''), queryFn: () => repos.tenant.getBranchSms(branchId as Id), enabled: !!branchId })
+
+export function useSaveBranchSms(companyId: Id) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ branchId, ...input }: BranchSmsInput & { branchId: Id }) => repos.tenant.saveBranchSms(branchId, input),
+    onSuccess: (r) => {
+      qc.setQueryData(orgKeys.branchSmsAccount(r.branchId), r)
+      void qc.invalidateQueries({ queryKey: orgKeys.branches(companyId) }) // the per-branch SMS status
     },
   })
 }
