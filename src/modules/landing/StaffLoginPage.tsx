@@ -39,10 +39,18 @@ export default function StaffLoginPage() {
   return (
     <AuthLayout variant="staff" aside={<StaffLoginAside />}>
       <div className="flex flex-col">
-        <h1 className="text-[26px] font-semibold leading-[1.08] tracking-[-0.035em] sm:text-[30px]">{t('auth.staffTitle')}</h1>
+        <div className="flex items-center justify-between gap-3 border-b border-line pb-4">
+          <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-3">
+            <span aria-hidden className="size-1.5 rounded-full bg-brand" />
+            {t('auth.staffFormLabel')}
+          </span>
+          <span className="font-mono text-[11px] text-ink-3">TibDaftari</span>
+        </div>
+
+        <h1 className="mt-7 text-[30px] font-semibold leading-[1.05] tracking-[-0.04em] sm:text-[34px]">{t('auth.staffTitle')}</h1>
         <p className="mt-2 max-w-sm text-[13.5px] leading-relaxed text-ink-2 sm:text-[14px]">{t('auth.staffSubtitle')}</p>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="mt-7 flex flex-col gap-4" noValidate>
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-8 flex flex-col gap-4" noValidate>
           <Field label={t('auth.login')} error={errors.login && t('common.required')}>
             {(id) => <Input id={id} autoComplete="username" autoCapitalize="none" spellCheck={false} autoFocus leftIcon={<UserRound />} invalid={!!errors.login} className="h-12 text-[15px]" {...register('login')} />}
           </Field>
@@ -58,22 +66,15 @@ export default function StaffLoginPage() {
           </Button>
         </form>
 
-        <div className="mt-6 border-t border-line pt-5">
-          <Link to={routes.patientLogin} className="group flex items-center justify-between gap-3 rounded-[var(--radius)] border border-line bg-surface-2/50 px-3.5 py-3 transition-colors hover:border-brand/40 hover:bg-brand-soft/30">
-            <span className="flex min-w-0 items-center gap-3">
-              <span className="grid size-9 shrink-0 place-items-center rounded-full bg-surface text-ink-2 ring-1 ring-line"><UserRound className="size-4" /></span>
-              <span className="min-w-0">
-                <span className="block text-[13px] font-medium text-ink">{t('auth.forPatients')}</span>
-                <span className="block text-[12px] text-ink-2">{t('auth.patientLink')}</span>
-              </span>
-            </span>
-            <ArrowUpRight className="size-4 shrink-0 text-ink-3 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-brand-ink" />
+        <div className="mt-7 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-line pt-5">
+          <Link to={routes.patientLogin} className="group inline-flex min-w-0 items-center gap-1.5 text-[12.5px] font-medium text-ink-2 hover:text-brand-ink">
+            <span className="min-w-0">{t('auth.forPatients')} · {t('auth.patientLink')}</span>
+            <ArrowUpRight className="size-3.5 shrink-0 text-ink-3 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-brand-ink" />
           </Link>
+          <span className="inline-flex items-center gap-1.5 text-[11.5px] text-ink-2">
+            <ShieldCheck className="size-3.5 text-brand" />{t('auth.staffSecure')}
+          </span>
         </div>
-
-        <p className="mt-4 flex items-center justify-center gap-1.5 text-[11.5px] text-ink-2">
-          <ShieldCheck className="size-3.5 text-brand" />{t('auth.staffSecure')}
-        </p>
       </div>
     </AuthLayout>
   )

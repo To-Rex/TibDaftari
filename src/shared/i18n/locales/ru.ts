@@ -25,10 +25,10 @@ export const ru: DeepPartial<Dictionary> = {
     templates: 'Шаблоны', receipts: 'Шаблоны чеков', smsSettings: 'Настройки SMS', platform: 'Платформа', portalHome: 'Кабинет', portalResults: 'Результаты', portalVisits: 'Визиты', portalProfile: 'Профиль', staffApp: 'Приложение сотрудников',
   },
   auth: {
-    staffTitle: 'Вход для сотрудников', staffSubtitle: 'Введите логин и пароль', staffEyebrow: 'Рабочее пространство сотрудников', staffAsideTitle: 'Весь поток клиники за одну смену.',
+    staffTitle: 'Вход для сотрудников', staffSubtitle: 'Введите логин и пароль', staffFormLabel: 'Система сотрудников', staffFlowLabel: 'Поток клиники', staffAsideTitle: 'Весь поток клиники за одну смену.',
     staffAsideText: 'От регистратуры до лаборатории и подтверждения врача — каждый шаг в одном упорядоченном рабочем пространстве.', staffFlowReception: 'Регистратура и чек',
     staffFlowLab: 'Лаборатория', staffFlowConfirm: 'Подтверждение врача', staffFlowResult: 'Результат и отчёт', staffAsideFoot: 'Каждая роль видит только свои полномочия.',
-    staffAsideMeta: 'TibDaftari · для команды клиники', staffSecure: 'Безопасный вход', showPassword: 'Показать пароль', hidePassword: 'Скрыть пароль',
+    staffSecure: 'Безопасный вход', showPassword: 'Показать пароль', hidePassword: 'Скрыть пароль',
     login: 'Логин', password: 'Пароль', signIn: 'Войти', signingIn: 'Проверка…',
     patientTitle: 'Кабинет пациента', patientSubtitle: 'Мы отправим код подтверждения на ваш номер', phone: 'Номер телефона', sendCode: 'Отправить код', codeSent: 'Код отправлен',
     enterCode: 'Введите 4-значный код, отправленный на {{phone}}', verify: 'Подтвердить', resend: 'Отправить снова', resendIn: 'Отправить снова ({{s}} с)', changePhone: 'Изменить номер',

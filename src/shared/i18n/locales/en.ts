@@ -24,10 +24,10 @@ export const en: DeepPartial<Dictionary> = {
     smsSettings: 'SMS settings', platform: 'Platform', portalHome: 'Home', portalResults: 'Results', portalVisits: 'Visits', portalProfile: 'Profile', staffApp: 'Staff app',
   },
   auth: {
-    staffTitle: 'Staff sign in', staffSubtitle: 'Enter your login and password', staffEyebrow: 'Staff workspace', staffAsideTitle: 'One clinic flow, one shift.',
+    staffTitle: 'Staff sign in', staffSubtitle: 'Enter your login and password', staffFormLabel: 'Staff system', staffFlowLabel: 'Clinic flow', staffAsideTitle: 'One clinic flow, one shift.',
     staffAsideText: 'From reception to the lab and doctor approval — every step in one orderly workspace.', staffFlowReception: 'Reception & order',
     staffFlowLab: 'Laboratory', staffFlowConfirm: 'Doctor approval', staffFlowResult: 'Result & report', staffAsideFoot: 'Every role sees only its own permissions.',
-    staffAsideMeta: 'TibDaftari · for the clinic team', staffSecure: 'Secure access', showPassword: 'Show password', hidePassword: 'Hide password',
+    staffSecure: 'Secure access', showPassword: 'Show password', hidePassword: 'Hide password',
     login: 'Login', password: 'Password', signIn: 'Sign in', signingIn: 'Checking…', patientTitle: 'Patient portal',
     patientSubtitle: 'We will send a verification code to your phone', phone: 'Phone number', sendCode: 'Send code', codeSent: 'Code sent', enterCode: 'Enter the 4-digit code sent to {{phone}}',
     verify: 'Verify', resend: 'Resend', resendIn: 'Resend ({{s}}s)', changePhone: 'Change number', orContinueWith: 'or', google: 'Continue with Google', apple: 'Continue with Apple', soon: 'soon',

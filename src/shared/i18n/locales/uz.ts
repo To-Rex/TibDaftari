@@ -119,7 +119,8 @@ export const uz = {
   auth: {
     staffTitle: 'Xodimlar uchun kirish',
     staffSubtitle: 'Login va parolingizni kiriting',
-    staffEyebrow: 'Xodimlar ish maydoni',
+    staffFormLabel: 'Xodimlar tizimi',
+    staffFlowLabel: 'Klinika oqimi',
     staffAsideTitle: 'Bir smenada butun klinika oqimi.',
     staffAsideText: 'Qabuldan laboratoriya va vrach tasdig‘igacha har bir qadam bitta tartibli ish maydonida.',
     staffFlowReception: 'Qabul va chek',
@@ -127,7 +128,6 @@ export const uz = {
     staffFlowConfirm: 'Vrach tasdig‘i',
     staffFlowResult: 'Natija va hisobot',
     staffAsideFoot: 'Har bir rol faqat o‘z vakolatini ko‘radi.',
-    staffAsideMeta: 'TibDaftari · klinika jamoasi uchun',
     staffSecure: 'Xavfsiz kirish',
     showPassword: 'Parolni ko‘rsatish',
     hidePassword: 'Parolni yashirish',
