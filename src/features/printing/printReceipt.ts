@@ -4,6 +4,7 @@
  */
 import type { TFunction } from 'i18next'
 import type { ReceiptProps } from '@/features/reception/Receipt'
+import { errorMessage } from '@/shared/lib/errors'
 import { toast } from '@/shared/ui'
 import { api } from '@/data/http/client'
 import { buildReceiptElements } from './receiptElements'
@@ -28,7 +29,10 @@ export async function printReceipt(props: ReceiptProps, t: TFunction, force?: Ex
   const s = loadPrintSettings()
   const mode = force ?? s.mode
   if (templateId) {
-    const blob = await api.get<Blob>(`/orders/${props.order.id}/receipt.pdf`, { blob: true, query: { templateId } })
+    const blob = await api.get<Blob>(`/orders/${props.order.id}/receipt.pdf`, { blob: true, query: { templateId } }).catch((e: unknown) => {
+      toast.error(t('staff.reception.printing.downloadFailed'), errorMessage(e))
+      throw e
+    })
     if (mode === 'browser') { printPdfInBrowser(blob); return 'browser' }
     try {
       await tprintsPrintReceiptPdf(s, toBase64(await blob.arrayBuffer()), `Chek ${props.order.number}`)

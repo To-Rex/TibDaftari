@@ -83,6 +83,8 @@ export function useLabCategories(companyId: Id, employeeId: Id) {
 
 const invalidateItem = (qc: ReturnType<typeof useQueryClient>, itemId: Id) => {
   void qc.invalidateQueries({ queryKey: ['worklist'] })
+  // the status-tab counters are a separate query — invalidate them with the list they count
+  void qc.invalidateQueries({ queryKey: ['worklist-counts'] })
   void qc.invalidateQueries({ queryKey: labKeys.item(itemId) })
   void qc.invalidateQueries({ queryKey: ['shell-badges'] })
   void qc.invalidateQueries({ queryKey: ['order'] })

@@ -27,3 +27,6 @@ dist-ssr
 # local verification screenshots
 .verify-shots
 .verify.tmp.mjs
+
+# graphify knowledge graph (local tool output)
+graphify-out/

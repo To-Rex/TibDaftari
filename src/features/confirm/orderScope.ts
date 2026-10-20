@@ -47,6 +47,7 @@ export function useApproveOrder() {
     mutationFn: (p: { orderId: Id; employeeId: Id; templateId: Id; itemIds?: Id[] }) => repos.orders.approveOrder(p.orderId, p.employeeId, p.templateId, p.itemIds),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['worklist'] })
+      void qc.invalidateQueries({ queryKey: ['worklist-counts'] })
       void qc.invalidateQueries({ queryKey: ['item'] })
       void qc.invalidateQueries({ queryKey: ['order'] })
       void qc.invalidateQueries({ queryKey: ['order-scope-items'] })

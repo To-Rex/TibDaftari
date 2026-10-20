@@ -7,11 +7,26 @@ import { storage } from '@/shared/lib/storage'
 const STAFF_KEY = 'clinic.staff.token'
 const PATIENT_KEY = 'clinic.patient.token'
 const BRANCH_KEY = 'clinic.staff.branch'
+/** stored value for an explicit "all branches" choice (plain null cannot be told apart from "never chosen") */
+const BRANCH_ALL = '__all__'
 /** superadmin only: the company currently being managed (null = own/home company) */
 const COMPANY_KEY = 'clinic.staff.company'
 /** last known sessions — lets the app paint immediately on reload; the API re-validates in the background */
 const STAFF_SESSION_KEY = 'clinic.staff.session'
 const PATIENT_SESSION_KEY = 'clinic.patient.session'
+
+/**
+ * The stored branch choice: `undefined` = never chosen (land on the home branch), `null` = explicitly
+ * "all branches" (admins), a string = that branch. The old stored `null` cannot be distinguished from a
+ * missing choice, so it is treated as "not chosen" — the behaviour before this change.
+ */
+const readBranchChoice = (): string | null | undefined => {
+  const raw = storage.get<string | null | undefined>(BRANCH_KEY, undefined)
+  if (raw === undefined) return undefined
+  if (raw === BRANCH_ALL) return null
+  return raw ?? undefined
+}
+const storeBranchChoice = (id: string | null) => storage.set(BRANCH_KEY, id ?? BRANCH_ALL)
 
 /** Superadmins may work inside any company: overlay the chosen company id on the session. */
 const withActiveCompany = (s: StaffSession | null): StaffSession | null => {
@@ -28,11 +43,12 @@ export const canSwitchBranch = (s: StaffSession): boolean => s.isSuperAdmin || s
  * default); everyone else is pinned to an assigned branch — the stored one when it is theirs, otherwise
  * the primary one. An older API without `branchIds` behaves as before.
  */
-const resolveBranch = (s: StaffSession, stored: string | null): string | null => {
-  if (canSwitchBranch(s)) return stored ?? s.branchId
+const resolveBranch = (s: StaffSession, choice: string | null | undefined): string | null => {
+  // switchers: no choice -> the login branch (first load / new login); null -> the explicit all-branches view
+  if (canSwitchBranch(s)) return choice === undefined ? s.branchId : choice
   const mine = s.branchIds ?? []
-  if (!mine.length) return stored ?? s.branchId
-  return stored && mine.includes(stored) ? stored : (s.branchId ?? mine[0] ?? null)
+  if (!mine.length) return choice ?? s.branchId
+  return choice && mine.includes(choice) ? choice : (s.branchId ?? mine[0] ?? null)
 }
 
 /** Bumped by every login/logout; an in-flight hydrate() must not overwrite a newer session. */
@@ -60,7 +76,7 @@ interface AuthState {
 export const useAuth = create<AuthState>((set, get) => ({
   staff: null,
   patient: null,
-  branchId: storage.get<string | null>(BRANCH_KEY, null),
+  branchId: readBranchChoice() ?? null,
   homeCompanyId: null,
   hydrated: false,
   async hydrate() {
@@ -74,8 +90,8 @@ export const useAuth = create<AuthState>((set, get) => ({
       const home = cachedStaff && cachedStaff.accessToken === st ? cachedStaff : null
       const staff = withActiveCompany(home)
       // read the stored choice afresh — the store may have initialised before the session/branch were written
-      const branchId = staff ? resolveBranch(staff, storage.get<string | null>(BRANCH_KEY, get().branchId)) : null
-      if (staff) storage.set(BRANCH_KEY, branchId) // a pinned employee's stale choice is corrected on disk too
+      const branchId = staff ? resolveBranch(staff, readBranchChoice()) : null
+      if (staff) storeBranchChoice(branchId) // a pinned employee's stale choice is corrected on disk too
       set({ staff, patient: cachedPatient && cachedPatient.accessToken === pt ? cachedPatient : null, branchId, homeCompanyId: home?.companyId ?? null, hydrated: true })
     }
     // 2) authoritative: re-validate with the API (permissions/roles may have changed; token may be revoked)
@@ -91,8 +107,8 @@ export const useAuth = create<AuthState>((set, get) => ({
     if (!home) { storage.remove(STAFF_KEY); storage.remove(STAFF_SESSION_KEY) } else storage.set(STAFF_SESSION_KEY, home)
     if (!patient) { storage.remove(PATIENT_KEY); storage.remove(PATIENT_SESSION_KEY) } else storage.set(PATIENT_SESSION_KEY, patient)
     const staff = withActiveCompany(home)
-    const branchId = staff ? resolveBranch(staff, get().branchId) : null
-    if (staff) storage.set(BRANCH_KEY, branchId)
+    const branchId = staff ? resolveBranch(staff, readBranchChoice()) : null
+    if (staff) storeBranchChoice(branchId)
     set({ staff, patient, branchId, homeCompanyId: home?.companyId ?? null, hydrated: true })
   },
   async staffLogin(login, password) {
@@ -103,8 +119,9 @@ export const useAuth = create<AuthState>((set, get) => ({
     if (prev && prev.accessToken !== s.accessToken) void repos.auth.logout(prev.accessToken).catch(() => undefined)
     storage.set(STAFF_KEY, s.accessToken)
     storage.set(STAFF_SESSION_KEY, s)
-    const branchId = resolveBranch(s, null)
-    storage.set(BRANCH_KEY, branchId)
+    // a fresh login always lands on the home branch (the all-branches view is a session choice)
+    const branchId = resolveBranch(s, undefined)
+    storeBranchChoice(branchId)
     storage.remove(COMPANY_KEY)
     set({ staff: s, branchId, homeCompanyId: s.companyId })
     return s
@@ -119,7 +136,7 @@ export const useAuth = create<AuthState>((set, get) => ({
     const s = get().staff
     // non-admins stay inside their assigned branches (and never widen to "all branches")
     if (s && !canSwitchBranch(s) && (id === null || !(s.branchIds ?? []).includes(id))) return
-    storage.set(BRANCH_KEY, id)
+    storeBranchChoice(id)
     set({ branchId: id })
   },
   setActiveCompany(companyId) {
@@ -129,7 +146,7 @@ export const useAuth = create<AuthState>((set, get) => ({
     const next = companyId && companyId !== home ? companyId : null
     if (next) storage.set(COMPANY_KEY, next)
     else storage.remove(COMPANY_KEY)
-    storage.set(BRANCH_KEY, null)
+    storeBranchChoice(null)
     set({ staff: { ...staff, companyId: next ?? home }, branchId: null })
   },
   async logoutStaff() {

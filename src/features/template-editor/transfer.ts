@@ -6,11 +6,14 @@
  *     saves the template as a DRAFT — nothing existing is overwritten.
  */
 import { z } from 'zod'
-import type { Category, ResultTemplate, ServiceType, TemplateAsset, TemplateDoc } from '@/domain'
+import type { Category, PaperSize, ResultTemplate, ServiceType, TemplateAsset, TemplateDoc } from '@/domain'
 import { repos } from '@/data'
 
 export const TEMPLATE_FILE_FORMAT = 'tibdaftari-template'
 export const TEMPLATE_FILE_VERSION = 1
+
+/** Every paper a template can use — result documents (A4/A5/Letter) and cheques (Receipt80/58). */
+const TEMPLATE_PAPERS = ['A4', 'A5', 'Letter', 'Receipt80', 'Receipt58'] as const satisfies readonly PaperSize[]
 
 const assetSchema = z.object({
   id: z.string(),
@@ -32,7 +35,7 @@ const fileSchema = z.object({
     serviceCodes: z.array(z.string()),
     categoryCodes: z.array(z.string()),
     doc: z.object({
-      paper: z.enum(['A4', 'A5', 'Letter']),
+      paper: z.enum(TEMPLATE_PAPERS),
       orientation: z.enum(['portrait', 'landscape']),
       background: z.string(),
       margin: z.number(),

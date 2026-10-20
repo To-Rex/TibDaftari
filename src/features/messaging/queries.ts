@@ -30,6 +30,7 @@ export function useSendSms(companyId: Id) {
     mutationFn: (input: { to: string[]; text: string; kind: OutboxMessage['kind']; scheduledAt?: string }) => repos.messaging.send(companyId, { ...input, branchId: useAuth.getState().branchId ?? undefined }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['outbox'] })
+      void qc.invalidateQueries({ queryKey: ['outbox-counts'] })
       void qc.invalidateQueries({ queryKey: ['shell-badges'] })
     },
   })

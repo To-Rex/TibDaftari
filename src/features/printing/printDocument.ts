@@ -5,6 +5,7 @@
  */
 import type { TFunction } from 'i18next'
 import { api } from '@/data/http/client'
+import { errorMessage } from '@/shared/lib/errors'
 import { toast } from '@/shared/ui'
 import { loadPrintSettings, tprintsPrintPdf, TPrintsError, type PrintMode } from './tprints'
 
@@ -41,7 +42,11 @@ export async function fetchDocumentPdf(documentId: string): Promise<Blob> {
 export async function printDocument(doc: PrintableDocument, t: TFunction, force?: Exclude<PrintMode, 'auto'>): Promise<'service' | 'browser'> {
   const s = loadPrintSettings()
   const mode = force ?? s.mode
-  const blob = await fetchDocumentPdf(doc.id)
+  // the download is the first thing that can fail (offline, expired permission) — say so instead of a dead button
+  const blob = await fetchDocumentPdf(doc.id).catch((e: unknown) => {
+    toast.error(t('staff.reception.printing.downloadFailed'), errorMessage(e))
+    throw e
+  })
   if (mode === 'browser') {
     printPdfInBrowser(blob)
     markPrinted(doc.id)

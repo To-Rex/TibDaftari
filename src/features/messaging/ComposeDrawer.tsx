@@ -5,15 +5,11 @@ import { AnimatePresence, motion } from 'motion/react'
 import { CalendarClock, Send, Users } from 'lucide-react'
 import { cn } from '@/shared/lib/cn'
 import { errorMessage } from '@/shared/lib/errors'
+import { fmtPhone } from '@/shared/lib/format'
+import { useCompany } from '@/features/org/queries'
 import { Button, Drawer, Field, Input, Switch, Textarea, toast } from '@/shared/ui'
 import { useSendSms } from './queries'
 import { parseRecipients, smsInfo } from './sms'
-
-const QUICK_TEMPLATES = [
-  { key: 'ready', text: 'Hurmatli bemor! Tahlil natijalaringiz tayyor. Portalda ko‘rishingiz mumkin. Shifo Med' },
-  { key: 'reminder', text: 'Eslatma: ertaga soat 09:00 da qabulga yozilgansiz. Iltimos, kechikmang. Shifo Med' },
-  { key: 'promo', text: 'Shu hafta barcha laboratoriya tahlillariga 15% chegirma! Batafsil: +998 62 228-82-81. Shifo Med' },
-]
 
 export function ComposeDrawer({ open, onClose, companyId, canBroadcast }: { open: boolean; onClose: () => void; companyId: string; canBroadcast: boolean }) {
   const { t } = useTranslation()
@@ -22,6 +18,16 @@ export function ComposeDrawer({ open, onClose, companyId, canBroadcast }: { open
   const [schedule, setSchedule] = useState(false)
   const [when, setWhen] = useState('')
   const send = useSendSms(companyId)
+  const company = useCompany(companyId)
+  // the quick texts carry the clinic's own name/phone (from the API), never a demo clinic
+  const brand = company.data?.name?.trim() ?? ''
+  const sign = brand ? ` ${brand}` : ''
+  const contact = company.data?.phone ? ` Batafsil: ${fmtPhone(company.data.phone)}.` : ''
+  const quickTemplates = useMemo(() => [
+    { key: 'ready', text: `Hurmatli bemor! Tahlil natijalaringiz tayyor. Portalda ko‘rishingiz mumkin.${sign}` },
+    { key: 'reminder', text: `Eslatma: ertaga soat 09:00 da qabulga yozilgansiz. Iltimos, kechikmang.${sign}` },
+    { key: 'promo', text: `Shu hafta barcha laboratoriya tahlillariga 15% chegirma!${contact}${sign}` },
+  ], [sign, contact])
 
   const rec = useMemo(() => parseRecipients(to), [to])
   const info = useMemo(() => smsInfo(text), [text])
@@ -60,7 +66,7 @@ export function ComposeDrawer({ open, onClose, companyId, canBroadcast }: { open
         <div>
           <div className="mb-1.5 text-[12.5px] font-medium text-ink-3">{t('clinical.messages.quickTemplates')}</div>
           <div className="flex flex-wrap gap-1.5">
-            {QUICK_TEMPLATES.map((q) => (
+            {quickTemplates.map((q) => (
               <button key={q.key} type="button" onClick={() => setText(q.text)} className={cn('h-7 rounded-full border px-2.5 text-[12.5px] font-medium transition-colors', text === q.text ? 'border-brand/40 bg-brand-soft text-brand-ink' : 'border-line bg-surface text-ink-2 hover:border-line-strong hover:text-ink')}>
                 {t(`clinical.messages.tpl_${q.key}`)}
               </button>
