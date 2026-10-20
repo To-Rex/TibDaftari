@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useShallow } from 'zustand/react/shallow'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowLeft, CheckCircle2, Download, Eye, Keyboard, Link2, MoreHorizontal, Pencil, Printer, Redo2, Save, Undo2 } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Download, Eye, Keyboard, Languages, Link2, MoreHorizontal, Pencil, Printer, Redo2, Save, Undo2 } from 'lucide-react'
 import type { ServiceType } from '@/domain'
 import { cn } from '@/shared/lib/cn'
 import { useMediaQuery } from '@/shared/hooks/useMediaQuery'
@@ -34,9 +34,9 @@ export function PreviewAsSelect({ serviceTypes, className, showLabel = true }: {
  * Top bar. ≥2xl: everything inline. xl–2xl: bindings/print/shortcuts move into an overflow menu.
  * <xl: only back · name · save · overflow (undo/redo live in the tool strip; preview/activate/bindings/print in the menu).
  */
-export function EditorTopBar({ serviceTypes, canWrite, canPublish, saving, onBack, onSave, onActivate, onBindings, onPrint, onExport }: {
+export function EditorTopBar({ serviceTypes, canWrite, canPublish, saving, onBack, onSave, onActivate, onBindings, onLatinize, onPrint, onExport }: {
   serviceTypes: ServiceType[]; canWrite: boolean; canPublish: boolean; saving: boolean
-  onBack: () => void; onSave: () => void; onActivate: () => void; onBindings: () => void; onPrint: () => void; onExport?: () => void
+  onBack: () => void; onSave: () => void; onActivate: () => void; onBindings: () => void; onLatinize: () => void; onPrint: () => void; onExport?: () => void
 }) {
   const { t } = useTranslation()
   const { template, meta, preview, canUndo, canRedo } = useEditorStore(useShallow((s) => ({ template: s.template, meta: s.meta, preview: s.preview, canUndo: s.past.length > 0, canRedo: s.future.length > 0 })))
@@ -54,6 +54,7 @@ export function EditorTopBar({ serviceTypes, canWrite, canPublish, saving, onBac
       ...(canActivate ? [{ key: 'activate', label: t('catalog.templates.activate'), icon: <CheckCircle2 />, onSelect: onActivate }] : []),
     ] : []),
     { key: 'bindings', label: t('catalog.editor.bindings'), icon: <Link2 />, onSelect: onBindings, separatorBefore: !lg },
+    ...(canWrite ? [{ key: 'latinize', label: t('catalog.editor.latinize'), icon: <Languages />, onSelect: onLatinize }] : []),
     { key: 'print', label: t('common.print'), icon: <Printer />, onSelect: onPrint },
     ...(onExport ? [{ key: 'export', label: t('catalog.templates.export'), icon: <Download />, onSelect: onExport }] : []),
     { key: 'shortcuts', label: t('catalog.editor.shortcuts'), icon: <Keyboard />, onSelect: () => setShortcutsOpen(true) },
@@ -82,6 +83,11 @@ export function EditorTopBar({ serviceTypes, canWrite, canPublish, saving, onBac
               <ShortcutsHelp />
               <Tooltip label={t('common.print')} side="bottom"><IconButton label={t('common.print')} size="sm" onClick={onPrint}><Printer /></IconButton></Tooltip>
               <Button size="sm" variant="ghost" leftIcon={<Link2 className="size-4" />} onClick={onBindings}>{t('catalog.editor.bindings')}</Button>
+              {canWrite && (
+                <Tooltip label={t('catalog.editor.latinize')} side="bottom">
+                  <IconButton label={t('catalog.editor.latinize')} size="sm" onClick={onLatinize}><Languages /></IconButton>
+                </Tooltip>
+              )}
             </>
           )}
           <Button size="sm" variant={preview ? 'soft' : 'ghost'} leftIcon={preview ? <Pencil className="size-4" /> : <Eye className="size-4" />} onClick={() => setPreview(!preview)} className={cn(preview && 'ring-1 ring-brand/30')}>{preview ? t('common.edit') : t('common.preview')}</Button>
