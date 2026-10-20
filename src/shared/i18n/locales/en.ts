@@ -24,7 +24,11 @@ export const en: DeepPartial<Dictionary> = {
     smsSettings: 'SMS settings', platform: 'Platform', portalHome: 'Home', portalResults: 'Results', portalVisits: 'Visits', portalProfile: 'Profile', staffApp: 'Staff app',
   },
   auth: {
-    staffTitle: 'Staff sign in', staffSubtitle: 'Enter your login and password', login: 'Login', password: 'Password', signIn: 'Sign in', signingIn: 'Checking…', patientTitle: 'Patient portal',
+    staffTitle: 'Staff sign in', staffSubtitle: 'Enter your login and password', staffEyebrow: 'Staff workspace', staffAsideTitle: 'One clinic flow, one shift.',
+    staffAsideText: 'From reception to the lab and doctor approval — every step in one orderly workspace.', staffFlowReception: 'Reception & order',
+    staffFlowLab: 'Laboratory', staffFlowConfirm: 'Doctor approval', staffFlowResult: 'Result & report', staffAsideFoot: 'Every role sees only its own permissions.',
+    staffAsideMeta: 'TibDaftari · for the clinic team', staffSecure: 'Secure access', showPassword: 'Show password', hidePassword: 'Hide password',
+    login: 'Login', password: 'Password', signIn: 'Sign in', signingIn: 'Checking…', patientTitle: 'Patient portal',
     patientSubtitle: 'We will send a verification code to your phone', phone: 'Phone number', sendCode: 'Send code', codeSent: 'Code sent', enterCode: 'Enter the 4-digit code sent to {{phone}}',
     verify: 'Verify', resend: 'Resend', resendIn: 'Resend ({{s}}s)', changePhone: 'Change number', orContinueWith: 'or', google: 'Continue with Google', apple: 'Continue with Apple', soon: 'soon',
     devHint: 'Demo code: {{code}}', patientHint: 'Enter the phone number registered at the clinic — we will send a one-time code by SMS.', demoAccounts: 'Demo accounts', demoPassword: 'Password: 123456', forStaff: 'Are you staff?', forPatients: 'Are you a patient?', staffLink: 'Staff sign in',
