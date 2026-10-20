@@ -24,15 +24,18 @@ export default function PortalResultPage() {
 
   const company = q.data?.company
   const branch = q.data?.branch
+  const patient = overviewQ.data?.patient
+  const serviceCode = q.data?.serviceCodes[q.data?.item?.serviceTypeId ?? '']
   const ready = !!q.data && overviewQ.isSuccess
 
   const ctx = useMemo(
     () =>
       q.data
         ? buildRenderContext({
-            patient: overviewQ.data?.patient,
+            patient,
             order: q.data.order,
             item: q.data.item,
+            serviceCode,
             company,
             branch,
             category: q.data.category,
@@ -43,7 +46,7 @@ export default function PortalResultPage() {
               : undefined,
           })
         : null,
-    [q.data, overviewQ.data?.patient, company, branch],
+    [q.data, patient, serviceCode, company, branch],
   )
 
   const print = () => window.print()

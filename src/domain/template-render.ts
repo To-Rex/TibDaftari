@@ -13,15 +13,19 @@ export interface RenderItem {
   serviceTypeId: string
   serviceName: string
   status: string
+  statusLabel?: string
   values: ValueMap
   schema: AttributeSchema | null
+  enteredAt?: string
+  submittedAt?: string
   approvedAt?: string
   technician?: string
   doctor?: string
-  /** receipts: formatted prices and the category name */
+  /** formatted prices and the category name (receipts and order tables) */
   price?: string
   finalPrice?: string
   category?: string
+  schemaVersion?: string
 }
 
 export interface RenderContext {
@@ -35,26 +39,70 @@ export interface RenderContext {
     gender?: string
     address?: string
     passportNumber?: string
+    pinfl?: string
+    workplace?: string
+    discountPercent?: string
+    contractNumber?: string
+    note?: string
+    tags?: string
+    region?: string
+    district?: string
+    street?: string
     genderRaw?: 'male' | 'female'
     ageMonths?: number
   }
-  /** money fields are present for receipts (formatted like `305,000`) */
-  order: { number: string; /** dd.MM.yyyy HH:mm */ date: string; /** dd.MM.yyyy */ dateOnly?: string; dateTime?: string; subtotal?: string; discountPercent?: string; discountAmount?: string; total?: string; paidAmount?: string; remaining?: string; itemCount?: string; note?: string; status?: string; /** presence flags for showIf: '1' or '' */ hasDiscount?: string; hasRemaining?: string; hasPayments?: string }
+  /** money fields are formatted like `305,000`; dates are dd.MM.yyyy / dd.MM.yyyy HH:mm */
+  order: {
+    number: string
+    date: string
+    dateOnly?: string
+    dateTime?: string
+    /** HH:mm */
+    time?: string
+    status?: string
+    statusLabel?: string
+    payment?: string
+    paymentLabel?: string
+    subtotal?: string
+    discountPercent?: string
+    discountAmount?: string
+    total?: string
+    paidAmount?: string
+    remaining?: string
+    itemCount?: string
+    note?: string
+    /** presence flags for showIf: '1' or '' */
+    hasDiscount?: string
+    hasRemaining?: string
+    hasPayments?: string
+  }
   cashier?: { name: string }
   /** receipts: one row per (non-refunded) payment */
   payments?: { i: number; date: string; method: string; amount: string; note?: string }[]
   item: {
     serviceName: string
+    serviceCode?: string
+    categoryName?: string
+    status?: string
+    statusLabel?: string
+    price?: string
+    finalPrice?: string
+    enteredAt?: string
+    submittedAt?: string
     approvedAt?: string
     technician?: string
     doctor?: string
     labNote?: string
+    rejectReason?: string
+    schemaVersion?: string
   }
-  company: { name: string; phone?: string; address?: string }
-  branch: { name: string; address?: string; phone?: string | null }
+  company: { name: string; legalName?: string; slug?: string; phone?: string; email?: string; address?: string }
+  branch: { name: string; code?: string; address?: string; phone?: string | null; timezone?: string }
   /** department (category) of the service — its phone is printed in SES letterheads */
-  category: { name: string; phone?: string }
+  category: { name: string; code?: string; phone?: string }
   today: string
+  /** current date + time in the clinic timezone (dd.MM.yyyy HH:mm) */
+  now?: string
   values: ValueMap
   schema: AttributeSchema | null
 }
@@ -173,11 +221,20 @@ export function serviceValue(ctx: RenderContext, path: string): string {
   const it = findItem(ctx, code)
   if (!it) return ''
   switch (key) {
-    case 'name': return it.serviceName
+    case 'name':
+    case 'serviceName': return it.serviceName
+    case 'code': return it.code
     case 'status': return it.status
+    case 'statusLabel': return it.statusLabel ?? ''
+    case 'category': return it.category ?? ''
+    case 'price': return it.price ?? ''
+    case 'finalPrice': return it.finalPrice ?? ''
+    case 'enteredAt': return it.enteredAt ?? ''
+    case 'submittedAt': return it.submittedAt ?? ''
     case 'approvedAt': return it.approvedAt ?? ''
     case 'technician': return it.technician ?? ''
     case 'doctor': return it.doctor ?? ''
+    case 'schemaVersion': return it.schemaVersion ?? ''
     default: {
       const sub: RenderContext = { ...ctx, values: it.values, schema: it.schema }
       return formatValue(sub, key)
@@ -189,11 +246,25 @@ export function serviceValue(ctx: RenderContext, path: string): string {
 export function itemRows(ctx: RenderContext): Record<string, unknown>[] {
   return (ctx.items ?? []).map((it, i) => {
     const sub: RenderContext = { ...ctx, values: it.values, schema: it.schema }
-    const row: Record<string, unknown> = { code: it.code, name: it.serviceName, status: it.status, i: i + 1 }
-    if (it.price != null) row.price = it.price
-    if (it.finalPrice != null) row.finalPrice = it.finalPrice
-    if (it.category != null) row.category = it.category
+    const row: Record<string, unknown> = {}
     for (const f of it.schema?.fields ?? []) if (f.type !== 'table') row[f.key] = formatValue(sub, f.key)
+    // stable dataset columns always win over a schema field with the same key
+    Object.assign(row, {
+      i: i + 1,
+      code: it.code,
+      name: it.serviceName,
+      status: it.status,
+      statusLabel: it.statusLabel ?? '',
+      category: it.category ?? '',
+      price: it.price ?? '',
+      finalPrice: it.finalPrice ?? '',
+      technician: it.technician ?? '',
+      doctor: it.doctor ?? '',
+      enteredAt: it.enteredAt ?? '',
+      submittedAt: it.submittedAt ?? '',
+      approvedAt: it.approvedAt ?? '',
+      schemaVersion: it.schemaVersion ?? '',
+    })
     return row
   })
 }

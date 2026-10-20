@@ -27,6 +27,13 @@ export function PlaceholderPalette({ schema, onInsert, compact, services }: { sc
       group: `${sv.code} · ${sv.name}`,
       items: [
         { key: `svc.${sv.code}.name`, label: t('catalog.editor.ph.svcMeta'), type: undefined as string | undefined },
+        { key: `svc.${sv.code}.statusLabel`, label: t('catalog.editor.ph.svcStatus'), type: undefined as string | undefined },
+        { key: `svc.${sv.code}.category`, label: t('catalog.editor.ph.svcCategory'), type: undefined as string | undefined },
+        { key: `svc.${sv.code}.price`, label: t('catalog.editor.ph.svcPrice'), type: undefined as string | undefined },
+        { key: `svc.${sv.code}.finalPrice`, label: t('catalog.editor.ph.svcFinalPrice'), type: undefined as string | undefined },
+        { key: `svc.${sv.code}.approvedAt`, label: t('catalog.editor.ph.svcApprovedAt'), type: undefined as string | undefined },
+        { key: `svc.${sv.code}.technician`, label: t('catalog.editor.ph.svcTechnician'), type: undefined as string | undefined },
+        { key: `svc.${sv.code}.doctor`, label: t('catalog.editor.ph.svcDoctor'), type: undefined as string | undefined },
         ...(sv.schema?.fields.filter((f) => f.type !== 'table') ?? []).map((f) => ({ key: `svc.${sv.code}.${f.key}`, label: f.label, type: f.type as string | undefined })),
       ],
     }))

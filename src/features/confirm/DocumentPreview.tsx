@@ -9,7 +9,8 @@ import { buildRenderContext } from '@/features/documents/buildContext'
 import { cn } from '@/shared/lib/cn'
 import { EmptyState, Select, Skeleton } from '@/shared/ui'
 import { useBranches, useCompany, useTemplateAssets, useTemplatesFor } from './queries'
-import { useCategories } from '@/features/catalog/queries'
+import { useCategories, useServiceType } from '@/features/catalog/queries'
+import { useDistricts, useRegions } from '@/features/patients/queries'
 
 export function useFitScale<T extends HTMLElement>(paperW: number) {
   const ref = useRef<T>(null)
@@ -48,6 +49,11 @@ export function DocumentPreview({ companyId, item, order, patient, schema, templ
   const branch = branches.data?.find((b) => b.id === item.branchId)
   const categories = useCategories(companyId)
   const category = categories.data?.find((c) => c.id === item.categoryId)
+  const serviceType = useServiceType(item.serviceTypeId)
+  const regions = useRegions()
+  const districts = useDistricts(patient?.address?.regionId, { enabled: !!patient?.address?.regionId })
+  const regionName = regions.data?.find((r) => r.id === patient?.address?.regionId)?.name
+  const districtName = districts.data?.find((d) => d.id === patient?.address?.districtId)?.name
 
   const list = templates.data ?? []
   const template = fixedTemplate ?? list.find((x) => x.id === templateId) ?? list[0]
@@ -59,8 +65,8 @@ export function DocumentPreview({ companyId, item, order, patient, schema, templ
   }, [list, templateId, fixedTemplate])
 
   const ctx = useMemo(
-    () => buildRenderContext({ patient, order, item, company: company.data, branch, category, schema, items }),
-    [patient, order, item, company.data, branch, category, schema, items],
+    () => buildRenderContext({ patient, order, item, serviceCode: serviceType.data?.code ?? undefined, company: company.data, branch, category, schema, items, regionName, districtName }),
+    [patient, order, item, serviceType.data?.code, company.data, branch, category, schema, items, regionName, districtName],
   )
   const size = template ? paperSize(template.doc) : { w: 794, h: 1123 }
   const { ref, scale } = useFitScale<HTMLDivElement>(size.w)

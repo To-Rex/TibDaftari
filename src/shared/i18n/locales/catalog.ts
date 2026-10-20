@@ -294,7 +294,7 @@ const uz = {
     layers: 'Qatlamlar',
     noLayers: 'Elementlar yo‘q — chapdagi panel orqali qo‘shing',
     placeholders: 'Maydonlar',
-    ph: { patient: 'Bemor', order: 'Chek va xizmat', organisation: 'Tashkilot', values: 'Natija maydonlari', services: 'Chekdagi xizmatlar (kod bo‘yicha)', items: 'Xizmatlar jadvali (items)', payments: 'To‘lovlar jadvali (payments)', receipt: 'Chek', svcMeta: 'Xizmat nomi' },
+    ph: { patient: 'Bemor', order: 'Chek', item: 'Xizmat maydonlari', organisation: 'Tashkilot', values: 'Natija maydonlari', services: 'Chekdagi xizmatlar (kod bo‘yicha)', items: 'Xizmatlar jadvali (items)', payments: 'To‘lovlar jadvali (payments)', receipt: 'Chek', svcMeta: 'Xizmat nomi', svcStatus: 'Xizmat holati', svcCategory: 'Yo‘nalish', svcPrice: 'Narxi', svcFinalPrice: 'Yakuniy narx', svcApprovedAt: 'Tasdiqlangan sana', svcTechnician: 'Laborant', svcDoctor: 'Vrach' },
     rowsFromPayments: 'Qatorlar — chekning to‘lovlari (sana, turi, summa)',
     orderScopeHint: 'Chek darajasidagi andoza: {svc.KOD.maydon} — chekdagi har bir xizmatning qiymati; jadval uchun «items» ma’lumot manbai.',
     properties: 'Xususiyatlar',
@@ -542,7 +542,7 @@ const ru: typeof uz = {
   editor: {
     el: { text: 'Текст', field: 'Поле', table: 'Таблица', rect: 'Прямоугольник', ellipse: 'Эллипс', line: 'Линия', image: 'Изображение' },
     undo: 'Отменить', redo: 'Повторить', snap: 'Прилипание', grid: 'Сетка', fit: 'По размеру экрана', layers: 'Слои', noLayers: 'Элементов нет — добавьте через панель слева',
-    placeholders: 'Поля', ph: { patient: 'Пациент', order: 'Чек и услуга', organisation: 'Организация', values: 'Поля результата', services: 'Услуги в чеке (по коду)', items: 'Таблица услуг (items)', payments: 'Таблица платежей (payments)', receipt: 'Чек', svcMeta: 'Название услуги' }, rowsFromPayments: 'Строки — платежи чека (дата, способ, сумма)', orderScopeHint: 'Шаблон уровня чека: {svc.КОД.поле} — значение каждой услуги чека; для таблицы источник «items».', properties: 'Свойства',
+    placeholders: 'Поля', ph: { patient: 'Пациент', order: 'Чек', item: 'Поля услуги', organisation: 'Организация', values: 'Поля результата', services: 'Услуги в чеке (по коду)', items: 'Таблица услуг (items)', payments: 'Таблица платежей (payments)', receipt: 'Чек', svcMeta: 'Название услуги', svcStatus: 'Статус услуги', svcCategory: 'Направление', svcPrice: 'Цена', svcFinalPrice: 'Итоговая цена', svcApprovedAt: 'Дата подтверждения', svcTechnician: 'Лаборант', svcDoctor: 'Врач' }, rowsFromPayments: 'Строки — платежи чека (дата, способ, сумма)', orderScopeHint: 'Шаблон уровня чека: {svc.КОД.поле} — значение каждой услуги чека; для таблицы источник «items».', properties: 'Свойства',
     document: 'Документ', page: 'Страница', paper: 'Бумага', receiptPaper: 'Чек {{mm}} мм', orientation: 'Ориентация', portrait: 'Книжная', landscape: 'Альбомная', margin: 'Поля', background: 'Фон',
     docHint: 'Элемент не выбран. Добавьте элемент слева или щёлкните по элементу на листе. Мультивыбор — Shift.',
     geometry: 'Геометрия', rotation: 'Поворот', name: 'Имя', namePh: 'Имя слоя', state: 'Состояние', locked: 'Заблокирован', hidden: 'Скрыт', duplicate: 'Дублировать',
@@ -672,7 +672,7 @@ const en: typeof uz = {
   editor: {
     el: { text: 'Text', field: 'Field', table: 'Table', rect: 'Rectangle', ellipse: 'Ellipse', line: 'Line', image: 'Image' },
     undo: 'Undo', redo: 'Redo', snap: 'Snap', grid: 'Grid', fit: 'Fit to screen', layers: 'Layers', noLayers: 'No elements — add from the left panel',
-    placeholders: 'Fields', ph: { patient: 'Patient', order: 'Order & service', organisation: 'Organisation', values: 'Result fields', services: 'Services in the order (by code)', items: 'Services table (items)', payments: 'Payments table (payments)', receipt: 'Receipt', svcMeta: 'Service name' }, rowsFromPayments: 'Rows — the cheque\'s payments (date, method, amount)', orderScopeHint: 'Order-level template: {svc.CODE.field} — a value of each service in the order; use the “items” dataset for tables.', properties: 'Properties',
+    placeholders: 'Fields', ph: { patient: 'Patient', order: 'Order', item: 'Service fields', organisation: 'Organisation', values: 'Result fields', services: 'Services in the order (by code)', items: 'Services table (items)', payments: 'Payments table (payments)', receipt: 'Receipt', svcMeta: 'Service name', svcStatus: 'Service status', svcCategory: 'Category', svcPrice: 'Price', svcFinalPrice: 'Final price', svcApprovedAt: 'Approved at', svcTechnician: 'Technician', svcDoctor: 'Doctor' }, rowsFromPayments: 'Rows — the cheque\'s payments (date, method, amount)', orderScopeHint: 'Order-level template: {svc.CODE.field} — a value of each service in the order; use the “items” dataset for tables.', properties: 'Properties',
     document: 'Document', page: 'Page', paper: 'Paper', receiptPaper: 'Receipt {{mm}} mm', orientation: 'Orientation', portrait: 'Portrait', landscape: 'Landscape', margin: 'Margin', background: 'Background',
     docHint: 'Nothing selected. Add an element from the left or click one on the page. Shift for multi-select.',
     geometry: 'Geometry', rotation: 'Rotation', name: 'Name', namePh: 'Layer name', state: 'State', locked: 'Locked', hidden: 'Hidden', duplicate: 'Duplicate',
