@@ -90,10 +90,16 @@ export function TableProps({ el, schema }: { el: TableElement; schema: Attribute
                 <NumInput value={c.width} min={10} onChange={(v) => setCol(i, { width: v })} />
                 <SelectInput value={c.align} onChange={(v) => setCol(i, { align: v })} options={[{ value: 'left', label: '⇤' }, { value: 'center', label: '↔' }, { value: 'right', label: '⇥' }]} />
               </div>
-              <div className="grid grid-cols-[1fr_auto] gap-1 items-center">
-                <TextInput value={c.group ?? ''} onChange={(v) => setCol(i, { group: v || undefined })} placeholder={t('catalog.editor.columnGroup')} />
-                <span className="inline-flex items-center gap-1 text-[11.5px] text-ink-3" title={t('catalog.editor.fillIfSetHint')}>{t('catalog.editor.fillIfSet')}<ColorInput value={c.fillIfSet} onChange={(v) => setCol(i, { fillIfSet: v })} allowNone noneLabel="—" /></span>
+              <TextInput value={c.group ?? ''} onChange={(v) => setCol(i, { group: v || undefined })} placeholder={t('catalog.editor.columnGroup')} className="w-full" />
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-md border border-line/70 bg-surface px-2 py-1.5" data-fill-if-set={c.id}>
+                <Checkbox
+                  checked={!!c.fillIfSet}
+                  onChange={(e) => setCol(i, { fillIfSet: e.target.checked ? (c.fillIfSet ?? '#dcf1ec') : undefined })}
+                  label={<span className="text-[11.5px] font-medium text-ink-2">{t('catalog.editor.fillIfSet')}</span>}
+                />
+                {c.fillIfSet && <ColorInput value={c.fillIfSet} onChange={(v) => setCol(i, { fillIfSet: v })} />}
               </div>
+              <p className="text-[10.5px] leading-snug text-ink-3">{t('catalog.editor.fillIfSetHint')}</p>
               {el.hideEmptyRows && (
                 <Checkbox checked={!!c.valueColumn} onChange={(e) => setCol(i, { valueColumn: e.target.checked || undefined })} label={<span className="text-[12px]">{t('catalog.editor.valueColumn')}</span>} />
               )}

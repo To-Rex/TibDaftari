@@ -267,7 +267,9 @@ function ElementView({ el, z, ctx, raw, ghost, assetUrl, selected, onClick, grow
                 {el.columns.map((c, ci) => {
                   const ghost = raw && !!r[GHOST]
                   const cell = raw && !ghost ? { text: el.fieldKey ? `{${c.bind}}` : String(r[keyOf(c, ci)] ?? ''), abnormal: false } : fmtCell(r, keyOf(c, ci))
-                  return <td key={c.id} style={{ ...cellStyle, display: 'table-cell', border, padding: '3px 6px', height: bodyRowH, textAlign: c.align, color: el.highlightAbnormal && cell.abnormal ? ABN : cellStyle.color, fontWeight: el.highlightAbnormal && cell.abnormal ? 600 : cellStyle.fontWeight, background: c.fillIfSet && (ghost || !raw) && cell.text.trim() ? c.fillIfSet : undefined, opacity: ghost ? 0.55 : undefined, ...nowrap }}>{clampText(cell.text)}</td>
+                  // static cells with plain text show their fill in the editor too (placeholders wait for preview/print)
+                  const staticFill = raw && !el.fieldKey && !/\{[^{}]*\}/.test(cell.text)
+                  return <td key={c.id} style={{ ...cellStyle, display: 'table-cell', border, padding: '3px 6px', height: bodyRowH, textAlign: c.align, color: el.highlightAbnormal && cell.abnormal ? ABN : cellStyle.color, fontWeight: el.highlightAbnormal && cell.abnormal ? 600 : cellStyle.fontWeight, background: c.fillIfSet && (ghost || !raw || staticFill) && cell.text.trim() ? c.fillIfSet : undefined, opacity: ghost ? 0.55 : undefined, ...nowrap }}>{clampText(cell.text)}</td>
                 })}
               </tr>
             ))}
