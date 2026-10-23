@@ -1,7 +1,7 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useShallow } from 'zustand/react/shallow'
-import { ArrowDown, ArrowUp, Eye, EyeOff, Lock, Unlock } from 'lucide-react'
+import { ArrowDown, ArrowUp, Eye, EyeOff, Lock, Trash2, Unlock } from 'lucide-react'
 import type { TemplateElement } from '@/domain'
 import { cn } from '@/shared/lib/cn'
 import { ELEMENT_ICONS, elementLabel } from './elementDefaults'
@@ -28,7 +28,7 @@ export function LayersPanel() {
 
 const LayerRow = memo(function LayerRow({ el, selected, isTop, isBottom }: { el: TemplateElement; selected: boolean; isTop: boolean; isBottom: boolean }) {
   const { t } = useTranslation()
-  const { select, toggleSelect, patchElements, reorder } = useEditorStore.getState()
+  const { select, toggleSelect, patchElements, reorder, removeSelected } = useEditorStore.getState()
   const I = ELEMENT_ICONS[el.type]
   const ib = 'grid size-8 lg:size-6 place-items-center rounded text-ink-3 hover:bg-surface-3 hover:text-ink [&>svg]:size-3.5 disabled:opacity-30'
   return (
@@ -45,6 +45,7 @@ const LayerRow = memo(function LayerRow({ el, selected, isTop, isBottom }: { el:
       <span className={cn('flex items-center', !(el.hidden || el.locked) && 'lg:opacity-0 lg:group-hover:opacity-100')} onClick={(e) => e.stopPropagation()}>
         <button type="button" className={ib} onClick={() => patchElements([el.id], (x) => ({ ...x, hidden: !x.hidden }))} title={t('catalog.editor.hidden')}>{el.hidden ? <EyeOff /> : <Eye />}</button>
         <button type="button" className={ib} onClick={() => patchElements([el.id], (x) => ({ ...x, locked: !x.locked }))} title={t('catalog.editor.locked')}>{el.locked ? <Lock /> : <Unlock />}</button>
+        <button type="button" className={cn(ib, 'hover:text-danger hover:bg-danger-soft')} title={t('common.delete')} onClick={() => { if (!selected) select([el.id]); removeSelected() }}><Trash2 /></button>
       </span>
     </div>
   )
