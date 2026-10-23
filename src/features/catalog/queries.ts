@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { repos } from '@/data'
-import type { AttributeSchema, Category, Id, ResultTemplate, ServiceType } from '@/domain'
+import type { AttributeSchema, Category, Id, ResultTemplate, ServiceType, TemplateAsset } from '@/domain'
 
 export const catalogKeys = {
   categories: (companyId: Id) => ['categories', companyId] as const,
@@ -111,9 +111,14 @@ export function useDeleteTemplate() {
   return useMutation({ mutationFn: (id: Id) => repos.templates.delete(id), onSuccess: () => inv([['templates']]) })
 }
 export function useUploadAsset(companyId: Id) {
-  const inv = useInvalidate()
+  const qc = useQueryClient()
   return useMutation({
     mutationFn: (asset: Parameters<typeof repos.templates.uploadAsset>[1]) => repos.templates.uploadAsset(companyId, asset),
-    onSuccess: () => inv([['templateAssets']]),
+    // Put the new asset into the editor's cache immediately: the image element references it
+    // before the background refetch finishes, otherwise the canvas shows the "image" placeholder.
+    onSuccess: (asset) => {
+      qc.setQueryData<TemplateAsset[]>(catalogKeys.assets(companyId), (old) => [asset, ...(old ?? []).filter((a) => a.id !== asset.id)])
+      void qc.invalidateQueries({ queryKey: catalogKeys.assets(companyId) })
+    },
   })
 }
