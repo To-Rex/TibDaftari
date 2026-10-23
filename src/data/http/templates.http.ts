@@ -52,4 +52,6 @@ export const templatesHttp: TemplateRepository = {
     const body = compact({ kind: asset.kind, name: asset.name, url: asset.url, width: asset.width, height: asset.height, employeeId: asset.employeeId })
     return withAbsoluteUrl(await api.post<TemplateAsset>(`/companies/${companyId}/assets`, body))
   },
+
+  deleteAsset: (companyId, assetId) => api.delete<void>(`/companies/${companyId}/assets/${assetId}`),
 }

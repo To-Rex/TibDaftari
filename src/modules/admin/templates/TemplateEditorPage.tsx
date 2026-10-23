@@ -198,7 +198,7 @@ export default function TemplateEditorPage() {
         )
       })()}
 
-      <AssetPickerModal open={!!assetPick} onClose={() => setAssetPick(null)} assets={assets} companyId={companyId} onPick={pickAsset} />
+      <AssetPickerModal open={!!assetPick} onClose={() => setAssetPick(null)} assets={assets} companyId={companyId} onPick={pickAsset} canDelete={canWrite} />
 
       <Modal open={bindingsOpen} onClose={() => setBindingsOpen(false)} title={t('catalog.editor.bindings')} description={t('catalog.editor.bindingsHint')} size="lg"
         footer={<><Button variant="ghost" onClick={() => setBindingsOpen(false)}>{t('common.cancel')}</Button><Button onClick={() => { if (bindDraft) useEditorStore.getState().setMeta(bindDraft); setBindingsOpen(false) }}>{t('common.done')}</Button></>}>

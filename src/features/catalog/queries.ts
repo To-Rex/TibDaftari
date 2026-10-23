@@ -122,3 +122,13 @@ export function useUploadAsset(companyId: Id) {
     },
   })
 }
+export function useDeleteAsset(companyId: Id) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (assetId: Id) => repos.templates.deleteAsset(companyId, assetId),
+    onSuccess: (_data, assetId) => {
+      qc.setQueryData<TemplateAsset[]>(catalogKeys.assets(companyId), (old) => (old ?? []).filter((a) => a.id !== assetId))
+      void qc.invalidateQueries({ queryKey: catalogKeys.assets(companyId) })
+    },
+  })
+}

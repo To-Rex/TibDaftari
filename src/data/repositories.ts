@@ -181,6 +181,7 @@ export interface TemplateRepository {
   delete(id: Id): Promise<void>
   listAssets(companyId: Id): Promise<TemplateAsset[]>
   uploadAsset(companyId: Id, asset: Omit<TemplateAsset, 'id' | 'companyId'>): Promise<TemplateAsset>
+  deleteAsset(companyId: Id, assetId: Id): Promise<void>
 }
 
 export interface MessagingRepository {

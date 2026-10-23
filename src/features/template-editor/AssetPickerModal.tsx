@@ -1,21 +1,23 @@
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Upload } from 'lucide-react'
+import { Trash2, Upload } from 'lucide-react'
 import type { TemplateAsset } from '@/domain'
 import { cn } from '@/shared/lib/cn'
 import { errorMessage } from '@/shared/lib/errors'
-import { Button, Modal, Select, toast } from '@/shared/ui'
-import { useUploadAsset } from '@/features/catalog/queries'
+import { Button, ConfirmDialog, Modal, Select, toast } from '@/shared/ui'
+import { useDeleteAsset, useUploadAsset } from '@/features/catalog/queries'
 
 const KINDS: TemplateAsset['kind'][] = ['logo', 'stamp', 'signature', 'image']
 const MAX_IMAGE_BYTES = 10_000_000
 
 /** Pick a company asset (logo/stamp/signature/image) or upload a new one (→ data URI). */
-export function AssetPickerModal({ open, onClose, assets, companyId, onPick }: { open: boolean; onClose: () => void; assets: TemplateAsset[]; companyId: string; onPick: (a: TemplateAsset) => void }) {
+export function AssetPickerModal({ open, onClose, assets, companyId, onPick, canDelete }: { open: boolean; onClose: () => void; assets: TemplateAsset[]; companyId: string; onPick: (a: TemplateAsset) => void; canDelete?: boolean }) {
   const { t } = useTranslation()
   const upload = useUploadAsset(companyId)
+  const remove = useDeleteAsset(companyId)
   const fileRef = useRef<HTMLInputElement>(null)
   const [kind, setKind] = useState<TemplateAsset['kind']>('image')
+  const [confirmDelete, setConfirmDelete] = useState<TemplateAsset | null>(null)
 
   const onFile = async (file: File | undefined) => {
     if (!file) return
@@ -47,12 +49,13 @@ export function AssetPickerModal({ open, onClose, assets, companyId, onPick }: {
               <p className="mb-2 text-[12px] font-semibold uppercase tracking-[0.06em] text-ink-3">{t(`catalog.editor.assetKind.${k}`)} · {list.length}</p>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 {list.map((a) => (
-                  <button type="button" key={a.id} onClick={() => onPick(a)} className={cn('group rounded-[var(--radius)] border border-line bg-surface p-2 text-left transition-all hover:border-brand hover:shadow-2 hover:-translate-y-px')}>
+                  <button type="button" key={a.id} onClick={() => onPick(a)} className={cn('group relative rounded-[var(--radius)] border border-line bg-surface p-2 text-left transition-all hover:border-brand hover:shadow-2 hover:-translate-y-px')}>
                     <div className="aspect-square rounded-lg bg-[repeating-conic-gradient(rgb(0_0_0/0.05)_0_25%,transparent_0_50%)] bg-[length:12px_12px] grid place-items-center overflow-hidden">
                       <img src={a.url} alt={a.name} className="max-w-full max-h-full object-contain" />
                     </div>
                     <p className="mt-1.5 truncate text-[12px] font-medium">{a.name}</p>
                     <p className="text-[11px] text-ink-3 tabular">{a.width}×{a.height}</p>
+                    {canDelete && <span role="button" tabIndex={-1} title={t('common.delete')} onClick={(e) => { e.stopPropagation(); setConfirmDelete(a) }} className="absolute right-1 top-1 grid size-6 place-items-center rounded-md bg-bg-elevated/90 text-ink-3 opacity-0 transition-opacity group-hover:opacity-100 hover:!opacity-100 hover:text-danger hover:bg-danger-soft"><Trash2 className="size-3.5" /></span>}
                   </button>
                 ))}
               </div>
@@ -61,6 +64,15 @@ export function AssetPickerModal({ open, onClose, assets, companyId, onPick }: {
         })}
         {assets.length === 0 && <p className="text-[13px] text-ink-3 py-6 text-center">{t('catalog.editor.noAssets')}</p>}
       </div>
+
+      <ConfirmDialog open={!!confirmDelete} onClose={() => setConfirmDelete(null)} loading={remove.isPending} danger
+        title={t('catalog.editor.assetDeleteTitle')} description={t('catalog.editor.assetDeleteHint', { name: confirmDelete?.name ?? '' })}
+        confirmText={t('common.delete')} cancelText={t('common.cancel')}
+        onConfirm={async () => {
+          if (!confirmDelete) return
+          try { await remove.mutateAsync(confirmDelete.id); toast.success(t('catalog.editor.assetDeleted')) } catch (e) { toast.error(errorMessage(e)) }
+          setConfirmDelete(null)
+        }} />
     </Modal>
   )
 }

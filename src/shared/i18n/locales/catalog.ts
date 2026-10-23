@@ -438,6 +438,9 @@ const uz = {
     uploaded: 'Rasm yuklandi',
     fileTooBig: 'Fayl juda katta (maks. 10 MB)',
     noAssets: 'Rasmlar yo‘q — birinchisini yuklang',
+    assetDeleteTitle: 'Rasmni o‘chirish',
+    assetDeleteHint: '«{{name}}» rasm o‘chirilsinmi? U ishlatilgan andozalarda bo‘sh (placeholder) qoladi.',
+    assetDeleted: 'Rasm o‘chirildi',
     draftTitle: 'Saqlanmagan qoralama topildi',
     draftHint: 'Oxirgi seansdagi saqlanmagan o‘zgarishlar mavjud. Tiklansinmi?',
     draftRestore: 'Tiklash',
@@ -571,7 +574,7 @@ const ru: typeof uz = {
     },
     assetPicker: 'Выбор изображения', assetPickerHint: 'Логотип, печать, подпись или другое изображение. Можно загрузить файл (≤10 МБ).',
     assetKind: { logo: 'Логотип', stamp: 'Печать', signature: 'Подпись', image: 'Изображение' }, upload: 'Загрузить', uploaded: 'Изображение загружено', fileTooBig: 'Файл слишком большой (макс. 10 МБ)',
-    noAssets: 'Изображений нет — загрузите первое', draftTitle: 'Найден несохранённый черновик', draftHint: 'Есть несохранённые изменения из прошлой сессии. Восстановить?', draftRestore: 'Восстановить', draftDiscard: 'Не нужно',
+    noAssets: 'Изображений нет — загрузите первое', assetDeleteTitle: 'Удалить изображение', assetDeleteHint: 'Удалить «{{name}}»? В шаблонах, где оно используется, останется пустое место.', assetDeleted: 'Изображение удалено', draftTitle: 'Найден несохранённый черновик', draftHint: 'Есть несохранённые изменения из прошлой сессии. Восстановить?', draftRestore: 'Восстановить', draftDiscard: 'Не нужно',
   },
 }
 
@@ -701,7 +704,7 @@ rows: 'Rows', addRow: 'Add row', insertRowBelow: 'Insert row below', duplicateRo
     },
     assetPicker: 'Choose image', assetPickerHint: 'Logo, stamp, signature or any image. You can upload a new file (≤10 MB).',
     assetKind: { logo: 'Logo', stamp: 'Stamp', signature: 'Signature', image: 'Image' }, upload: 'Upload', uploaded: 'Image uploaded', fileTooBig: 'File is too large (max 10 MB)',
-    noAssets: 'No images yet — upload the first one', draftTitle: 'Unsaved draft found', draftHint: 'There are unsaved changes from your last session. Restore them?', draftRestore: 'Restore', draftDiscard: 'Discard',
+    noAssets: 'No images yet — upload the first one', assetDeleteTitle: 'Delete image', assetDeleteHint: 'Delete “{{name}}”? Templates using it will show an empty placeholder.', assetDeleted: 'Image deleted', draftTitle: 'Unsaved draft found', draftHint: 'There are unsaved changes from your last session. Restore them?', draftRestore: 'Restore', draftDiscard: 'Discard',
   },
 }
 
