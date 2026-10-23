@@ -36,12 +36,13 @@ export default function TemplateEditorPage() {
   const { t } = useTranslation()
   const nav = useNavigate()
   const { templateId } = useParams()
-  const { companyId } = useStaffSession()
+  const { companyId: sessionCompanyId } = useStaffSession()
   const { can } = usePermissions()
   const canWrite = can('admin.template.write')
   const canPublish = can('admin.template.publish')
 
   const tplQ = useTemplate(templateId)
+  const companyId = tplQ.data?.companyId ?? sessionCompanyId
   // a cheque template goes back to /admin/receipts, a result document to /admin/templates
   const { pathname } = useLocation()
   const backTo = templateListRoute(tplQ.data ? templateKind(tplQ.data) : pathname.startsWith(routes.admin.receipts) ? 'receipt' : 'result')
