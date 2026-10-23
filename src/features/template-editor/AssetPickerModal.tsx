@@ -8,6 +8,7 @@ import { Button, Modal, Select, toast } from '@/shared/ui'
 import { useUploadAsset } from '@/features/catalog/queries'
 
 const KINDS: TemplateAsset['kind'][] = ['logo', 'stamp', 'signature', 'image']
+const MAX_IMAGE_BYTES = 10_000_000
 
 /** Pick a company asset (logo/stamp/signature/image) or upload a new one (→ data URI). */
 export function AssetPickerModal({ open, onClose, assets, companyId, onPick }: { open: boolean; onClose: () => void; assets: TemplateAsset[]; companyId: string; onPick: (a: TemplateAsset) => void }) {
@@ -18,7 +19,7 @@ export function AssetPickerModal({ open, onClose, assets, companyId, onPick }: {
 
   const onFile = async (file: File | undefined) => {
     if (!file) return
-    if (file.size > 1_500_000) { toast.error(t('catalog.editor.fileTooBig')); return }
+    if (file.size > MAX_IMAGE_BYTES) { toast.error(t('catalog.editor.fileTooBig')); return }
     const url = await new Promise<string>((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result)); r.onerror = rej; r.readAsDataURL(file) })
     const dims = await new Promise<{ w: number; h: number }>((res) => { const img = new Image(); img.onload = () => res({ w: img.naturalWidth, h: img.naturalHeight }); img.onerror = () => res({ w: 200, h: 200 }); img.src = url })
     try {
