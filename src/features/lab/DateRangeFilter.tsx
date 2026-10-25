@@ -11,11 +11,13 @@ export interface RangeState { preset: RangePreset; range: DateRange }
 
 export const initialRange = (preset: DatePreset = 'today'): RangeState => ({ preset, range: presetRange(preset) })
 
-export function DateRangeFilter({ value, onChange, presets = ['today', 'yesterday', 'last7', 'last30', 'thisMonth'], allowCustom, size = 'md', className }: {
+export function DateRangeFilter({ value, onChange, presets = ['today', 'yesterday', 'last7', 'last30', 'thisMonth'], allowCustom, min, size = 'md', className }: {
   value: RangeState
   onChange: (v: RangeState) => void
   presets?: DatePreset[]
   allowCustom?: boolean
+  /** the earliest selectable date (e.g. revenue visible for the last 7 days only) */
+  min?: string
   size?: 'sm' | 'md'
   className?: string
 }) {
@@ -36,9 +38,9 @@ export function DateRangeFilter({ value, onChange, presets = ['today', 'yesterda
       <AnimatePresence initial={false}>
         {value.preset === 'custom' && (
           <motion.div initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -6 }} transition={{ duration: 0.18 }} className="flex min-w-0 max-w-full flex-wrap items-center gap-1.5">
-            <Input type="date" value={value.range.from} max={value.range.to} onChange={(e) => onChange({ preset: 'custom', range: { ...value.range, from: e.target.value } })} className="h-8 w-[150px] max-w-full px-2 text-[13px] tabular" />
+            <Input type="date" value={value.range.from} min={min} max={value.range.to} onChange={(e) => onChange({ preset: 'custom', range: { ...value.range, from: e.target.value } })} className="h-8 w-[150px] max-w-full px-2 text-[13px] tabular" />
             <span className="text-ink-3">–</span>
-            <Input type="date" value={value.range.to} min={value.range.from} onChange={(e) => onChange({ preset: 'custom', range: { ...value.range, to: e.target.value } })} className="h-8 w-[150px] max-w-full px-2 text-[13px] tabular" />
+            <Input type="date" value={value.range.to} min={min && min > value.range.from ? min : value.range.from} onChange={(e) => onChange({ preset: 'custom', range: { ...value.range, to: e.target.value } })} className="h-8 w-[150px] max-w-full px-2 text-[13px] tabular" />
           </motion.div>
         )}
       </AnimatePresence>

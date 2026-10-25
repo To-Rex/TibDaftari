@@ -6,6 +6,7 @@ import { Download, Receipt, Wallet, FlaskConical, BadgeCheck, Users } from 'luci
 import { useStaffSession } from '@/features/session/useSession'
 import { usePermissions } from '@/features/auth/store'
 import { DateRangeFilter, initialRange, type RangeState } from '@/features/lab/DateRangeFilter'
+import { presetRange } from '@/shared/lib/dates'
 import { BreakdownTable } from '@/features/reports/BreakdownTable'
 import { PatientsReport } from '@/features/reports/PatientsReport'
 import { ResultsReport } from '@/features/reports/ResultsReport'
@@ -24,11 +25,16 @@ export default function ReportsPage() {
   const { t } = useTranslation()
   const { companyId, branchId } = useStaffSession()
   const { can } = usePermissions()
-  const finance = can('reports.finance.read')
+  const financeFull = can('reports.finance.read')
+  const financeRecent = can('reports.finance.recent')
+  const finance = financeFull || financeRecent
+  // the registrar desk sees revenue, but only the last 7 days
+  const recentOnly = financeRecent && !financeFull
+  const minDate = recentOnly ? presetRange('last7').from : undefined
   const [params, setParams] = useSearchParams()
   const section: Section = (SECTIONS as readonly string[]).includes(params.get('tab') ?? '') ? (params.get('tab') as Section) : 'overview'
   const setSection = (s: Section) => setParams((p) => { const n = new URLSearchParams(p); if (s === 'overview') n.delete('tab'); else n.set('tab', s); return n }, { replace: true })
-  const [range, setRange] = useState<RangeState>(() => initialRange('last30'))
+  const [range, setRange] = useState<RangeState>(() => initialRange(recentOnly ? 'last7' : 'last30'))
   const [by, setBy] = useState<BreakdownBy>('category')
   const [metric, setMetric] = useState<'revenue' | 'count'>(finance ? 'revenue' : 'count')
   const [trendMetric, setTrendMetric] = useState<'revenue' | 'orders'>(finance ? 'revenue' : 'orders')
@@ -66,11 +72,11 @@ export default function ReportsPage() {
         actions={section === 'overview' && can('reports.export') && <Button variant="secondary" leftIcon={<Download className="size-4" />} onClick={exportCsv}>{t('clinical.reports.export')}</Button>}
       />
       <Tabs<Section> className="mb-4" value={section} onChange={setSection} items={SECTIONS.map((s) => ({ value: s, label: t(`clinical.reports.sections.${s}`) }))} />
-      <div className="mb-5"><DateRangeFilter value={range} onChange={setRange} allowCustom /></div>
+      <div className="mb-5"><DateRangeFilter value={range} onChange={setRange} allowCustom presets={recentOnly ? ['today', 'last7'] : undefined} min={minDate} /></div>
 
-      {section === 'patients' && <PatientsReport companyId={companyId} range={q} finance={finance} canExport={can('reports.export')} />}
+      {section === 'patients' && <PatientsReport companyId={companyId} range={q} finance={financeFull} canExport={can('reports.export')} />}
       {section === 'results' && <ResultsReport companyId={companyId} range={q} canExport={can('reports.export')} />}
-      {section === 'services' && <ServicesReport companyId={companyId} range={q} finance={finance} canExport={can('reports.export')} />}
+      {section === 'services' && <ServicesReport companyId={companyId} range={q} finance={financeFull} canExport={can('reports.export')} />}
 
       {section === 'overview' && (<>
 

@@ -23,6 +23,8 @@ export const PERMISSIONS = [
   'confirm.result.resend',
   // Reports
   'reports.finance.read',
+  /** revenue for the last 7 days only (the registrar desk) */
+  'reports.finance.recent',
   'reports.operations.read',
   'reports.export',
   // Messaging

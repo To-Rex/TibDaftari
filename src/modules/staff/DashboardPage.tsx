@@ -8,6 +8,7 @@ import { Card, CardHeader, Page, PageHeader, Segmented, Skeleton, Stat, fadeUp, 
 import { fmtDate, fmtMoney, fmtNumber } from '@/shared/lib/format'
 import { presetRange, type DatePreset } from '@/shared/lib/dates'
 import { useStaffSession } from '@/features/session/useSession'
+import { usePermissions } from '@/features/auth/store'
 import { TrendChart } from '@/features/dashboard/TrendChart'
 import { CategoryBars } from '@/features/dashboard/CategoryBars'
 import { QuickActions } from '@/features/dashboard/QuickActions'
@@ -18,6 +19,9 @@ type Metric = 'revenue' | 'orders'
 export default function DashboardPage() {
   const { t } = useTranslation()
   const { staff, companyId, branchId } = useStaffSession()
+  const { can } = usePermissions()
+  // the registrar desk sees revenue, but only the last 7 days
+  const recentOnly = !can('reports.finance.read') && can('reports.finance.recent')
   const [preset, setPreset] = useState<Preset>('last7')
   const [metric, setMetric] = useState<Metric>('revenue')
   const range = useMemo(() => presetRange(preset), [preset])
@@ -50,7 +54,7 @@ export default function DashboardPage() {
         eyebrow={fmtDate(new Date().toISOString(), 'EEEE, d MMMM')}
         title={<span className="break-words">{`${greet}, ${firstName}`}</span>}
         description={t('staff.dashboard.subtitle', { role: staff.roleKey })}
-        actions={<Segmented<Preset> value={preset} onChange={setPreset} className="max-w-full overflow-x-auto no-scrollbar" items={[{ value: 'today', label: t('common.today') }, { value: 'last7', label: t('common.last7') }, { value: 'last30', label: t('common.last30') }]} />}
+        actions={<Segmented<Preset> value={preset} onChange={setPreset} className="max-w-full overflow-x-auto no-scrollbar" items={(recentOnly ? [{ value: 'today', label: t('common.today') }, { value: 'last7', label: t('common.last7') }] : [{ value: 'today', label: t('common.today') }, { value: 'last7', label: t('common.last7') }, { value: 'last30', label: t('common.last30') }]) as { value: Preset; label: string }[]} />}
       />
 
       <motion.div variants={stagger} initial="hidden" animate="show" className="grid gap-3 grid-cols-[repeat(auto-fit,minmax(min(100%,165px),1fr))] 3xl:gap-4">
