@@ -33,4 +33,10 @@ export const reportsHttp: ReportRepository = {
 
   services: (companyId, q) =>
     api.get<ServicesReport>(`/companies/${companyId}/reports/services`, { query: { branchId: q.branchId, dateFrom: q.dateFrom, dateTo: q.dateTo } }),
+
+  exportXlsx: (companyId, q) =>
+    api.get<Blob>(`/companies/${companyId}/reports/export.xlsx`, {
+      query: { branchId: q.branchId, dateFrom: q.dateFrom, dateTo: q.dateTo, lang: q.lang },
+      blob: true,
+    }),
 }

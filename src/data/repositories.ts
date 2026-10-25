@@ -204,6 +204,8 @@ export interface ReportRepository {
   resultList(companyId: Id, q: ReportRange & { status: ResultListStatus; page: number; pageSize: number; search?: string }): Promise<Page<ResultRow>>
   /** Service usage vs the previous period; active services nobody ordered. */
   services(companyId: Id, q: ReportRange): Promise<ServicesReport>
+  /** The period as an Excel workbook: patients × analyses, labs and the other cuts. */
+  exportXlsx(companyId: Id, q: ReportRange & { lang?: string }): Promise<Blob>
 }
 
 /** Inclusive calendar days (`YYYY-MM-DD`, clinic timezone) + optional branch. */

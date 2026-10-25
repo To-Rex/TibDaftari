@@ -2,11 +2,13 @@
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Download, Receipt, Wallet, FlaskConical, BadgeCheck, Users } from 'lucide-react'
+import { Download, FileSpreadsheet, Receipt, Wallet, FlaskConical, BadgeCheck, Users } from 'lucide-react'
+import { repos } from '@/data'
 import { useStaffSession } from '@/features/session/useSession'
 import { usePermissions } from '@/features/auth/store'
 import { DateRangeFilter, initialRange, type RangeState } from '@/features/lab/DateRangeFilter'
 import { presetRange } from '@/shared/lib/dates'
+import { errorMessage } from '@/shared/lib/errors'
 import { BreakdownTable } from '@/features/reports/BreakdownTable'
 import { PatientsReport } from '@/features/reports/PatientsReport'
 import { ResultsReport } from '@/features/reports/ResultsReport'
@@ -22,7 +24,7 @@ const SECTIONS = ['overview', 'patients', 'results', 'services'] as const
 type Section = (typeof SECTIONS)[number]
 
 export default function ReportsPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { companyId, branchId } = useStaffSession()
   const { can } = usePermissions()
   const financeFull = can('reports.finance.read')
@@ -60,6 +62,22 @@ export default function ReportsPage() {
     toast.success(t('clinical.reports.exported'))
   }
 
+  const [exporting, setExporting] = useState(false)
+  const exportExcel = async () => {
+    setExporting(true)
+    try {
+      const lang = (['uz', 'ru', 'en'] as const).find((l) => i18n.language?.startsWith(l)) ?? 'uz'
+      const blob = await repos.reports.exportXlsx(companyId, { ...q, lang })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `hisobot-${range.range.from}${range.range.to !== range.range.from ? `_${range.range.to}` : ''}.xlsx`
+      document.body.appendChild(a); a.click(); a.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 5000)
+      toast.success(t('clinical.reports.excelExported'))
+    } catch (e) { toast.error(errorMessage(e)) } finally { setExporting(false) }
+  }
+
   const stat = (label: string, value: string | undefined, icon: React.ReactNode, tone: 'brand' | 'ok' | 'warn' | 'info' | 'neutral' = 'neutral', sub?: string) => (
     <Stat label={label} value={value ?? <Skeleton className="h-7 w-24" />} icon={icon} tone={tone} sub={sub} />
   )
@@ -69,7 +87,12 @@ export default function ReportsPage() {
       <PageHeader
         title={t('clinical.reports.title')}
         description={t('clinical.reports.subtitle')}
-        actions={section === 'overview' && can('reports.export') && <Button variant="secondary" leftIcon={<Download className="size-4" />} onClick={exportCsv}>{t('clinical.reports.export')}</Button>}
+        actions={can('reports.export') && (
+          <div className="flex flex-wrap items-center gap-2">
+            {section === 'overview' && <Button variant="secondary" leftIcon={<Download className="size-4" />} onClick={exportCsv}>{t('clinical.reports.export')}</Button>}
+            <Button variant="secondary" leftIcon={<FileSpreadsheet className="size-4" />} loading={exporting} onClick={() => void exportExcel()}>{t('clinical.reports.exportExcel')}</Button>
+          </div>
+        )}
       />
       <Tabs<Section> className="mb-4" value={section} onChange={setSection} items={SECTIONS.map((s) => ({ value: s, label: t(`clinical.reports.sections.${s}`) }))} />
       <div className="mb-5"><DateRangeFilter value={range} onChange={setRange} allowCustom presets={recentOnly ? ['today', 'last7'] : undefined} min={minDate} /></div>
