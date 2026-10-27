@@ -38,6 +38,32 @@ export function textStyleToCss(s: TextStyle): CSSProperties {
 
 const ABN = '#c2413f'
 
+/** Generates the QR PNG for a `qr` element (async, on value change; the editor shows a placeholder). */
+const QrImage = memo(function QrImage({ value, dark, light }: { value: string; dark?: string; light?: string }) {
+  const [url, setUrl] = useState<string | null>(null)
+  useEffect(() => {
+    let alive = true
+    if (!value) {
+      setUrl(null)
+      return
+    }
+    setUrl(null)
+    void import('qrcode')
+      .then((QRCode) => QRCode.toDataURL(value, { errorCorrectionLevel: 'M', margin: 1, color: { dark: dark ?? '#14201d', light: light ?? '#ffffff' } }))
+      .then((u) => {
+        if (alive) setUrl(u)
+      })
+      .catch(() => {})
+    return () => {
+      alive = false
+    }
+  }, [value, dark, light])
+  if (!url) {
+    return <div style={{ width: '100%', height: '100%', border: '1px dashed #999', display: 'grid', placeItems: 'center', fontSize: 10, color: '#999' }}>qr</div>
+  }
+  return <img src={url} alt="QR" draggable={false} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+})
+
 export interface DocumentRendererProps {
   doc: TemplateDoc
   ctx: RenderContext
@@ -192,6 +218,10 @@ function ElementView({ el, z, ctx, raw, ghost, assetUrl, selected, onClick, grow
     case 'image': {
       const src = el.src ?? assetUrl(el.assetId)
       return wrap(src ? <img src={src} alt="" draggable={false} style={{ width: '100%', height: '100%', objectFit: el.fit, display: 'block' }} /> : <div style={{ width: '100%', height: '100%', border: '1px dashed #999', display: 'grid', placeItems: 'center', fontSize: 10, color: '#999' }}>image</div>)
+    }
+    case 'qr': {
+      const value = raw ? '' : interpolate(el.value ?? '{doc.link}', ctx, row)
+      return wrap(<QrImage value={value} dark={el.dark} light={el.light} />)
     }
     case 'table': {
       const def = fieldDef(ctx.schema, el.fieldKey)

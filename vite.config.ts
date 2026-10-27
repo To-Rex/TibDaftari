@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => {
       'react', 'react-dom', 'react-dom/client', 'react-router-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime',
       '@tanstack/react-query', '@tanstack/react-table', '@tanstack/react-virtual', 'zustand',
       'react-hook-form', 'zod', '@hookform/resolvers/zod', 'i18next', 'react-i18next', 'i18next-browser-languagedetector',
-      'motion/react', 'lucide-react', 'clsx', 'tailwind-merge', 'date-fns', 'date-fns/locale',
+      'motion/react', 'lucide-react', 'clsx', 'tailwind-merge', 'date-fns', 'date-fns/locale', 'qrcode',
     ],
   },
   build: {

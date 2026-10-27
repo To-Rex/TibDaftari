@@ -39,7 +39,7 @@ export interface ElementBase {
   showIf?: string
 }
 
-export type ElementType = 'text' | 'rect' | 'line' | 'image' | 'ellipse' | 'table' | 'field'
+export type ElementType = 'text' | 'rect' | 'line' | 'image' | 'ellipse' | 'table' | 'field' | 'qr'
 
 export interface TextStyle {
   fontFamily: 'sans' | 'serif' | 'mono'
@@ -95,6 +95,17 @@ export interface ImageElement extends ElementBase {
   assetId?: string
   src?: string
   fit: 'contain' | 'cover' | 'fill'
+}
+
+/** QR code proving the document's authenticity — encodes the expression `value` (default `{doc.link}`). */
+export interface QrElement extends ElementBase {
+  type: 'qr'
+  /** template expression; the QR encodes its interpolated result. Empty → the element is skipped. */
+  value?: string
+  /** module colour (default the ink colour) */
+  dark?: string
+  /** background colour (default white) */
+  light?: string
 }
 
 export interface TableColumn {
@@ -176,6 +187,7 @@ export type TemplateElement =
   | LineElement
   | ImageElement
   | TableElement
+  | QrElement
 
 export interface TemplateDoc {
   paper: PaperSize
@@ -331,6 +343,12 @@ export const STANDARD_PLACEHOLDERS: { group: string; items: { key: string; label
       { key: 'category.phone', label: 'Bo‘lim telefoni' },
       { key: 'today', label: 'Bugungi sana' },
       { key: 'now', label: 'Hozirgi sana va vaqt' },
+    ],
+  },
+  {
+    group: 'doc',
+    items: [
+      { key: 'doc.link', label: 'Hujjat tekshiruv havolasi (QR)' },
     ],
   },
 ]

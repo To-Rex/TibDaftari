@@ -44,6 +44,8 @@ export default function PortalResultPage() {
             items: q.data.template.scope === 'order'
               ? q.data.items.map((item) => ({ item, schema: q.data!.schemas.find((s) => s.id === item.schemaId) ?? null, code: q.data!.serviceCodes[item.serviceTypeId] ?? item.serviceTypeId }))
               : undefined,
+            // the QR authenticity element encodes the same public link the printed document carries
+            docLink: q.data.document.publicToken ? `${window.location.origin}/d/${q.data.document.publicToken}` : undefined,
           })
         : null,
     [q.data, patient, serviceCode, company, branch],

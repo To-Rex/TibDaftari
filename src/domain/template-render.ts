@@ -100,6 +100,8 @@ export interface RenderContext {
   branch: { name: string; code?: string; address?: string; phone?: string | null; timezone?: string }
   /** department (category) of the service — its phone is printed in SES letterheads */
   category: { name: string; code?: string; phone?: string }
+  /** the issued document's public verification link — the QR element encodes it */
+  doc?: { link: string }
   today: string
   /** current date + time in the clinic timezone (dd.MM.yyyy HH:mm) */
   now?: string

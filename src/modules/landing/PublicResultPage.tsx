@@ -1,23 +1,28 @@
 /**
- * /d/:token — the link a patient gets in the "result ready" SMS / Telegram message. The first open shows the
- * PDF directly (the unguessable token is the key). Later opens are protected: the patient confirms an SMS code
- * sent to the phone on the document and gets the PDF back in the same request.
+ * /d/:token — the public verification link a result carries (its QR code and the SMS / Telegram link).
+ * Anyone who scans it sees the authenticity card (what was issued, by which clinic, when). The PDF
+ * itself is always protected: an SMS code is sent to the phone the document belongs to, and the PDF
+ * comes back in the same verify request.
  */
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { motion } from 'motion/react'
-import { Download, ExternalLink, FileText, FileX2, Loader2, ShieldCheck } from 'lucide-react'
+import { BadgeCheck, Download, ExternalLink, FileText, FileX2, Loader2, ShieldCheck } from 'lucide-react'
 import { API_BASE } from '@/data/http/client'
 import { routes } from '@/shared/config/routes'
 import { cn } from '@/shared/lib/cn'
+import { fmtDate } from '@/shared/lib/format'
 import { LanguageSwitcher, Logo, ThemeToggle } from '@/shared/ui'
+
+type Info = { id: string; title: string; companyName: string; issuedAt: string }
 
 type State =
   | { status: 'loading' }
-  | { status: 'otp'; phoneMasked: string }
+  | { status: 'verify'; info: Info }
+  | { status: 'otp'; info: Info; phoneMasked: string }
   | { status: 'ready'; blobUrl: string; filename: string }
-  | { status: 'error'; notFound: boolean; revoked?: boolean; alreadyViewed?: boolean; message?: string }
+  | { status: 'error'; notFound: boolean; revoked?: boolean; message?: string }
 
 type Otp = {
   challengeId: string
@@ -45,21 +50,6 @@ const readApiError = async (response: Response): Promise<ApiError> => {
 const pdfFilename = (response: Response) =>
   /filename="([^"]+)"/.exec(response.headers.get('content-disposition') ?? '')?.[1] ?? 'natija.pdf'
 
-const cachedOtp = (token: string): Otp | null => {
-  try {
-    const raw = sessionStorage.getItem(OTP_CACHE + token)
-    if (!raw) return null
-    const parsed = JSON.parse(raw) as Otp
-    if (!parsed?.challengeId || !parsed?.expiresAt || parsed.expiresAt < Date.now()) {
-      sessionStorage.removeItem(OTP_CACHE + token)
-      return null
-    }
-    return parsed
-  } catch {
-    return null
-  }
-}
-
 const rememberOtp = (token: string, otp: Otp) => {
   try {
     sessionStorage.setItem(OTP_CACHE + token, JSON.stringify(otp))
@@ -79,9 +69,9 @@ const forgetOtp = (token: string) => {
 export default function PublicResultPage() {
   const { t } = useTranslation()
   const { token = '' } = useParams()
-  const pdfUrl = `${API_BASE}/d/${encodeURIComponent(token)}`
-  const otpRequestUrl = `${pdfUrl}/otp/request`
-  const otpVerifyUrl = `${pdfUrl}/otp/verify`
+  const infoUrl = `${API_BASE}/d/${encodeURIComponent(token)}`
+  const otpRequestUrl = `${infoUrl}/otp/request`
+  const otpVerifyUrl = `${infoUrl}/otp/verify`
 
   const [state, setState] = useState<State>({ status: 'loading' })
   const [otp, setOtp] = useState<Otp | null>(null)
@@ -92,8 +82,8 @@ export default function PublicResultPage() {
   const [cooldown, setCooldown] = useState(0)
   const loadedFor = useRef<string | null>(null)
 
-  async function requestOtp(fallbackPhone = '') {
-    setState({ status: 'otp', phoneMasked: fallbackPhone })
+  async function requestOtp(info: Info) {
+    setState({ status: 'otp', info, phoneMasked: '' })
     setSending(true)
     setOtpError(null)
     try {
@@ -117,7 +107,7 @@ export default function PublicResultPage() {
         expiresAt: Date.now() + (Number(data.expiresIn) || 300) * 1000,
       }
       setOtp(next)
-      setState({ status: 'otp', phoneMasked: next.phoneMasked })
+      setState({ status: 'otp', info, phoneMasked: next.phoneMasked })
       setCode('')
       setCooldown(next.resendIn)
       rememberOtp(token, next)
@@ -133,42 +123,30 @@ export default function PublicResultPage() {
     loadedFor.current = token
     const load = async () => {
       try {
-        const response = await fetch(pdfUrl, { cache: 'no-store' })
-        if (response.ok) {
-          const blob = await response.blob()
-          setState({ status: 'ready', blobUrl: URL.createObjectURL(blob), filename: pdfFilename(response) })
-          forgetOtp(token)
-          return
-        }
-        const error = await readApiError(response)
-        if (response.status === 401 && error.code === 'otp_required') {
-          const cached = cachedOtp(token)
-          if (cached) {
-            setOtp(cached)
-            setCooldown(cached.resendIn)
-            setState({ status: 'otp', phoneMasked: cached.phoneMasked })
+        const response = await fetch(infoUrl, { cache: 'no-store' })
+        if (!response.ok) {
+          const error = await readApiError(response)
+          if (response.status === 410 && error.code === 'revoked') {
+            setState({ status: 'error', notFound: false, revoked: true })
             return
           }
-          await requestOtp(error.details?.phone || '')
+          if (response.status === 404) {
+            setState({ status: 'error', notFound: true })
+            return
+          }
+          setState({ status: 'error', notFound: false, message: error.message })
           return
         }
-        if (response.status === 410 && error.code === 'already_viewed') {
-          setState({ status: 'error', notFound: false, alreadyViewed: true })
-          return
-        }
-        if (response.status === 404 || response.status === 410) {
-          setState({ status: 'error', notFound: response.status === 404, revoked: response.status === 410 })
-          return
-        }
-        setState({ status: 'error', notFound: false, message: error.message })
+        const info = (await response.json()) as Info
+        setState({ status: 'verify', info })
       } catch {
         setState({ status: 'error', notFound: false })
       }
     }
     void load()
-    // the first load only runs once per token; requestOtp is stable enough for that
+    // the first load only runs once per token
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pdfUrl, token])
+  }, [infoUrl, token])
 
   useEffect(() => {
     if (cooldown <= 0) return
@@ -226,6 +204,46 @@ export default function PublicResultPage() {
             </span>
           </div>
         )}
+
+        {state.status === 'verify' && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mx-auto mt-8 w-full max-w-md" data-public-verify>
+            <div className="flex flex-col items-center gap-3 text-center">
+              <span className="grid size-14 place-items-center rounded-full bg-ok-soft text-ok">
+                <BadgeCheck className="size-7" />
+              </span>
+              <h1 className="text-[20px] font-semibold">{t('portal.publicResult.verified')}</h1>
+              <p className="text-[14px] text-ink-3">{t('portal.publicResult.verifiedHint')}</p>
+            </div>
+            <dl className="mt-6 space-y-3 rounded-[var(--radius)] border border-line bg-surface p-4 text-[13.5px] shadow-1">
+              <div className="flex justify-between gap-4">
+                <dt className="text-ink-3">{t('portal.publicResult.docTitle')}</dt>
+                <dd className="text-right font-medium">{state.info.title}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-ink-3">{t('portal.publicResult.clinic')}</dt>
+                <dd className="text-right font-medium">{state.info.companyName}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-ink-3">{t('portal.publicResult.issued')}</dt>
+                <dd className="text-right tabular">{fmtDate(state.info.issuedAt)}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-ink-3">{t('portal.publicResult.docId')}</dt>
+                <dd className="text-right font-mono text-[12px] text-ink-2">{state.info.id.slice(0, 13)}</dd>
+              </div>
+            </dl>
+            <div className="mt-5 flex flex-col gap-2">
+              <button type="button" onClick={() => void requestOtp(state.info)} className={cn(btn, 'w-full bg-brand text-white hover:bg-brand-strong')} data-public-view>
+                <FileText className="size-5" />
+                {t('portal.publicResult.viewPdf')}
+              </button>
+              <Link to={routes.patientLogin} className={cn(btn, 'w-full border border-line-strong/70 bg-surface text-ink shadow-1 hover:bg-surface-2')}>
+                {t('portal.publicResult.portal')}
+              </Link>
+            </div>
+          </motion.div>
+        )}
+
         {state.status === 'otp' && (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -276,7 +294,7 @@ export default function PublicResultPage() {
             <div className="mt-4 flex flex-col items-center gap-2 text-[13px]">
               <button
                 type="button"
-                onClick={() => void requestOtp(state.phoneMasked)}
+                onClick={() => void requestOtp(state.info)}
                 disabled={sending || cooldown > 0}
                 className="font-medium text-brand-ink hover:underline disabled:text-ink-3 disabled:no-underline"
               >
@@ -292,6 +310,7 @@ export default function PublicResultPage() {
             </div>
           </motion.div>
         )}
+
         {state.status === 'error' && (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -303,24 +322,20 @@ export default function PublicResultPage() {
             </span>
             <h1
               className="text-[20px] font-semibold"
-              data-public-error={state.alreadyViewed ? 'already-viewed' : state.revoked ? 'revoked' : state.notFound ? 'not-found' : 'failed'}
+              data-public-error={state.revoked ? 'revoked' : state.notFound ? 'not-found' : 'failed'}
             >
-              {state.alreadyViewed
-                ? t('portal.publicResult.alreadyViewed')
-                : state.revoked
-                  ? t('portal.publicResult.revoked')
-                  : state.notFound
-                    ? t('portal.publicResult.notFound')
-                    : t('portal.publicResult.failed')}
+              {state.revoked
+                ? t('portal.publicResult.revoked')
+                : state.notFound
+                  ? t('portal.publicResult.notFound')
+                  : t('portal.publicResult.failed')}
             </h1>
             <p className="text-[14px] text-ink-3">
-              {state.alreadyViewed
-                ? t('portal.publicResult.alreadyViewedHint')
-                : state.revoked
-                  ? t('portal.publicResult.revokedHint')
-                  : state.notFound
-                    ? t('portal.publicResult.notFoundHint')
-                    : state.message || t('portal.publicResult.failedHint')}
+              {state.revoked
+                ? t('portal.publicResult.revokedHint')
+                : state.notFound
+                  ? t('portal.publicResult.notFoundHint')
+                  : state.message || t('portal.publicResult.failedHint')}
             </p>
             <Link
               to={routes.patientLogin}
@@ -330,6 +345,7 @@ export default function PublicResultPage() {
             </Link>
           </motion.div>
         )}
+
         {state.status === 'ready' && (
           <motion.div
             initial={{ opacity: 0, y: 8 }}

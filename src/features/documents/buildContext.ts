@@ -26,6 +26,8 @@ export function buildRenderContext(input: {
   cashier?: string
   /** order-scoped documents: every covered item with its schema and catalog code */
   items?: { item: OrderItem; schema: AttributeSchema | null; code: string }[]
+  /** the issued document's public verification link — the template's QR element encodes it */
+  docLink?: string | null
 }): RenderContext {
   const p = input.patient
   const address = [input.districtName, p?.address?.street].filter(Boolean).join(', ')
@@ -75,6 +77,7 @@ export function buildRenderContext(input: {
     category: { name: input.category?.name ?? '', code: input.category?.code, phone: input.category?.phone },
     today: fmtDate(new Date().toISOString()),
     now: fmtDateTime(new Date().toISOString()),
+    ...(input.docLink ? { doc: { link: input.docLink } } : {}),
     values: input.item?.values ?? {},
     schema: input.schema ?? null,
     items: input.items?.map(toRenderItem),

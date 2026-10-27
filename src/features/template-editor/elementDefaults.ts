@@ -1,9 +1,9 @@
-import { AlignLeft, Circle, Image as ImageIcon, Minus, Square, Table2, Variable, type LucideIcon } from 'lucide-react'
+import { AlignLeft, Circle, Image as ImageIcon, Minus, QrCode, Square, Table2, Variable, type LucideIcon } from 'lucide-react'
 import type { ElementType, TemplateElement, TextStyle } from '@/domain'
 import { defaultTextStyle } from '@/domain'
 
-export const ELEMENT_TYPES: ElementType[] = ['text', 'field', 'table', 'rect', 'ellipse', 'line', 'image']
-export const ELEMENT_ICONS: Record<ElementType, LucideIcon> = { text: AlignLeft, field: Variable, table: Table2, rect: Square, ellipse: Circle, line: Minus, image: ImageIcon }
+export const ELEMENT_TYPES: ElementType[] = ['text', 'field', 'table', 'rect', 'ellipse', 'line', 'image', 'qr']
+export const ELEMENT_ICONS: Record<ElementType, LucideIcon> = { text: AlignLeft, field: Variable, table: Table2, rect: Square, ellipse: Circle, line: Minus, image: ImageIcon, qr: QrCode }
 
 let seq = 0
 export const newElementId = () => `el_${Date.now().toString(36)}${(seq++).toString(36)}`
@@ -22,6 +22,7 @@ export function createElement(type: ElementType, x: number, y: number, extra: Pa
     case 'ellipse': return { ...base, type: 'ellipse', w: 100, h: 100, fill: 'transparent', stroke: LINE, strokeWidth: 1, ...extra } as TemplateElement
     case 'line': return { ...base, type: 'line', w: 300, h: 2, stroke: LINE, strokeWidth: 1, orientation: 'horizontal', ...extra } as TemplateElement
     case 'image': return { ...base, type: 'image', w: 120, h: 120, fit: 'contain', ...extra } as TemplateElement
+    case 'qr': return { ...base, type: 'qr', w: 110, h: 110, value: '{doc.link}', ...extra } as TemplateElement
     case 'table':
       return {
         ...base, type: 'table', w: 500, h: 160, fieldKey: '', columns: [

@@ -11,6 +11,7 @@ import { CommonProps } from './props/CommonProps'
 import { FieldProps } from './props/FieldProps'
 import { ColorInput, NumInput, PropRow, PropSection, SelectInput, ToggleChip } from './props/inputs'
 import { ImageProps, LineProps, RectProps } from './props/ShapeProps'
+import { QrProps } from './props/QrProps'
 import { TableProps } from './props/TableProps'
 import { TextProps } from './props/TextProps'
 
@@ -45,6 +46,7 @@ function ElementProps({ el, schema, assets, onPickImage }: { el: TemplateElement
       {(el.type === 'rect' || el.type === 'ellipse') && <RectProps el={el} />}
       {el.type === 'line' && <LineProps el={el} />}
       {el.type === 'image' && <ImageProps el={el} onPick={onPickImage} assetName={assets.find((a) => a.id === el.assetId)?.name} />}
+      {el.type === 'qr' && <QrProps el={el} />}
       {el.type === 'table' && <TableProps el={el} schema={schema} />}
       <CommonProps el={el} schema={schema} />
     </>
