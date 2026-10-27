@@ -204,6 +204,7 @@ const ordersUz = {
   items: 'Xizmatlar soni', refunded: 'Qaytarilgan to‘lov', refundedYes: 'Qaytarilgan to‘lovi bor', refundedNo: 'Qaytarilmagan',
   sort_updatedAt_desc: 'Oxirgi o‘zgarish avval', sort_completedAt_desc: 'Natija tayyor bo‘lgan vaqt (yangi avval)', sort_discountPercent_desc: 'Chegirma foizi: kattadan',
   export: 'Excel', exporting: 'Tayyorlanmoqda…', exported: 'Excel fayl yuklab olindi: {{n}} ta chek', exportTitle: 'Joriy filtr va saralash bo‘yicha barcha cheklarni Excelga yuklab olish',
+  del: 'O‘chirish', delTitle: 'Chekni o‘chirish', delHint: '{{number}} raqamli chek butunlay o‘chiriladi. Bu amalni qaytarib bo‘lmaydi.', delConfirm: 'O‘chirish', deleted: 'Chek o‘chirildi',
   capPeriod: 'Davr', capAllDays: 'barcha kunlar', capStatus: 'Holat', capPayment: 'To‘lov', capSearch: 'Qidiruv', capSort: 'Saralash',
   sumCount: 'Cheklar:', sumTotal: 'Jami:', sumPaid: 'To‘langan:', sumDebt: 'Qarz:', sumNote: 'Summalar bekor qilingan cheklarsiz; to‘lov turlari — qaytarilmagan to‘lovlar',
 }
@@ -292,6 +293,7 @@ const ordersRu = {
   items: 'Кол-во услуг', refunded: 'Возврат оплаты', refundedYes: 'Есть возврат', refundedNo: 'Без возврата',
   sort_updatedAt_desc: 'Сначала изменённые', sort_completedAt_desc: 'Время готовности результатов (новые)', sort_discountPercent_desc: 'Процент скидки: по убыванию',
   export: 'Excel', exporting: 'Готовится…', exported: 'Файл Excel скачан: {{n}} чек(ов)', exportTitle: 'Скачать все чеки по текущим фильтрам и сортировке в Excel',
+  del: 'Удалить', delTitle: 'Удалить чек', delHint: 'Чек {{number}} будет удалён безвозвратно.', delConfirm: 'Удалить', deleted: 'Чек удалён',
   capPeriod: 'Период', capAllDays: 'все дни', capStatus: 'Статус', capPayment: 'Оплата', capSearch: 'Поиск', capSort: 'Сортировка',
   sumCount: 'Чеков:', sumTotal: 'Итого:', sumPaid: 'Оплачено:', sumDebt: 'Долг:', sumNote: 'Суммы без отменённых чеков; способы оплаты — невозвращённые оплаты',
 }
@@ -380,6 +382,7 @@ const ordersEn = {
   items: 'Number of services', refunded: 'Refunded payment', refundedYes: 'Has a refund', refundedNo: 'No refund',
   sort_updatedAt_desc: 'Recently changed first', sort_completedAt_desc: 'Results ready time (newest)', sort_discountPercent_desc: 'Discount %: high to low',
   export: 'Excel', exporting: 'Preparing…', exported: 'Excel file downloaded: {{n}} orders', exportTitle: 'Download every order matching the current filters and sort to Excel',
+  del: 'Delete', delTitle: 'Delete order', delHint: 'Order {{number}} will be permanently deleted. This cannot be undone.', delConfirm: 'Delete', deleted: 'Order deleted',
   capPeriod: 'Period', capAllDays: 'all days', capStatus: 'Status', capPayment: 'Payment', capSearch: 'Search', capSort: 'Sort',
   sumCount: 'Orders:', sumTotal: 'Total:', sumPaid: 'Paid:', sumDebt: 'Debt:', sumNote: 'Amounts exclude cancelled orders; payment methods count non-refunded payments',
 }

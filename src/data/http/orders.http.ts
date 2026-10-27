@@ -94,6 +94,8 @@ export const ordersHttp: OrderRepository = {
 
   cancel: (orderId, reason) => api.post<Order>(`/orders/${orderId}/cancel`, { reason }),
 
+  delete: (orderId) => api.delete<Order>(`/orders/${orderId}`),
+
   worklistCounts: (companyId, q) =>
     api.get<WorklistCounts>(`/companies/${companyId}/worklist/counts`, {
       query: { search: q.search, branchId: q.branchId, categoryIds: q.categoryIds, dateFrom: q.dateFrom, dateTo: q.dateTo },

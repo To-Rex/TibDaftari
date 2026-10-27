@@ -9,6 +9,8 @@ export const PERMISSIONS = [
   'reception.patient.write',
   'reception.order.create',
   'reception.order.cancel',
+  /** delete a cheque that never "happened" (unpaid, no lab work started) */
+  'reception.order.delete',
   'reception.payment.create',
   'reception.payment.refund',
   // Laboratory

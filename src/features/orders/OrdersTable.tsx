@@ -1,8 +1,9 @@
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Receipt } from 'lucide-react'
+import { type MouseEvent } from 'react'
+import { Receipt, Trash2 } from 'lucide-react'
 import type { Order, Page } from '@/domain'
-import { Badge, DataTable, EmptyState, Pagination, type Column } from '@/shared/ui'
+import { Badge, DataTable, EmptyState, IconButton, Pagination, type Column } from '@/shared/ui'
 import { fmtDateTime, fmtMoney, fmtPhone } from '@/shared/lib/format'
 import { routes } from '@/shared/config/routes'
 import { cn } from '@/shared/lib/cn'
@@ -19,9 +20,12 @@ export interface OrdersTableProps {
   showPatient?: boolean
   branchName?: (id: string) => string | undefined
   footer?: boolean
+  /** delete action — rendered only when `canDelete` is true (permission-gated by the caller) */
+  onDelete?: (order: Order) => void
+  canDelete?: boolean
 }
 
-export function OrdersTable({ page, loading, sortBy, sortDir, onSort, onPage, onPageSize, showPatient = true, branchName, footer }: OrdersTableProps) {
+export function OrdersTable({ page, loading, sortBy, sortDir, onSort, onPage, onPageSize, showPatient = true, branchName, footer, onDelete, canDelete }: OrdersTableProps) {
   const { t } = useTranslation()
   const nav = useNavigate()
   const rows = page?.items ?? []
@@ -42,6 +46,17 @@ export function OrdersTable({ page, loading, sortBy, sortDir, onSort, onPage, on
     },
     { key: 'status', header: t('common.status'), cell: (o) => { const m = orderStatusMeta(o.status); return <Badge tone={m.tone} size="sm" dot>{m.label}</Badge> }, card: 'actions' },
     { key: 'payment', header: t('staff.orders.colPayment'), cell: (o) => { const m = paymentStatusMeta(o.payment); return <Badge tone={m.tone} size="sm">{m.label}</Badge> }, card: 'actions' },
+    ...(canDelete && onDelete
+      ? [{
+          key: 'delete', header: '', card: 'actions' as const,
+          cell: (o: Order) => (
+            <IconButton label={t('staff.orders.del')} size="sm" variant="ghost" className="text-danger" data-order-delete
+              onClick={(e: MouseEvent) => { e.stopPropagation(); onDelete(o) }}>
+              <Trash2 className="size-4" />
+            </IconButton>
+          ),
+        }]
+      : []),
   ]
   const sumTotal = rows.reduce((s, o) => s + o.total, 0)
   const sumPaid = rows.reduce((s, o) => s + o.paidAmount, 0)

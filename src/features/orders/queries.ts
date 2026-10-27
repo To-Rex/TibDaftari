@@ -64,3 +64,8 @@ export function useCancelOrder(orderId: Id) {
   const inv = useInvalidateOrders()
   return useMutation({ mutationFn: (reason: string) => repos.orders.cancel(orderId, reason), onSuccess: () => inv(orderId) })
 }
+
+export function useDeleteOrder() {
+  const inv = useInvalidateOrders()
+  return useMutation({ mutationFn: (orderId: Id) => repos.orders.delete(orderId), onSuccess: (_r, orderId) => inv(orderId) })
+}

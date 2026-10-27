@@ -144,6 +144,8 @@ export interface OrderRepository {
   removeItem(orderId: Id, itemId: Id): Promise<{ order: Order; items: OrderItem[] }>
   pay(employeeId: Id, input: PayOrderInput): Promise<{ order: Order; payments: Payment[] }>
   cancel(orderId: Id, reason: string): Promise<Order>
+  /** Soft-delete a cheque that never "happened": unpaid, no lab work started. Permission `reception.order.delete`. */
+  delete(orderId: Id): Promise<Order>
   /** Lab worklist: items filtered by category/status/date */
   worklist(companyId: Id, q: PageQuery & { branchId?: Id; categoryIds?: Id[]; status?: ItemStatus[]; dateFrom?: string; dateTo?: string }): Promise<Page<OrderItem & { orderNumber: string; patientName: string; patientPhone: string; patientGender?: 'male' | 'female'; patientBirthDate?: string }>>
   /** Per-status counters for the same worklist filters (one round trip for all status tabs). */

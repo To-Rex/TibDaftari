@@ -4,15 +4,16 @@ import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
 import { ArrowDownUp, CalendarRange, FileSpreadsheet, SlidersHorizontal } from 'lucide-react'
 import { repos } from '@/data'
-import type { OrderStatus, PaymentStatus } from '@/domain'
-import { Button, Card, Input, Page, PageHeader, SearchInput, Segmented, Select, Toolbar, toast } from '@/shared/ui'
+import type { Order, OrderStatus, PaymentStatus } from '@/domain'
+import { Button, Card, ConfirmDialog, Input, Page, PageHeader, SearchInput, Segmented, Select, Toolbar, toast } from '@/shared/ui'
 import { presetRange, type DateRange } from '@/shared/lib/dates'
 import { fmtDate, fmtMoney, fmtNumber } from '@/shared/lib/format'
 import { errorMessage } from '@/shared/lib/errors'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import { useStaffSession } from '@/features/session/useSession'
+import { usePermissions } from '@/features/auth/store'
 import { useCategories, useServiceTypes } from '@/features/catalog/queries'
-import { useOrdersList, useOrdersSummary } from '@/features/orders/queries'
+import { useDeleteOrder, useOrdersList, useOrdersSummary } from '@/features/orders/queries'
 import { OrdersTable } from '@/features/orders/OrdersTable'
 import { OrdersFilterDrawer } from '@/features/orders/OrdersFilterDrawer'
 import { OrdersFilterChips, OrdersSummaryBar } from '@/features/orders/OrdersFilterChips'
@@ -22,6 +23,10 @@ import { ORDER_STATUSES, PAYMENT_STATUSES, orderStatusMeta, paymentMethodLabel, 
 export default function OrdersPage() {
   const { t, i18n } = useTranslation()
   const { companyId, branchId } = useStaffSession()
+  const { can } = usePermissions()
+  const canDelete = can('reception.order.delete')
+  const del = useDeleteOrder()
+  const [deleting, setDeleting] = useState<Order | null>(null)
   // the list as it was left in this tab (filters, period, sort, page size) — coming back from a cheque keeps it
   const [initial] = useState(loadView)
   const [search, setSearch] = useState(initial.search)
@@ -110,6 +115,17 @@ export default function OrdersPage() {
   }
   const sortValue = `${sortBy}:${sortDir}`
   const sortKnown = SORTS.some((s) => `${s.sortBy}:${s.sortDir}` === sortValue)
+  const confirmDelete = async () => {
+    if (!deleting) return
+    try {
+      await del.mutateAsync(deleting.id)
+      toast.success(t('staff.orders.deleted'), deleting.number)
+      setDeleting(null)
+    } catch (e) {
+      toast.error(errorMessage(e))
+      setDeleting(null)
+    }
+  }
 
   return (
     <Page>
@@ -152,10 +168,14 @@ export default function OrdersPage() {
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
         <Card padded={false} className="overflow-hidden">
           <OrdersTable page={q.data} loading={q.isFetching} sortBy={sortBy} sortDir={sortDir} onSort={onSort} onPage={setPage} onPageSize={(s) => { setPageSize(s); setPage(1) }} footer
-            branchName={branchId ? undefined : (id) => branches.data?.find((b) => b.id === id)?.name} />
+            branchName={branchId ? undefined : (id) => branches.data?.find((b) => b.id === id)?.name}
+            canDelete={canDelete} onDelete={setDeleting} />
         </Card>
       </motion.div>
       <OrdersFilterDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} value={extra} onChange={changeExtra} categories={categories.data} services={services.data} summary={summary.data} />
+      <ConfirmDialog open={!!deleting} onClose={() => setDeleting(null)} onConfirm={() => void confirmDelete()} danger loading={del.isPending}
+        title={t('staff.orders.delTitle')} description={deleting ? t('staff.orders.delHint', { number: deleting.number }) : undefined}
+        confirmText={t('staff.orders.delConfirm')} cancelText={t('common.cancel')} />
     </Page>
   )
 }
