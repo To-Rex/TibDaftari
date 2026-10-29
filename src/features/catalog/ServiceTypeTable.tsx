@@ -43,11 +43,14 @@ export function ServiceTypeTable({ rows, loading, schemas, templates, categories
     // category is only meaningful in card mode (the table is already scoped by the tree) — hidden in the table on every width
     { key: 'category', header: t('catalog.services.category'), card: 'meta', className: 'hidden', cell: (s) => <span className="truncate">{catOf(s.categoryId)?.name ?? '—'}</span> },
     { key: 'price', header: t('common.price'), align: 'right', card: 'meta', cell: (s) => {
-      const n = Object.keys(s.branchPrices).length
+      // prices of switched-off branches are not in effect anywhere, so they do not count as overrides
+      const off = s.disabledBranchIds ?? []
+      const n = Object.keys(s.branchPrices).filter((b) => !off.includes(b)).length
       return (
         <div className="md:text-right">
           <span className="tabular font-medium whitespace-nowrap text-ink">{fmtMoney(s.price)}</span>
           {n > 0 && <span className="block text-[11.5px] text-ink-3">{t('catalog.services.overrides', { n })}</span>}
+          {off.length > 0 && <span className="block text-[11.5px] text-warn" data-off-in>{t('catalog.services.offIn', { n: off.length })}</span>}
           {/* table mode below 2xl: turnaround & 30-day count fold under the price (their own columns appear from 2xl) */}
           <span className="hidden md:block 2xl:hidden text-[11.5px] text-ink-3 tabular whitespace-nowrap">{s.turnaroundDays} {t('common.days')} · {s.stats?.ordered30d ?? 0}</span>
         </div>

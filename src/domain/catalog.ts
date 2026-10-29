@@ -39,6 +39,8 @@ export interface ServiceType extends AuditStamp {
   price: Money
   /** branch-specific price override; falls back to price */
   branchPrices: Record<Id, Money>
+  /** branches where the service is switched off — not offered at reception there; empty = every branch */
+  disabledBranchIds: Id[]
   turnaroundDays: number
   order: number
   isActive: boolean
@@ -50,6 +52,10 @@ export interface ServiceType extends AuditStamp {
   defaultTemplateId: Id | null
   stats?: { ordered30d: number }
 }
+
+/** Is the service offered in this branch? No branch (company-wide views) hides nothing. */
+export const serviceAvailableIn = (s: Pick<ServiceType, 'disabledBranchIds'>, branchId: Id | null | undefined): boolean =>
+  !branchId || !(s.disabledBranchIds ?? []).includes(branchId)
 
 /* ---------------------------- Attribute schema ---------------------------- */
 

@@ -97,7 +97,7 @@ export default function CatalogPage() {
   }
   const submitService = async (d: ServiceTypeDraft, opts?: ServiceTypeSubmitOptions) => {
     try {
-      const saved = await saveSt.mutateAsync({ id: d.id, name: d.name, code: d.code || undefined, description: d.description || undefined, categoryId: d.categoryId, price: d.price, branchPrices: d.branchPrices, turnaroundDays: d.turnaroundDays, schemaId: d.schemaId, documentScope: d.documentScope, defaultTemplateId: d.defaultTemplateId, isActive: d.isActive })
+      const saved = await saveSt.mutateAsync({ id: d.id, name: d.name, code: d.code || undefined, description: d.description || undefined, categoryId: d.categoryId, price: d.price, branchPrices: d.branchPrices, disabledBranchIds: d.disabledBranchIds, turnaroundDays: d.turnaroundDays, schemaId: d.schemaId, documentScope: d.documentScope, defaultTemplateId: d.defaultTemplateId, isActive: d.isActive })
       toast.success(t('catalog.services.saved'))
       // a default template that is not bound to the service yet gets bound to it (and, if asked, its copies in the
       // other branches) — so approval finds it in every branch; generic templates already cover every service

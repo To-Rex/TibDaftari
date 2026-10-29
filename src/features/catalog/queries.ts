@@ -4,7 +4,7 @@ import type { AttributeSchema, Category, Id, ResultTemplate, ServiceType, Templa
 
 export const catalogKeys = {
   categories: (companyId: Id) => ['categories', companyId] as const,
-  serviceTypes: (companyId: Id, q: { categoryId?: Id; search?: string }) => ['serviceTypes', companyId, q] as const,
+  serviceTypes: (companyId: Id, q: { categoryId?: Id; search?: string; activeOnly?: boolean; branchId?: Id }) => ['serviceTypes', companyId, q] as const,
   serviceType: (id: Id) => ['serviceType', id] as const,
   schemas: (companyId: Id) => ['schemas', companyId] as const,
   schema: (id: Id) => ['schema', id] as const,
@@ -19,7 +19,7 @@ export const catalogKeys = {
 export const useCategories = (companyId: Id) =>
   useQuery({ queryKey: catalogKeys.categories(companyId), queryFn: () => repos.catalog.listCategories(companyId) })
 
-export const useServiceTypes = (companyId: Id, q: { categoryId?: Id; search?: string }, enabled = true) =>
+export const useServiceTypes = (companyId: Id, q: { categoryId?: Id; search?: string; activeOnly?: boolean; branchId?: Id }, enabled = true) =>
   useQuery({ queryKey: catalogKeys.serviceTypes(companyId, q), queryFn: () => repos.catalog.listServiceTypes(companyId, q), enabled, placeholderData: (p) => p })
 
 export const useServiceType = (id: Id | null | undefined) =>

@@ -119,7 +119,8 @@ export interface CatalogRepository {
   listCategories(companyId: Id): Promise<Category[]>
   saveCategory(input: Partial<Category> & { companyId: Id; id?: Id }): Promise<Category>
   deleteCategory(id: Id): Promise<void>
-  listServiceTypes(companyId: Id, q?: { categoryId?: Id; search?: string; activeOnly?: boolean }): Promise<ServiceType[]>
+  /** `branchId` = only what that branch offers (services switched off there are dropped) */
+  listServiceTypes(companyId: Id, q?: { categoryId?: Id; search?: string; activeOnly?: boolean; branchId?: Id }): Promise<ServiceType[]>
   getServiceType(id: Id): Promise<ServiceType>
   saveServiceType(input: Partial<ServiceType> & { companyId: Id; id?: Id }): Promise<ServiceType>
   deleteServiceType(id: Id): Promise<void>

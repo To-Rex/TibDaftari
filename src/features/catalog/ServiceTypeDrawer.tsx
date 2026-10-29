@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { AttributeSchema, Branch, Category, Id, ResultTemplate, ServiceType } from '@/domain'
 import { boundToService, isGeneric } from '@/features/template-editor/galleryFilters'
 import { Button, Checkbox, Drawer, Field, Input, Segmented, Select, Switch, Textarea } from '@/shared/ui'
+import { cn } from '@/shared/lib/cn'
 import { categoryPath } from './tree'
 
 export interface ServiceTypeDraft {
@@ -13,6 +14,8 @@ export interface ServiceTypeDraft {
   categoryId: Id
   price: number
   branchPrices: Record<Id, number>
+  /** branches where the service is switched off (not offered at their reception) */
+  disabledBranchIds: Id[]
   turnaroundDays: number
   schemaId: Id | null
   documentScope: 'item' | 'order'
@@ -22,8 +25,8 @@ export interface ServiceTypeDraft {
 
 export const draftFromServiceType = (s?: ServiceType | null, categoryId: Id = ''): ServiceTypeDraft =>
   s
-    ? { id: s.id, name: s.name, code: s.code ?? '', description: s.description ?? '', categoryId: s.categoryId, price: s.price, branchPrices: { ...s.branchPrices }, turnaroundDays: s.turnaroundDays, schemaId: s.schemaId, documentScope: s.documentScope, defaultTemplateId: s.defaultTemplateId, isActive: s.isActive }
-    : { name: '', code: '', description: '', categoryId, price: 0, branchPrices: {}, turnaroundDays: 1, schemaId: null, documentScope: 'item', defaultTemplateId: null, isActive: true }
+    ? { id: s.id, name: s.name, code: s.code ?? '', description: s.description ?? '', categoryId: s.categoryId, price: s.price, branchPrices: { ...s.branchPrices }, disabledBranchIds: [...(s.disabledBranchIds ?? [])], turnaroundDays: s.turnaroundDays, schemaId: s.schemaId, documentScope: s.documentScope, defaultTemplateId: s.defaultTemplateId, isActive: s.isActive }
+    : { name: '', code: '', description: '', categoryId, price: 0, branchPrices: {}, disabledBranchIds: [], turnaroundDays: 1, schemaId: null, documentScope: 'item', defaultTemplateId: null, isActive: true }
 
 /** What the drawer asks the page to do besides saving the service. */
 export interface ServiceTypeSubmitOptions {
@@ -95,20 +98,32 @@ export function ServiceTypeDrawer({ open, onClose, initial, categories, branches
         </div>
 
         {branches.length > 0 && (
-          <div className="rounded-[var(--radius)] border border-line bg-surface-2/40 p-3">
-            <p className="text-[12.5px] font-medium text-ink-2 mb-2">{t('catalog.services.branchPrices')}</p>
+          <div className="rounded-[var(--radius)] border border-line bg-surface-2/40 p-3" data-branch-settings>
+            <p className="text-[12.5px] font-medium text-ink-2">{t('catalog.services.branches')}</p>
+            <p className="text-[12px] text-ink-3 mb-2">{t('catalog.services.branchesHint')}</p>
             <div className="flex flex-col gap-2">
               {branches.map((b) => {
+                // switched off in this branch: hidden at its reception; its price override is kept for when it comes back
+                const off = d.disabledBranchIds.includes(b.id)
                 const v = d.branchPrices[b.id]
                 return (
-                  <div key={b.id} className="grid grid-cols-[1fr_180px] items-center gap-3">
-                    <span className="text-[13.5px] truncate">{b.name} <span className="text-ink-3 font-mono text-[12px]">{b.code}</span></span>
-                    <Input type="number" min={0} step={1000} mono placeholder={String(d.price)} value={v ?? ''} className="h-9"
-                      onChange={(e) => { const bp = { ...d.branchPrices }; if (e.target.value === '') delete bp[b.id]; else bp[b.id] = num(e.target.value); set('branchPrices', bp) }} />
+                  <div key={b.id} className="grid grid-cols-[auto_1fr_120px] sm:grid-cols-[auto_1fr_180px] items-center gap-3" data-branch-row={off ? 'off' : 'on'}>
+                    <Switch size="sm" checked={!off} ariaLabel={`${b.name} — ${off ? t('catalog.services.branchOff') : t('catalog.services.branchOn')}`}
+                      onChange={(on) => set('disabledBranchIds', on ? d.disabledBranchIds.filter((x) => x !== b.id) : [...d.disabledBranchIds, b.id])} />
+                    <span className={cn('text-[13.5px] truncate', off && 'text-ink-3')}>{b.name} <span className="text-ink-3 font-mono text-[12px]">{b.code}</span></span>
+                    {off ? (
+                      <span className="text-[12px] font-medium text-warn truncate">{t('catalog.services.branchOff')}</span>
+                    ) : (
+                      <Input type="number" min={0} step={1000} mono placeholder={String(d.price)} value={v ?? ''} className="h-9" aria-label={`${b.name} — ${t('common.price')}`}
+                        onChange={(e) => { const bp = { ...d.branchPrices }; if (e.target.value === '') delete bp[b.id]; else bp[b.id] = num(e.target.value); set('branchPrices', bp) }} />
+                    )}
                   </div>
                 )
               })}
             </div>
+            {branches.every((b) => d.disabledBranchIds.includes(b.id)) && (
+              <p className="mt-2 text-[12px] text-danger" data-all-branches-off>{t('catalog.services.allBranchesOff')}</p>
+            )}
           </div>
         )}
 

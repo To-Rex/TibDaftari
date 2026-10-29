@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
 import { Check, Clock, Plus, Search } from 'lucide-react'
 import { repos } from '@/data'
-import type { Category, Id, ServiceType } from '@/domain'
+import { serviceAvailableIn, type Category, type Id, type ServiceType } from '@/domain'
 import { Badge, EmptyState, SearchInput, Skeleton, Tabs } from '@/shared/ui'
 import { cn } from '@/shared/lib/cn'
 import { fmtMoney } from '@/shared/lib/format'
@@ -21,7 +21,9 @@ export function branchPrice(st: ServiceType, branchId: Id) {
 export function ServicePicker({ companyId, branchId, inOrder, onAdd, adding, disabled }: { companyId: Id; branchId: Id; inOrder: Set<Id>; onAdd: (serviceTypeId: Id) => void; adding?: Id | null; disabled?: boolean }) {
   const { t } = useTranslation()
   const cats = useQuery({ queryKey: ['categories', companyId], queryFn: () => repos.catalog.listCategories(companyId), staleTime: 60_000 })
-  const services = useQuery({ queryKey: ['serviceTypes', companyId, 'active'], queryFn: () => repos.catalog.listServiceTypes(companyId, { activeOnly: true }), staleTime: 60_000 })
+  // the cheque's branch decides what is on offer: services switched off there are not listed (the API filters by
+  // `branchId`; the client check below also covers a list cached before the switch)
+  const services = useQuery({ queryKey: ['serviceTypes', companyId, 'active', branchId], queryFn: () => repos.catalog.listServiceTypes(companyId, { activeOnly: true, branchId }), staleTime: 60_000 })
   const [top, setTop] = useState<string>('all')
   const [sub, setSub] = useState<string | null>(null)
   const [q, setQ] = useState('')
@@ -36,9 +38,9 @@ export function ServicePicker({ companyId, branchId, inOrder, onAdd, adding, dis
     const scope = sub ? sub : top === 'all' ? null : top
     const allowed = scope ? descendants(active, scope) : null
     return all
-      .filter((s) => (!allowed || allowed.has(s.categoryId)) && (!dq || s.name.toLowerCase().includes(dq) || (s.code ?? '').toLowerCase().includes(dq)))
+      .filter((s) => serviceAvailableIn(s, branchId) && (!allowed || allowed.has(s.categoryId)) && (!dq || s.name.toLowerCase().includes(dq) || (s.code ?? '').toLowerCase().includes(dq)))
       .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name))
-  }, [services.data, sub, top, active, dq])
+  }, [services.data, branchId, sub, top, active, dq])
 
   const catName = (id: Id) => active.find((c) => c.id === id)?.name ?? ''
 

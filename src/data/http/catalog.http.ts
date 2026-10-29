@@ -27,7 +27,7 @@ export const catalogHttp: CatalogRepository = {
 
   listServiceTypes: (companyId, q) =>
     api.get<ServiceType[]>(`/companies/${companyId}/service-types`, {
-      query: { categoryId: q?.categoryId, search: q?.search, activeOnly: q?.activeOnly },
+      query: { categoryId: q?.categoryId, search: q?.search, activeOnly: q?.activeOnly, branchId: q?.branchId },
     }),
 
   getServiceType: (id) => api.get<ServiceType>(`/service-types/${id}`),
