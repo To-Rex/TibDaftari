@@ -1,14 +1,16 @@
 /**
- * /d/:token — the public verification link a result carries (its QR code and the SMS / Telegram link).
- * Anyone who scans it sees the authenticity card (what was issued, by which clinic, when). The PDF
- * itself is always protected: an SMS code is sent to the phone the document belongs to, and the PDF
- * comes back in the same verify request.
+ * /d/:token — the result link sent by SMS / Telegram (and the QR of documents issued before 2026-10-29; newer QR
+ * codes open the authenticity check /v/:token instead). It shows the authenticity card (what was issued, by which
+ * clinic, when). The PDF itself is always protected: an SMS code is sent to the phone the document belongs to, and
+ * the PDF comes back in the same verify request. A code that is already on its way survives a page reload
+ * (sessionStorage), and when the clinic cannot send SMS at all the page says so instead of waiting for a code that
+ * never comes.
  */
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { motion } from 'motion/react'
-import { BadgeCheck, Download, ExternalLink, FileText, FileX2, Loader2, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, BadgeCheck, Download, ExternalLink, FileText, FileX2, Loader2, MessageSquareOff, ShieldCheck } from 'lucide-react'
 import { API_BASE } from '@/data/http/client'
 import { routes } from '@/shared/config/routes'
 import { cn } from '@/shared/lib/cn'
@@ -17,10 +19,14 @@ import { LanguageSwitcher, Logo, ThemeToggle } from '@/shared/ui'
 
 type Info = { id: string; title: string; companyName: string; issuedAt: string }
 
+/** why no code can ever be sent for this link (backend error codes) */
+type Unavailable = 'sms_not_configured' | 'no_phone'
+
 type State =
   | { status: 'loading' }
   | { status: 'verify'; info: Info }
   | { status: 'otp'; info: Info; phoneMasked: string }
+  | { status: 'unavailable'; info: Info; reason: Unavailable }
   | { status: 'ready'; blobUrl: string; filename: string }
   | { status: 'error'; notFound: boolean; revoked?: boolean; message?: string }
 
@@ -30,6 +36,10 @@ type Otp = {
   codeLength: number
   resendIn: number
   expiresAt: number
+  /** when the code was requested — the resend countdown is rebuilt from it after a reload */
+  sentAt: number
+  /** dev mode only: the backend hands the code back instead of sending an SMS */
+  devCode?: string
 }
 
 type ApiError = { code?: string; message?: string; details?: { phone?: string | null; retryAfter?: number } }
@@ -66,6 +76,29 @@ const forgetOtp = (token: string) => {
   }
 }
 
+/** a code requested earlier for this link that is still valid — the page was reloaded while it was on its way */
+const recallOtp = (token: string): Otp | null => {
+  try {
+    const raw = sessionStorage.getItem(OTP_CACHE + token)
+    if (!raw) return null
+    const otp = JSON.parse(raw) as Partial<Otp>
+    if (!otp.challengeId || !otp.expiresAt || otp.expiresAt <= Date.now()) return null
+    return {
+      challengeId: otp.challengeId,
+      phoneMasked: otp.phoneMasked ?? '',
+      codeLength: otp.codeLength ?? 6,
+      resendIn: otp.resendIn ?? 0,
+      expiresAt: otp.expiresAt,
+      sentAt: otp.sentAt ?? Date.now(),
+      devCode: otp.devCode,
+    }
+  } catch {
+    return null
+  }
+}
+
+const remainingCooldown = (otp: Otp) => Math.max(0, Math.ceil(otp.resendIn - (Date.now() - otp.sentAt) / 1000))
+
 export default function PublicResultPage() {
   const { t } = useTranslation()
   const { token = '' } = useParams()
@@ -83,7 +116,7 @@ export default function PublicResultPage() {
   const loadedFor = useRef<string | null>(null)
 
   async function requestOtp(info: Info) {
-    setState({ status: 'otp', info, phoneMasked: '' })
+    setState({ status: 'otp', info, phoneMasked: otp?.phoneMasked ?? '' })
     setSending(true)
     setOtpError(null)
     try {
@@ -94,6 +127,13 @@ export default function PublicResultPage() {
       })
       if (!response.ok) {
         const error = await readApiError(response)
+        if (error.code === 'sms_not_configured' || error.code === 'no_phone') {
+          // nothing will ever arrive for this link — say so instead of showing a code field
+          setOtp(null)
+          forgetOtp(token)
+          setState({ status: 'unavailable', info, reason: error.code })
+          return
+        }
         setOtpError(error.message || t('portal.publicResult.otpFailed'))
         if (error.details?.retryAfter) setCooldown(Number(error.details.retryAfter) || 0)
         return
@@ -105,6 +145,8 @@ export default function PublicResultPage() {
         codeLength: Number(data.codeLength) || 6,
         resendIn: Number(data.resendIn) || 0,
         expiresAt: Date.now() + (Number(data.expiresIn) || 300) * 1000,
+        sentAt: Date.now(),
+        devCode: data.devCode || undefined,
       }
       setOtp(next)
       setState({ status: 'otp', info, phoneMasked: next.phoneMasked })
@@ -138,6 +180,14 @@ export default function PublicResultPage() {
           return
         }
         const info = (await response.json()) as Info
+        const pending = recallOtp(token)
+        if (pending) {
+          // reloaded while a code was on its way: it is still valid, so keep waiting for it (no second SMS)
+          setOtp(pending)
+          setCooldown(remainingCooldown(pending))
+          setState({ status: 'otp', info, phoneMasked: pending.phoneMasked })
+          return
+        }
         setState({ status: 'verify', info })
       } catch {
         setState({ status: 'error', notFound: false })
@@ -282,6 +332,7 @@ export default function PublicResultPage() {
                   {otpError}
                 </p>
               )}
+              {otp?.devCode && <p className="text-center text-[12.5px] text-ink-3">{t('auth.devHint', { code: otp.devCode })}</p>}
               <button
                 type="submit"
                 disabled={!otp || !code.trim() || verifying || sending}
@@ -307,6 +358,46 @@ export default function PublicResultPage() {
               <Link to={routes.patientLogin} className="text-ink-3 hover:text-ink">
                 {t('portal.publicResult.portal')}
               </Link>
+              <button
+                type="button"
+                onClick={() => setState({ status: 'verify', info: state.info })}
+                className="inline-flex items-center gap-1 text-ink-3 hover:text-ink"
+              >
+                <ArrowLeft className="size-3.5" />
+                {t('portal.publicResult.back')}
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {state.status === 'unavailable' && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mx-auto mt-8 w-full max-w-md"
+            data-public-otp-unavailable={state.reason}
+          >
+            <div className="flex flex-col items-center gap-3 text-center">
+              <span className="grid size-14 place-items-center rounded-full bg-warn-soft text-warn">
+                <MessageSquareOff className="size-7" />
+              </span>
+              <h1 className="text-[20px] font-semibold">{t('portal.publicResult.otpUnavailable')}</h1>
+              <p className="text-[14px] text-ink-3">
+                {state.reason === 'no_phone' ? t('portal.publicResult.otpNoPhone') : t('portal.publicResult.otpNotConfigured')}
+              </p>
+            </div>
+            <div className="mt-5 flex flex-col gap-2">
+              <Link to={routes.patientLogin} className={cn(btn, 'w-full bg-brand text-white hover:bg-brand-strong')}>
+                {t('portal.publicResult.portal')}
+              </Link>
+              <button
+                type="button"
+                onClick={() => setState({ status: 'verify', info: state.info })}
+                className={cn(btn, 'w-full border border-line-strong/70 bg-surface text-ink shadow-1 hover:bg-surface-2')}
+              >
+                <ArrowLeft className="size-5" />
+                {t('portal.publicResult.back')}
+              </button>
             </div>
           </motion.div>
         )}

@@ -5,6 +5,8 @@ export const routes = {
   staffLogin: '/staff/login',
   /** the public result link sent by SMS / Telegram (no sign-in; the token is the key) */
   publicResult: (token = ':token') => `/d/${token}`,
+  /** the QR code printed on a result: authenticity check only (no sign-in, never the result itself) */
+  publicVerify: (token = ':token') => `/v/${token}`,
   portal: {
     root: '/me',
     results: '/me/results',

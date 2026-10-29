@@ -186,6 +186,7 @@ export function ConfirmDetail({ companyId, itemId, approvedOnly, onBack, onAppro
                     showTemplateSelect={submitted}
                     items={approvedOrderTpl ? approvedItems.items : undefined}
                     loadingItems={approvedOrderTpl ? approvedItems.loading : false}
+                    docLink={it.status === 'approved' ? doc.data?.verifyLink : undefined}
                   />
                 </motion.div>
               )}

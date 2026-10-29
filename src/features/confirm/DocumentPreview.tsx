@@ -25,7 +25,7 @@ export function useFitScale<T extends HTMLElement>(paperW: number) {
   return { ref, scale }
 }
 
-export function DocumentPreview({ companyId, item, order, patient, schema, templateId, onTemplateChange, showTemplateSelect = true, className, fixedTemplate, items, loadingItems }: {
+export function DocumentPreview({ companyId, item, order, patient, schema, templateId, onTemplateChange, showTemplateSelect = true, className, fixedTemplate, items, loadingItems, docLink }: {
   companyId: string
   item: OrderItem
   order?: Order | null
@@ -40,6 +40,8 @@ export function DocumentPreview({ companyId, item, order, patient, schema, templ
   /** order-scoped documents: covered items with schema + service code */
   items?: { item: OrderItem; schema: AttributeSchema | null; code: string }[]
   loadingItems?: boolean
+  /** issued documents: the link their QR encodes (`ResultDocument.verifyLink`) — the preview shows the same QR */
+  docLink?: string | null
 }) {
   const { t } = useTranslation()
   const templates = useTemplatesFor(companyId, fixedTemplate ? undefined : item)
@@ -65,8 +67,8 @@ export function DocumentPreview({ companyId, item, order, patient, schema, templ
   }, [list, templateId, fixedTemplate])
 
   const ctx = useMemo(
-    () => buildRenderContext({ patient, order, item, serviceCode: serviceType.data?.code ?? undefined, company: company.data, branch, category, schema, items, regionName, districtName }),
-    [patient, order, item, serviceType.data?.code, company.data, branch, category, schema, items, regionName, districtName],
+    () => buildRenderContext({ patient, order, item, serviceCode: serviceType.data?.code ?? undefined, company: company.data, branch, category, schema, items, regionName, districtName, docLink }),
+    [patient, order, item, serviceType.data?.code, company.data, branch, category, schema, items, regionName, districtName, docLink],
   )
   const size = template ? paperSize(template.doc) : { w: 794, h: 1123 }
   const { ref, scale } = useFitScale<HTMLDivElement>(size.w)

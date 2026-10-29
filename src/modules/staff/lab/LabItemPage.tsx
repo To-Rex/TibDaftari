@@ -213,7 +213,7 @@ export default function LabItemPage() {
 
       <Modal open={docOpen} onClose={() => setDocOpen(false)} title={doc.data?.title ?? t('clinical.lab.viewDocument')} size="xl">
         {it && (
-          <DocumentPreview companyId={companyId} item={it} order={order.data?.order} patient={patient.data} schema={schema.data} fixedTemplate={docTemplate.data} showTemplateSelect={false} />
+          <DocumentPreview companyId={companyId} item={it} order={order.data?.order} patient={patient.data} schema={schema.data} fixedTemplate={docTemplate.data} showTemplateSelect={false} docLink={doc.data?.verifyLink} />
         )}
       </Modal>
     </Page>

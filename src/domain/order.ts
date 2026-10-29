@@ -161,8 +161,11 @@ export interface ResultDocument extends AuditStamp {
   status: 'draft' | 'final'
   pdfUrl?: string
   deliveries: DocumentDelivery[]
-  /** the public verification link's token — the QR element encodes `{doc.link}` = `<app>/d/{token}` */
+  /** the SMS / Telegram link's token — `<app>/d/{token}` (authenticity card, the PDF behind an SMS code) */
   publicToken?: string | null
+  /** the exact value the document's QR encodes (`{doc.link}`): `<app>/v/{token}` — authenticity check only.
+   *  Documents issued before 2026-10-29 carry the SMS link here; null when the document has no QR link. */
+  verifyLink?: string | null
 }
 
 /** The "result ready" SMS that was (or, on a dry run, would be) queued again. */
