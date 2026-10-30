@@ -160,6 +160,9 @@ const uz = {
     otpNotConfigured: 'Bu klinikada SMS yuborish sozlanmagan, shuning uchun hujjatni havola orqali ochib bo‘lmaydi. Natijani bemor kabinetidan ko‘ring yoki klinikaga murojaat qiling.',
     otpNoPhone: 'Hujjatga telefon raqami bog‘lanmagan, shuning uchun SMS kod yuborib bo‘lmaydi. Klinikaga murojaat qiling.',
     back: 'Orqaga',
+    freeUntil: '{{date}} gacha SMS kodsiz ochiladi',
+    opening: 'Hujjat ochilmoqda…',
+    openFailed: 'Hujjatni ochib bo‘lmadi. Qayta urinib ko‘ring.',
   },
   publicVerify: {
     loading: 'Hujjat tekshirilmoqda…',
@@ -373,6 +376,9 @@ const ru: typeof uz = {
     otpNotConfigured: 'В этой клинике не настроена отправка SMS, поэтому открыть документ по ссылке нельзя. Посмотрите результат в кабинете пациента или обратитесь в клинику.',
     otpNoPhone: 'К документу не привязан номер телефона, поэтому SMS-код отправить нельзя. Обратитесь в клинику.',
     back: 'Назад',
+    freeUntil: 'До {{date}} открывается без SMS-кода',
+    opening: 'Открываем документ…',
+    openFailed: 'Не удалось открыть документ. Попробуйте ещё раз.',
   },
   publicVerify: {
     loading: 'Проверяем документ…',
@@ -586,6 +592,9 @@ const en: typeof uz = {
     otpNotConfigured: 'This clinic has not set up SMS sending, so the document cannot be opened from this link. View the result in the patient portal or contact the clinic.',
     otpNoPhone: 'No phone number is linked to this document, so an SMS code cannot be sent. Contact the clinic.',
     back: 'Back',
+    freeUntil: 'Opens without an SMS code until {{date}}',
+    opening: 'Opening the document…',
+    openFailed: 'Could not open the document. Please try again.',
   },
   publicVerify: {
     loading: 'Checking the document…',

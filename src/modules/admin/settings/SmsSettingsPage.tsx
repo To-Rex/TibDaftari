@@ -11,6 +11,7 @@ import { usePermissions } from '@/features/auth/store'
 import { useCompany, useSaveCompany } from '@/features/org/queries'
 import { SmsTemplatesCard } from '@/features/org/SmsTemplatesCard'
 import { BranchSmsAccountCard } from '@/features/org/BranchSmsAccountCard'
+import { DocumentLinkCard } from '@/features/org/DocumentLinkCard'
 import { useSmsBranch } from '@/features/org/smsBranch'
 import { repos } from '@/data'
 import { errorMessage } from '@/shared/lib/errors'
@@ -175,6 +176,9 @@ export default function SmsSettingsPage() {
           </form>
 
           <SmsTemplatesCard companyId={companyId} companyName={c.name} readOnly={!canWrite} selection={sel} />
+
+          {/* the {link} of the result SMS: how long it opens the PDF without a code */}
+          <DocumentLinkCard company={c} readOnly={!canWrite} />
 
           <Card>
             <CardHeader className="max-xs:flex-col max-xs:items-start" title={t('admin.sms.docsTitle')} description={t('admin.sms.docsText')}

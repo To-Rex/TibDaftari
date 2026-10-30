@@ -1,23 +1,34 @@
 /**
  * /d/:token — the result link sent by SMS / Telegram (and the QR of documents issued before 2026-10-29; newer QR
  * codes open the authenticity check /v/:token instead). It shows the authenticity card (what was issued, by which
- * clinic, when). The PDF itself is always protected: an SMS code is sent to the phone the document belongs to, and
- * the PDF comes back in the same verify request. A code that is already on its way survives a page reload
- * (sessionStorage), and when the clinic cannot send SMS at all the page says so instead of waiting for a code that
- * never comes.
+ * clinic, when). The PDF is protected by an SMS code sent to the phone the document belongs to (the PDF comes back in
+ * the same verify request) — except during the clinic's code-free window (admin setting: N days after the result was
+ * issued, `otpRequired: false` + `freeUntil`), when "Hujjatni ko‘rish" opens it straight away; a window that closed in
+ * the meantime falls back to the code. A code that is already on its way survives a page reload (sessionStorage),
+ * and when the clinic cannot send SMS at all the page says so instead of waiting for a code that never comes.
  */
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { motion } from 'motion/react'
-import { ArrowLeft, BadgeCheck, Download, ExternalLink, FileText, FileX2, Loader2, MessageSquareOff, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, BadgeCheck, Clock, Download, ExternalLink, FileText, FileX2, Loader2, MessageSquareOff, ShieldCheck } from 'lucide-react'
 import { API_BASE } from '@/data/http/client'
 import { routes } from '@/shared/config/routes'
 import { cn } from '@/shared/lib/cn'
-import { fmtDate } from '@/shared/lib/format'
+import { fmtDate, fmtDateTime } from '@/shared/lib/format'
 import { LanguageSwitcher, Logo, ThemeToggle } from '@/shared/ui'
 
-type Info = { id: string; title: string; companyName: string; issuedAt: string }
+type Info = {
+  id: string
+  title: string
+  companyName: string
+  issuedAt: string
+  /** false while the clinic's code-free window runs (an older API leaves it out = a code is needed) */
+  otpRequired?: boolean
+  freeUntil?: string | null
+}
+
+const codeFree = (info: Info) => info.otpRequired === false
 
 /** why no code can ever be sent for this link (backend error codes) */
 type Unavailable = 'sms_not_configured' | 'no_phone'
@@ -105,6 +116,7 @@ export default function PublicResultPage() {
   const infoUrl = `${API_BASE}/d/${encodeURIComponent(token)}`
   const otpRequestUrl = `${infoUrl}/otp/request`
   const otpVerifyUrl = `${infoUrl}/otp/verify`
+  const openUrl = `${infoUrl}/open`
 
   const [state, setState] = useState<State>({ status: 'loading' })
   const [otp, setOtp] = useState<Otp | null>(null)
@@ -112,8 +124,38 @@ export default function PublicResultPage() {
   const [otpError, setOtpError] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
   const [verifying, setVerifying] = useState(false)
+  const [opening, setOpening] = useState(false)
+  const [openError, setOpenError] = useState<string | null>(null)
   const [cooldown, setCooldown] = useState(0)
   const loadedFor = useRef<string | null>(null)
+
+  /** Inside the code-free window: the PDF straight away. A window that closed meanwhile → the SMS code as usual. */
+  async function openDirect(info: Info) {
+    setOpening(true)
+    setOpenError(null)
+    try {
+      const response = await fetch(openUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+      if (!response.ok) {
+        const error = await readApiError(response)
+        if (error.code === 'otp_required') {
+          void requestOtp({ ...info, otpRequired: true, freeUntil: null })
+          return
+        }
+        if (response.status === 410 && error.code === 'revoked') {
+          setState({ status: 'error', notFound: false, revoked: true })
+          return
+        }
+        setOpenError(error.message || t('portal.publicResult.openFailed'))
+        return
+      }
+      const blob = await response.blob()
+      setState({ status: 'ready', blobUrl: URL.createObjectURL(blob), filename: pdfFilename(response) })
+    } catch {
+      setOpenError(t('portal.publicResult.openFailed'))
+    } finally {
+      setOpening(false)
+    }
+  }
 
   async function requestOtp(info: Info) {
     setState({ status: 'otp', info, phoneMasked: otp?.phoneMasked ?? '' })
@@ -180,6 +222,12 @@ export default function PublicResultPage() {
           return
         }
         const info = (await response.json()) as Info
+        if (codeFree(info)) {
+          // no code needed right now — a code requested earlier is of no use
+          forgetOtp(token)
+          setState({ status: 'verify', info })
+          return
+        }
         const pending = recallOtp(token)
         if (pending) {
           // reloaded while a code was on its way: it is still valid, so keep waiting for it (no second SMS)
@@ -283,10 +331,27 @@ export default function PublicResultPage() {
               </div>
             </dl>
             <div className="mt-5 flex flex-col gap-2">
-              <button type="button" onClick={() => void requestOtp(state.info)} className={cn(btn, 'w-full bg-brand text-white hover:bg-brand-strong')} data-public-view>
-                <FileText className="size-5" />
-                {t('portal.publicResult.viewPdf')}
+              <button
+                type="button"
+                onClick={() => void (codeFree(state.info) ? openDirect(state.info) : requestOtp(state.info))}
+                disabled={opening}
+                className={cn(btn, 'w-full bg-brand text-white hover:bg-brand-strong disabled:opacity-70')}
+                data-public-view={codeFree(state.info) ? 'direct' : 'otp'}
+              >
+                {opening ? <Loader2 className="size-5 animate-spin" /> : <FileText className="size-5" />}
+                {opening ? t('portal.publicResult.opening') : t('portal.publicResult.viewPdf')}
               </button>
+              {codeFree(state.info) && state.info.freeUntil && (
+                <p className="flex items-center justify-center gap-1.5 text-[12.5px] text-ink-3" data-public-free-until>
+                  <Clock className="size-3.5" />
+                  {t('portal.publicResult.freeUntil', { date: fmtDateTime(state.info.freeUntil) })}
+                </p>
+              )}
+              {openError && (
+                <p role="alert" className="text-center text-[13px] text-danger">
+                  {openError}
+                </p>
+              )}
               <Link to={routes.patientLogin} className={cn(btn, 'w-full border border-line-strong/70 bg-surface text-ink shadow-1 hover:bg-surface-2')}>
                 {t('portal.publicResult.portal')}
               </Link>

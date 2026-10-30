@@ -88,6 +88,8 @@ export interface Company extends AuditStamp {
   }
   /** Per-company SMS text overrides ({patient} {order} {service} {company} {branch}; result text also {link}); empty = platform default. */
   smsTemplates?: SmsTemplateOverrides
+  /** Days after a result is issued during which its SMS link opens the PDF without an SMS code; 0 = always a code. */
+  documentFreeViewDays?: number
   /** Company Telegram bot (token stays on the backend). */
   telegram?: { botUsername: string | null; connected: boolean }
   branchCount: number
