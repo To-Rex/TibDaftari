@@ -20,7 +20,7 @@ export default function DashboardPage() {
   const { t } = useTranslation()
   const { staff, companyId, branchId } = useStaffSession()
   const { can } = usePermissions()
-  // the registrar desk sees revenue, but only the last 7 days
+  // `reports.finance.recent` without finance.read: revenue of the last 7 days only (the registrar role has both now)
   const recentOnly = !can('reports.finance.read') && can('reports.finance.recent')
   const [preset, setPreset] = useState<Preset>('last7')
   const [metric, setMetric] = useState<Metric>('revenue')

@@ -30,7 +30,7 @@ export default function ReportsPage() {
   const financeFull = can('reports.finance.read')
   const financeRecent = can('reports.finance.recent')
   const finance = financeFull || financeRecent
-  // the registrar desk sees revenue, but only the last 7 days
+  // `reports.finance.recent` without finance.read: revenue of the last 7 days only (the registrar role has both now)
   const recentOnly = financeRecent && !financeFull
   const minDate = recentOnly ? presetRange('last7').from : undefined
   const [params, setParams] = useSearchParams()
