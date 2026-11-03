@@ -96,6 +96,17 @@ const receptionUz = {
   cancelReason: 'Sabab',
   cancelReasonPh: 'Masalan: bemor fikridan qaytdi',
   cancelDefaultReason: 'Bekor qilindi',
+  removeItemTitle: '«{{name}}» chekdan o‘chirilsinmi?',
+  removeItemPaidHint: 'Bu chek bo‘yicha to‘lov qilingan. Xizmat o‘chirilgach, ortiqcha to‘langan summa bo‘lsa, bemorga qaytariladi va to‘lovlar tarixida «qaytarilgan» bo‘lib qayd etiladi.',
+  removeItemNewTotal: 'Yangi jami',
+  removeItemRefund: 'Bemorga qaytariladi',
+  removeItemNoRefund: 'Qaytariladigan pul yo‘q — chekdagi qarz kamayadi.',
+  removeItemReason: 'Sabab',
+  removeItemReasonPh: 'Masalan: adashib qo‘shilgan',
+  removeItemConfirm: 'O‘chirish',
+  removeItemConfirmRefund: 'O‘chirish va qaytarish',
+  itemRemoved: 'Xizmat chekdan o‘chirildi',
+  itemRemovedRefund: 'Bemorga {{amount}} qaytaring',
   cancelConfirm: 'Bekor qilish',
   cancelled: 'Chek bekor qilindi',
   receipt: {
@@ -242,6 +253,7 @@ const receptionRu = {
   amount: 'Сумма', amountTooBig: 'Сумма не может превышать остаток', fullAmount: 'Всё', partialHint: 'Частичная оплата. Остаток: {{rest}}', method: 'Способ оплаты', splitPay: 'Оплатить несколькими способами', singlePay: 'Оплатить одним способом', splitTitle: 'По способам оплаты', splitHint: 'Укажите сумму для каждого способа — например, часть наличными, остальное картой. Можно оплатить частично.', splitRest: 'Остаток', splitTotal: 'К оплате', splitLeft: 'Останется по чеку', splitEmpty: 'Укажите сумму хотя бы для одного способа',
   sendSms: 'Отправить SMS', sendSmsHint: 'Пациент получит SMS о чеке', paidOk: 'Оплата принята', payments: 'История оплат', noPayments: 'Оплат пока нет',
   cancelOrder: 'Отменить чек', cancelHint: 'Чек {{number}} будет отменён. Это действие необратимо.', cancelReason: 'Причина', cancelReasonPh: 'Например: пациент передумал', cancelDefaultReason: 'Отменён', cancelConfirm: 'Отменить', cancelled: 'Чек отменён',
+  removeItemTitle: 'Удалить «{{name}}» из чека?', removeItemPaidHint: 'По чеку есть оплата. После удаления услуги переплата, если она есть, возвращается пациенту и отмечается в истории оплат как «возврат».', removeItemNewTotal: 'Новый итог', removeItemRefund: 'Вернуть пациенту', removeItemNoRefund: 'Возвращать нечего — уменьшится долг по чеку.', removeItemReason: 'Причина', removeItemReasonPh: 'Например: добавлена по ошибке', removeItemConfirm: 'Удалить', removeItemConfirmRefund: 'Удалить и вернуть', itemRemoved: 'Услуга удалена из чека', itemRemovedRefund: 'Верните пациенту {{amount}}',
   receipt: { number: 'Чек', patient: 'Пациент', cashier: 'Кассир', footer: 'Спасибо за обращение!' },
   printing: {
     viaService: 'Печать на чековом принтере (TPrints)', viaBrowser: 'Печать через браузер', settings: 'Настройки принтера',
@@ -331,6 +343,7 @@ const receptionEn = {
   amount: 'Amount', amountTooBig: 'Amount cannot exceed the remaining balance', fullAmount: 'Full', partialHint: 'Partial payment. Remaining: {{rest}}', method: 'Payment method', splitPay: 'Pay with several methods', singlePay: 'Pay with one method', splitTitle: 'By payment method', splitHint: 'Enter an amount for each method — e.g. part cash, the rest by card. Partial payment is fine too.', splitRest: 'The rest', splitTotal: 'To pay', splitLeft: 'Left on the order', splitEmpty: 'Enter an amount for at least one method',
   sendSms: 'Send SMS', sendSmsHint: 'The patient receives an SMS about the order', paidOk: 'Payment received', payments: 'Payment history', noPayments: 'No payments yet',
   cancelOrder: 'Cancel order', cancelHint: 'Order {{number}} will be cancelled. This cannot be undone.', cancelReason: 'Reason', cancelReasonPh: 'e.g. patient changed their mind', cancelDefaultReason: 'Cancelled', cancelConfirm: 'Cancel order', cancelled: 'Order cancelled',
+  removeItemTitle: 'Remove “{{name}}” from the order?', removeItemPaidHint: 'This order has payments. Once the service is removed, any overpayment goes back to the patient and is recorded as a refund in the payment history.', removeItemNewTotal: 'New total', removeItemRefund: 'Give back to the patient', removeItemNoRefund: 'Nothing to give back — the remaining debt shrinks.', removeItemReason: 'Reason', removeItemReasonPh: 'e.g. added by mistake', removeItemConfirm: 'Remove', removeItemConfirmRefund: 'Remove and refund', itemRemoved: 'Service removed from the order', itemRemovedRefund: 'Give {{amount}} back to the patient',
   receipt: { number: 'Order', patient: 'Patient', cashier: 'Cashier', footer: 'Thank you for visiting!' },
   printing: {
     viaService: 'Print on the receipt printer (TPrints)', viaBrowser: 'Print via the browser', settings: 'Printer settings',

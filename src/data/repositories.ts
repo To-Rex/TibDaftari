@@ -142,7 +142,8 @@ export interface OrderRepository {
   get(id: Id): Promise<{ order: Order; items: OrderItem[]; payments: Payment[] }>
   create(companyId: Id, employeeId: Id, input: CreateOrderInput): Promise<{ order: Order; items: OrderItem[] }>
   addItems(orderId: Id, serviceTypeIds: Id[]): Promise<{ order: Order; items: OrderItem[] }>
-  removeItem(orderId: Id, itemId: Id): Promise<{ order: Order; items: OrderItem[] }>
+  /** A pending service added by mistake — paid cheques too: `refunded` = what went back to the patient (0 otherwise). */
+  removeItem(orderId: Id, itemId: Id, reason?: string): Promise<{ order: Order; items: OrderItem[]; refunded?: number }>
   pay(employeeId: Id, input: PayOrderInput): Promise<{ order: Order; payments: Payment[] }>
   cancel(orderId: Id, reason: string): Promise<Order>
   /** Soft-delete a cheque that never "happened": unpaid, no lab work started. Permission `reception.order.delete`. */

@@ -52,7 +52,7 @@ export function useAddItems(orderId: Id) {
 
 export function useRemoveItem(orderId: Id) {
   const inv = useInvalidateOrders()
-  return useMutation({ mutationFn: (itemId: Id) => repos.orders.removeItem(orderId, itemId), onSuccess: () => inv(orderId) })
+  return useMutation({ mutationFn: ({ itemId, reason }: { itemId: Id; reason?: string }) => repos.orders.removeItem(orderId, itemId, reason), onSuccess: () => inv(orderId) })
 }
 
 export function usePayOrder(employeeId: Id) {

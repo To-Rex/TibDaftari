@@ -15,7 +15,8 @@ import { itemStatusMeta } from '@/features/orders/status'
  */
 export function OrderItemsTable({ order, items, loading, onRemove, removing, canRemove }: { order?: Order; items: OrderItem[]; loading?: boolean; onRemove: (id: string) => void; removing?: string | null; canRemove: boolean }) {
   const { t } = useTranslation()
-  const removable = !!order && order.payment === 'unpaid' && order.status !== 'cancelled' && canRemove
+  // paid cheques too: a pending service added by mistake can leave (the page confirms and the difference goes back)
+  const removable = !!order && order.status !== 'cancelled' && canRemove
   if (loading) return <div className="flex flex-col gap-3 p-5">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-10" />)}</div>
   if (!items.length) return <EmptyState icon={<FlaskConical />} title={t('staff.reception.noItems')} description={t('staff.reception.noItemsHint')} className="py-12" />
   const th = 'px-4 py-2.5 text-left text-[11.5px] font-medium uppercase tracking-[0.05em] text-ink-3'

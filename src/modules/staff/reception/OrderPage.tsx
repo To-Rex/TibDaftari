@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
 import { ArrowUpRight, GitBranch, Globe, Plus, Printer, Settings2, User, Wallet } from 'lucide-react'
 import { repos } from '@/data'
+import type { OrderItem } from '@/domain'
 import { Badge, Button, Card, EmptyState, Page, PageHeader, Skeleton, toast } from '@/shared/ui'
 import { errorMessage } from '@/shared/lib/errors'
 import { cn } from '@/shared/lib/cn'
@@ -21,6 +22,7 @@ import { OrderTotals } from '@/features/reception/OrderTotals'
 import { ServicePicker } from '@/features/reception/ServicePicker'
 import { PayModal } from '@/features/reception/PayModal'
 import { CancelOrderModal } from '@/features/reception/CancelOrderModal'
+import { RemoveItemModal } from '@/features/reception/RemoveItemModal'
 import { Receipt, type ReceiptProps } from '@/features/reception/Receipt'
 import { printReceipt } from '@/features/printing/printReceipt'
 import { PrintSettingsModal } from '@/features/printing/PrintSettingsModal'
@@ -38,6 +40,8 @@ export default function OrderPage() {
   const [printSettingsOpen, setPrintSettingsOpen] = useState(false)
   const [adding, setAdding] = useState<string | null>(null)
   const [removing, setRemoving] = useState<string | null>(null)
+  // a service leaving a (partly) paid cheque: confirm first — money may go back to the patient
+  const [removePaid, setRemovePaid] = useState<OrderItem | null>(null)
 
   const order = q.data?.order
   const items = useMemo(() => q.data?.items ?? [], [q.data])
@@ -59,8 +63,9 @@ export default function OrderPage() {
     try { await addItems.mutateAsync([stId]) } catch (e) { toast.error(errorMessage(e)) } finally { setAdding(null) }
   }
   const onRemove = async (itemId: string) => {
+    if (order && order.payment !== 'unpaid') { setRemovePaid(items.find((i) => i.id === itemId) ?? null); return }
     setRemoving(itemId)
-    try { await removeItem.mutateAsync(itemId) } catch (e) { toast.error(errorMessage(e)) } finally { setRemoving(null) }
+    try { await removeItem.mutateAsync({ itemId }) } catch (e) { toast.error(errorMessage(e)) } finally { setRemoving(null) }
   }
 
   if (q.isError) return <Page><EmptyState title={t('common.error')} description={errorMessage(q.error)} action={<Link to={routes.app.reception}><Button variant="secondary">{t('common.back')}</Button></Link>} /></Page>
@@ -139,6 +144,7 @@ export default function OrderPage() {
 
       {order && <PayModal open={payOpen} onClose={() => setPayOpen(false)} order={order} employeeId={employeeId} onPaid={() => toast.success(t('staff.reception.paidOk'), order.number)} />}
       {order && <CancelOrderModal open={cancelOpen} onClose={() => setCancelOpen(false)} orderId={order.id} orderNumber={order.number} />}
+      {order && <RemoveItemModal order={order} item={removePaid} onClose={() => setRemovePaid(null)} />}
       {order && <Receipt {...receipt} />}
       <PrintSettingsModal open={printSettingsOpen} onClose={() => setPrintSettingsOpen(false)} />
     </Page>

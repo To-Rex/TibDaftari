@@ -81,8 +81,8 @@ export const ordersHttp: OrderRepository = {
   addItems: (orderId, serviceTypeIds) =>
     api.post<{ order: Order; items: OrderItem[] }>(`/orders/${orderId}/items`, { serviceTypeIds }),
 
-  removeItem: (orderId, itemId) =>
-    api.delete<{ order: Order; items: OrderItem[] }>(`/orders/${orderId}/items/${itemId}`),
+  removeItem: (orderId, itemId, reason) =>
+    api.delete<{ order: Order; items: OrderItem[]; refunded?: number }>(`/orders/${orderId}/items/${itemId}`, { query: { reason } }),
 
   pay: (_employeeId, input) =>
     api.post<{ order: Order; payments: Payment[] }>(`/orders/${input.orderId}/pay`, {
