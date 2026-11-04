@@ -1,73 +1,95 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
-import { Banknote, CreditCard, Landmark, Shuffle, ShieldCheck, Wallet } from 'lucide-react'
+import { Banknote, Calculator, CreditCard, Landmark, Shuffle, ShieldCheck, Wallet, X } from 'lucide-react'
 import type { Id, Order, PaymentMethod } from '@/domain'
-import { Button, Field, Input, Modal, Segmented, Switch, toast } from '@/shared/ui'
+import { Button, Field, IconButton, Input, Modal, Switch, toast } from '@/shared/ui'
 import { cn } from '@/shared/lib/cn'
 import { errorMessage } from '@/shared/lib/errors'
 import { fmtMoney } from '@/shared/lib/format'
 import { usePayOrder } from '@/features/orders/queries'
 import { paymentMethodLabel } from '@/features/orders/status'
+import { PAY_METHODS, cashSuggestions, dominant, fillRest, setPart, splitTotal, startSplit, usedParts, type Split } from './paySplit'
 
 const fmtInput = (n: number) => (n ? n.toLocaleString('ru-RU').replace(/,/g, ' ') : '')
 const parseInput = (s: string) => Number(s.replace(/\D/g, '')) || 0
+const selectAll = (e: { currentTarget: HTMLInputElement }) => e.currentTarget.select()
 
-const METHODS: { value: PaymentMethod; icon: ReactNode }[] = [
-  { value: 'cash', icon: <Banknote /> },
-  { value: 'card', icon: <CreditCard /> },
-  { value: 'transfer', icon: <Landmark /> },
-  { value: 'insurance', icon: <ShieldCheck /> },
-]
-type Parts = Record<PaymentMethod, number>
-const NO_PARTS: Parts = { cash: 0, card: 0, transfer: 0, insurance: 0 }
+const METHOD_ICON: Record<PaymentMethod, typeof Banknote> = { cash: Banknote, card: CreditCard, transfer: Landmark, insurance: ShieldCheck }
+/** one colour per method: the bar segment and the row's icon */
+const TONE: Record<PaymentMethod, { bar: string; chip: string }> = {
+  cash: { bar: 'bg-ok', chip: 'bg-ok-soft text-ok' },
+  card: { bar: 'bg-info', chip: 'bg-info-soft text-info' },
+  transfer: { bar: 'bg-warn', chip: 'bg-warn-soft text-warn' },
+  insurance: { bar: 'bg-brand', chip: 'bg-brand-soft text-brand-ink' },
+}
+
+/** the change calculator stays open for cashiers who use it (this browser only) */
+const CHANGE_KEY = 'clinic.pay.changeCalc'
+const readChangeOpen = () => { try { return localStorage.getItem(CHANGE_KEY) === '1' } catch { return false } }
+const saveChangeOpen = (on: boolean) => { try { localStorage.setItem(CHANGE_KEY, on ? '1' : '0') } catch { /* private mode */ } }
 
 /**
  * Take a payment: the whole remaining amount or a part of it, by one method — or split over several methods at once
- * ("Bir nechta usulda to'lash": e.g. part cash, the rest by card). A split is one action: one SMS, one receipt.
+ * ("Bir nechta usulda to'lash"). In a split the amount stays on its method and gives way as other methods are typed
+ * (Naqd 100 000, Karta 5 000 → Naqd 95 000; see `paySplit`). A split is one action: one SMS, one receipt.
+ * For cash, the change to hand back is worked out from what the patient gave (not stored).
  */
 export function PayModal({ open, onClose, order, employeeId, onPaid }: { open: boolean; onClose: () => void; order: Order; employeeId: Id; onPaid: (paidAmount: number) => void }) {
   const { t } = useTranslation()
   const remaining = Math.max(0, order.total - order.paidAmount)
   const [amount, setAmount] = useState(remaining)
   const [method, setMethod] = useState<PaymentMethod>('cash')
-  const [split, setSplit] = useState(false)
-  const [parts, setParts] = useState<Parts>(NO_PARTS)
+  const [split, setSplit] = useState<Split | null>(null)
+  const [given, setGiven] = useState(0)
+  const [changeOpen, setChangeOpen] = useState(readChangeOpen)
   const [sms, setSms] = useState(true)
-  const [done, setDone] = useState<{ amount: number; parts: [PaymentMethod, number][] } | null>(null)
+  const [done, setDone] = useState<{ amount: number; parts: [PaymentMethod, number][]; change: number } | null>(null)
+  const inputs = useRef<Partial<Record<PaymentMethod, HTMLInputElement | null>>>({})
   const pay = usePayOrder(employeeId)
 
-  useEffect(() => { if (open) { setAmount(remaining); setSplit(false); setParts(NO_PARTS); setDone(null) } }, [open, remaining])
+  useEffect(() => { if (open) { setAmount(remaining); setSplit(null); setGiven(0); setDone(null) } }, [open, remaining])
 
-  const used = (Object.entries(parts) as [PaymentMethod, number][]).filter(([, v]) => v > 0)
-  const total = split ? used.reduce((s, [, v]) => s + v, 0) : amount
+  const paid: [PaymentMethod, number][] = split ? usedParts(split) : amount > 0 ? [[method, amount]] : []
+  const total = split ? splitTotal(split) : amount
+  const left = Math.max(0, remaining - total)
   const valid = total > 0 && total <= remaining
-  // switching to several methods starts from what was typed for the chosen one
+  const cash = paid.find(([m]) => m === 'cash')?.[1] ?? 0
+  const change = changeOpen && given > 0 && cash > 0 ? given - cash : null
+  const toggleChange = () => { const on = !changeOpen; setChangeOpen(on); saveChangeOpen(on); if (!on) setGiven(0) }
+
   const toggleSplit = () => {
-    if (!split) setParts({ ...NO_PARTS, [method]: amount })
-    else { setAmount(Math.min(remaining, total) || remaining); if (used[0]) setMethod(used[0][0]) }
-    setSplit(!split)
+    if (!split) {
+      const s = startSplit(method, Math.min(amount, remaining) || remaining)
+      setSplit(s)
+      // the next amount typed is for another method
+      const next = PAY_METHODS.find((m) => m !== s.base)
+      requestAnimationFrame(() => { if (next) inputs.current[next]?.focus() })
+    } else {
+      setAmount(Math.min(remaining, total) || remaining)
+      setMethod(dominant(split))
+      setSplit(null)
+    }
   }
-  const setPart = (m: PaymentMethod, v: number) => setParts((p) => ({ ...p, [m]: v }))
-  const fillRest = (m: PaymentMethod) => setPart(m, Math.max(0, remaining - (total - parts[m])))
 
   const submit = async () => {
     if (!valid) return
-    const paid: [PaymentMethod, number][] = split ? used : [[method, amount]]
     try {
       // a split over one method is just a normal payment
       await pay.mutateAsync(paid.length > 1
         ? { orderId: order.id, amount: total, method: paid[0]![0], sendSms: sms, parts: paid.map(([m, a]) => ({ method: m, amount: a })) }
         : { orderId: order.id, amount: total, method: paid[0]![0], sendSms: sms })
-      setDone({ amount: total, parts: paid })
-      setTimeout(() => { onPaid(total); onClose() }, 1100)
+      setDone({ amount: total, parts: paid, change: change && change > 0 ? change : 0 })
+      setTimeout(() => { onPaid(total); onClose() }, change && change > 0 ? 2600 : 1100)
     } catch (e) {
       toast.error(errorMessage(e))
     }
   }
 
+  const pct = (v: number) => (remaining > 0 ? Math.min(100, (v / remaining) * 100) : 0)
+
   return (
-    <Modal open={open} onClose={onClose} size="sm" title={t('staff.reception.payTitle')} description={`${order.number} · ${t('staff.reception.remaining')}: ${fmtMoney(remaining)}`}
+    <Modal open={open} onClose={onClose} size="sm" title={t('staff.reception.payTitle')} description={`${order.number} · ${order.patientName}`}
       footer={!done && (
         <>
           <Button variant="ghost" onClick={onClose} className="max-sm:px-2">{t('common.cancel')}</Button>
@@ -87,50 +109,137 @@ export function PayModal({ open, onClose, order, employeeId, onPaid }: { open: b
             <p className="mt-0.5 text-center text-[13.5px] text-ink-3 tabular">
               {fmtMoney(done.amount)} · {done.parts.length > 1 ? done.parts.map(([m, a]) => `${paymentMethodLabel(m)} ${fmtMoney(a, false)}`).join(' + ') : paymentMethodLabel(done.parts[0]![0])}
             </p>
+            {done.change > 0 && (
+              <p className="mt-3 rounded-lg bg-ok-soft px-3 py-1.5 text-[15px] font-semibold text-ok tabular" data-pay-done-change>{t('staff.reception.cashChange')}: {fmtMoney(done.change)}</p>
+            )}
           </motion.div>
         ) : (
           <motion.form key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col gap-5" onSubmit={(e) => { e.preventDefault(); void submit() }}>
+            {/* what is due, and how this payment covers it (one bar segment per method) */}
+            <div className="rounded-[var(--radius)] border border-line bg-surface-2/40 p-3.5" data-pay-summary>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-[11.5px] font-medium uppercase tracking-[0.06em] text-ink-3">{t('staff.reception.dueNow')}</div>
+                  <div className="text-[22px] font-semibold leading-tight tabular">{fmtMoney(remaining)}</div>
+                </div>
+                {order.paidAmount > 0 && (
+                  <div className="shrink-0 text-right text-[12px] leading-5 text-ink-3 tabular">
+                    <div>{t('common.total')}: <span className="text-ink-2">{fmtMoney(order.total, false)}</span></div>
+                    <div>{t('staff.reception.paid')}: <span className="text-ok">{fmtMoney(order.paidAmount, false)}</span></div>
+                  </div>
+                )}
+              </div>
+              <div className="mt-3 flex h-2 gap-px overflow-hidden rounded-full bg-surface-3" aria-hidden>
+                {paid.map(([m, a]) => (
+                  <motion.span key={m} className={cn('h-full', TONE[m].bar)} initial={false} animate={{ width: `${pct(a)}%` }} transition={{ type: 'spring', stiffness: 260, damping: 30 }} />
+                ))}
+              </div>
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-[12.5px]" data-pay-split-sum>
+                <span className="text-ink-3">{t('staff.reception.splitTotal')}: <b className={cn('tabular', total > remaining ? 'text-danger' : 'text-ink')} data-pay-total>{fmtMoney(total)}</b></span>
+                <span className="text-ink-3">{t('staff.reception.splitLeft')}: <b className={cn('tabular', left > 0 ? 'text-warn' : 'text-ok')} data-pay-left>{fmtMoney(left)}</b></span>
+              </div>
+            </div>
+
             {!split ? (
               <>
-                <Field label={t('staff.reception.amount')} hint={amount < remaining && amount > 0 ? t('staff.reception.partialHint', { rest: fmtMoney(remaining - amount) }) : undefined} error={amount > remaining ? t('staff.reception.amountTooBig') : undefined}>
-                  {(id) => (
-                    <div className="flex items-stretch gap-2">
-                      <Input id={id} value={fmtInput(amount)} onChange={(e) => setAmount(parseInput(e.target.value))} inputMode="numeric" mono className="h-12 text-[18px] font-semibold" autoFocus invalid={amount > remaining}
-                        rightSlot={<span className="pr-2 text-[13px] text-ink-3">{t('common.sum')}</span>} />
-                      <Button type="button" variant="soft" className="h-12" onClick={() => setAmount(remaining)}>{t('staff.reception.fullAmount')}</Button>
+                <Field label={t('staff.reception.method')}>
+                  {() => (
+                    <div className="grid grid-cols-4 gap-2 max-xs:grid-cols-2" role="radiogroup" aria-label={t('staff.reception.method')}>
+                      {PAY_METHODS.map((m) => {
+                        const Icon = METHOD_ICON[m]
+                        const on = m === method
+                        return (
+                          <button key={m} type="button" role="radio" aria-checked={on} onClick={() => setMethod(m)} data-pay-method={m}
+                            className={cn('flex min-w-0 flex-col items-center gap-1.5 rounded-[var(--radius)] border px-1.5 py-2.5 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand/20',
+                              on ? 'border-brand bg-brand-soft/50 text-brand-ink' : 'border-line text-ink-2 hover:border-line-strong hover:bg-surface-2/60')}>
+                            <Icon className="size-5" /><span className="max-w-full truncate">{paymentMethodLabel(m)}</span>
+                          </button>
+                        )
+                      })}
                     </div>
                   )}
                 </Field>
-                <Field label={t('staff.reception.method')}>
-                  {() => (
-                    <Segmented<PaymentMethod> value={method} onChange={setMethod} className="w-full [&>button]:flex-1"
-                      items={METHODS.map((m) => ({ value: m.value, label: paymentMethodLabel(m.value), icon: m.icon }))} />
+                <Field label={t('staff.reception.amount')} hint={amount < remaining && amount > 0 ? t('staff.reception.partialHint', { rest: fmtMoney(remaining - amount) }) : undefined} error={amount > remaining ? t('staff.reception.amountTooBig') : undefined}>
+                  {(id) => (
+                    <div className="flex items-stretch gap-2">
+                      <Input id={id} value={fmtInput(amount)} onChange={(e) => setAmount(parseInput(e.target.value))} onFocus={selectAll} inputMode="numeric" mono className="h-12 text-[18px] font-semibold" autoFocus invalid={amount > remaining} data-pay-amount
+                        rightSlot={<span className="pr-2 text-[13px] text-ink-3">{t('common.sum')}</span>} />
+                      <Button type="button" variant="soft" className="h-12" onClick={() => setAmount(remaining)} disabled={amount === remaining}>{t('staff.reception.fullAmount')}</Button>
+                    </div>
                   )}
                 </Field>
               </>
             ) : (
-              <Field label={t('staff.reception.splitTitle')} hint={t('staff.reception.splitHint')} error={total > remaining ? t('staff.reception.amountTooBig') : undefined}>
+              <Field label={t('staff.reception.splitTitle')} hint={total === 0 ? t('staff.reception.splitEmpty') : split.auto ? t('staff.reception.splitHintAuto', { method: paymentMethodLabel(split.base) }) : t('staff.reception.splitHint')}>
                 {() => (
                   <div className="flex flex-col gap-2" data-pay-split>
-                    {METHODS.map((m) => (
-                      <div key={m.value} className={cn('flex items-center gap-2 rounded-[var(--radius)] border px-2.5 py-2 transition-colors', parts[m.value] > 0 ? 'border-brand/50 bg-brand-soft/30' : 'border-line')} data-pay-part={m.value}>
-                        <span className="flex w-[104px] shrink-0 items-center gap-2 text-[13.5px] font-medium [&>svg]:size-4 [&>svg]:text-ink-3 max-xs:w-[84px]">{m.icon}<span className="truncate">{paymentMethodLabel(m.value)}</span></span>
-                        <Input value={fmtInput(parts[m.value])} onChange={(e) => setPart(m.value, parseInput(e.target.value))} inputMode="numeric" mono placeholder="0" className="h-10 min-w-0 text-[15px] font-semibold" aria-label={paymentMethodLabel(m.value)} />
-                        <Button type="button" size="sm" variant="ghost" className="shrink-0 px-2" onClick={() => fillRest(m.value)} disabled={total >= remaining && parts[m.value] === 0} data-pay-rest>{t('staff.reception.splitRest')}</Button>
-                      </div>
-                    ))}
-                    <div className="mt-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-[var(--radius)] bg-surface-2/70 px-3 py-2 text-[13px]" data-pay-split-sum>
-                      <span className="text-ink-3">{t('staff.reception.splitTotal')}: <b className={cn('tabular', total > remaining ? 'text-danger' : 'text-ink')}>{fmtMoney(total)}</b></span>
-                      <span className="text-ink-3">{t('staff.reception.splitLeft')}: <b className="tabular text-ink">{fmtMoney(Math.max(0, remaining - total))}</b></span>
-                    </div>
-                    {total === 0 && <p className="text-[12.5px] text-ink-3">{t('staff.reception.splitEmpty')}</p>}
+                    {PAY_METHODS.map((m) => {
+                      const Icon = METHOD_ICON[m]
+                      const v = split.parts[m]
+                      const auto = m === split.base && split.auto
+                      return (
+                        <div key={m} className={cn('flex items-center gap-2 rounded-[var(--radius)] border px-2.5 py-2 transition-colors', v > 0 ? 'border-brand/40 bg-brand-soft/25' : 'border-line')} data-pay-part={m}>
+                          <span className="flex w-[116px] shrink-0 items-center gap-2 max-xs:w-[104px]">
+                            <span className={cn('grid size-7 shrink-0 place-items-center rounded-md transition-colors', v > 0 ? TONE[m].chip : 'bg-surface-2 text-ink-3')}><Icon className="size-4" /></span>
+                            <span className="min-w-0">
+                              <span className="block truncate text-[13.5px] font-medium leading-tight">{paymentMethodLabel(m)}</span>
+                              {auto && <span className="block truncate text-[11px] leading-tight text-ink-3" data-pay-auto>{t('staff.reception.splitAuto')}</span>}
+                            </span>
+                          </span>
+                          <Input ref={(el) => { inputs.current[m] = el }} value={fmtInput(v)} onChange={(e) => setSplit(setPart(split, m, parseInput(e.target.value), remaining))} onFocus={selectAll}
+                            inputMode="numeric" mono placeholder="0" className="h-10 min-w-0 text-[15px] font-semibold" aria-label={paymentMethodLabel(m)} />
+                          {/* same width on every row, so the inputs stay aligned */}
+                          <span className={cn('flex shrink-0 justify-end', left > 0 ? 'w-[84px] max-xs:w-[72px]' : 'w-8')}>
+                            {left > 0 ? (
+                              <Button type="button" size="sm" variant="ghost" className="px-2" onClick={() => setSplit(fillRest(split, m, remaining))} data-pay-rest>{t('staff.reception.splitRest')}</Button>
+                            ) : v > 0 && !auto ? (
+                              <IconButton type="button" label={t('staff.reception.splitClear')} size="sm" onClick={() => setSplit(setPart(split, m, 0, remaining))} data-pay-clear><X /></IconButton>
+                            ) : null}
+                          </span>
+                        </div>
+                      )
+                    })}
                   </div>
                 )}
               </Field>
             )}
-            <button type="button" onClick={toggleSplit} className="-mt-2 inline-flex w-fit items-center gap-1.5 text-[13px] font-medium text-brand-ink hover:underline" data-pay-split-toggle>
-              {split ? <Wallet className="size-4" /> : <Shuffle className="size-4" />}{split ? t('staff.reception.singlePay') : t('staff.reception.splitPay')}
-            </button>
+
+            <div className="-mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+              <button type="button" onClick={toggleSplit} className="inline-flex w-fit items-center gap-1.5 text-[13px] font-medium text-brand-ink hover:underline" data-pay-split-toggle>
+                {split ? <Wallet className="size-4" /> : <Shuffle className="size-4" />}{split ? t('staff.reception.singlePay') : t('staff.reception.splitPay')}
+              </button>
+              {cash > 0 && (
+                <button type="button" onClick={toggleChange} aria-expanded={changeOpen} className={cn('inline-flex w-fit items-center gap-1.5 text-[13px] font-medium hover:underline', changeOpen ? 'text-ink-2' : 'text-brand-ink')} data-pay-change-toggle>
+                  <Calculator className="size-4" />{t('staff.reception.cashCalc')}
+                </button>
+              )}
+            </div>
+
+            {/* change for cash: what the patient handed over minus the cash part (a helper only, not sent) */}
+            {cash > 0 && changeOpen && (
+              <Field label={t('staff.reception.cashGiven')}>
+                {(id) => (
+                  <div className="flex flex-col gap-2" data-pay-change>
+                    <div className="flex items-stretch gap-2">
+                      <Input id={id} value={fmtInput(given)} onChange={(e) => setGiven(parseInput(e.target.value))} onFocus={selectAll} inputMode="numeric" mono placeholder={fmtInput(cash)} className="text-[15px] font-semibold"
+                        rightSlot={<span className="pr-2 text-[13px] text-ink-3">{t('common.sum')}</span>} data-pay-given />
+                      <div className={cn('flex min-w-[124px] flex-col justify-center rounded-[var(--radius-sm)] px-3 leading-tight', change == null ? 'bg-surface-2/70 text-ink-3' : change >= 0 ? 'bg-ok-soft text-ok' : 'bg-danger-soft text-danger')} data-pay-change-value>
+                        <span className="text-[11px] font-medium uppercase tracking-[0.06em] opacity-80">{change != null && change < 0 ? t('staff.reception.cashShort') : t('staff.reception.cashChange')}</span>
+                        <span className="text-[15px] font-semibold tabular">{change == null ? '—' : fmtMoney(Math.abs(change))}</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {cashSuggestions(cash).map((v) => (
+                        <button key={v} type="button" onClick={() => setGiven(v)} className={cn('rounded-full border px-2.5 py-1 text-[12.5px] font-medium tabular transition-colors', given === v ? 'border-brand bg-brand-soft/50 text-brand-ink' : 'border-line text-ink-2 hover:bg-surface-2')} data-pay-given-chip>
+                          {fmtMoney(v, false)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </Field>
+            )}
+
             <Switch checked={sms} onChange={setSms} label={t('staff.reception.sendSms')} description={t('staff.reception.sendSmsHint')} />
             <button type="submit" className="hidden" aria-hidden />
           </motion.form>
