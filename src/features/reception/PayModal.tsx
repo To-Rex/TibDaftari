@@ -1,28 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
-import { Banknote, Calculator, CreditCard, Landmark, Shuffle, ShieldCheck, Wallet, X } from 'lucide-react'
+import { Calculator, Shuffle, Wallet } from 'lucide-react'
 import type { Id, Order, PaymentMethod } from '@/domain'
-import { Button, Field, IconButton, Input, Modal, Switch, toast } from '@/shared/ui'
+import { Button, Field, Input, Modal, Switch, toast } from '@/shared/ui'
 import { cn } from '@/shared/lib/cn'
 import { errorMessage } from '@/shared/lib/errors'
 import { fmtMoney } from '@/shared/lib/format'
 import { usePayOrder } from '@/features/orders/queries'
 import { paymentMethodLabel } from '@/features/orders/status'
-import { PAY_METHODS, cashSuggestions, dominant, fillRest, setPart, splitTotal, startSplit, usedParts, type Split } from './paySplit'
-
-const fmtInput = (n: number) => (n ? n.toLocaleString('ru-RU').replace(/,/g, ' ') : '')
-const parseInput = (s: string) => Number(s.replace(/\D/g, '')) || 0
-const selectAll = (e: { currentTarget: HTMLInputElement }) => e.currentTarget.select()
-
-const METHOD_ICON: Record<PaymentMethod, typeof Banknote> = { cash: Banknote, card: CreditCard, transfer: Landmark, insurance: ShieldCheck }
-/** one colour per method: the bar segment and the row's icon */
-const TONE: Record<PaymentMethod, { bar: string; chip: string }> = {
-  cash: { bar: 'bg-ok', chip: 'bg-ok-soft text-ok' },
-  card: { bar: 'bg-info', chip: 'bg-info-soft text-info' },
-  transfer: { bar: 'bg-warn', chip: 'bg-warn-soft text-warn' },
-  insurance: { bar: 'bg-brand', chip: 'bg-brand-soft text-brand-ink' },
-}
+import { PAY_METHODS, cashSuggestions, dominant, splitTotal, startSplit, usedParts, type Split } from './paySplit'
+import { MethodBar, MethodTiles, SplitRows, fmtInput, parseInput, selectAll } from './PaymentMethodFields'
 
 /** the change calculator stays open for cashiers who use it (this browser only) */
 const CHANGE_KEY = 'clinic.pay.changeCalc'
@@ -86,8 +74,6 @@ export function PayModal({ open, onClose, order, employeeId, onPaid }: { open: b
     }
   }
 
-  const pct = (v: number) => (remaining > 0 ? Math.min(100, (v / remaining) * 100) : 0)
-
   return (
     <Modal open={open} onClose={onClose} size="sm" title={t('staff.reception.payTitle')} description={`${order.number} · ${order.patientName}`}
       footer={!done && (
@@ -129,11 +115,7 @@ export function PayModal({ open, onClose, order, employeeId, onPaid }: { open: b
                   </div>
                 )}
               </div>
-              <div className="mt-3 flex h-2 gap-px overflow-hidden rounded-full bg-surface-3" aria-hidden>
-                {paid.map(([m, a]) => (
-                  <motion.span key={m} className={cn('h-full', TONE[m].bar)} initial={false} animate={{ width: `${pct(a)}%` }} transition={{ type: 'spring', stiffness: 260, damping: 30 }} />
-                ))}
-              </div>
+              <div className="mt-3"><MethodBar parts={paid} of={remaining} /></div>
               <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-[12.5px]" data-pay-split-sum>
                 <span className="text-ink-3">{t('staff.reception.splitTotal')}: <b className={cn('tabular', total > remaining ? 'text-danger' : 'text-ink')} data-pay-total>{fmtMoney(total)}</b></span>
                 <span className="text-ink-3">{t('staff.reception.splitLeft')}: <b className={cn('tabular', left > 0 ? 'text-warn' : 'text-ok')} data-pay-left>{fmtMoney(left)}</b></span>
@@ -144,19 +126,7 @@ export function PayModal({ open, onClose, order, employeeId, onPaid }: { open: b
               <>
                 <Field label={t('staff.reception.method')}>
                   {() => (
-                    <div className="grid grid-cols-4 gap-2 max-xs:grid-cols-2" role="radiogroup" aria-label={t('staff.reception.method')}>
-                      {PAY_METHODS.map((m) => {
-                        const Icon = METHOD_ICON[m]
-                        const on = m === method
-                        return (
-                          <button key={m} type="button" role="radio" aria-checked={on} onClick={() => setMethod(m)} data-pay-method={m}
-                            className={cn('flex min-w-0 flex-col items-center gap-1.5 rounded-[var(--radius)] border px-1.5 py-2.5 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand/20',
-                              on ? 'border-brand bg-brand-soft/50 text-brand-ink' : 'border-line text-ink-2 hover:border-line-strong hover:bg-surface-2/60')}>
-                            <Icon className="size-5" /><span className="max-w-full truncate">{paymentMethodLabel(m)}</span>
-                          </button>
-                        )
-                      })}
-                    </div>
+                    <MethodTiles value={method} onChange={setMethod} label={t('staff.reception.method')} />
                   )}
                 </Field>
                 <Field label={t('staff.reception.amount')} hint={amount < remaining && amount > 0 ? t('staff.reception.partialHint', { rest: fmtMoney(remaining - amount) }) : undefined} error={amount > remaining ? t('staff.reception.amountTooBig') : undefined}>
@@ -172,34 +142,7 @@ export function PayModal({ open, onClose, order, employeeId, onPaid }: { open: b
             ) : (
               <Field label={t('staff.reception.splitTitle')} hint={total === 0 ? t('staff.reception.splitEmpty') : split.auto ? t('staff.reception.splitHintAuto', { method: paymentMethodLabel(split.base) }) : t('staff.reception.splitHint')}>
                 {() => (
-                  <div className="flex flex-col gap-2" data-pay-split>
-                    {PAY_METHODS.map((m) => {
-                      const Icon = METHOD_ICON[m]
-                      const v = split.parts[m]
-                      const auto = m === split.base && split.auto
-                      return (
-                        <div key={m} className={cn('flex items-center gap-2 rounded-[var(--radius)] border px-2.5 py-2 transition-colors', v > 0 ? 'border-brand/40 bg-brand-soft/25' : 'border-line')} data-pay-part={m}>
-                          <span className="flex w-[116px] shrink-0 items-center gap-2 max-xs:w-[104px]">
-                            <span className={cn('grid size-7 shrink-0 place-items-center rounded-md transition-colors', v > 0 ? TONE[m].chip : 'bg-surface-2 text-ink-3')}><Icon className="size-4" /></span>
-                            <span className="min-w-0">
-                              <span className="block truncate text-[13.5px] font-medium leading-tight">{paymentMethodLabel(m)}</span>
-                              {auto && <span className="block truncate text-[11px] leading-tight text-ink-3" data-pay-auto>{t('staff.reception.splitAuto')}</span>}
-                            </span>
-                          </span>
-                          <Input ref={(el) => { inputs.current[m] = el }} value={fmtInput(v)} onChange={(e) => setSplit(setPart(split, m, parseInput(e.target.value), remaining))} onFocus={selectAll}
-                            inputMode="numeric" mono placeholder="0" className="h-10 min-w-0 text-[15px] font-semibold" aria-label={paymentMethodLabel(m)} />
-                          {/* same width on every row, so the inputs stay aligned */}
-                          <span className={cn('flex shrink-0 justify-end', left > 0 ? 'w-[84px] max-xs:w-[72px]' : 'w-8')}>
-                            {left > 0 ? (
-                              <Button type="button" size="sm" variant="ghost" className="px-2" onClick={() => setSplit(fillRest(split, m, remaining))} data-pay-rest>{t('staff.reception.splitRest')}</Button>
-                            ) : v > 0 && !auto ? (
-                              <IconButton type="button" label={t('staff.reception.splitClear')} size="sm" onClick={() => setSplit(setPart(split, m, 0, remaining))} data-pay-clear><X /></IconButton>
-                            ) : null}
-                          </span>
-                        </div>
-                      )
-                    })}
-                  </div>
+                  <SplitRows split={split} onChange={setSplit} cap={remaining} inputs={inputs} />
                 )}
               </Field>
             )}

@@ -131,6 +131,26 @@ export interface Payment extends AuditStamp {
   employeeId: Id
   note?: string
   refundedAt?: IsoDateTime
+  /** method corrections, oldest first (absent / empty = never changed) */
+  corrections?: PaymentCorrection[]
+}
+
+/** What a payment was before its method was corrected (or it was split over several methods). */
+export interface PaymentCorrection {
+  at: IsoDateTime
+  byId?: Id | null
+  byName?: string | null
+  fromMethod: PaymentMethod
+  fromAmount: Money
+  reason?: string | null
+  /** this row was split off that payment */
+  splitFrom?: Id | null
+}
+
+/** A taken payment's method corrected — the amount stays: one part = another method, several = split (sum = amount). */
+export interface ChangePaymentMethodInput {
+  parts: { method: PaymentMethod; amount: Money }[]
+  reason?: string
 }
 
 export interface CreateOrderInput {

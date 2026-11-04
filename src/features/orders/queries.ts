@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { repos } from '@/data'
-import type { CreateOrderInput, Id, PageQuery, PayOrderInput, OrderListFilters } from '@/domain'
+import type { ChangePaymentMethodInput, CreateOrderInput, Id, PageQuery, PayOrderInput, OrderListFilters } from '@/domain'
 
 export type OrderListParams = PageQuery & OrderListFilters & { branchId?: Id; status?: string; payment?: string; dateFrom?: string; dateTo?: string; patientId?: Id }
 
@@ -58,6 +58,11 @@ export function useRemoveItem(orderId: Id) {
 export function usePayOrder(employeeId: Id) {
   const inv = useInvalidateOrders()
   return useMutation({ mutationFn: (input: PayOrderInput) => repos.orders.pay(employeeId, input), onSuccess: (r) => inv(r.order.id) })
+}
+
+export function useChangePaymentMethod(orderId: Id) {
+  const inv = useInvalidateOrders()
+  return useMutation({ mutationFn: ({ paymentId, ...input }: ChangePaymentMethodInput & { paymentId: Id }) => repos.orders.changePaymentMethod(paymentId, input), onSuccess: () => inv(orderId) })
 }
 
 export function useCancelOrder(orderId: Id) {

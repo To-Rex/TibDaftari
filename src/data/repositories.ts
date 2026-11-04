@@ -33,6 +33,7 @@ import type {
   PortalAccessResult,
   Payment,
   PayOrderInput,
+  ChangePaymentMethodInput,
   CreateOrderInput,
   Region,
   ResultDocument,
@@ -156,6 +157,8 @@ export interface OrderRepository {
   /** A pending service added by mistake — paid cheques too: `refunded` = what went back to the patient (0 otherwise). */
   removeItem(orderId: Id, itemId: Id, reason?: string): Promise<{ order: Order; items: OrderItem[]; refunded?: number }>
   pay(employeeId: Id, input: PayOrderInput): Promise<{ order: Order; payments: Payment[] }>
+  /** Correct how a payment was taken (or split it) — amount, time and cashier stay. Reception within a day of it. */
+  changePaymentMethod(paymentId: Id, input: ChangePaymentMethodInput): Promise<{ order: Order; payments: Payment[] }>
   cancel(orderId: Id, reason: string): Promise<Order>
   /** Soft-delete a cheque that never "happened": unpaid, no lab work started. Permission `reception.order.delete`. */
   delete(orderId: Id): Promise<Order>

@@ -92,6 +92,9 @@ export const ordersHttp: OrderRepository = {
       parts: input.parts,
     }),
 
+  changePaymentMethod: (paymentId, input) =>
+    api.put<{ order: Order; payments: Payment[] }>(`/payments/${paymentId}/method`, { parts: input.parts, reason: input.reason }),
+
   cancel: (orderId, reason) => api.post<Order>(`/orders/${orderId}/cancel`, { reason }),
 
   delete: (orderId) => api.delete<Order>(`/orders/${orderId}`),

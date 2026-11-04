@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
 import { ArrowUpRight, GitBranch, Globe, Plus, Printer, Settings2, User, Wallet } from 'lucide-react'
 import { repos } from '@/data'
-import type { OrderItem } from '@/domain'
+import type { OrderItem, Payment } from '@/domain'
 import { Badge, Button, Card, EmptyState, Page, PageHeader, Skeleton, toast } from '@/shared/ui'
 import { errorMessage } from '@/shared/lib/errors'
 import { cn } from '@/shared/lib/cn'
@@ -14,7 +14,8 @@ import { routes } from '@/shared/config/routes'
 import { usePermissions } from '@/features/auth/store'
 import { useStaffSession } from '@/features/session/useSession'
 import { useAddItems, useOrder, useRemoveItem } from '@/features/orders/queries'
-import { LATE_EDIT, removeLocked } from '@/features/orders/paymentWindow'
+import { LATE_EDIT, paymentLocked, removeLocked } from '@/features/orders/paymentWindow'
+import { EditPaymentModal } from '@/features/reception/EditPaymentModal'
 import { useTemplates } from '@/features/catalog/queries'
 import { pickReceiptTemplate } from '@/features/printing/receiptTemplate'
 import { orderStatusMeta, paymentStatusMeta } from '@/features/orders/status'
@@ -43,6 +44,8 @@ export default function OrderPage() {
   const [removing, setRemoving] = useState<string | null>(null)
   // a service leaving a (partly) paid cheque: confirm first — money may go back to the patient
   const [removePaid, setRemovePaid] = useState<OrderItem | null>(null)
+  // a payment whose method is being corrected
+  const [editingPayment, setEditingPayment] = useState<Payment | null>(null)
 
   const order = q.data?.order
   const items = useMemo(() => q.data?.items ?? [], [q.data])
@@ -139,13 +142,15 @@ export default function OrderPage() {
                 { key: 'browser', label: t('staff.reception.printing.viaBrowser'), icon: <Globe />, onSelect: () => void printReceipt(receipt, t, 'browser', receiptTemplateId).catch(() => undefined) },
                 { key: 'settings', label: t('staff.reception.printing.settings'), icon: <Settings2 />, onSelect: () => setPrintSettingsOpen(true), separatorBefore: true },
               ]}
-              onCancel={() => setCancelOpen(true)} canPay={can('reception.payment.create')} canCancel={can('reception.order.cancel')} />
+              onCancel={() => setCancelOpen(true)} canPay={can('reception.payment.create')} canCancel={can('reception.order.cancel')}
+              onEditPayment={can('reception.payment.create') || lateEdit ? setEditingPayment : undefined} isLocked={lateEdit ? undefined : (p) => paymentLocked(p.createdAt)} />
           ) : (
             <Card><Skeleton className="h-5 w-24" /><div className="mt-4 space-y-2">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-4" />)}</div></Card>
           )}
         </div>
       </div>
 
+      {order && <EditPaymentModal order={order} payment={editingPayment} onClose={() => setEditingPayment(null)} showDeadline={!lateEdit} />}
       {order && <PayModal open={payOpen} onClose={() => setPayOpen(false)} order={order} employeeId={employeeId} onPaid={() => toast.success(t('staff.reception.paidOk'), order.number)} />}
       {order && <CancelOrderModal open={cancelOpen} onClose={() => setCancelOpen(false)} orderId={order.id} orderNumber={order.number} />}
       {order && <RemoveItemModal order={order} item={removePaid} onClose={() => setRemovePaid(null)} />}
