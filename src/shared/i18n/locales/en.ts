@@ -33,6 +33,9 @@ export const en: DeepPartial<Dictionary> = {
     verify: 'Verify', resend: 'Resend', resendIn: 'Resend ({{s}}s)', changePhone: 'Change number', orContinueWith: 'or', google: 'Continue with Google', apple: 'Continue with Apple', soon: 'soon',
     devHint: 'Demo code: {{code}}', patientHint: 'Enter the phone number registered at the clinic — we will send a one-time code by SMS.', demoAccounts: 'Demo accounts', demoPassword: 'Password: 123456', forStaff: 'Are you staff?', forPatients: 'Are you a patient?', staffLink: 'Staff sign in',
     patientLink: 'Patient portal', sessionExpired: 'Session expired, please sign in again',
+    viaCode: 'SMS code', viaLogin: 'Login & password', patientLoginSubtitle: 'Enter the login and password given to you at the clinic reception',
+    patientLoginHint: 'The clinic reception issues the login and password. Each family member sharing one phone number sees only their own results.',
+    forgotLogin: 'Forgot your login or password? Ask the reception for a new one or sign in with an SMS code.',
   },
   landing: {
     heroEyebrow: 'One platform for clinics and patients',

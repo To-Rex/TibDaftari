@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
-import { Cake, FileText, Info, Pencil, Percent, Phone, Plus, Receipt, UserRound } from 'lucide-react'
+import { Cake, FileText, Info, KeyRound, Pencil, Percent, Phone, Plus, Receipt, UserRound } from 'lucide-react'
 import { Avatar, Badge, Button, Card, EmptyState, Page, PageHeader, Skeleton, Tabs } from '@/shared/ui'
 import { ageFrom, fmtDate, fmtMoney, fmtPhone, fmtRelative } from '@/shared/lib/format'
 import { errorMessage } from '@/shared/lib/errors'
@@ -12,6 +12,7 @@ import { useStaffSession } from '@/features/session/useSession'
 import { usePatient } from '@/features/patients/queries'
 import { PatientDrawer } from '@/features/patients/PatientDrawer'
 import { PatientDetails, PatientDocuments } from '@/features/patients/PatientDetails'
+import { PortalAccessModal } from '@/features/patients/PortalAccessModal'
 import { useDocuments, useOrdersList } from '@/features/orders/queries'
 import { OrdersTable } from '@/features/orders/OrdersTable'
 import { useNewOrder } from '@/features/reception/useNewOrder'
@@ -27,6 +28,7 @@ export default function PatientPage() {
   const q = usePatient(patientId)
   const [tab, setTab] = useState<Tab>('orders')
   const [edit, setEdit] = useState(false)
+  const [access, setAccess] = useState(false)
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState('createdAt')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
@@ -63,6 +65,7 @@ export default function PatientPage() {
         ) : <span className="flex items-center gap-4"><Skeleton className="size-16 rounded-full" /><span className="space-y-2"><Skeleton className="h-6 w-56" /><Skeleton className="h-4 w-40" /></span></span>}
         actions={p && (
           <>
+            {can('reception.patient.write') && <Button variant="secondary" leftIcon={<KeyRound className="size-4" />} onClick={() => setAccess(true)} data-portal-access-open>{t('staff.patients.access.button')}</Button>}
             {can('reception.patient.write') && <Button variant="secondary" data-hotkey="e" leftIcon={<Pencil className="size-4" />} onClick={() => setEdit(true)}>{t('common.edit')}</Button>}
             {can('reception.order.create') && <Button data-hotkey="c" leftIcon={<Plus className="size-4" />} loading={newOrder.creating} onClick={() => newOrder.start(p.id)}>{t('staff.reception.newOrder')}</Button>}
           </>
@@ -105,6 +108,7 @@ export default function PatientPage() {
       </AnimatePresence>
 
       {p && <PatientDrawer open={edit} onClose={() => setEdit(false)} companyId={companyId} patient={p} onSaved={() => setEdit(false)} />}
+      {p && <PortalAccessModal patient={p} open={access} onClose={() => setAccess(false)} />}
       <BranchPickerModal open={newOrder.pickerOpen} onClose={newOrder.closePicker} companyId={companyId} onPick={newOrder.pickBranch} loading={newOrder.creating} />
     </Page>
   )

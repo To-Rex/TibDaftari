@@ -2,7 +2,7 @@ import type { AuditStamp, Id, IsoDateTime } from './common'
 
 export type MessageChannel = 'sms' | 'telegram' | 'portal'
 export type MessageStatus = 'scheduled' | 'queued' | 'sent' | 'delivered' | 'failed'
-export type MessageKind = 'payment_receipt' | 'result_ready' | 'reminder' | 'broadcast' | 'otp'
+export type MessageKind = 'payment_receipt' | 'result_ready' | 'reminder' | 'broadcast' | 'otp' | 'portal_access'
 
 /**
  * Outbox message — the clinic backend owns scheduling/idempotency because the

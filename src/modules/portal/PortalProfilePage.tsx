@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'motion/react'
-import { Info, Languages, LogOut, Monitor, Moon, ShieldCheck, Smartphone, Sun } from 'lucide-react'
+import { Info, KeyRound, Languages, LockKeyhole, LogOut, Monitor, Moon, ShieldCheck, Smartphone, Sun } from 'lucide-react'
 import { repos } from '@/data'
 import { useAuth } from '@/features/auth/store'
 import { usePatientSession } from '@/features/session/useSession'
 import { fadeUp, stagger } from '@/features/portal/motion'
 import { usePortalOverview } from '@/features/portal/queries'
+import { ChangePasswordModal } from '@/features/portal/components/ChangePasswordModal'
 import { routes } from '@/shared/config/routes'
 import { LOCALES } from '@/shared/i18n'
 import { useTheme, type ThemeMode } from '@/shared/theme/ThemeProvider'
@@ -45,6 +46,7 @@ export default function PortalProfilePage() {
   const { mode, setMode } = useTheme()
   const [confirm, setConfirm] = useState(false)
   const [leaving, setLeaving] = useState(false)
+  const [changePw, setChangePw] = useState(false)
 
   const overviewQ = usePortalOverview(session.patientId)
   const p = overviewQ.data?.patient
@@ -148,18 +150,36 @@ export default function PortalProfilePage() {
             <h2 className="text-ink-3 py-2 text-[13px] font-semibold tracking-[0.06em] uppercase">
               {t('portal.profile.login')}
             </h2>
-            <div className="flex flex-wrap items-center gap-3 py-2">
-              <span className="bg-brand-soft text-brand-ink grid size-10 place-items-center rounded-xl">
-                <Smartphone className="size-[18px]" />
-              </span>
-              <div className="min-w-[150px] flex-1">
-                <p className="text-[14px] font-medium">{t('portal.profile.loginPhone')}</p>
-                <p className="tabular text-ink-3 text-[12.5px]">{fmtPhone(session.phone)}</p>
+            {session.via === 'login' ? (
+              <div className="py-2" data-portal-login-card>
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="bg-brand-soft text-brand-ink grid size-10 place-items-center rounded-xl">
+                    <KeyRound className="size-[18px]" />
+                  </span>
+                  <div className="min-w-[150px] flex-1">
+                    <p className="text-[14px] font-medium">{t('portal.profile.loginPassword')}</p>
+                    <p className="text-ink-3 break-all font-mono text-[12.5px]">{session.login}</p>
+                  </div>
+                  <Button variant="secondary" size="sm" leftIcon={<LockKeyhole className="size-3.5" />} onClick={() => setChangePw(true)} data-change-password-open>
+                    {t('portal.profile.changePassword')}
+                  </Button>
+                </div>
+                <p className="text-ink-3 mt-2 text-[12.5px]">{t('portal.profile.loginOwnOnly')}</p>
               </div>
-              <Badge tone="ok" size="sm">
-                <ShieldCheck className="size-3" /> {t('portal.profile.loginLinked')}
-              </Badge>
-            </div>
+            ) : (
+              <div className="flex flex-wrap items-center gap-3 py-2">
+                <span className="bg-brand-soft text-brand-ink grid size-10 place-items-center rounded-xl">
+                  <Smartphone className="size-[18px]" />
+                </span>
+                <div className="min-w-[150px] flex-1">
+                  <p className="text-[14px] font-medium">{t('portal.profile.loginPhone')}</p>
+                  <p className="tabular text-ink-3 text-[12.5px]">{fmtPhone(session.phone)}</p>
+                </div>
+                <Badge tone="ok" size="sm">
+                  <ShieldCheck className="size-3" /> {t('portal.profile.loginLinked')}
+                </Badge>
+              </div>
+            )}
           </Card>
         </MotionItem>
 
@@ -224,6 +244,7 @@ export default function PortalProfilePage() {
         cancelText={t('common.cancel')}
         loading={leaving}
       />
+      <ChangePasswordModal open={changePw} onClose={() => setChangePw(false)} />
     </Page>
   )
 }

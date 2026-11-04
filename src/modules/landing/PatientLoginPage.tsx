@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
-import { Phone, ShieldCheck } from 'lucide-react'
+import { Eye, EyeOff, KeyRound, LockKeyhole, Phone, ShieldCheck, Smartphone, UserRound } from 'lucide-react'
 import { AuthLayout } from './AuthLayout'
-import { Button, Field, Input, toast } from '@/shared/ui'
+import { Button, Field, Input, Segmented, toast } from '@/shared/ui'
 import { repos, ApiError } from '@/data'
 import { useAuth } from '@/features/auth/store'
 import { routes } from '@/shared/config/routes'
@@ -16,10 +16,21 @@ const formatLocal = (raw: string) => {
   return parts.join(' ')
 }
 
+/** Phone + SMS code (every patient of the phone) or the login + password issued at reception (that patient only). */
+type Method = 'code' | 'login'
+const METHOD_KEY = 'clinic.patient.loginMethod'
+const savedMethod = (): Method => {
+  try { return localStorage.getItem(METHOD_KEY) === 'login' ? 'login' : 'code' } catch { return 'code' }
+}
+
 export default function PatientLoginPage() {
   const { t } = useTranslation()
   const nav = useNavigate()
   const patientLogin = useAuth((s) => s.patientLogin)
+  const [method, setMethodState] = useState<Method>(savedMethod)
+  const [login, setLogin] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPw, setShowPw] = useState(false)
   const [step, setStep] = useState<'phone' | 'code'>('phone')
   const [phone, setPhone] = useState('')
   const [challenge, setChallenge] = useState<{ id: string; devCode?: string } | null>(null)
@@ -34,6 +45,25 @@ export default function PatientLoginPage() {
     const id = setInterval(() => setLeft((s) => s - 1), 1000)
     return () => clearInterval(id)
   }, [left])
+
+  const setMethod = (m: Method) => {
+    setMethodState(m)
+    try { localStorage.setItem(METHOD_KEY, m) } catch { /* private mode: the choice is just not remembered */ }
+  }
+
+  const signIn = async () => {
+    setBusy(true)
+    try {
+      const s = await repos.auth.patientPasswordLogin({ login: login.trim(), password })
+      patientLogin(s)
+      nav(routes.portal.root, { replace: true })
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : t('common.error'))
+      setPassword('')
+    } finally {
+      setBusy(false)
+    }
+  }
 
   const send = async () => {
     setBusy(true)
@@ -91,15 +121,35 @@ export default function PatientLoginPage() {
       aside={
         <div className="rounded-[var(--radius-lg)] border border-line bg-surface/60 p-4 xs:p-5 sm:p-6 backdrop-blur">
           <p className="inline-flex items-center gap-2 text-[13px] font-medium text-brand-ink"><ShieldCheck className="size-4" />{t('landing.demoBadge')}</p>
-          <p className="mt-2 text-[13.5px] text-ink-3 break-words">{t('auth.patientHint')}</p>
+          <p className="mt-2 text-[13.5px] text-ink-3 break-words">{method === 'login' ? t('auth.patientLoginHint') : t('auth.patientHint')}</p>
         </div>
       }
     >
       <h1 className="text-[22px] font-semibold tracking-tight">{t('auth.patientTitle')}</h1>
-      <p className="mt-1 text-[14px] text-ink-3">{t('auth.patientSubtitle')}</p>
+      <p className="mt-1 text-[14px] text-ink-3">{method === 'login' ? t('auth.patientLoginSubtitle') : t('auth.patientSubtitle')}</p>
+
+      {step === 'phone' && (
+        <Segmented<Method> block className="mt-6" value={method} onChange={setMethod}
+          items={[{ value: 'code', label: t('auth.viaCode'), icon: <Smartphone /> }, { value: 'login', label: t('auth.viaLogin'), icon: <KeyRound /> }]} />
+      )}
 
       <AnimatePresence mode="wait" initial={false}>
-        {step === 'phone' ? (
+        {method === 'login' && step === 'phone' ? (
+          <motion.form key="login" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }} transition={{ duration: 0.25 }} className="mt-6 flex flex-col gap-4" data-patient-login-form
+            onSubmit={(e) => { e.preventDefault(); if (login.trim() && password) void signIn() }}>
+            <Field label={t('auth.login')}>
+              {(id) => <Input id={id} value={login} onChange={(e) => setLogin(e.target.value)} autoComplete="username" autoCapitalize="none" spellCheck={false} autoFocus leftIcon={<UserRound />} maxLength={80} className="h-12 text-[15px]" />}
+            </Field>
+            <Field label={t('auth.password')}>
+              {(id) => (
+                <Input id={id} type={showPw ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" leftIcon={<LockKeyhole />} maxLength={200} className="h-12 text-[15px]"
+                  rightSlot={<button type="button" aria-label={showPw ? t('auth.hidePassword') : t('auth.showPassword')} aria-pressed={showPw} onClick={() => setShowPw((s) => !s)} className="grid size-8 place-items-center rounded-full text-ink-3 transition-colors hover:bg-surface-2 hover:text-ink">{showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}</button>} />
+              )}
+            </Field>
+            <Button type="submit" size="lg" block loading={busy} disabled={!login.trim() || !password} className="mt-2">{busy ? t('auth.signingIn') : t('auth.signIn')}</Button>
+            <p className="text-center text-[12.5px] leading-relaxed text-ink-3">{t('auth.forgotLogin')}</p>
+          </motion.form>
+        ) : step === 'phone' ? (
           <motion.form key="phone" initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} transition={{ duration: 0.25 }} className="mt-7 flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); if (digits.length === 9) void send() }}>
             <Field label={t('auth.phone')}>
               {(id) => (

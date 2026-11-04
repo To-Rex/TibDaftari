@@ -19,7 +19,7 @@ export interface StaffSession {
   expiresAt: IsoDateTime
 }
 
-/** Session for a patient logged in via phone + OTP (or later Google/Apple). */
+/** Session for a patient logged in via phone + OTP, or with the portal login + password issued at reception. */
 export interface PatientSession {
   actor: 'patient'
   patientId: Id
@@ -27,6 +27,9 @@ export interface PatientSession {
   fullName: string
   accessToken: string
   expiresAt: IsoDateTime
+  /** otp = phone + SMS code (sees every patient of the phone); login = portal login (this patient only). Absent on old cached sessions = otp. */
+  via?: 'otp' | 'login'
+  login?: string | null
 }
 
 export type Session = StaffSession | PatientSession
@@ -44,6 +47,16 @@ export interface PatientOtpVerifyInput {
   phone: string
   code: string
   challengeId: string
+}
+
+export interface PatientPasswordLoginInput {
+  login: string
+  password: string
+}
+
+export interface PatientPasswordChangeInput {
+  currentPassword: string
+  newPassword: string
 }
 
 export type OAuthProvider = 'google' | 'apple'

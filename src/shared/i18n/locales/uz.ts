@@ -158,6 +158,11 @@ export const uz = {
     staffLink: 'Xodimlar uchun kirish',
     patientLink: 'Bemor kabinetiga kirish',
     sessionExpired: 'Sessiya tugadi, qayta kiring',
+    viaCode: 'SMS kod',
+    viaLogin: 'Login va parol',
+    patientLoginSubtitle: 'Klinika qabulxonasi bergan login va parolni kiriting',
+    patientLoginHint: 'Login va parolni klinika qabulxonasi beradi. Bitta telefon raqamdagi har bir oila a’zosi o‘z natijalarini alohida ko‘radi.',
+    forgotLogin: 'Login yoki parolni unutdingizmi? Qabulxonadan yangisini so‘rang yoki SMS kod bilan kiring.',
   },
   landing: {
     heroEyebrow: 'Klinikalar va bemorlar uchun yagona platforma',

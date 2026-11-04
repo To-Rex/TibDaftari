@@ -34,6 +34,9 @@ export const ru: DeepPartial<Dictionary> = {
     enterCode: 'Введите 4-значный код, отправленный на {{phone}}', verify: 'Подтвердить', resend: 'Отправить снова', resendIn: 'Отправить снова ({{s}} с)', changePhone: 'Изменить номер',
     orContinueWith: 'или', google: 'Войти через Google', apple: 'Войти через Apple', soon: 'скоро', devHint: 'Демо-код: {{code}}', patientHint: 'Введите номер телефона, указанный в клинике — мы отправим одноразовый код по SMS.', demoAccounts: 'Демо-аккаунты', demoPassword: 'Пароль: 123456',
     forStaff: 'Вы сотрудник?', forPatients: 'Вы пациент?', staffLink: 'Вход для сотрудников', patientLink: 'Войти в кабинет пациента', sessionExpired: 'Сессия истекла, войдите снова',
+    viaCode: 'SMS-код', viaLogin: 'Логин и пароль', patientLoginSubtitle: 'Введите логин и пароль, выданные в регистратуре клиники',
+    patientLoginHint: 'Логин и пароль выдаёт регистратура клиники. Каждый член семьи с одним номером телефона видит только свои результаты.',
+    forgotLogin: 'Забыли логин или пароль? Попросите новый в регистратуре или войдите по SMS-коду.',
   },
   landing: {
     heroEyebrow: 'Единая платформа для клиник и пациентов', heroTitleBefore: 'Каждый приём', heroTitleAccent: 'в одном ясном потоке', heroTitleAfter: 'ведёт к результату.',

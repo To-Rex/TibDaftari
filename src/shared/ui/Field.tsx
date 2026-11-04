@@ -50,7 +50,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input({ c
   if (!leftIcon && !rightSlot) return <input ref={ref} aria-invalid={invalid || undefined} className={cn(inputBase, mono && 'font-mono tabular', className)} {...rest} />
   return (
     <div className="relative">
-      {leftIcon && <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-3 [&>svg]:size-4">{leftIcon}</span>}
+      {/* z-[1]: the input's own layer (translateZ in index.css) would otherwise paint over the icon */}
+      {leftIcon && <span className="pointer-events-none absolute left-3 top-1/2 z-[1] -translate-y-1/2 text-ink-3 [&>svg]:size-4">{leftIcon}</span>}
       <input ref={ref} aria-invalid={invalid || undefined} className={cn(inputBase, leftIcon && 'pl-9', rightSlot && 'pr-10', mono && 'font-mono tabular', className)} {...rest} />
       {rightSlot && <span className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">{rightSlot}</span>}
     </div>

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { repos } from '@/data'
-import type { Id, PageQuery, PatientUpsertInput } from '@/domain'
+import type { Id, PageQuery, PatientUpsertInput, PortalAccessInput } from '@/domain'
 import { useAuth } from '@/features/auth/store'
 
 export type PatientListParams = PageQuery & { tag?: string; branchId?: Id }
@@ -50,6 +50,22 @@ export function useCreatePatient(companyId: Id) {
       void qc.invalidateQueries({ queryKey: ['dashboard'] })
     },
   })
+}
+
+/** Issue / renew the portal login (the result carries the password — shown once) or switch it off. */
+export function usePortalAccess(id: Id) {
+  const qc = useQueryClient()
+  const refresh = () => {
+    void qc.invalidateQueries({ queryKey: patientKeys.all })
+    void qc.invalidateQueries({ queryKey: patientKeys.detail(id) })
+  }
+  const set = useMutation({
+    // the SMS goes out through the SMS account of the branch selected in the top bar
+    mutationFn: (input: PortalAccessInput) => repos.patients.setPortalAccess(id, { ...input, branchId: input.branchId ?? useAuth.getState().branchId ?? undefined }),
+    onSuccess: refresh,
+  })
+  const remove = useMutation({ mutationFn: () => repos.patients.removePortalAccess(id), onSuccess: refresh })
+  return { set, remove }
 }
 
 export function useUpdatePatient(id: Id) {

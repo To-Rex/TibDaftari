@@ -25,8 +25,12 @@ import type {
   Patient,
   PatientOtpRequestInput,
   PatientOtpVerifyInput,
+  PatientPasswordChangeInput,
+  PatientPasswordLoginInput,
   PatientSession,
   PatientUpsertInput,
+  PortalAccessInput,
+  PortalAccessResult,
   Payment,
   PayOrderInput,
   CreateOrderInput,
@@ -63,6 +67,10 @@ export interface AuthRepository {
   staffMe(token: string): Promise<StaffSession>
   requestPatientOtp(input: PatientOtpRequestInput): Promise<{ challengeId: string; devCode?: string }>
   verifyPatientOtp(input: PatientOtpVerifyInput): Promise<PatientSession>
+  /** portal login + password issued at reception — the session sees this patient only */
+  patientPasswordLogin(input: PatientPasswordLoginInput): Promise<PatientSession>
+  /** login sessions only; the patient's other login sessions end */
+  changePatientPassword(input: PatientPasswordChangeInput): Promise<void>
   patientMe(token: string): Promise<PatientSession>
   logout(token: string): Promise<void>
 }
@@ -109,6 +117,9 @@ export interface PatientRepository {
   create(companyId: Id, input: PatientUpsertInput): Promise<Patient>
   update(id: Id, input: Partial<PatientUpsertInput>): Promise<Patient>
   findDuplicates(companyId: Id, input: Partial<PatientUpsertInput>): Promise<Patient[]>
+  /** issue / renew the portal login; the answer is the only time the password is shown */
+  setPortalAccess(id: Id, input: PortalAccessInput): Promise<PortalAccessResult>
+  removePortalAccess(id: Id): Promise<Patient>
   countries(): Promise<Country[]>
   /** Regions of a country; without `countryId` the API returns the platform default country's (Uzbekistan). */
   regions(countryId?: Id): Promise<Region[]>

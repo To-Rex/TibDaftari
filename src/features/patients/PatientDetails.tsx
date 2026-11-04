@@ -30,6 +30,7 @@ export function PatientDetails({ patient }: { patient: Patient }) {
     [t('staff.patients.form.contract'), patient.contractNumber],
     [t('staff.patients.form.note'), patient.note],
     [t('staff.patients.portal'), patient.portal.linked ? t('staff.patients.portalLinked') : t('staff.patients.portalNotLinked')],
+    [t('staff.patients.access.row'), patient.portal.login ?? undefined],
     [t('staff.patients.colCreated'), fmtDateTime(patient.createdAt)],
   ]
   return (

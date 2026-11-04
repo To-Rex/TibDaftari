@@ -25,6 +25,12 @@ export const authHttp: AuthRepository = {
 
   verifyPatientOtp: (input) => api.post<PatientSession>('/auth/patient/otp/verify', input, { actor: 'none' }),
 
+  patientPasswordLogin: (input) => api.post<PatientSession>('/auth/patient/login', input, { actor: 'none' }),
+
+  changePatientPassword: async (input) => {
+    await api.post<{ ok: boolean }>('/auth/patient/password', input, { actor: 'patient' })
+  },
+
   patientMe: (token) => api.get<PatientSession>('/auth/patient/me', { actor: 'patient', token }),
 
   /** Revoke the token server-side; an already-invalid token (401) is treated as logged out. */
