@@ -102,10 +102,9 @@ export const router = createBrowserRouter([
         element: <AppShell module="staff" />,
         children: [
           { index: true, element: page(<StaffDashboard />) },
-          { element: <RequirePerm perm="reception.order.create" />, children: [
-            { path: routes.app.reception, element: page(<ReceptionPage />) },
-            { path: routes.app.order(), element: page(<OrderPage />) },
-          ] },
+          { element: <RequirePerm perm="reception.order.create" />, children: [{ path: routes.app.reception, element: page(<ReceptionPage />) }] },
+          // late_edit alone (the rahbar role) opens a cheque to correct old payments
+          { element: <RequirePerm perm={['reception.order.create', 'reception.payment.late_edit']} />, children: [{ path: routes.app.order(), element: page(<OrderPage />) }] },
           { element: <RequirePerm perm="reception.patient.read" />, children: [
             { path: routes.app.patients, element: page(<PatientsPage />) },
             { path: routes.app.patient(), element: page(<PatientPage />) },

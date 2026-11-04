@@ -41,6 +41,8 @@ export interface Order extends AuditStamp {
   cancelledAt?: IsoDateTime
   /** non-refunded payments by method (the cheque list fills it) */
   paymentsByMethod?: { method: PaymentMethod; amount: Money }[]
+  /** oldest payment, refunded or not (cheque list) — a day later reception can no longer delete the cheque */
+  firstPaidAt?: IsoDateTime | null
 }
 
 export interface OrderItem extends AuditStamp {

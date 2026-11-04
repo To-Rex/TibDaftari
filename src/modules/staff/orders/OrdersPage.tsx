@@ -14,6 +14,7 @@ import { useStaffSession } from '@/features/session/useSession'
 import { usePermissions } from '@/features/auth/store'
 import { useCategories, useServiceTypes } from '@/features/catalog/queries'
 import { useDeleteOrder, useOrdersList, useOrdersSummary } from '@/features/orders/queries'
+import { LATE_EDIT } from '@/features/orders/paymentWindow'
 import { OrdersTable } from '@/features/orders/OrdersTable'
 import { OrdersFilterDrawer } from '@/features/orders/OrdersFilterDrawer'
 import { OrdersFilterChips, OrdersSummaryBar } from '@/features/orders/OrdersFilterChips'
@@ -23,8 +24,10 @@ import { ORDER_STATUSES, PAYMENT_STATUSES, orderStatusMeta, paymentMethodLabel, 
 export default function OrdersPage() {
   const { t, i18n } = useTranslation()
   const { companyId, branchId } = useStaffSession()
-  const { can } = usePermissions()
-  const canDelete = can('reception.order.delete')
+  const { can, isSuperAdmin } = usePermissions()
+  const canDelete = can(['reception.order.delete', LATE_EDIT])
+  // a day after the first payment only admin / rahbar / superadmin delete the cheque
+  const lateEdit = can(LATE_EDIT) || isSuperAdmin
   const del = useDeleteOrder()
   const [deleting, setDeleting] = useState<Order | null>(null)
   // the list as it was left in this tab (filters, period, sort, page size) — coming back from a cheque keeps it
@@ -169,7 +172,7 @@ export default function OrdersPage() {
         <Card padded={false} className="overflow-hidden">
           <OrdersTable page={q.data} loading={q.isFetching} sortBy={sortBy} sortDir={sortDir} onSort={onSort} onPage={setPage} onPageSize={(s) => { setPageSize(s); setPage(1) }} footer
             branchName={branchId ? undefined : (id) => branches.data?.find((b) => b.id === id)?.name}
-            canDelete={canDelete} onDelete={setDeleting} />
+            canDelete={canDelete} lockOldPayments={!lateEdit} onDelete={setDeleting} />
         </Card>
       </motion.div>
       <OrdersFilterDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} value={extra} onChange={changeExtra} categories={categories.data} services={services.data} summary={summary.data} />

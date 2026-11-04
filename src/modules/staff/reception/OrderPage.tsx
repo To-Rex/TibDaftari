@@ -14,6 +14,7 @@ import { routes } from '@/shared/config/routes'
 import { usePermissions } from '@/features/auth/store'
 import { useStaffSession } from '@/features/session/useSession'
 import { useAddItems, useOrder, useRemoveItem } from '@/features/orders/queries'
+import { LATE_EDIT, removeLocked } from '@/features/orders/paymentWindow'
 import { useTemplates } from '@/features/catalog/queries'
 import { pickReceiptTemplate } from '@/features/printing/receiptTemplate'
 import { orderStatusMeta, paymentStatusMeta } from '@/features/orders/status'
@@ -31,7 +32,7 @@ export default function OrderPage() {
   const { t } = useTranslation()
   const { orderId = '' } = useParams()
   const { companyId, employeeId, staff } = useStaffSession()
-  const { can } = usePermissions()
+  const { can, isSuperAdmin } = usePermissions()
   const q = useOrder(orderId)
   const addItems = useAddItems(orderId)
   const removeItem = useRemoveItem(orderId)
@@ -57,6 +58,9 @@ export default function OrderPage() {
   const templates = useTemplates(companyId, {})
   const receiptTemplateId = useMemo(() => pickReceiptTemplate(templates.data ?? [], order?.branchId)?.id, [templates.data, order?.branchId])
   const inOrder = useMemo(() => new Set(items.filter((i) => i.status !== 'cancelled').map((i) => i.serviceTypeId)), [items])
+  // money taken more than a day ago: reception can't give it back any more (admin / rahbar / superadmin can)
+  const lateEdit = can(LATE_EDIT) || isSuperAdmin
+  const lockedIds = useMemo(() => new Set(order && !lateEdit ? items.filter((i) => removeLocked(order, payments, i)).map((i) => i.id) : []), [order, payments, items, lateEdit])
 
   const onAdd = async (stId: string) => {
     setAdding(stId)
@@ -96,7 +100,7 @@ export default function OrderPage() {
           <Card padded={false} className="overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3.5 sm:px-5"><h3 className="text-[14px] font-semibold">{t('staff.reception.items')} <span className="ml-1 text-ink-3 tabular">{items.length || ''}</span></h3></div>
             <div className="border-t border-line">
-              <OrderItemsTable order={order} items={items} loading={q.isLoading} onRemove={(id) => void onRemove(id)} removing={removing} canRemove={can('reception.order.create')} />
+              <OrderItemsTable order={order} items={items} loading={q.isLoading} onRemove={(id) => void onRemove(id)} removing={removing} canRemove={can('reception.order.create') || lateEdit} lockedIds={lockedIds} />
             </div>
           </Card>
 

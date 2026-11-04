@@ -13,6 +13,9 @@ export const PERMISSIONS = [
   'reception.order.delete',
   'reception.payment.create',
   'reception.payment.refund',
+  /** change a payment more than a day after it was taken (money back on a removed service, delete the cheque) —
+   *  reception only within the day; admin and rahbar any time */
+  'reception.payment.late_edit',
   // Laboratory
   'lab.worklist.read',
   'lab.result.write',

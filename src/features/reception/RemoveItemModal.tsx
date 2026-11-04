@@ -11,13 +11,7 @@ import { fmtMoney } from '@/shared/lib/format'
 import { errorMessage } from '@/shared/lib/errors'
 import { Button, Field, Modal, Textarea, toast } from '@/shared/ui'
 import { useRemoveItem } from '@/features/orders/queries'
-
-/** The cheque without `item` (same rounding as the backend recompute) and what is then paid over its total. */
-export function refundOnRemove(order: Pick<Order, 'subtotal' | 'discountPercent' | 'paidAmount'>, item: Pick<OrderItem, 'price'>) {
-  const subtotal = Math.max(0, order.subtotal - item.price)
-  const total = subtotal - Math.floor((subtotal * order.discountPercent) / 100 + 0.5)
-  return { total, refund: Math.max(0, order.paidAmount - total) }
-}
+import { refundOnRemove } from '@/features/orders/paymentWindow'
 
 export function RemoveItemModal({ order, item, onClose }: { order: Order; item: OrderItem | null; onClose: () => void }) {
   const { t } = useTranslation()

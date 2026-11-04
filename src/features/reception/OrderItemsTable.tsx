@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
-import { FlaskConical, Trash2 } from 'lucide-react'
+import { FlaskConical, LockKeyhole, Trash2 } from 'lucide-react'
 import type { Order, OrderItem } from '@/domain'
-import { Badge, EmptyState, IconButton, Skeleton } from '@/shared/ui'
+import { Badge, EmptyState, IconButton, Skeleton, toast } from '@/shared/ui'
 import { PrintDocumentButton } from '@/features/printing/PrintDocumentButton'
 import { ViewResultButton } from '@/features/confirm/ViewResultButton'
 import { cn } from '@/shared/lib/cn'
@@ -12,9 +12,14 @@ import { itemStatusMeta } from '@/features/orders/status'
 /**
  * Order line items. ≥ md → classic table; < md → one card per item (nothing hidden:
  * category, list price, final price, status and the remove action are all present).
+ * `lockedIds`: services whose removal would give back a payment older than a day — a lock instead of the bin, and a
+ * click says who can do it (see `paymentWindow`).
  */
-export function OrderItemsTable({ order, items, loading, onRemove, removing, canRemove }: { order?: Order; items: OrderItem[]; loading?: boolean; onRemove: (id: string) => void; removing?: string | null; canRemove: boolean }) {
+export function OrderItemsTable({ order, items, loading, onRemove, removing, canRemove, lockedIds }: { order?: Order; items: OrderItem[]; loading?: boolean; onRemove: (id: string) => void; removing?: string | null; canRemove: boolean; lockedIds?: ReadonlySet<string> }) {
   const { t } = useTranslation()
+  const removeButton = (it: OrderItem, size: 'sm' | 'md') => lockedIds?.has(it.id)
+    ? <IconButton label={t('staff.reception.paymentLocked')} size={size} onClick={() => toast.warning(t('staff.reception.paymentLocked'), t('staff.reception.paymentLockedHint'))} className="text-ink-3" data-remove-locked><LockKeyhole /></IconButton>
+    : <IconButton label={t('common.delete')} size={size} onClick={() => onRemove(it.id)} disabled={removing === it.id} className="text-ink-3 hover:text-danger hover:bg-danger-soft"><Trash2 /></IconButton>
   // paid cheques too: a pending service added by mistake can leave (the page confirms and the difference goes back)
   const removable = !!order && order.status !== 'cancelled' && canRemove
   if (loading) return <div className="flex flex-col gap-3 p-5">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-10" />)}</div>
@@ -57,7 +62,7 @@ export function OrderItemsTable({ order, items, loading, onRemove, removing, can
                     <td className="px-4 py-3"><span className="inline-flex items-center gap-1.5"><Badge tone={st.tone} size="sm" dot>{st.label}</Badge>{it.documentId && <PrintDocumentButton variant="icon" size="sm" doc={{ id: it.documentId, title: it.serviceName }} />}{it.documentId && it.status === 'approved' && <ViewResultButton itemId={it.id} />}</span></td>
                     {removable && (
                       <td className="px-2 py-2 text-right">
-                        {canDel && <IconButton label={t('common.delete')} size="sm" onClick={() => onRemove(it.id)} disabled={removing === it.id} className="text-ink-3 hover:text-danger hover:bg-danger-soft"><Trash2 /></IconButton>}
+                        {canDel && removeButton(it, 'sm')}
                       </td>
                     )}
                   </motion.tr>
@@ -89,7 +94,7 @@ export function OrderItemsTable({ order, items, loading, onRemove, removing, can
                 </span>
                 {removable && (
                   <span className="shrink-0 self-start">
-                    {canDel && <IconButton label={t('common.delete')} size="md" onClick={() => onRemove(it.id)} disabled={removing === it.id} className="text-ink-3 hover:text-danger hover:bg-danger-soft"><Trash2 /></IconButton>}
+                    {canDel && removeButton(it, 'md')}
                   </span>
                 )}
               </motion.li>

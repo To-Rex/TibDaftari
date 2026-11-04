@@ -1,13 +1,14 @@
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { type MouseEvent } from 'react'
-import { Receipt, Trash2 } from 'lucide-react'
+import { LockKeyhole, Receipt, Trash2 } from 'lucide-react'
 import type { Order, Page } from '@/domain'
-import { Badge, DataTable, EmptyState, IconButton, Pagination, type Column } from '@/shared/ui'
+import { Badge, DataTable, EmptyState, IconButton, Pagination, toast, type Column } from '@/shared/ui'
 import { fmtDateTime, fmtMoney, fmtPhone } from '@/shared/lib/format'
 import { routes } from '@/shared/config/routes'
 import { cn } from '@/shared/lib/cn'
 import { orderStatusMeta, paymentMethodLabel, paymentStatusMeta } from './status'
+import { deleteLocked } from './paymentWindow'
 
 export interface OrdersTableProps {
   page?: Page<Order>
@@ -23,9 +24,11 @@ export interface OrdersTableProps {
   /** delete action — rendered only when `canDelete` is true (permission-gated by the caller) */
   onDelete?: (order: Order) => void
   canDelete?: boolean
+  /** reception: a cheque paid more than a day ago shows a lock instead of the bin (admin / rahbar don't pass it) */
+  lockOldPayments?: boolean
 }
 
-export function OrdersTable({ page, loading, sortBy, sortDir, onSort, onPage, onPageSize, showPatient = true, branchName, footer, onDelete, canDelete }: OrdersTableProps) {
+export function OrdersTable({ page, loading, sortBy, sortDir, onSort, onPage, onPageSize, showPatient = true, branchName, footer, onDelete, canDelete, lockOldPayments }: OrdersTableProps) {
   const { t } = useTranslation()
   const nav = useNavigate()
   const rows = page?.items ?? []
@@ -49,7 +52,12 @@ export function OrdersTable({ page, loading, sortBy, sortDir, onSort, onPage, on
     ...(canDelete && onDelete
       ? [{
           key: 'delete', header: '', card: 'actions' as const,
-          cell: (o: Order) => (
+          cell: (o: Order) => lockOldPayments && deleteLocked(o) ? (
+            <IconButton label={t('staff.reception.paymentLocked')} size="sm" variant="ghost" className="text-ink-3" data-order-delete-locked
+              onClick={(e: MouseEvent) => { e.stopPropagation(); toast.warning(t('staff.reception.paymentLocked'), t('staff.reception.paymentLockedHint')) }}>
+              <LockKeyhole className="size-4" />
+            </IconButton>
+          ) : (
             <IconButton label={t('staff.orders.del')} size="sm" variant="ghost" className="text-danger" data-order-delete
               onClick={(e: MouseEvent) => { e.stopPropagation(); onDelete(o) }}>
               <Trash2 className="size-4" />
