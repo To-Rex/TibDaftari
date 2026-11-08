@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { Branch, BranchSmsInput, Company, Id, PageQuery, SmsTemplateOverrides } from '@/domain'
+import type { Branch, BranchSmsInput, Company, CompanyListQuery, Id, SmsTemplateOverrides } from '@/domain'
 import { repos } from '@/data'
 
 export const orgKeys = {
   company: (id: Id) => ['company', id] as const,
-  companies: (q: PageQuery) => ['companies', q] as const,
+  companies: (q: CompanyListQuery) => ['companies', q] as const,
   branches: (companyId: Id) => ['branches', companyId] as const,
   branchSms: (branchId: Id) => ['branch-sms-templates', branchId] as const,
   branchSmsAccount: (branchId: Id) => ['branch-sms-account', branchId] as const,
@@ -13,7 +13,7 @@ export const orgKeys = {
 export const useCompany = (id: Id) =>
   useQuery({ queryKey: orgKeys.company(id), queryFn: () => repos.tenant.getCompany(id) })
 
-export const useCompanies = (q: PageQuery) =>
+export const useCompanies = (q: CompanyListQuery) =>
   useQuery({ queryKey: orgKeys.companies(q), queryFn: () => repos.tenant.listCompanies(q), placeholderData: (prev) => prev })
 
 export const useBranches = (companyId: Id) =>

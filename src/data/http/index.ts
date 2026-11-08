@@ -9,6 +9,7 @@ import { templatesHttp } from './templates.http'
 import { ordersHttp } from './orders.http'
 import { messagingHttp } from './messaging.http'
 import { reportsHttp } from './reports.http'
+import { platformHttp } from './platform.http'
 import { portalHttp } from './portal.http'
 
 export const httpRepositories: Repositories = {
@@ -21,6 +22,7 @@ export const httpRepositories: Repositories = {
   orders: ordersHttp,
   messaging: messagingHttp,
   reports: reportsHttp,
+  platform: platformHttp,
   portal: portalHttp,
 }
 

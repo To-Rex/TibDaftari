@@ -34,6 +34,9 @@ import type {
   Payment,
   PayOrderInput,
   ChangePaymentMethodInput,
+  CompanyListQuery,
+  RegionStats,
+  RegionStatsQuery,
   CreateOrderInput,
   Region,
   ResultDocument,
@@ -77,7 +80,7 @@ export interface AuthRepository {
 }
 
 export interface TenantRepository {
-  listCompanies(q: PageQuery): Promise<Page<Company>>
+  listCompanies(q: CompanyListQuery): Promise<Page<Company>>
   getCompany(id: Id): Promise<Company>
   saveCompany(input: Partial<Company> & { id?: Id }): Promise<Company>
   listBranches(companyId: Id): Promise<Branch[]>
@@ -211,6 +214,11 @@ export interface MessagingRepository {
   markRead(id?: Id): Promise<void>
 }
 
+/** Superadmin: activity across every clinic folded by territory (numbers only). */
+export interface PlatformRepository {
+  regions(q: RegionStatsQuery): Promise<RegionStats>
+}
+
 export interface ReportRepository {
   dashboard(companyId: Id, q: { branchId?: Id; dateFrom: string; dateTo: string }): Promise<DashboardSummary>
   breakdown(companyId: Id, q: { by: 'category' | 'service' | 'branch' | 'employee'; dateFrom: string; dateTo: string; branchId?: Id }): Promise<{ name: string; count: number; revenue: number }[]>
@@ -255,5 +263,6 @@ export interface Repositories {
   templates: TemplateRepository
   messaging: MessagingRepository
   reports: ReportRepository
+  platform: PlatformRepository
   portal: PortalRepository
 }
