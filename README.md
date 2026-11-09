@@ -1,13 +1,13 @@
 # TibDaftari — web ilova
 
-Ko‘p filialli klinika platformasining web ilovasi (React 19 + Vite + TypeScript). Uch modul bitta ilovada:
+Davlat → viloyat → tuman/shahar → muassasa daraxti bo‘yicha ishlaydigan klinika/SES platformasining web ilovasi (React 19 + Vite + TypeScript). Uch modul bitta ilovada:
 
 | Zona | URL | Kim uchun |
 |---|---|---|
 | Landing + login | `/`, `/login`, `/staff/login` | hamma |
 | Bemor kabineti | `/me/*` | mijozlar (telefon + OTP; keyinroq Google/Apple) |
 | Xodimlar ilovasi | `/app/*` | registrator, laborant, vrach, rahbar |
-| Boshqaruv | `/admin/*` | kompaniya admini, superadmin |
+| Boshqaruv | `/admin/*` | birlik (viloyat/tuman/muassasa) administratori, superadmin |
 
 Ma’lumotlar **TibDaftari-Backend** (FastAPI) dan olinadi: `src/data/http/*` repositorylari `VITE_API_URL` (`…/api/v1`) manziliga so‘rov yuboradi. Dev uchun `.env` (`http://localhost:8000/api/v1`), production build uchun `.env.production`.
 
