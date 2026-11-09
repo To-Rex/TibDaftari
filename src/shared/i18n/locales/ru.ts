@@ -24,6 +24,16 @@ export const ru: DeepPartial<Dictionary> = {
     kind: { ses: 'СЭС', clinic: 'Клиника', laboratory: 'Лаборатория', polyclinic: 'Поликлиника', hospital: 'Больница', pharmacy: 'Аптека', other: 'Другое' },
     inactive: 'Неактивно', pickFacility: 'Выберите учреждение', allUnits: 'Все подразделения',
     country: 'Страна', region: 'Область / город', district: 'Район / город', noDistricts: 'Районов нет',
+    switcher: {
+      scope: 'Область управления', workplace: 'Место работы — учреждение',
+      search: 'Название или код…',
+      selectThis: 'Выбрать это подразделение', select: 'Выбрать', selected: 'Выбрано',
+      back: 'Назад', open: 'Открыть',
+      recent: 'Недавние', noResults: 'Ничего не найдено',
+      more: 'Ещё {{count}} — уточните запрос', facilities: '{{count}} учр.',
+      empty: 'Здесь пока нет подразделений',
+      levelPlural: { country: 'Страны', region: 'Области', district: 'Районы / города', facility: 'Учреждения' },
+    },
   },
   nav: {
     dashboard: 'Главная', reception: 'Регистратура', patients: 'Пациенты', orders: 'Чеки', lab: 'Лаборатория', confirm: 'Подтверждение', results: 'Результаты', reports: 'Отчёты', messages: 'Сообщения',

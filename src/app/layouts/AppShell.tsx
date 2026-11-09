@@ -13,14 +13,14 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'motion/react'
 import {
   ReceiptText, FileCheck2, LayoutDashboard, ClipboardList, Users, FlaskConical, BadgeCheck, BarChart3, MessageSquare, Building2, UserCog,
-  ShieldCheck, FolderTree, ListChecks, LayoutTemplate, Send, PanelLeftClose, PanelLeftOpen, Bell, LogOut, ChevronDown, Menu as MenuIcon, X, Globe2, Receipt, ArrowLeftRight,
-  Loader2, Map, MapPin, Hospital, Landmark,
+  ShieldCheck, FolderTree, ListChecks, LayoutTemplate, Send, PanelLeftClose, PanelLeftOpen, Bell, LogOut, Menu as MenuIcon, X, Globe2, Receipt, ArrowLeftRight,
+  Loader2, Landmark,
 } from 'lucide-react'
 import type { OrgUnit, Permission, UnitLevel } from '@/domain'
 import { repos } from '@/data'
 import { useAuth, usePermissions } from '@/features/auth/store'
 import { useUnitTree, useUnitTreeShape } from '@/features/org/queries'
-import { UnitPicker } from '@/features/org/UnitPicker'
+import { UnitSwitcher } from '@/features/org/UnitSwitcher'
 import { useGlobalHotkeys } from '@/features/hotkeys/useGlobalHotkeys'
 import { HotkeysButton, HotkeysHelp } from '@/features/hotkeys/HotkeysHelp'
 import { preloadRouteChunks, warmWorkspaceData } from '@/features/session/warmup'
@@ -32,7 +32,6 @@ import { storage } from '@/shared/lib/storage'
 interface NavItem { to: string; label: string; icon: ReactNode; perm?: Permission | Permission[]; end?: boolean; badge?: number; /** "G" + this letter jumps to the page */ key?: string }
 interface NavSection { title?: string; items: NavItem[] }
 
-const LEVEL_ICON: Record<UnitLevel, ReactNode> = { country: <Globe2 />, region: <Map />, district: <MapPin />, facility: <Hospital /> }
 const FACILITY_ONLY: UnitLevel[] = ['facility']
 
 /** The tree + the resolved scope unit and facility for the current session (corrects stale stored choices). */
@@ -230,7 +229,6 @@ function TopBar({ onMenu, module, onHelp, ws }: { onMenu: () => void; module: 's
   const { staff: s, shape, scopeUnit, facilities, facility, setScopeUnit, setFacility } = ws
   const notif = useQuery({ queryKey: ['notifications'], queryFn: () => repos.messaging.notifications(), refetchInterval: 60_000 })
   const unread = notif.data?.filter((n) => !n.read).length ?? 0
-  const pill = 'app-unit-switcher inline-flex h-9 min-w-0 shrink items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 text-[13px] font-medium shadow-1 sm:gap-2 sm:px-3'
   // the scope switcher: every unit the employee may administer (their subtree(s)); for a superadmin the whole tree
   const scopeChoices = useMemo(() => {
     const roots = s.isSuperAdmin ? shape.roots : shape.roots.filter((r) => s.unitIds.includes(r.id) || shape.ancestors(r.id).some((a) => s.unitIds.includes(a.id)))
@@ -246,42 +244,16 @@ function TopBar({ onMenu, module, onHelp, ws }: { onMenu: () => void; module: 's
 
       {/* Scope switcher — the administered unit (admin panel; a superadmin sees it everywhere) */}
       {(module === 'admin' || s.isSuperAdmin) && scopeUnit && (
-        scopeChoices.length > 1 ? (
-          <UnitPicker units={scopeChoices} value={scopeUnit.id} menuWidth={320}
-            onChange={(id) => { if (!id || id === scopeUnit.id) return; setScopeUnit(id); if (module === 'admin') nav(routes.admin.root) }}
-            renderTrigger={({ open }) => (
-              <span title={scopeUnit.path} className={cn(pill, 'transition-colors hover:border-line-strong', open && 'border-brand')} data-scope-switcher>
-                <span className="shrink-0 text-brand [&>svg]:size-4">{LEVEL_ICON[scopeUnit.level]}</span>
-                <span className="max-sm:hidden max-w-[140px] md:max-w-[200px] 2xl:max-w-[280px] truncate">{scopeUnit.name}</span>
-                <ChevronDown className={cn('size-3.5 shrink-0 text-ink-3 transition-transform', open && 'rotate-180')} />
-              </span>
-            )} />
-        ) : (
-          <span title={scopeUnit.path} className={cn(pill, 'cursor-default')} data-scope-fixed>
-            <span className="shrink-0 text-brand [&>svg]:size-4">{LEVEL_ICON[scopeUnit.level]}</span>
-            <span className="max-sm:hidden max-w-[140px] md:max-w-[200px] 2xl:max-w-[280px] truncate">{scopeUnit.name}</span>
-          </span>
-        )
+        <UnitSwitcher units={scopeChoices} value={scopeUnit.id} hint={t('org.switcher.scope')} recentKey="clinic.recent.scope" disabled={scopeChoices.length < 2}
+          onChange={(id) => { setScopeUnit(id); if (module === 'admin') nav(routes.admin.root) }}
+          triggerProps={scopeChoices.length > 1 ? { 'data-scope-switcher': true } : { 'data-scope-fixed': true }} />
       )}
 
       {/* Facility switcher — the staff app works in one facility under the scope */}
       {module === 'staff' && scopeUnit && facilities.length > 0 && (
-        facilities.length > 1 ? (
-          <UnitPicker units={facilityUnits} levels={FACILITY_ONLY} value={facility?.id ?? null} menuWidth={320}
-            onChange={(id) => { if (id && id !== facility?.id) setFacility(id) }}
-            renderTrigger={({ open }) => (
-              <span title={facility?.path ?? ''} className={cn(pill, 'transition-colors hover:border-line-strong', open && 'border-brand')} data-facility-switcher>
-                <Hospital className="size-4 shrink-0 text-brand" />
-                <span className="max-sm:hidden max-w-[120px] md:max-w-[160px] 2xl:max-w-[240px] truncate">{facility?.name ?? t('org.pickFacility')}</span>
-                <ChevronDown className={cn('size-3.5 shrink-0 text-ink-3 transition-transform', open && 'rotate-180')} />
-              </span>
-            )} />
-        ) : (
-          <span title={facility?.path ?? ''} className={cn(pill, 'cursor-default')} data-facility-fixed>
-            <Hospital className="size-4 shrink-0 text-brand" />
-            <span className="max-sm:hidden max-w-[120px] md:max-w-[160px] 2xl:max-w-[240px] truncate">{facility?.name ?? ''}</span>
-          </span>
-        )
+        <UnitSwitcher units={facilityUnits} levels={FACILITY_ONLY} value={facility?.id ?? null} placeholder={t('org.pickFacility')} hint={t('org.switcher.workplace')} recentKey="clinic.recent.facility" disabled={facilities.length < 2}
+          onChange={(id) => setFacility(id)}
+          triggerProps={facilities.length > 1 ? { 'data-facility-switcher': true } : { 'data-facility-fixed': true }} />
       )}
       {module === 'admin' && <Badge tone="brand" size="sm" className="max-sm:hidden">{t('nav.admin')}</Badge>}
 

@@ -23,6 +23,16 @@ export const en: DeepPartial<Dictionary> = {
     kind: { ses: 'SES', clinic: 'Clinic', laboratory: 'Laboratory', polyclinic: 'Polyclinic', hospital: 'Hospital', pharmacy: 'Pharmacy', other: 'Other' },
     inactive: 'Inactive', pickFacility: 'Pick a facility', allUnits: 'All units',
     country: 'Country', region: 'Region / city', district: 'District / city', noDistricts: 'No districts',
+    switcher: {
+      scope: 'Administration scope', workplace: 'Workplace — facility',
+      search: 'Unit name or code…',
+      selectThis: 'Select this unit', select: 'Select', selected: 'Selected',
+      back: 'Back', open: 'Open',
+      recent: 'Recent', noResults: 'Nothing found',
+      more: '{{count}} more — refine the search', facilities: '{{count}} facilities',
+      empty: 'No units here yet',
+      levelPlural: { country: 'Countries', region: 'Regions', district: 'Districts / cities', facility: 'Facilities' },
+    },
   },
   nav: {
     dashboard: 'Dashboard', reception: 'Reception', patients: 'Patients', orders: 'Orders', lab: 'Laboratory', confirm: 'Approval', results: 'Results', reports: 'Reports', messages: 'Messages', admin: 'Administration',

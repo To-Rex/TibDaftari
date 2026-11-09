@@ -97,6 +97,16 @@ export const uz = {
     region: 'Viloyat',
     district: 'Tuman / shahar',
     noDistricts: 'Tumanlar yo‘q',
+    switcher: {
+      scope: 'Boshqaruv doirasi', workplace: 'Ish joyi — muassasa',
+      search: 'Birlik nomi yoki kodi…',
+      selectThis: 'Shu birlikni tanlash', select: 'Tanlash', selected: 'Tanlangan',
+      back: 'Orqaga', open: 'Ichiga kirish',
+      recent: 'So‘nggi tanlanganlar', noResults: 'Hech narsa topilmadi',
+      more: 'Yana {{count}} ta — qidiruvni aniqlashtiring', facilities: '{{count}} ta muassasa',
+      empty: 'Bu yerda hali birlik yo‘q',
+      levelPlural: { country: 'Davlatlar', region: 'Viloyatlar', district: 'Tumanlar / shaharlar', facility: 'Muassasalar' },
+    },
   },
   nav: {
     dashboard: 'Bosh sahifa',
