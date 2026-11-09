@@ -230,10 +230,14 @@ function TopBar({ onMenu, module, onHelp, ws }: { onMenu: () => void; module: 's
   const notif = useQuery({ queryKey: ['notifications'], queryFn: () => repos.messaging.notifications(), refetchInterval: 60_000 })
   const unread = notif.data?.filter((n) => !n.read).length ?? 0
   // the scope switcher: every unit the employee may administer (their subtree(s)); for a superadmin the whole tree
+  // a superadmin: the whole tree; everyone else: their own scope roots (home + extra units) with everything under
+  // them — a viloyat administrator or installer switches among the viloyat, its tumanlar and muassasalar
   const scopeChoices = useMemo(() => {
-    const roots = s.isSuperAdmin ? shape.roots : shape.roots.filter((r) => s.unitIds.includes(r.id) || shape.ancestors(r.id).some((a) => s.unitIds.includes(a.id)))
-    const allowed = new Set(s.isSuperAdmin ? shape.units.map((u) => u.id) : s.unitIds.flatMap((id) => shape.under(id).map((u) => u.id)))
-    return flattenRoots(roots).filter((u) => allowed.has(u.id))
+    if (s.isSuperAdmin) return shape.flat
+    const own = s.unitIds.filter((id) => shape.byId.has(id))
+    // `ancestors` returns the lineage including the unit itself — keep only units with no OTHER own unit above
+    const tops = own.filter((id) => !shape.ancestors(id).some((a) => a.id !== id && own.includes(a.id)))
+    return tops.flatMap((id) => shape.under(id))
   }, [s.isSuperAdmin, s.unitIds, shape])
   const facilityUnits = useMemo(() => (scopeUnit ? shape.under(scopeUnit.id) : []), [scopeUnit, shape])
 
@@ -301,11 +305,4 @@ function TopBar({ onMenu, module, onHelp, ws }: { onMenu: () => void; module: 's
 }
 
 /** Depth-first flatten of nested unit nodes (parents before children). */
-function flattenRoots(roots: (OrgUnit & { children: OrgUnit[] })[]): OrgUnit[] {
-  const out: OrgUnit[] = []
-  const walk = (n: OrgUnit & { children?: OrgUnit[] }) => { out.push(n); (n.children ?? []).forEach((c) => walk(c as OrgUnit & { children?: OrgUnit[] })) }
-  roots.forEach(walk)
-  return out
-}
-
 export { Tooltip }
