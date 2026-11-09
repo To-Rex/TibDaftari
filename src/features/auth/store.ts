@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { PatientSession, Permission, StaffSession } from '@/domain'
+import { INSTALLER_ROLE_KEY } from '@/domain'
 import { normalizePermission } from '@/domain'
 import { repos } from '@/data'
 import { onUnauthorized } from '@/data/http/client'
@@ -165,7 +166,11 @@ export const usePermissions = () => {
   const staff = useAuth((s) => s.staff)
   const set = new Set<Permission>(staff?.permissions ?? [])
   const can = (p: Permission | Permission[]) => (Array.isArray(p) ? p.some((x) => set.has(x)) : set.has(p))
-  return { can, isSuperAdmin: !!staff?.isSuperAdmin, permissions: set }
+  const isSuperAdmin = !!staff?.isSuperAdmin
+  const isInstaller = !isSuperAdmin && staff?.roleKey === INSTALLER_ROLE_KEY
+  /** may wipe units: a superadmin anywhere, an installer inside their scope */
+  const canReset = isSuperAdmin || set.has('admin.unit.reset')
+  return { can, isSuperAdmin, isInstaller, canReset, permissions: set }
 }
 
 /**

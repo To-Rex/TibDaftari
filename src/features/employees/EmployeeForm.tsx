@@ -4,8 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
-import type { Category, Employee, Id, Role } from '@/domain'
-import { unitsUnder } from '@/domain'
+import type { Category, Employee, Id, Role, UnitLevel } from '@/domain'
+import { INSTALLER_ROLE_KEY, isProtectedRole, unitsUnder } from '@/domain'
 import { ApiError, repos } from '@/data'
 import { usePermissions } from '@/features/auth/store'
 import { useUnitTree } from '@/features/org/queries'
@@ -14,6 +14,7 @@ import { useRoles } from '@/features/roles/queries'
 import { errorMessage } from '@/shared/lib/errors'
 import { cn } from '@/shared/lib/cn'
 import { Button, Checkbox, Field, Input, Select, Skeleton, Switch, toast } from '@/shared/ui'
+import { ShieldPlus } from 'lucide-react'
 import { formKeyDown } from '@/features/patients/formKeys'
 import { useSaveEmployee } from './queries'
 
@@ -40,6 +41,10 @@ const schema = z
     if (v.password !== v.passwordConfirm) ctx.addIssue({ code: 'custom', path: ['passwordConfirm'], message: 'mismatch' })
   })
 type Values = z.infer<typeof schema>
+
+/** where an installer may be homed / which extra units they may get (the API enforces the same) */
+const INSTALLER_HOME_LEVELS: UnitLevel[] = ['country', 'region']
+const INSTALLER_EXTRA_LEVELS: UnitLevel[] = ['region']
 
 /** Flatten a category tree into depth-annotated rows (parents first). */
 function flattenTree(cats: Category[]): { cat: Category; depth: number }[] {
@@ -83,9 +88,12 @@ export function EmployeeForm({ scopeId, employee, onSaved, onCancel, formId = 'e
   const { register, control, handleSubmit, reset, setError, formState: { errors, isSubmitting } } = form
   useEffect(() => reset(defaults), [defaults, reset])
   const superDraft = useWatch({ control, name: 'isSuperAdmin' })
+  const roleDraft = useWatch({ control, name: 'roleId' })
 
   const catTree = useMemo(() => flattenTree(categories.data ?? []), [categories.data])
-  const visibleRoles = (roles.data ?? []).filter((r) => r.key !== 'superadmin' || isSuperAdmin || employee?.roleId === r.id)
+  // superadmin and installer are handed out by superadmins only (shown read-only when the employee already has one)
+  const visibleRoles = (roles.data ?? []).filter((r) => !(r.scopeUnitId === null && isProtectedRole(r.key)) || isSuperAdmin || employee?.roleId === r.id)
+  const installerDraft = visibleRoles.some((r) => r.id === roleDraft && r.scopeUnitId === null && r.key === INSTALLER_ROLE_KEY)
   const systemRoles = visibleRoles.filter((r) => r.scopeUnitId === null)
   const unitRoles = visibleRoles.filter((r) => r.scopeUnitId !== null)
   const roleOption = (r: Role) => {
@@ -122,7 +130,7 @@ export function EmployeeForm({ scopeId, employee, onSaved, onCancel, formId = 'e
         <Field label={t('admin.employees.login')} required hint={t('admin.employees.loginHint')} error={errors.login && (errors.login.message === 'taken' ? t('admin.employees.loginTaken') : t('common.required'))}>
           {(id) => <Input id={id} mono autoComplete="off" {...register('login')} invalid={!!errors.login} />}
         </Field>
-        <Field label={t('admin.employees.role')} required error={errors.roleId && t('common.required')} hint={!isSuperAdmin ? t('admin.employees.superadminOnly') : undefined}>
+        <Field label={t('admin.employees.role')} required error={errors.roleId && t('common.required')} hint={!isSuperAdmin ? t('admin.employees.superadminOnly') : installerDraft ? t('admin.employees.installerRoleHint') : undefined}>
           {(id) => (
             <Select id={id} {...register('roleId')} invalid={!!errors.roleId} disabled={roles.isLoading}>
               <option value="">{t('common.select')}</option>
@@ -139,21 +147,31 @@ export function EmployeeForm({ scopeId, employee, onSaved, onCancel, formId = 'e
         </Field>
       </div>
 
+      {installerDraft && (
+        <div className="flex gap-3 rounded-[var(--radius-sm)] border border-brand/30 bg-brand-soft/40 px-3.5 py-3 text-[13px] text-ink-2" data-installer-info>
+          <ShieldPlus className="mt-0.5 size-4 shrink-0 text-brand" />
+          <div className="min-w-0">
+            <div className="font-semibold text-ink">{t('admin.employees.installerTitle')}</div>
+            <div className="mt-0.5">{t('admin.employees.installerInfo')}</div>
+          </div>
+        </div>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label={t('admin.employees.unit')} required={!superDraft} hint={t('admin.employees.unitHint')} error={errors.unitId && t('admin.employees.unitRequired')}>
+        <Field label={installerDraft ? t('admin.employees.installerHome') : t('admin.employees.unit')} required={!superDraft} hint={installerDraft ? t('admin.employees.installerHomeHint') : t('admin.employees.unitHint')} error={errors.unitId && t('admin.employees.unitRequired')}>
           {() => (
             <Controller control={control} name="unitId" render={({ field }) => (
               tree.isLoading ? <Skeleton className="h-10" /> : (
-                <UnitPicker units={scopedUnits} value={field.value} onChange={field.onChange} allowEmpty={superDraft} placeholder={t('common.select')} disabled={tree.isLoading} />
+                <UnitPicker units={scopedUnits} value={field.value} onChange={field.onChange} allowEmpty={superDraft} levels={installerDraft ? INSTALLER_HOME_LEVELS : undefined} placeholder={t('common.select')} disabled={tree.isLoading} />
               )
             )} />
           )}
         </Field>
-        <Field label={t('admin.employees.extraUnits')} optionalText={t('common.optional')} hint={t('admin.employees.extraUnitsHint')}>
+        <Field label={installerDraft ? t('admin.employees.installerExtra') : t('admin.employees.extraUnits')} optionalText={t('common.optional')} hint={installerDraft ? t('admin.employees.installerExtraHint') : t('admin.employees.extraUnitsHint')}>
           {() => (
             <Controller control={control} name="unitIds" render={({ field }) => (
               tree.isLoading ? <Skeleton className="h-10" /> : (
-                <UnitMultiPicker units={scopedUnits} value={field.value} onChange={field.onChange} />
+                <UnitMultiPicker units={scopedUnits} value={field.value} onChange={field.onChange} levels={installerDraft ? INSTALLER_EXTRA_LEVELS : undefined} />
               )
             )} />
           )}

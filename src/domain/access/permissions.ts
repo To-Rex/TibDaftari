@@ -53,11 +53,21 @@ export const PERMISSIONS = [
   'admin.template.write',
   'admin.template.publish',
   'admin.settings.write',
+  /** wipe a unit and everything under it ("like newborn") — superadmin and the installer, inside their scope */
+  'admin.unit.reset',
   // Platform (superadmin only): the whole tree, every country
   'platform.unit.manage',
 ] as const
 
 export type Permission = (typeof PERMISSIONS)[number]
+
+export const SUPERADMIN_ROLE_KEY = 'superadmin'
+/** O‘rnatuvchi — works like a superadmin, but only inside the units a superadmin gave them (their viloyat, several
+ *  viloyats of the same country, or the whole country); never another country, never the platform keys. */
+export const INSTALLER_ROLE_KEY = 'installer'
+/** granted, re-scoped and edited by superadmins only */
+export const PROTECTED_ROLE_KEYS: readonly string[] = [SUPERADMIN_ROLE_KEY, INSTALLER_ROLE_KEY]
+export const isProtectedRole = (key: string | undefined | null) => !!key && PROTECTED_ROLE_KEYS.includes(key)
 
 /** Keys saved before the unit model (roles / overrides of old sessions) are read through this map. */
 export const RENAMED_PERMISSIONS: Record<string, Permission> = {

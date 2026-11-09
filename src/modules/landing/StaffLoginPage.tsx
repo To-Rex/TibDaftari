@@ -27,7 +27,7 @@ export default function StaffLoginPage() {
     try {
       const s = await staffLogin(v.login, v.password)
       // land in the module that fits THIS account; a remembered `from` of another user/module is ignored
-      const home = s.roleKey === 'admin' || s.isSuperAdmin ? routes.admin.root : routes.app.root
+      const home = s.roleKey === 'admin' || s.roleKey === 'installer' || s.isSuperAdmin ? routes.admin.root : routes.app.root
       const from = loc.state?.from
       const dest = from && from.startsWith(home) ? from : home
       nav(dest, { replace: true })

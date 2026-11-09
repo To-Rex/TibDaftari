@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Plus, UserCog } from 'lucide-react'
 import type { Column } from '@/shared/ui'
 import type { Employee } from '@/domain'
+import { isProtectedRole } from '@/domain'
 import { unitsUnder } from '@/domain'
 import { repos } from '@/data'
 import { useAdminScope, useAuth, usePermissions } from '@/features/auth/store'
@@ -62,7 +63,7 @@ export default function EmployeesPage() {
     ) },
     { key: 'role', header: t('admin.employees.colRole'), card: 'meta', cell: (e) => {
       const r = roleById.get(e.roleId)
-      return <Badge tone={e.isSuperAdmin || r?.key === 'superadmin' ? 'accent' : r?.isSystem ? 'brand' : 'neutral'}>{r?.name ?? '—'}</Badge>
+      return <Badge tone={e.isSuperAdmin || (r?.scopeUnitId === null && isProtectedRole(r?.key)) ? 'accent' : r?.isSystem ? 'brand' : 'neutral'}>{r?.name ?? '—'}</Badge>
     } },
     { key: 'unit', header: t('admin.employees.colUnit'), hideBelow: 'md', card: 'field', cell: (e) => {
       const home = e.unitId ? unitById.get(e.unitId) : undefined

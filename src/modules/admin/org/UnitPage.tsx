@@ -32,7 +32,7 @@ export default function UnitPage() {
   const nav = useNavigate()
   const { unitId: paramId } = useParams()
   const { scopeId } = useAdminScope()
-  const { can, isSuperAdmin } = usePermissions()
+  const { can, canReset } = usePermissions()
   const id = paramId ?? scopeId
   const isScopeUnit = id === scopeId
   const tree = useUnitTree()
@@ -60,7 +60,7 @@ export default function UnitPage() {
       <PageHeader title={u?.name ?? <Skeleton className="h-8 w-56" />} description={u ? labels.of(u) : undefined}
         actions={u && (
           <>
-            {isSuperAdmin && <Button variant="ghost" className="text-danger hover:bg-danger-soft" leftIcon={<Eraser className="size-4" />} onClick={() => setReset(true)} data-unit-reset>{t(u.level === 'facility' ? 'admin.reset.facilityAction' : 'admin.reset.unitAction')}</Button>}
+            {canReset && <Button variant="ghost" className="text-danger hover:bg-danger-soft" leftIcon={<Eraser className="size-4" />} onClick={() => setReset(true)} data-unit-reset>{t(u.level === 'facility' ? 'admin.reset.facilityAction' : 'admin.reset.unitAction')}</Button>}
             {canEdit && <Button leftIcon={<Pencil className="size-4" />} onClick={() => setEdit(true)} data-unit-edit>{t('common.edit')}</Button>}
           </>
         )} />

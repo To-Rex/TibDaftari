@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
 import { ArrowLeft, Copy, Globe2, Lock, MapPin, Plus, ShieldCheck, Trash2, Users } from 'lucide-react'
 import { PERMISSIONS, type Permission, type Role } from '@/domain'
+import { isProtectedRole } from '@/domain'
 import { ApiError } from '@/data'
 import { useAdminScope, usePermissions } from '@/features/auth/store'
 import { useDeleteRole, useRoles, useSaveRole } from '@/features/roles/queries'
@@ -53,7 +54,7 @@ export default function RolesPage() {
   const selected = list.find((r) => r.id === selectedId)
   useEffect(() => { if (selected) setDraft(toDraft(selected)) }, [selected])
 
-  const isSuper = draft?.key === 'superadmin'
+  const isSuper = isProtectedRole(draft?.key) && draft?.scopeUnitId === null
   const readOnly = !canWrite || isSuper
   const dirty = draft && selected && draft.id ? !sameDraft(draft, toDraft(selected)) : !!draft && !draft.id
 
