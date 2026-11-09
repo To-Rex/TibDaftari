@@ -32,6 +32,10 @@ export const en: DeepPartial<Dictionary> = {
       more: '{{count}} more — refine the search', facilities: '{{count}} facilities',
       empty: 'No units here yet',
       levelPlural: { country: 'Countries', region: 'Regions', district: 'Districts / cities', facility: 'Facilities' },
+      rowHint: 'Click — open · ✓ or double-click — select',
+      pickHint: 'Pick a unit from the list', ghostHint: 'Pick from the list on the left',
+      current: 'Current', close: 'Close',
+      keys: '↑↓ move · → open · ← back · Enter select · Esc close',
     },
   },
   nav: {

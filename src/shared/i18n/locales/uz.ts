@@ -106,6 +106,10 @@ export const uz = {
       more: 'Yana {{count}} ta — qidiruvni aniqlashtiring', facilities: '{{count}} ta muassasa',
       empty: 'Bu yerda hali birlik yo‘q',
       levelPlural: { country: 'Davlatlar', region: 'Viloyatlar', district: 'Tumanlar / shaharlar', facility: 'Muassasalar' },
+      rowHint: 'Bosish — ochish · ✓ yoki ikki marta bosish — tanlash',
+      pickHint: 'Ro‘yxatdan birlikni tanlang', ghostHint: 'Chapdagi ro‘yxatdan tanlang',
+      current: 'Joriy', close: 'Yopish',
+      keys: '↑↓ harakat · → ichiga · ← orqaga · Enter tanlash · Esc yopish',
     },
   },
   nav: {

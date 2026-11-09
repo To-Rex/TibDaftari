@@ -33,6 +33,10 @@ export const ru: DeepPartial<Dictionary> = {
       more: 'Ещё {{count}} — уточните запрос', facilities: '{{count}} учр.',
       empty: 'Здесь пока нет подразделений',
       levelPlural: { country: 'Страны', region: 'Области', district: 'Районы / города', facility: 'Учреждения' },
+      rowHint: 'Клик — открыть · ✓ или двойной клик — выбрать',
+      pickHint: 'Выберите подразделение из списка', ghostHint: 'Выберите в списке слева',
+      current: 'Текущее', close: 'Закрыть',
+      keys: '↑↓ перемещение · → внутрь · ← назад · Enter выбрать · Esc закрыть',
     },
   },
   nav: {
