@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query'
 import type { Category, Employee, Id, Role, UnitLevel } from '@/domain'
 import { INSTALLER_ROLE_KEY, isProtectedRole, unitsUnder } from '@/domain'
 import { ApiError, repos } from '@/data'
-import { usePermissions } from '@/features/auth/store'
+import { useAuth, usePermissions } from '@/features/auth/store'
 import { useUnitTree } from '@/features/org/queries'
 import { UnitMultiPicker, UnitPicker } from '@/features/org/UnitPicker'
 import { useRoles } from '@/features/roles/queries'
@@ -68,7 +68,10 @@ function flattenTree(cats: Category[]): { cat: Category; depth: number }[] {
 export function EmployeeForm({ scopeId, employee, onSaved, onCancel, formId = 'employee-form' }: { scopeId: Id; employee?: Employee; onSaved: (e: Employee) => void; onCancel?: () => void; formId?: string }) {
   const { t } = useTranslation()
   const { isSuperAdmin } = usePermissions()
+  const meId = useAuth((st) => st.staff?.employeeId)
   const isEdit = !!employee
+  // editing oneself: name, contacts and password only — role, units, categories and status are a superadmin's call
+  const selfLocked = isEdit && employee?.id === meId && !isSuperAdmin
   const roles = useRoles(scopeId)
   const tree = useUnitTree()
   const categories = useQuery({ queryKey: ['categories', scopeId], queryFn: () => repos.catalog.listCategories(scopeId) })
@@ -106,10 +109,14 @@ export function EmployeeForm({ scopeId, employee, onSaved, onCancel, formId = 'e
     try {
       const saved = await save.mutateAsync({
         scopeId, id: employee?.id, fullName: v.fullName, login: v.login, phone: v.phone || undefined, email: v.email || undefined,
-        roleId: v.roleId, unitId: v.unitId, unitIds: v.unitIds.filter((id) => id !== v.unitId), categoryIds: v.categoryIds,
-        status: v.active ? 'active' : 'inactive', password: v.password || undefined,
-        // only a superadmin may grant / revoke the flag; everyone else leaves it untouched
-        ...(isSuperAdmin ? { isSuperAdmin: v.isSuperAdmin } : {}),
+        password: v.password || undefined,
+        // one's own role / units / categories / status are not sent (the API refuses them anyway)
+        ...(selfLocked ? {} : {
+          roleId: v.roleId, unitId: v.unitId, unitIds: v.unitIds.filter((id) => id !== v.unitId), categoryIds: v.categoryIds,
+          status: v.active ? 'active' : 'inactive',
+          // only a superadmin may grant / revoke the flag; everyone else leaves it untouched
+          ...(isSuperAdmin ? { isSuperAdmin: v.isSuperAdmin } : {}),
+        }),
       })
       toast.success(isEdit ? t('admin.employees.saved') : t('admin.employees.created'))
       onSaved(saved)
@@ -130,9 +137,9 @@ export function EmployeeForm({ scopeId, employee, onSaved, onCancel, formId = 'e
         <Field label={t('admin.employees.login')} required hint={t('admin.employees.loginHint')} error={errors.login && (errors.login.message === 'taken' ? t('admin.employees.loginTaken') : t('common.required'))}>
           {(id) => <Input id={id} mono autoComplete="off" {...register('login')} invalid={!!errors.login} />}
         </Field>
-        <Field label={t('admin.employees.role')} required error={errors.roleId && t('common.required')} hint={!isSuperAdmin ? t('admin.employees.superadminOnly') : installerDraft ? t('admin.employees.installerRoleHint') : undefined}>
+        <Field label={t('admin.employees.role')} required error={errors.roleId && t('common.required')} hint={selfLocked ? t('admin.employees.selfLockedHint') : !isSuperAdmin ? t('admin.employees.superadminOnly') : installerDraft ? t('admin.employees.installerRoleHint') : undefined}>
           {(id) => (
-            <Select id={id} {...register('roleId')} invalid={!!errors.roleId} disabled={roles.isLoading}>
+            <Select id={id} {...register('roleId')} invalid={!!errors.roleId} disabled={roles.isLoading || selfLocked}>
               <option value="">{t('common.select')}</option>
               {systemRoles.length > 0 && <optgroup label={t('admin.roles.systemRoles')}>{systemRoles.map(roleOption)}</optgroup>}
               {unitRoles.length > 0 && <optgroup label={t('admin.roles.unitRoles')}>{unitRoles.map(roleOption)}</optgroup>}
@@ -162,7 +169,7 @@ export function EmployeeForm({ scopeId, employee, onSaved, onCancel, formId = 'e
           {() => (
             <Controller control={control} name="unitId" render={({ field }) => (
               tree.isLoading ? <Skeleton className="h-10" /> : (
-                <UnitPicker units={scopedUnits} value={field.value} onChange={field.onChange} allowEmpty={superDraft} levels={installerDraft ? INSTALLER_HOME_LEVELS : undefined} placeholder={t('common.select')} disabled={tree.isLoading} />
+                <UnitPicker units={scopedUnits} value={field.value} onChange={field.onChange} allowEmpty={superDraft} levels={installerDraft ? INSTALLER_HOME_LEVELS : undefined} placeholder={t('common.select')} disabled={tree.isLoading || selfLocked} />
               )
             )} />
           )}
@@ -171,7 +178,7 @@ export function EmployeeForm({ scopeId, employee, onSaved, onCancel, formId = 'e
           {() => (
             <Controller control={control} name="unitIds" render={({ field }) => (
               tree.isLoading ? <Skeleton className="h-10" /> : (
-                <UnitMultiPicker units={scopedUnits} value={field.value} onChange={field.onChange} levels={installerDraft ? INSTALLER_EXTRA_LEVELS : undefined} />
+                <UnitMultiPicker units={scopedUnits} value={field.value} onChange={field.onChange} levels={installerDraft ? INSTALLER_EXTRA_LEVELS : undefined} disabled={selfLocked} />
               )
             )} />
           )}
@@ -185,7 +192,7 @@ export function EmployeeForm({ scopeId, employee, onSaved, onCancel, formId = 'e
               {categories.isLoading && <Skeleton className="h-24" />}
               {catTree.map(({ cat, depth }) => (
                 <div key={cat.id} className="flex items-center h-8 rounded-md hover:bg-surface-2 px-2" style={{ paddingLeft: 8 + depth * 18 }}>
-                  <Checkbox className="text-[13.5px]" checked={field.value.includes(cat.id)} onChange={(e) => field.onChange(e.target.checked ? [...field.value, cat.id] : field.value.filter((x) => x !== cat.id))}
+                  <Checkbox className="text-[13.5px]" disabled={selfLocked} checked={field.value.includes(cat.id)} onChange={(e) => field.onChange(e.target.checked ? [...field.value, cat.id] : field.value.filter((x) => x !== cat.id))}
                     label={<span className={cn(depth === 0 && 'font-medium')}>{cat.name}</span>} />
                 </div>
               ))}
@@ -204,7 +211,7 @@ export function EmployeeForm({ scopeId, employee, onSaved, onCancel, formId = 'e
       </div>
 
       <Controller control={control} name="active" render={({ field }) => (
-        <Switch checked={field.value} onChange={field.onChange} label={t('admin.employees.isActive')} description={t('admin.employees.isActiveHint')} />
+        <Switch checked={field.value} onChange={field.onChange} disabled={selfLocked} label={t('admin.employees.isActive')} description={selfLocked ? t('admin.employees.selfLockedHint') : t('admin.employees.isActiveHint')} />
       )} />
 
       {isSuperAdmin && (

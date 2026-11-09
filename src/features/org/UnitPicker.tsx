@@ -198,10 +198,12 @@ export interface UnitMultiPickerProps {
   levels?: UnitLevel[]
   rootId?: Id
   className?: string
+  /** show the tree but take no changes */
+  disabled?: boolean
 }
 
 /** Checkbox tree: selectable levels get a checkbox, the others are collapsible group rows. */
-export function UnitMultiPicker({ units, value, onChange, levels, rootId, className }: UnitMultiPickerProps) {
+export function UnitMultiPicker({ units, value, onChange, levels, rootId, className, disabled }: UnitMultiPickerProps) {
   const { t } = useTranslation()
   const labels = useUnitLabels()
   const nodes = useMemo(() => {
@@ -237,7 +239,7 @@ export function UnitMultiPicker({ units, value, onChange, levels, rootId, classN
             <ChevronRight className={cn('size-3.5 transition-transform', open && 'rotate-90')} />
           </button>
           {ok(n) ? (
-            <Checkbox className="min-w-0 flex-1 text-[13.5px]" checked={set.has(n.id)} onChange={(e) => toggle(n.id, e.target.checked)} data-unit-check={n.id}
+            <Checkbox className="min-w-0 flex-1 text-[13.5px]" disabled={disabled} checked={set.has(n.id)} onChange={(e) => toggle(n.id, e.target.checked)} data-unit-check={n.id}
               label={<span className="inline-flex min-w-0 items-center gap-1.5"><UnitIcon unit={n} className="text-ink-3" /><span className="truncate">{n.name}</span>{n.code && <span className="font-mono text-[11.5px] text-ink-3">{n.code}</span>}{!n.isActive && <span className="text-[11.5px] text-ink-3">· {t('org.inactive')}</span>}</span>} />
           ) : (
             <span className="inline-flex min-w-0 flex-1 items-center gap-1.5 text-[12.5px] font-medium text-ink-2"><UnitIcon unit={n} className="text-ink-3" /><span className="truncate">{n.name}</span><span className="text-[11.5px] font-normal text-ink-3">· {labels.of(n)}</span></span>

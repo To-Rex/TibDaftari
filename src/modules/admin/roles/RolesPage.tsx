@@ -5,7 +5,7 @@ import { ArrowLeft, Copy, Globe2, Lock, MapPin, Plus, ShieldCheck, Trash2, Users
 import { PERMISSIONS, type Permission, type Role } from '@/domain'
 import { isProtectedRole } from '@/domain'
 import { ApiError } from '@/data'
-import { useAdminScope, usePermissions } from '@/features/auth/store'
+import { useAdminScope, usePermissions, useAuth } from '@/features/auth/store'
 import { useDeleteRole, useRoles, useSaveRole } from '@/features/roles/queries'
 import { PermissionMatrix } from '@/features/roles/PermissionMatrix'
 import { useUnitTree, useUnitTreeShape } from '@/features/org/queries'
@@ -23,7 +23,8 @@ const sameDraft = (a: Draft, b: Draft) => a.name === b.name && a.description ===
 export default function RolesPage() {
   const { t } = useTranslation()
   const { scopeId } = useAdminScope()
-  const { can } = usePermissions()
+  const { can, isSuperAdmin } = usePermissions()
+  const myRoleId = useAuth((st) => st.staff?.roleId ?? null)
   const canWrite = can('admin.role.write')
   const roles = useRoles(scopeId)
   const tree = useUnitTree()
@@ -55,7 +56,11 @@ export default function RolesPage() {
   useEffect(() => { if (selected) setDraft(toDraft(selected)) }, [selected])
 
   const isSuper = isProtectedRole(draft?.key) && draft?.scopeUnitId === null
-  const readOnly = !canWrite || isSuper
+  // the role one holds is edited by someone else (or a superadmin) — never by its holder
+  const ownRole = !!draft?.id && draft.id === myRoleId && !isSuperAdmin
+  // system roles (scope null) are the superadmin's; the API refuses everyone else, so the UI does not pretend
+  const systemLocked = !!draft?.id && draft.scopeUnitId === null && !isSuperAdmin && !isSuper
+  const readOnly = !canWrite || isSuper || ownRole || systemLocked
   const dirty = draft && selected && draft.id ? !sameDraft(draft, toDraft(selected)) : !!draft && !draft.id
 
   const startNew = (from?: Role) => {
@@ -151,8 +156,8 @@ export default function RolesPage() {
                 {canWrite && (
                   <div className="flex flex-wrap items-center gap-2 shrink-0 xl:pt-6">
                     {selected && <Button variant="secondary" size="sm" leftIcon={<Copy className="size-4" />} onClick={() => startNew(selected)}>{t('admin.roles.duplicate')}</Button>}
-                    {selected && !selected.isSystem && <Button variant="ghost" size="sm" className="text-danger hover:bg-danger-soft" leftIcon={<Trash2 className="size-4" />} onClick={() => setConfirm(true)}>{t('admin.roles.delete')}</Button>}
-                    {!isSuper && <Button size="sm" disabled={!dirty} loading={saveRole.isPending} onClick={submit}>{t('common.save')}</Button>}
+                    {selected && !selected.isSystem && !ownRole && <Button variant="ghost" size="sm" className="text-danger hover:bg-danger-soft" leftIcon={<Trash2 className="size-4" />} onClick={() => setConfirm(true)}>{t('admin.roles.delete')}</Button>}
+                    {!readOnly && <Button size="sm" disabled={!dirty} loading={saveRole.isPending} onClick={submit}>{t('common.save')}</Button>}
                   </div>
                 )}
               </div>
@@ -171,6 +176,8 @@ export default function RolesPage() {
                 </p>
               )}
               {isSuper && <p className="mt-3 flex items-center gap-2 text-[13px] text-ink-3"><Lock className="size-3.5" />{t('admin.roles.readonlySuper')}</p>}
+              {ownRole && <p className="mt-3 flex items-center gap-2 text-[13px] text-ink-3" data-own-role-locked><Lock className="size-3.5" />{t('admin.roles.readonlyOwn')}</p>}
+              {systemLocked && !ownRole && <p className="mt-3 flex items-center gap-2 text-[13px] text-ink-3"><Lock className="size-3.5" />{t('admin.roles.readonlySystem')}</p>}
             </Card>
             <div className="sticky top-16 z-20 -mx-1 px-1 py-2 bg-bg/90 backdrop-blur-md flex items-center gap-3 justify-between">
               <SearchInput value={search} onChange={setSearch} placeholder={t('admin.roles.search')} className="flex-1 min-w-0 sm:max-w-sm" />

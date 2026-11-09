@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
-import { Activity, KeyRound, LogIn, Pencil, ShieldCheck, UserCog, UserX, UserCheck } from 'lucide-react'
+import { Activity, KeyRound, LogIn, Pencil, ShieldCheck, UserCog, UserX, UserCheck, Lock } from 'lucide-react'
 import type { PermissionOverrides } from '@/domain'
 import { useAdminScope, useAuth, usePermissions } from '@/features/auth/store'
 import { useEmployee, useSaveEmployee, useSetOverrides } from '@/features/employees/queries'
@@ -24,7 +24,7 @@ export default function EmployeePage() {
   const { employeeId: routeId = '' } = useParams<{ employeeId: string }>()
   const { scopeId } = useAdminScope()
   const meId = useAuth((s) => s.staff?.employeeId)
-  const { can } = usePermissions()
+  const { can, isSuperAdmin } = usePermissions()
   const canWrite = can('admin.employee.write')
   const employee = useEmployee(routeId)
   const roles = useRoles(scopeId)
@@ -39,6 +39,8 @@ export default function EmployeePage() {
   const [draft, setDraft] = useState<PermissionOverrides>({ allow: [], deny: [] })
 
   const e = employee.data
+  // one's own permission overrides are a superadmin's call (no self-escalation)
+  const permsLocked = !!e && e.id === meId && !isSuperAdmin
   const role = useMemo(() => roles.data?.find((r) => r.id === e?.roleId), [roles.data, e?.roleId])
   const homeUnit = e?.unitId ? shape.byId.get(e.unitId) : undefined
   const roleOrigin = role ? (role.scopeUnitId === null ? t('admin.roles.systemRole') : shape.byId.get(role.scopeUnitId)?.name) : undefined
@@ -157,7 +159,7 @@ export default function EmployeePage() {
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <Badge tone={draft.allow.length + draft.deny.length ? 'warn' : 'neutral'}>{t('admin.employees.overridesCount', { allow: draft.allow.length, deny: draft.deny.length })}</Badge>
-                    {canWrite && (
+                    {canWrite && !permsLocked && (
                       <>
                         <Button size="sm" variant="ghost" disabled={!draft.allow.length && !draft.deny.length} onClick={() => setDraft({ allow: [], deny: [] })}>{t('admin.employees.permsReset')}</Button>
                         <Button size="sm" disabled={!dirty} loading={setOverrides.isPending} onClick={saveOverrides}>{t('common.save')}</Button>
@@ -165,11 +167,12 @@ export default function EmployeePage() {
                     )}
                   </div>
                 </div>
+                {permsLocked && <p className="mt-3 flex items-center gap-2 text-[13px] text-ink-3" data-self-perms-locked><Lock className="size-3.5" />{t('admin.employees.selfPermsLocked')}</p>}
                 </Card>
               <div className="sticky top-16 z-20 -mx-1 px-1 py-2 bg-bg/90 backdrop-blur-md">
                 <SearchInput value={search} onChange={setSearch} placeholder={t('admin.roles.search')} className="sm:max-w-sm" />
               </div>
-              <PermissionMatrix mode="override" rolePermissions={role?.permissions ?? []} overrides={draft} onChange={setDraft} search={search} readOnly={!canWrite} />
+              <PermissionMatrix mode="override" rolePermissions={role?.permissions ?? []} overrides={draft} onChange={setDraft} search={search} readOnly={!canWrite || permsLocked} />
             </div>
           ) : (
             <Card>

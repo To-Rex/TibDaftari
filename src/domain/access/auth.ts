@@ -28,6 +28,8 @@ export interface StaffSession {
   facilityId: Id | null
   isSuperAdmin: boolean
   roleKey: string
+  /** the held role; the UI locks the editing of one's own role with it */
+  roleId: Id | null
   fullName: string
   permissions: Permission[]
   accessToken: string
