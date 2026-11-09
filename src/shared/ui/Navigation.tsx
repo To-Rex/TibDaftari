@@ -48,7 +48,7 @@ export function Segmented<T extends string>({ items, value, onChange, className,
 export interface MenuItem { key: string; label: ReactNode; icon?: ReactNode; danger?: boolean; disabled?: boolean; onSelect?: () => void; separatorBefore?: boolean }
 export function Menu({ trigger, items, align = 'end', className }: { trigger: (open: boolean) => ReactNode; items: MenuItem[]; align?: 'start' | 'end'; className?: string }) {
   const [open, setOpen] = useState(false)
-  const [pos, setPos] = useState<{ top: number; left: number; right: number }>({ top: 0, left: 0, right: 0 })
+  const [pos, setPos] = useState<{ top: number; left: number; right: number; maxH: number }>({ top: 0, left: 0, right: 0, maxH: 480 })
   const btnRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (!open) return
@@ -60,7 +60,8 @@ export function Menu({ trigger, items, align = 'end', className }: { trigger: (o
   }, [open])
   const toggle = () => {
     const r = btnRef.current?.getBoundingClientRect()
-    if (r) setPos({ top: r.bottom + 6, left: r.left, right: window.innerWidth - r.right })
+    // keep the panel inside the viewport: it never runs past the bottom (it scrolls instead) nor the right edge
+    if (r) setPos({ top: r.bottom + 6, left: Math.max(8, Math.min(r.left, window.innerWidth - 208)), right: Math.max(8, window.innerWidth - r.right), maxH: Math.max(160, window.innerHeight - r.bottom - 14) })
     setOpen((o) => !o)
   }
   return (
@@ -70,8 +71,8 @@ export function Menu({ trigger, items, align = 'end', className }: { trigger: (o
         <AnimatePresence>
           {open && (
             <motion.div initial={{ opacity: 0, y: -4, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -4, scale: 0.98 }} transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
-              style={{ position: 'fixed', top: pos.top, ...(align === 'end' ? { right: pos.right } : { left: pos.left }) }}
-              className="app-menu z-[90] min-w-48 rounded-[var(--radius)] border border-line bg-bg-elevated p-1.5 shadow-3" role="menu" onMouseDown={(e) => e.stopPropagation()}>
+              style={{ position: 'fixed', top: pos.top, maxHeight: pos.maxH, ...(align === 'end' ? { right: pos.right } : { left: pos.left }) }}
+              className="app-menu z-[90] min-w-48 max-w-[calc(100vw-16px)] overflow-y-auto overscroll-contain rounded-[var(--radius)] border border-line bg-bg-elevated p-1.5 shadow-3" role="menu" onMouseDown={(e) => e.stopPropagation()}>
               {items.map((it) => (
                 <div key={it.key}>
                   {it.separatorBefore && <div className="my-1 h-px bg-line" />}

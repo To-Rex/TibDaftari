@@ -29,6 +29,10 @@ export interface UnitPickerProps {
   disabled?: boolean
   className?: string
   'data-testid'?: string
+  /** draw the trigger yourself (a header pill, a breadcrumb…); the picker still handles open/close, keys and a11y */
+  renderTrigger?: (state: { open: boolean; selected: OrgUnit | null }) => ReactNode
+  /** the popover is at least this wide (default 260) */
+  menuWidth?: number
 }
 
 interface Row { unit: UnitNode; depth: number; selectable: boolean }
@@ -51,7 +55,7 @@ function useRows(units: OrgUnit[], rootId: Id | undefined, levels: UnitLevel[] |
 
 const SEARCH_FROM = 8
 
-export function UnitPicker({ units, value, onChange, levels, rootId, placeholder, allowEmpty, disabled, className, 'data-testid': testId }: UnitPickerProps) {
+export function UnitPicker({ units, value, onChange, levels, rootId, placeholder, allowEmpty, disabled, className, 'data-testid': testId, renderTrigger, menuWidth = 260 }: UnitPickerProps) {
   const { t } = useTranslation()
   const labels = useUnitLabels()
   const rows = useRows(units, rootId, levels)
@@ -59,7 +63,7 @@ export function UnitPicker({ units, value, onChange, levels, rootId, placeholder
   const [open, setOpen] = useState(false)
   const [q, setQ] = useState('')
   const [hi, setHi] = useState(-1)
-  const btn = useRef<HTMLButtonElement>(null)
+  const btn = useRef<HTMLElement | null>(null)
   const pop = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState({ top: 0, left: 0, width: 240, up: false })
   const ph = placeholder ?? t('org.allUnits')
@@ -83,7 +87,7 @@ export function UnitPicker({ units, value, onChange, levels, rootId, placeholder
   const place = () => {
     const r = btn.current?.getBoundingClientRect()
     if (!r) return
-    const width = Math.max(r.width, 260)
+    const width = Math.min(Math.max(r.width, menuWidth), window.innerWidth - 16)
     const left = Math.min(r.left, window.innerWidth - width - 8)
     const spaceBelow = window.innerHeight - r.bottom
     const up = spaceBelow < 280 && r.top > spaceBelow
@@ -158,9 +162,22 @@ export function UnitPicker({ units, value, onChange, levels, rootId, placeholder
     </div>
   )
 
+  if (renderTrigger) {
+    return (
+      <>
+        <span ref={(el) => { btn.current = el }} role="combobox" tabIndex={disabled ? -1 : 0} aria-expanded={open} aria-haspopup="listbox" aria-disabled={disabled || undefined}
+          onClick={() => { if (!disabled) setOpen((o) => !o) }} onKeyDown={onKey}
+          className={cn('inline-flex min-w-0 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-brand/40 rounded-full', disabled && 'cursor-default', className)} data-unit-picker data-testid={testId} data-value={value ?? ''}>
+          {renderTrigger({ open, selected })}
+        </span>
+        {open && createPortal(list, document.body)}
+      </>
+    )
+  }
+
   return (
     <>
-      <button ref={btn} type="button" role="combobox" aria-expanded={open} aria-haspopup="listbox" disabled={disabled} onClick={() => setOpen((o) => !o)} onKeyDown={onKey}
+      <button ref={(el) => { btn.current = el }} type="button" role="combobox" aria-expanded={open} aria-haspopup="listbox" disabled={disabled} onClick={() => setOpen((o) => !o)} onKeyDown={onKey}
         className={cn(inputBase, 'flex items-center gap-2 text-left', !selected && 'text-ink-3', className)} data-unit-picker data-testid={testId} data-value={value ?? ''}>
         {selected ? <UnitIcon unit={selected} className="text-brand" /> : <span className="size-4 shrink-0" />}
         <span className="min-w-0 flex-1 truncate">{selected ? selected.name : ph}</span>

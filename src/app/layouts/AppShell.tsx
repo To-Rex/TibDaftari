@@ -14,12 +14,13 @@ import { AnimatePresence, motion } from 'motion/react'
 import {
   ReceiptText, FileCheck2, LayoutDashboard, ClipboardList, Users, FlaskConical, BadgeCheck, BarChart3, MessageSquare, Building2, UserCog,
   ShieldCheck, FolderTree, ListChecks, LayoutTemplate, Send, PanelLeftClose, PanelLeftOpen, Bell, LogOut, ChevronDown, Menu as MenuIcon, X, Globe2, Receipt, ArrowLeftRight,
-  Check, Loader2, Map, MapPin, Hospital, Landmark,
+  Loader2, Map, MapPin, Hospital, Landmark,
 } from 'lucide-react'
 import type { OrgUnit, Permission, UnitLevel } from '@/domain'
 import { repos } from '@/data'
 import { useAuth, usePermissions } from '@/features/auth/store'
 import { useUnitTree, useUnitTreeShape } from '@/features/org/queries'
+import { UnitPicker } from '@/features/org/UnitPicker'
 import { useGlobalHotkeys } from '@/features/hotkeys/useGlobalHotkeys'
 import { HotkeysButton, HotkeysHelp } from '@/features/hotkeys/HotkeysHelp'
 import { preloadRouteChunks, warmWorkspaceData } from '@/features/session/warmup'
@@ -32,6 +33,7 @@ interface NavItem { to: string; label: string; icon: ReactNode; perm?: Permissio
 interface NavSection { title?: string; items: NavItem[] }
 
 const LEVEL_ICON: Record<UnitLevel, ReactNode> = { country: <Globe2 />, region: <Map />, district: <MapPin />, facility: <Hospital /> }
+const FACILITY_ONLY: UnitLevel[] = ['facility']
 
 /** The tree + the resolved scope unit and facility for the current session (corrects stale stored choices). */
 export function useWorkspace() {
@@ -235,7 +237,7 @@ function TopBar({ onMenu, module, onHelp, ws }: { onMenu: () => void; module: 's
     const allowed = new Set(s.isSuperAdmin ? shape.units.map((u) => u.id) : s.unitIds.flatMap((id) => shape.under(id).map((u) => u.id)))
     return flattenRoots(roots).filter((u) => allowed.has(u.id))
   }, [s.isSuperAdmin, s.unitIds, shape])
-  const levelLabel = (u: OrgUnit) => t(`org.level.${u.level}`)
+  const facilityUnits = useMemo(() => (scopeUnit ? shape.under(scopeUnit.id) : []), [scopeUnit, shape])
 
   return (
     <header className="app-topbar sticky top-0 z-30 flex h-14 items-center gap-1.5 border-b border-line bg-bg/86 px-2 backdrop-blur-md xs:gap-2 xs:px-3 sm:h-16 sm:gap-3 sm:px-6">
@@ -245,26 +247,15 @@ function TopBar({ onMenu, module, onHelp, ws }: { onMenu: () => void; module: 's
       {/* Scope switcher — the administered unit (admin panel; a superadmin sees it everywhere) */}
       {(module === 'admin' || s.isSuperAdmin) && scopeUnit && (
         scopeChoices.length > 1 ? (
-          <Menu
-            align="start"
-            trigger={(open) => (
-              <button type="button" title={scopeUnit.path} className={cn(pill, 'transition-colors hover:border-line-strong', open && 'border-brand')} data-scope-switcher>
+          <UnitPicker units={scopeChoices} value={scopeUnit.id} menuWidth={320}
+            onChange={(id) => { if (!id || id === scopeUnit.id) return; setScopeUnit(id); if (module === 'admin') nav(routes.admin.root) }}
+            renderTrigger={({ open }) => (
+              <span title={scopeUnit.path} className={cn(pill, 'transition-colors hover:border-line-strong', open && 'border-brand')} data-scope-switcher>
                 <span className="shrink-0 text-brand [&>svg]:size-4">{LEVEL_ICON[scopeUnit.level]}</span>
                 <span className="max-sm:hidden max-w-[140px] md:max-w-[200px] 2xl:max-w-[280px] truncate">{scopeUnit.name}</span>
-                <ChevronDown className="size-3.5 shrink-0 text-ink-3" />
-              </button>
-            )}
-            items={scopeChoices.map((u) => ({
-              key: u.id,
-              label: (
-                <span className="flex items-center gap-2" style={{ paddingLeft: `${Math.max(0, u.depth - (scopeChoices[0]?.depth ?? 0)) * 12}px` }}>
-                  <span className="flex flex-col min-w-0"><span className="truncate">{u.name}</span><span className="text-[11.5px] text-ink-3">{levelLabel(u)}{u.code ? ` · ${u.code}` : ''}{u.isActive ? '' : ` · ${t('org.inactive')}`}</span></span>
-                </span>
-              ),
-              onSelect: () => { setScopeUnit(u.id); if (module === 'admin') nav(routes.admin.root) },
-              icon: u.id === scopeUnit.id ? <Check /> : LEVEL_ICON[u.level],
-            }))}
-          />
+                <ChevronDown className={cn('size-3.5 shrink-0 text-ink-3 transition-transform', open && 'rotate-180')} />
+              </span>
+            )} />
         ) : (
           <span title={scopeUnit.path} className={cn(pill, 'cursor-default')} data-scope-fixed>
             <span className="shrink-0 text-brand [&>svg]:size-4">{LEVEL_ICON[scopeUnit.level]}</span>
@@ -276,22 +267,15 @@ function TopBar({ onMenu, module, onHelp, ws }: { onMenu: () => void; module: 's
       {/* Facility switcher — the staff app works in one facility under the scope */}
       {module === 'staff' && scopeUnit && facilities.length > 0 && (
         facilities.length > 1 ? (
-          <Menu
-            align="start"
-            trigger={(open) => (
-              <button type="button" title={facility?.path ?? ''} className={cn(pill, 'transition-colors hover:border-line-strong', open && 'border-brand')} data-facility-switcher>
+          <UnitPicker units={facilityUnits} levels={FACILITY_ONLY} value={facility?.id ?? null} menuWidth={320}
+            onChange={(id) => { if (id && id !== facility?.id) setFacility(id) }}
+            renderTrigger={({ open }) => (
+              <span title={facility?.path ?? ''} className={cn(pill, 'transition-colors hover:border-line-strong', open && 'border-brand')} data-facility-switcher>
                 <Hospital className="size-4 shrink-0 text-brand" />
                 <span className="max-sm:hidden max-w-[120px] md:max-w-[160px] 2xl:max-w-[240px] truncate">{facility?.name ?? t('org.pickFacility')}</span>
-                <ChevronDown className="size-3.5 shrink-0 text-ink-3" />
-              </button>
-            )}
-            items={facilities.map((f) => ({
-              key: f.id,
-              label: <span className="flex flex-col"><span>{f.name}</span><span className="text-[11.5px] text-ink-3">{f.districtName ?? ''}{f.code ? ` · ${f.code}` : ''}</span></span>,
-              onSelect: () => setFacility(f.id),
-              icon: f.id === facility?.id ? <Check /> : <Hospital />,
-            }))}
-          />
+                <ChevronDown className={cn('size-3.5 shrink-0 text-ink-3 transition-transform', open && 'rotate-180')} />
+              </span>
+            )} />
         ) : (
           <span title={facility?.path ?? ''} className={cn(pill, 'cursor-default')} data-facility-fixed>
             <Hospital className="size-4 shrink-0 text-brand" />
