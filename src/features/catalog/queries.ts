@@ -1,47 +1,54 @@
+/**
+ * Catalogue / template queries. Every list is scoped by `scopeId` — the organisation unit the page works in
+ * (the administrator's unit for the admin panel, the facility for the staff app); the API returns the
+ * catalogue of that unit's lineage. An optional `unitId` narrows to what one sub-unit uses.
+ * Unit lists themselves come from `@/features/org/queries` (`useUnitTree`).
+ */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { repos } from '@/data'
 import type { AttributeSchema, Category, Id, ResultTemplate, ServiceType, TemplateAsset } from '@/domain'
 
+export type ServiceTypeQuery = { categoryId?: Id; search?: string; activeOnly?: boolean; unitId?: Id }
+export type TemplateQuery = { status?: string; serviceTypeId?: Id; unitId?: Id; search?: string }
+
 export const catalogKeys = {
-  categories: (companyId: Id) => ['categories', companyId] as const,
-  serviceTypes: (companyId: Id, q: { categoryId?: Id; search?: string; activeOnly?: boolean; branchId?: Id }) => ['serviceTypes', companyId, q] as const,
+  categories: (scopeId: Id) => ['categories', scopeId] as const,
+  serviceTypes: (scopeId: Id, q: ServiceTypeQuery) => ['serviceTypes', scopeId, q] as const,
   serviceType: (id: Id) => ['serviceType', id] as const,
-  schemas: (companyId: Id) => ['schemas', companyId] as const,
+  schemas: (scopeId: Id) => ['schemas', scopeId] as const,
   schema: (id: Id) => ['schema', id] as const,
-  branches: (companyId: Id) => ['branches', companyId] as const,
-  templates: (companyId: Id, q: { status?: string; serviceTypeId?: Id; branchId?: Id; search?: string }) => ['templates', companyId, q] as const,
+  templates: (scopeId: Id, q: TemplateQuery) => ['templates', scopeId, q] as const,
   template: (id: Id) => ['template', id] as const,
-  assets: (companyId: Id) => ['templateAssets', companyId] as const,
+  assets: (scopeId: Id) => ['templateAssets', scopeId] as const,
 }
 
 /* ------------------------------ queries ------------------------------ */
 
-export const useCategories = (companyId: Id) =>
-  useQuery({ queryKey: catalogKeys.categories(companyId), queryFn: () => repos.catalog.listCategories(companyId) })
+export const useCategories = (scopeId: Id) =>
+  useQuery({ queryKey: catalogKeys.categories(scopeId), queryFn: () => repos.catalog.listCategories(scopeId), enabled: !!scopeId })
 
-export const useServiceTypes = (companyId: Id, q: { categoryId?: Id; search?: string; activeOnly?: boolean; branchId?: Id }, enabled = true) =>
-  useQuery({ queryKey: catalogKeys.serviceTypes(companyId, q), queryFn: () => repos.catalog.listServiceTypes(companyId, q), enabled, placeholderData: (p) => p })
+/** `q.unitId` = only what that unit offers, with `effectivePrice` / `available` filled in by the API. */
+export const useServiceTypes = (scopeId: Id, q: ServiceTypeQuery, enabled = true) =>
+  useQuery({ queryKey: catalogKeys.serviceTypes(scopeId, q), queryFn: () => repos.catalog.listServiceTypes(scopeId, q), enabled: enabled && !!scopeId, placeholderData: (p) => p })
 
 export const useServiceType = (id: Id | null | undefined) =>
   useQuery({ queryKey: catalogKeys.serviceType(id ?? ''), queryFn: () => repos.catalog.getServiceType(id!), enabled: !!id })
 
-export const useSchemas = (companyId: Id) =>
-  useQuery({ queryKey: catalogKeys.schemas(companyId), queryFn: () => repos.catalog.listSchemas(companyId) })
+export const useSchemas = (scopeId: Id) =>
+  useQuery({ queryKey: catalogKeys.schemas(scopeId), queryFn: () => repos.catalog.listSchemas(scopeId), enabled: !!scopeId })
 
 export const useSchema = (id: Id | null | undefined) =>
   useQuery({ queryKey: catalogKeys.schema(id ?? ''), queryFn: () => repos.catalog.getSchema(id!), enabled: !!id })
 
-export const useBranches = (companyId: Id) =>
-  useQuery({ queryKey: catalogKeys.branches(companyId), queryFn: () => repos.tenant.listBranches(companyId) })
-
-export const useTemplates = (companyId: Id, q: { status?: string; serviceTypeId?: Id; branchId?: Id; search?: string } = {}) =>
-  useQuery({ queryKey: catalogKeys.templates(companyId, q), queryFn: () => repos.templates.list(companyId, q), placeholderData: (p) => p })
+/** `q.unitId` = templates usable at that unit; without it everything managed from the scope. */
+export const useTemplates = (scopeId: Id, q: TemplateQuery = {}) =>
+  useQuery({ queryKey: catalogKeys.templates(scopeId, q), queryFn: () => repos.templates.list(scopeId, q), enabled: !!scopeId, placeholderData: (p) => p })
 
 export const useTemplate = (id: Id | undefined) =>
   useQuery({ queryKey: catalogKeys.template(id ?? ''), queryFn: () => repos.templates.get(id!), enabled: !!id })
 
-export const useTemplateAssets = (companyId: Id) =>
-  useQuery({ queryKey: catalogKeys.assets(companyId), queryFn: () => repos.templates.listAssets(companyId) })
+export const useTemplateAssets = (scopeId: Id) =>
+  useQuery({ queryKey: catalogKeys.assets(scopeId), queryFn: () => repos.templates.listAssets(scopeId), enabled: !!scopeId })
 
 /* ------------------------------ mutations ------------------------------ */
 
@@ -50,10 +57,10 @@ function useInvalidate() {
   return (keys: readonly (readonly unknown[])[]) => keys.forEach((k) => void qc.invalidateQueries({ queryKey: k }))
 }
 
-export function useSaveCategory(companyId: Id) {
+export function useSaveCategory(scopeId: Id) {
   const inv = useInvalidate()
   return useMutation({
-    mutationFn: (input: Partial<Category> & { id?: Id }) => repos.catalog.saveCategory({ ...input, companyId }),
+    mutationFn: (input: Partial<Category> & { id?: Id }) => repos.catalog.saveCategory({ ...input, scopeId }),
     onSuccess: () => inv([['categories']]),
   })
 }
@@ -61,10 +68,10 @@ export function useDeleteCategory() {
   const inv = useInvalidate()
   return useMutation({ mutationFn: (id: Id) => repos.catalog.deleteCategory(id), onSuccess: () => inv([['categories']]) })
 }
-export function useSaveServiceType(companyId: Id) {
+export function useSaveServiceType(scopeId: Id) {
   const inv = useInvalidate()
   return useMutation({
-    mutationFn: (input: Partial<ServiceType> & { id?: Id }) => repos.catalog.saveServiceType({ ...input, companyId }),
+    mutationFn: (input: Partial<ServiceType> & { id?: Id }) => repos.catalog.saveServiceType({ ...input, scopeId }),
     onSuccess: () => inv([['serviceTypes'], ['serviceType'], ['schemas']]),
   })
 }
@@ -72,10 +79,10 @@ export function useDeleteServiceType() {
   const inv = useInvalidate()
   return useMutation({ mutationFn: (id: Id) => repos.catalog.deleteServiceType(id), onSuccess: () => inv([['serviceTypes'], ['schemas']]) })
 }
-export function useSaveSchema(companyId: Id) {
+export function useSaveSchema(scopeId: Id) {
   const inv = useInvalidate()
   return useMutation({
-    mutationFn: (input: Partial<AttributeSchema> & { id?: Id }) => repos.catalog.saveSchema({ ...input, companyId }),
+    mutationFn: (input: Partial<AttributeSchema> & { id?: Id }) => repos.catalog.saveSchema({ ...input, scopeId }),
     onSuccess: () => inv([['schemas'], ['schema']]),
   })
 }
@@ -83,10 +90,10 @@ export function usePublishSchema() {
   const inv = useInvalidate()
   return useMutation({ mutationFn: (id: Id) => repos.catalog.publishSchema(id), onSuccess: () => inv([['schemas'], ['schema']]) })
 }
-export function useSaveTemplate(companyId: Id) {
+export function useSaveTemplate(scopeId: Id) {
   const inv = useInvalidate()
   return useMutation({
-    mutationFn: (input: Partial<ResultTemplate> & { id?: Id }) => repos.templates.save({ ...input, companyId }),
+    mutationFn: (input: Partial<ResultTemplate> & { id?: Id }) => repos.templates.save({ ...input, scopeId }),
     onSuccess: () => inv([['templates'], ['template']]),
   })
 }
@@ -97,38 +104,39 @@ export function useTemplateStatus() {
     onSuccess: () => inv([['templates'], ['template']]),
   })
 }
+/** Draft copy of a template; `unitIds` binds the copy to the chosen units (a unit taking another unit's template). */
 export function useDuplicateTemplate() {
   const inv = useInvalidate()
-  return useMutation({ mutationFn: ({ id, name, branchIds }: { id: Id; name?: string; branchIds?: Id[] }) => repos.templates.duplicate(id, { name, branchIds }), onSuccess: () => inv([['templates']]) })
+  return useMutation({ mutationFn: ({ id, name, unitIds }: { id: Id; name?: string; unitIds?: Id[] }) => repos.templates.duplicate(id, { name, unitIds }), onSuccess: () => inv([['templates']]) })
 }
-/** The standard cheque as a new draft receipt template of the company. */
-export function useCreateDefaultReceipt(companyId: Id) {
+/** The standard cheque as a new draft receipt template owned by the scope. */
+export function useCreateDefaultReceipt(scopeId: Id) {
   const inv = useInvalidate()
-  return useMutation({ mutationFn: (input: Parameters<typeof repos.templates.createDefaultReceipt>[1]) => repos.templates.createDefaultReceipt(companyId, input), onSuccess: () => inv([['templates']]) })
+  return useMutation({ mutationFn: (input: Parameters<typeof repos.templates.createDefaultReceipt>[1]) => repos.templates.createDefaultReceipt(scopeId, input), onSuccess: () => inv([['templates']]) })
 }
 export function useDeleteTemplate() {
   const inv = useInvalidate()
   return useMutation({ mutationFn: (id: Id) => repos.templates.delete(id), onSuccess: () => inv([['templates']]) })
 }
-export function useUploadAsset(companyId: Id) {
+export function useUploadAsset(scopeId: Id) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (asset: Parameters<typeof repos.templates.uploadAsset>[1]) => repos.templates.uploadAsset(companyId, asset),
+    mutationFn: (asset: Parameters<typeof repos.templates.uploadAsset>[1]) => repos.templates.uploadAsset(scopeId, asset),
     // Put the new asset into the editor's cache immediately: the image element references it
     // before the background refetch finishes, otherwise the canvas shows the "image" placeholder.
     onSuccess: (asset) => {
-      qc.setQueryData<TemplateAsset[]>(catalogKeys.assets(companyId), (old) => [asset, ...(old ?? []).filter((a) => a.id !== asset.id)])
-      void qc.invalidateQueries({ queryKey: catalogKeys.assets(companyId) })
+      qc.setQueryData<TemplateAsset[]>(catalogKeys.assets(scopeId), (old) => [asset, ...(old ?? []).filter((a) => a.id !== asset.id)])
+      void qc.invalidateQueries({ queryKey: catalogKeys.assets(scopeId) })
     },
   })
 }
-export function useDeleteAsset(companyId: Id) {
+export function useDeleteAsset(scopeId: Id) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (assetId: Id) => repos.templates.deleteAsset(companyId, assetId),
+    mutationFn: (assetId: Id) => repos.templates.deleteAsset(scopeId, assetId),
     onSuccess: (_data, assetId) => {
-      qc.setQueryData<TemplateAsset[]>(catalogKeys.assets(companyId), (old) => (old ?? []).filter((a) => a.id !== assetId))
-      void qc.invalidateQueries({ queryKey: catalogKeys.assets(companyId) })
+      qc.setQueryData<TemplateAsset[]>(catalogKeys.assets(scopeId), (old) => (old ?? []).filter((a) => a.id !== assetId))
+      void qc.invalidateQueries({ queryKey: catalogKeys.assets(scopeId) })
     },
   })
 }

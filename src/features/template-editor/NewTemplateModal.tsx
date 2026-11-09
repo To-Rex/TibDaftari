@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { Branch, Category, ResultTemplate, ServiceType, TemplateDoc } from '@/domain'
+import type { Category, Id, OrgUnit, ResultTemplate, ServiceType, TemplateDoc } from '@/domain'
 import { emptyDoc } from '@/domain'
 import { Button, Field, Input, Modal, Segmented, Select } from '@/shared/ui'
 import { BindingsFields, type Bindings } from './BindingsFields'
@@ -8,8 +8,11 @@ import type { TemplateKind } from './kind'
 
 export interface NewTemplateInput extends Bindings { name: string; doc: TemplateDoc; /** cheques: 'default' = the standard cheque, built by the API */ startFrom: 'default' | 'blank' | 'copy' }
 
-export function NewTemplateModal({ open, onClose, serviceTypes, categories, branches, templates, onSubmit, saving, initial, kind = 'result' }: {
-  open: boolean; onClose: () => void; serviceTypes: ServiceType[]; categories: Category[]; branches?: Branch[]; templates: ResultTemplate[]; onSubmit: (i: NewTemplateInput) => void; saving?: boolean
+export function NewTemplateModal({ open, onClose, serviceTypes, categories, units, rootId, templates, onSubmit, saving, initial, kind = 'result' }: {
+  open: boolean; onClose: () => void; serviceTypes: ServiceType[]; categories: Category[]
+  /** the visible organisation tree (flat) for the unit binding; `rootId` = the owner-to-be (the scope) */
+  units?: OrgUnit[]; rootId?: Id
+  templates: ResultTemplate[]; onSubmit: (i: NewTemplateInput) => void; saving?: boolean
   /** 'receipt' → a cheque template (scope fixed, 80 mm paper); default: a result document */
   kind?: TemplateKind
   /** prefill (e.g. "create template for this service" from the catalog) */
@@ -18,24 +21,22 @@ export function NewTemplateModal({ open, onClose, serviceTypes, categories, bran
   const { t } = useTranslation()
   const K = kind === 'receipt' ? 'catalog.receipts' : 'catalog.templates'
   const [name, setName] = useState('')
-  const [b, setB] = useState<Bindings>({ serviceTypeIds: [], categoryIds: [], branchIds: [], scope: kind === 'receipt' ? 'receipt' : 'item', language: 'uz' })
+  const [b, setB] = useState<Bindings>({ serviceTypeIds: [], categoryIds: [], unitIds: [], scope: kind === 'receipt' ? 'receipt' : 'item', language: 'uz' })
   const [from, setFrom] = useState<'default' | 'blank' | 'copy'>(kind === 'receipt' ? 'default' : 'blank')
   const [copyId, setCopyId] = useState('')
   const [touched, setTouched] = useState(false)
   useEffect(() => {
     if (!open) return
     setName(initial?.name ?? '')
-    // the new template belongs to one branch: the given one, or the only branch there is
-    const only = branches && branches.length === 1 ? [branches[0]!.id] : []
-    setB({ serviceTypeIds: initial?.serviceTypeIds ?? [], categoryIds: initial?.categoryIds ?? [], branchIds: initial?.branchIds?.length ? initial.branchIds.slice(0, 1) : only, scope: kind === 'receipt' ? 'receipt' : (initial?.scope ?? 'item'), language: initial?.language ?? 'uz' })
+    // the new template is owned by the scope; no unit binding = its whole subtree
+    setB({ serviceTypeIds: initial?.serviceTypeIds ?? [], categoryIds: initial?.categoryIds ?? [], unitIds: initial?.unitIds ?? [], scope: kind === 'receipt' ? 'receipt' : (initial?.scope ?? 'item'), language: initial?.language ?? 'uz' })
     setFrom(kind === 'receipt' ? 'default' : 'blank'); setCopyId(templates[0]?.id ?? ''); setTouched(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, templates])
   const err = touched && !name.trim() ? t('common.required') : undefined
-  const needsBranch = !!branches?.length && !b.branchIds.length
   const submit = () => {
     setTouched(true)
-    if (!name.trim() || needsBranch) return
+    if (!name.trim()) return
     const src = from === 'copy' ? templates.find((x) => x.id === copyId) : undefined
     onSubmit({ name: name.trim(), ...b, startFrom: from, doc: src ? structuredClone(src.doc) : emptyDoc(b.scope === 'receipt' ? 'Receipt80' : 'A4') })
   }
@@ -55,7 +56,7 @@ export function NewTemplateModal({ open, onClose, serviceTypes, categories, bran
             )}
           </div>
         )}</Field>
-        <BindingsFields value={b} onChange={setB} serviceTypes={serviceTypes} categories={categories} branches={branches} kind={kind} branchError={touched && needsBranch ? t('catalog.templates.branchRequired') : undefined} />
+        <BindingsFields value={b} onChange={setB} serviceTypes={serviceTypes} categories={categories} units={units} rootId={rootId} kind={kind} />
       </div>
     </Modal>
   )

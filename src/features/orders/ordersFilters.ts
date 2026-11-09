@@ -1,6 +1,6 @@
 /**
  * Cheque list view state: the basic filters (search, status, payment, period), the extra ones (payment method,
- * amount, debt, discount, department, service, cashier) and the sort. Kept per browser tab (sessionStorage) so
+ * amount, debt, discount, department, service, cashier, facility) and the sort. Kept per browser tab (sessionStorage) so
  * coming back from a cheque keeps the list as it was.
  */
 import type { Category, Id, OrderListFilters, OrderStatus, PaymentMethod, PaymentStatus } from '@/domain'
@@ -24,6 +24,9 @@ export interface ExtraFilters {
   minItems?: number
   maxItems?: number
   refunded?: boolean
+  /** the facility, for an administrator with several under the administered unit: undefined = the one the staff app
+   *  works in (follows the top-bar switch), null = every facility, an id = that one */
+  unitId?: Id | null
 }
 
 export interface OrdersView {
@@ -47,7 +50,7 @@ export const defaultView = (): OrdersView => ({
 /** How many extra filters are set (the badge on the "Filtrlar" button). */
 export const activeExtraCount = (f: ExtraFilters): number =>
   [f.methods.length > 0, f.minTotal != null || f.maxTotal != null, f.debt != null, f.discount != null, !!f.categoryId, !!f.serviceTypeId, !!f.createdBy,
-    !!f.results, f.minItems != null || f.maxItems != null, f.refunded != null].filter(Boolean).length
+    !!f.results, f.minItems != null || f.maxItems != null, f.refunded != null, f.unitId !== undefined].filter(Boolean).length
 
 /** A department id → it and every sub-department below it. */
 export function categoryWithChildren(categories: Category[] | undefined, id: Id): Id[] {
@@ -56,7 +59,8 @@ export function categoryWithChildren(categories: Category[] | undefined, id: Id)
   return out
 }
 
-/** Extra filters → API query (a reversed amount range is read the other way round). */
+/** Extra filters → API query (a reversed amount range is read the other way round). The facility (`unitId`) is not
+ *  here: it depends on the facility the staff app works in, so the page resolves it. */
 export function extraToQuery(f: ExtraFilters, categories: Category[] | undefined): OrderListFilters {
   const [lo, hi] = f.minTotal != null && f.maxTotal != null && f.minTotal > f.maxTotal ? [f.maxTotal, f.minTotal] : [f.minTotal, f.maxTotal]
   return {

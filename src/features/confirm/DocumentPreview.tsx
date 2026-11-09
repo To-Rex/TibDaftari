@@ -8,7 +8,7 @@ import { DocumentRenderer } from '@/features/documents/DocumentRenderer'
 import { buildRenderContext } from '@/features/documents/buildContext'
 import { cn } from '@/shared/lib/cn'
 import { EmptyState, Select, Skeleton } from '@/shared/ui'
-import { useBranches, useCompany, useTemplateAssets, useTemplatesFor } from './queries'
+import { useDocumentUnits, useTemplateAssets, useTemplatesFor } from './queries'
 import { useCategories, useServiceType } from '@/features/catalog/queries'
 import { useDistricts, useRegions } from '@/features/patients/queries'
 
@@ -25,8 +25,9 @@ export function useFitScale<T extends HTMLElement>(paperW: number) {
   return { ref, scale }
 }
 
-export function DocumentPreview({ companyId, item, order, patient, schema, templateId, onTemplateChange, showTemplateSelect = true, className, fixedTemplate, items, loadingItems, docLink }: {
-  companyId: string
+export function DocumentPreview({ scopeId, item, order, patient, schema, templateId, onTemplateChange, showTemplateSelect = true, className, fixedTemplate, items, loadingItems, docLink }: {
+  /** the facility the staff app works in — the templates and assets usable there */
+  scopeId: string
   item: OrderItem
   order?: Order | null
   patient?: Patient | null
@@ -44,12 +45,11 @@ export function DocumentPreview({ companyId, item, order, patient, schema, templ
   docLink?: string | null
 }) {
   const { t } = useTranslation()
-  const templates = useTemplatesFor(companyId, fixedTemplate ? undefined : item)
-  const assets = useTemplateAssets(companyId)
-  const company = useCompany(companyId)
-  const branches = useBranches(companyId)
-  const branch = branches.data?.find((b) => b.id === item.branchId)
-  const categories = useCategories(companyId)
+  const templates = useTemplatesFor(scopeId, fixedTemplate ? undefined : item)
+  const assets = useTemplateAssets(scopeId)
+  // the facility that did the work and the organisation above it — the `unit` / `org` letterhead blocks
+  const units = useDocumentUnits(item.unitId)
+  const categories = useCategories(scopeId)
   const category = categories.data?.find((c) => c.id === item.categoryId)
   const serviceType = useServiceType(item.serviceTypeId)
   const regions = useRegions()
@@ -67,12 +67,12 @@ export function DocumentPreview({ companyId, item, order, patient, schema, templ
   }, [list, templateId, fixedTemplate])
 
   const ctx = useMemo(
-    () => buildRenderContext({ patient, order, item, serviceCode: serviceType.data?.code ?? undefined, company: company.data, branch, category, schema, items, regionName, districtName, docLink }),
-    [patient, order, item, serviceType.data?.code, company.data, branch, category, schema, items, regionName, districtName, docLink],
+    () => buildRenderContext({ patient, order, item, serviceCode: serviceType.data?.code ?? undefined, org: units.org, unit: units.unit, category, schema, items, regionName, districtName, docLink }),
+    [patient, order, item, serviceType.data?.code, units.org, units.unit, category, schema, items, regionName, districtName, docLink],
   )
   const size = template ? paperSize(template.doc) : { w: 794, h: 1123 }
   const { ref, scale } = useFitScale<HTMLDivElement>(size.w)
-  const loading = (!fixedTemplate && templates.isLoading) || assets.isLoading || company.isLoading || !!loadingItems
+  const loading = (!fixedTemplate && templates.isLoading) || assets.isLoading || units.loading || !!loadingItems
 
   return (
     <div className={cn('flex flex-col gap-3', className)}>

@@ -1,15 +1,14 @@
 /**
  * Repository contracts. Pages/features depend ONLY on these interfaces.
  * `http/` implements them against the TibDaftari FastAPI backend.
+ *
+ * Scoping: the first argument of every scoped call is `scopeId` — the organisation unit the page works in
+ * (a facility for the staff app, the administrator's unit for the admin panel). The API returns everything under
+ * that unit; an optional `unitId` inside the query narrows further to one sub-unit.
  */
 import type {
   AttributeSchema,
-  Branch,
-  BranchSms,
-  BranchSmsInput,
-  BranchSmsTemplates,
   Category,
-  Company,
   DashboardSummary,
   Country,
   District,
@@ -34,7 +33,6 @@ import type {
   Payment,
   PayOrderInput,
   ChangePaymentMethodInput,
-  CompanyListQuery,
   RegionStats,
   RegionStatsQuery,
   CreateOrderInput,
@@ -48,7 +46,6 @@ import type {
   SmsTestResult,
   ResetPreview,
   ResetResult,
-  ResetTarget,
   StaffLoginInput,
   StaffSession,
   TemplateAsset,
@@ -62,6 +59,13 @@ import type {
   ServicesReport,
   OrderListFilters,
   OrderSummary,
+  OrgUnit,
+  UnitCreateInput,
+  UnitUpdateInput,
+  UnitTreeQuery,
+  UnitSms,
+  UnitSmsInput,
+  UnitSmsTemplates,
 } from '@/domain'
 
 export type WorklistCounts = Record<'all' | ItemStatus, number>
@@ -79,48 +83,51 @@ export interface AuthRepository {
   logout(token: string): Promise<void>
 }
 
-export interface TenantRepository {
-  listCompanies(q: CompanyListQuery): Promise<Page<Company>>
-  getCompany(id: Id): Promise<Company>
-  saveCompany(input: Partial<Company> & { id?: Id }): Promise<Company>
-  listBranches(companyId: Id): Promise<Branch[]>
-  saveBranch(input: Partial<Branch> & { companyId: Id; id?: Id }): Promise<Branch>
-  /** Sends ONE real SMS through the company's Xabarchi account (default recipient: company phone). */
-  testSms(companyId: Id, to?: string): Promise<SmsTestResult>
-  /** A branch's SMS texts (its own, or the company's while it has none). */
-  getBranchSmsTemplates(branchId: Id): Promise<BranchSmsTemplates>
-  /** Save the branch's own SMS texts; `applyToAll` (superadmin / company admin) writes them to every branch. */
-  saveBranchSmsTemplates(branchId: Id, input: { templates: SmsTemplateOverrides; applyToAll?: boolean }): Promise<BranchSmsTemplates>
-  /** The branch's SMS account: its own Xabarchi key, the company's shared one, or off. */
-  getBranchSms(branchId: Id): Promise<BranchSms>
-  /** Save the branch's own SMS account — other branches and the company keep theirs. */
-  saveBranchSms(branchId: Id, input: BranchSmsInput): Promise<BranchSms>
-  /** Sends ONE real SMS with the key the branch's messages use (default recipient: branch / company phone). */
-  testBranchSms(branchId: Id, to?: string): Promise<SmsTestResult>
-  /** Superadmin: what a reset of the company / branch would remove (nothing changes). */
-  resetPreview(target: ResetTarget, id: Id): Promise<ResetPreview>
-  /** Superadmin: IRREVERSIBLY reset the chosen parts; `confirm` = company slug / branch code. */
-  reset(target: ResetTarget, id: Id, input: { parts: string[]; confirm: string }): Promise<ResetResult>
+/** The organisation tree: units of every level, their settings, SMS accounts / texts, Telegram bot, reset. */
+export interface OrgRepository {
+  /** every unit the caller may see (flat; build the tree with `buildUnitTree`) */
+  tree(q?: UnitTreeQuery): Promise<OrgUnit[]>
+  get(id: Id): Promise<OrgUnit>
+  /** a child of `parentId` (level follows from the parent); no parent = a country node (platform) */
+  create(input: UnitCreateInput): Promise<OrgUnit>
+  update(id: Id, input: UnitUpdateInput): Promise<OrgUnit>
+  /** The unit's SMS account: its own Xabarchi key, an inherited one, or off. */
+  getSms(unitId: Id): Promise<UnitSms>
+  saveSms(unitId: Id, input: UnitSmsInput): Promise<UnitSms>
+  /** Sends ONE real SMS with the key the unit's messages use (default recipient: the unit's phone). */
+  testSms(unitId: Id, to?: string): Promise<SmsTestResult>
+  /** The unit's SMS texts (its own, or inherited). */
+  getSmsTemplates(unitId: Id): Promise<UnitSmsTemplates>
+  /** Save the unit's own texts; `applyToAll` writes them to every unit under it too. */
+  saveSmsTemplates(unitId: Id, input: { templates: SmsTemplateOverrides; applyToAll?: boolean }): Promise<UnitSmsTemplates>
+  /** Connect (token) / disconnect (null) the unit's own Telegram bot. */
+  setTelegram(unitId: Id, botToken: string | null): Promise<OrgUnit>
+  /** Superadmin: what a reset of the unit (and everything under it) would remove — nothing changes. */
+  resetPreview(unitId: Id): Promise<ResetPreview>
+  /** Superadmin: IRREVERSIBLY reset the chosen parts; `confirm` = facility code / unit name. */
+  reset(unitId: Id, input: { parts: string[]; confirm: string }): Promise<ResetResult>
 }
 
 export interface StaffRepository {
-  listEmployees(companyId: Id, q: PageQuery & { branchId?: Id; roleId?: Id; status?: string }): Promise<Page<Employee>>
+  listEmployees(scopeId: Id, q: PageQuery & { unitId?: Id; roleId?: Id; status?: string }): Promise<Page<Employee>>
   getEmployee(id: Id): Promise<Employee>
-  saveEmployee(input: Partial<Employee> & { companyId: Id; id?: Id; password?: string }): Promise<Employee>
+  /** create under `scopeId` (the employee's `unitId` defaults to it); update by `id` */
+  saveEmployee(input: Partial<Employee> & { scopeId: Id; id?: Id; password?: string }): Promise<Employee>
   setOverrides(id: Id, overrides: PermissionOverrides): Promise<Employee>
-  listRoles(companyId: Id): Promise<Role[]>
-  saveRole(input: Partial<Role> & { companyId: Id; id?: Id }): Promise<Role>
+  /** system roles + roles defined on the scope's path and subtree */
+  listRoles(scopeId: Id): Promise<Role[]>
+  saveRole(input: Partial<Role> & { scopeId: Id; id?: Id }): Promise<Role>
   deleteRole(id: Id): Promise<void>
 }
 
 export interface PatientRepository {
-  /** `branchId` keeps every read inside one branch (list membership, visit statistics); the API also confines pinned employees itself. */
-  list(companyId: Id, q: PageQuery & { tag?: string; branchId?: Id }): Promise<Page<Patient>>
-  get(id: Id, q?: { branchId?: Id }): Promise<Patient>
-  search(companyId: Id, query: string, limit?: number, branchId?: Id): Promise<Patient[]>
-  create(companyId: Id, input: PatientUpsertInput): Promise<Patient>
+  /** `unitId` keeps the read inside one sub-unit (list membership, visit statistics). */
+  list(scopeId: Id, q: PageQuery & { tag?: string; unitId?: Id }): Promise<Page<Patient>>
+  get(id: Id, q?: { unitId?: Id }): Promise<Patient>
+  search(scopeId: Id, query: string, limit?: number, unitId?: Id): Promise<Patient[]>
+  create(scopeId: Id, input: PatientUpsertInput): Promise<Patient>
   update(id: Id, input: Partial<PatientUpsertInput>): Promise<Patient>
-  findDuplicates(companyId: Id, input: Partial<PatientUpsertInput>): Promise<Patient[]>
+  findDuplicates(scopeId: Id, input: Partial<PatientUpsertInput>): Promise<Patient[]>
   /** issue / renew the portal login; the answer is the only time the password is shown */
   setPortalAccess(id: Id, input: PortalAccessInput): Promise<PortalAccessResult>
   removePortalAccess(id: Id): Promise<Patient>
@@ -131,31 +138,32 @@ export interface PatientRepository {
 }
 
 export interface CatalogRepository {
-  listCategories(companyId: Id): Promise<Category[]>
-  saveCategory(input: Partial<Category> & { companyId: Id; id?: Id }): Promise<Category>
+  listCategories(scopeId: Id): Promise<Category[]>
+  saveCategory(input: Partial<Category> & { scopeId: Id; id?: Id }): Promise<Category>
   deleteCategory(id: Id): Promise<void>
-  /** `branchId` = only what that branch offers (services switched off there are dropped) */
-  listServiceTypes(companyId: Id, q?: { categoryId?: Id; search?: string; activeOnly?: boolean; branchId?: Id }): Promise<ServiceType[]>
+  /** `unitId` = only what that unit offers, with `effectivePrice` / `available` filled in */
+  listServiceTypes(scopeId: Id, q?: { categoryId?: Id; search?: string; activeOnly?: boolean; unitId?: Id }): Promise<ServiceType[]>
   getServiceType(id: Id): Promise<ServiceType>
-  saveServiceType(input: Partial<ServiceType> & { companyId: Id; id?: Id }): Promise<ServiceType>
+  saveServiceType(input: Partial<ServiceType> & { scopeId: Id; id?: Id }): Promise<ServiceType>
   deleteServiceType(id: Id): Promise<void>
-  listSchemas(companyId: Id): Promise<AttributeSchema[]>
+  listSchemas(scopeId: Id): Promise<AttributeSchema[]>
   getSchema(id: Id): Promise<AttributeSchema>
-  saveSchema(input: Partial<AttributeSchema> & { companyId: Id; id?: Id }): Promise<AttributeSchema>
+  saveSchema(input: Partial<AttributeSchema> & { scopeId: Id; id?: Id }): Promise<AttributeSchema>
   publishSchema(id: Id): Promise<AttributeSchema>
 }
 
 /** Cheque list query: paging + the basic filters + the extra ones. */
-export type OrderListQuery = PageQuery & OrderListFilters & { branchId?: Id; status?: string; payment?: string; dateFrom?: string; dateTo?: string; patientId?: Id }
+export type OrderListQuery = PageQuery & OrderListFilters & { unitId?: Id; status?: string; payment?: string; dateFrom?: string; dateTo?: string; patientId?: Id }
 
 export interface OrderRepository {
-  list(companyId: Id, q: OrderListQuery): Promise<Page<Order>>
+  list(scopeId: Id, q: OrderListQuery): Promise<Page<Order>>
   /** Count, money and payments by method of the cheques the same filters select. */
-  summary(companyId: Id, q: Omit<OrderListQuery, 'page' | 'pageSize' | 'sortBy' | 'sortDir'>): Promise<OrderSummary>
+  summary(scopeId: Id, q: Omit<OrderListQuery, 'page' | 'pageSize' | 'sortBy' | 'sortDir'>): Promise<OrderSummary>
   /** Every cheque the filters + sort select, as an Excel workbook (`caption` = the filters in the user's words). */
-  exportXlsx(companyId: Id, q: Omit<OrderListQuery, 'page' | 'pageSize'> & { lang: 'uz' | 'ru' | 'en'; caption?: string }): Promise<Blob>
+  exportXlsx(scopeId: Id, q: Omit<OrderListQuery, 'page' | 'pageSize'> & { lang: 'uz' | 'ru' | 'en'; caption?: string }): Promise<Blob>
   get(id: Id): Promise<{ order: Order; items: OrderItem[]; payments: Payment[] }>
-  create(companyId: Id, employeeId: Id, input: CreateOrderInput): Promise<{ order: Order; items: OrderItem[] }>
+  /** `scopeId` should be the facility; otherwise `input.unitId` names it */
+  create(scopeId: Id, employeeId: Id, input: CreateOrderInput): Promise<{ order: Order; items: OrderItem[] }>
   addItems(orderId: Id, serviceTypeIds: Id[]): Promise<{ order: Order; items: OrderItem[] }>
   /** A pending service added by mistake — paid cheques too: `refunded` = what went back to the patient (0 otherwise). */
   removeItem(orderId: Id, itemId: Id, reason?: string): Promise<{ order: Order; items: OrderItem[]; refunded?: number }>
@@ -166,9 +174,9 @@ export interface OrderRepository {
   /** Soft-delete a cheque that never "happened": unpaid, no lab work started. Permission `reception.order.delete`. */
   delete(orderId: Id): Promise<Order>
   /** Lab worklist: items filtered by category/status/date */
-  worklist(companyId: Id, q: PageQuery & { branchId?: Id; categoryIds?: Id[]; status?: ItemStatus[]; dateFrom?: string; dateTo?: string }): Promise<Page<OrderItem & { orderNumber: string; patientName: string; patientPhone: string; patientGender?: 'male' | 'female'; patientBirthDate?: string }>>
+  worklist(scopeId: Id, q: PageQuery & { unitId?: Id; categoryIds?: Id[]; status?: ItemStatus[]; dateFrom?: string; dateTo?: string }): Promise<Page<OrderItem & { orderNumber: string; patientName: string; patientPhone: string; patientGender?: 'male' | 'female'; patientBirthDate?: string }>>
   /** Per-status counters for the same worklist filters (one round trip for all status tabs). */
-  worklistCounts(companyId: Id, q: { branchId?: Id; categoryIds?: Id[]; dateFrom?: string; dateTo?: string; search?: string }): Promise<WorklistCounts>
+  worklistCounts(scopeId: Id, q: { unitId?: Id; categoryIds?: Id[]; dateFrom?: string; dateTo?: string; search?: string }): Promise<WorklistCounts>
   getItem(itemId: Id): Promise<OrderItem>
   saveValues(itemId: Id, employeeId: Id, values: ValueMap, labNote?: string): Promise<OrderItem>
   submitItem(itemId: Id, employeeId: Id): Promise<OrderItem>
@@ -184,78 +192,81 @@ export interface OrderRepository {
   rejectItem(itemId: Id, employeeId: Id, reason: string): Promise<OrderItem>
   /** Doctor takes back an approved result: document withdrawn, result back to the lab (`items` = every item that changed). */
   revokeItem(itemId: Id, reason: string): Promise<{ item: OrderItem; items: OrderItem[]; documentId?: Id | null }>
-  listDocuments(q: { orderId?: Id; patientId?: Id; branchId?: Id }): Promise<ResultDocument[]>
+  /** scoped to the current working unit (read from the staff session) */
+  listDocuments(q: { orderId?: Id; patientId?: Id; unitId?: Id }): Promise<ResultDocument[]>
   getDocument(id: Id): Promise<ResultDocument>
   /** Re-send the result-ready SMS (with the result link); `dryRun` only returns the recipient and the text. */
   resendResultSms(documentId: Id, input?: { to?: string; dryRun?: boolean }): Promise<ResultSms>
 }
 
 export interface TemplateRepository {
-  list(companyId: Id, q?: { status?: string; serviceTypeId?: Id; branchId?: Id; search?: string }): Promise<ResultTemplate[]>
+  /** `unitId` = templates usable at that unit; without it, everything managed from the scope */
+  list(scopeId: Id, q?: { status?: string; serviceTypeId?: Id; unitId?: Id; search?: string }): Promise<ResultTemplate[]>
   get(id: Id): Promise<ResultTemplate>
-  save(input: Partial<ResultTemplate> & { companyId: Id; id?: Id }): Promise<ResultTemplate>
+  save(input: Partial<ResultTemplate> & { scopeId: Id; id?: Id }): Promise<ResultTemplate>
   setStatus(id: Id, status: ResultTemplate['status']): Promise<ResultTemplate>
-  /** Draft copy; `name` / `branchIds` override the source (a branch importing another branch's template). */
-  duplicate(id: Id, opts?: { name?: string; branchIds?: Id[] }): Promise<ResultTemplate>
-  /** The standard cheque as a new draft receipt template (name / branches / paper / label language optional). */
-  createDefaultReceipt(companyId: Id, input?: { name?: string; branchIds?: Id[]; paper?: 'Receipt80' | 'Receipt58'; language?: ResultTemplate['language'] }): Promise<ResultTemplate>
+  /** Draft copy; `name` / `unitIds` override the source (a facility importing another facility's template). */
+  duplicate(id: Id, opts?: { name?: string; unitIds?: Id[] }): Promise<ResultTemplate>
+  /** The standard cheque as a new draft receipt template (name / units / paper / label language optional). */
+  createDefaultReceipt(scopeId: Id, input?: { name?: string; unitIds?: Id[]; paper?: 'Receipt80' | 'Receipt58'; language?: ResultTemplate['language'] }): Promise<ResultTemplate>
   delete(id: Id): Promise<void>
-  listAssets(companyId: Id): Promise<TemplateAsset[]>
-  uploadAsset(companyId: Id, asset: Omit<TemplateAsset, 'id' | 'companyId'>): Promise<TemplateAsset>
-  deleteAsset(companyId: Id, assetId: Id): Promise<void>
+  listAssets(scopeId: Id): Promise<TemplateAsset[]>
+  uploadAsset(scopeId: Id, asset: Omit<TemplateAsset, 'id' | 'ownerUnitId'>): Promise<TemplateAsset>
+  deleteAsset(scopeId: Id, assetId: Id): Promise<void>
 }
 
 export interface MessagingRepository {
-  listOutbox(companyId: Id, q: PageQuery & { status?: string; kind?: string; branchId?: Id }): Promise<Page<OutboxMessage>>
+  listOutbox(scopeId: Id, q: PageQuery & { status?: string; kind?: string; unitId?: Id }): Promise<Page<OutboxMessage>>
   /** Per-status counters for the same outbox filters (one request for all tabs). */
-  outboxCounts(companyId: Id, q: { kind?: string; search?: string; branchId?: Id }): Promise<Record<'all' | MessageStatus | 'sending', number>>
-  send(companyId: Id, input: { to: string[]; text: string; kind: OutboxMessage['kind']; scheduledAt?: string; branchId?: Id }): Promise<OutboxMessage[]>
+  outboxCounts(scopeId: Id, q: { kind?: string; search?: string; unitId?: Id }): Promise<Record<'all' | MessageStatus | 'sending', number>>
+  /** `unitId` = the facility the message goes out from (default: the scope when it is a facility) */
+  send(scopeId: Id, input: { to: string[]; text: string; kind: OutboxMessage['kind']; scheduledAt?: string; unitId?: Id }): Promise<OutboxMessage[]>
   notifications(): Promise<Notification[]>
   markRead(id?: Id): Promise<void>
 }
 
-/** Superadmin: activity across every clinic folded by territory (numbers only). */
+/** Territory statistics folded by country / region / district / facility (numbers only). */
 export interface PlatformRepository {
   regions(q: RegionStatsQuery): Promise<RegionStats>
 }
 
 export interface ReportRepository {
-  dashboard(companyId: Id, q: { branchId?: Id; dateFrom: string; dateTo: string }): Promise<DashboardSummary>
-  breakdown(companyId: Id, q: { by: 'category' | 'service' | 'branch' | 'employee'; dateFrom: string; dateTo: string; branchId?: Id }): Promise<{ name: string; count: number; revenue: number }[]>
+  dashboard(scopeId: Id, q: ReportRange): Promise<DashboardSummary>
+  breakdown(scopeId: Id, q: { by: 'category' | 'service' | 'unit' | 'employee' } & ReportRange): Promise<{ name: string; count: number; revenue: number }[]>
   /** Patients of the period: new / returning, demographics, districts, most frequent, debts (finance only). */
-  patients(companyId: Id, q: ReportRange): Promise<PatientReport>
+  patients(scopeId: Id, q: ReportRange): Promise<PatientReport>
   /** Results of the period's cheques: ready, overdue, turnaround, received by the patient or not. */
-  results(companyId: Id, q: ReportRange): Promise<ResultsReport>
+  results(scopeId: Id, q: ReportRange): Promise<ResultsReport>
   /** Rows behind `results`: results (not) received, or cheques still waiting — paged. */
-  resultList(companyId: Id, q: ReportRange & { status: ResultListStatus; page: number; pageSize: number; search?: string }): Promise<Page<ResultRow>>
+  resultList(scopeId: Id, q: ReportRange & { status: ResultListStatus; page: number; pageSize: number; search?: string }): Promise<Page<ResultRow>>
   /** Service usage vs the previous period; active services nobody ordered. */
-  services(companyId: Id, q: ReportRange): Promise<ServicesReport>
+  services(scopeId: Id, q: ReportRange): Promise<ServicesReport>
   /** The period as an Excel workbook: patients × analyses, labs and the other cuts. */
-  exportXlsx(companyId: Id, q: ReportRange & { lang?: string }): Promise<Blob>
+  exportXlsx(scopeId: Id, q: ReportRange & { lang?: string }): Promise<Blob>
 }
 
-/** Inclusive calendar days (`YYYY-MM-DD`, clinic timezone) + optional branch. */
-export type ReportRange = { branchId?: Id; dateFrom: string; dateTo: string }
+/** Inclusive calendar days (`YYYY-MM-DD`, local time) + optional sub-unit. */
+export type ReportRange = { unitId?: Id; dateFrom: string; dateTo: string }
 
-/** Public clinic card shown in the portal (letterhead data only — no settings/secrets). */
-export type PortalCompany = Pick<Company, 'id' | 'name' | 'logoUrl' | 'phone' | 'address'>
-/** Public branch card shown in the portal. */
-export type PortalBranch = Pick<Branch, 'id' | 'companyId' | 'name' | 'address' | 'phone'>
+/** Public organisation card shown in the portal (the facility's region / district / country node — letterhead data only). */
+export type PortalOrg = Pick<OrgUnit, 'id' | 'name' | 'logoUrl' | 'phone' | 'address'>
+/** Public facility card shown in the portal. */
+export type PortalUnit = Pick<OrgUnit, 'id' | 'name' | 'address' | 'phone'> & { orgId?: Id | null }
 
 /**
  * Patient portal — scoped by patient token; separate surface on purpose.
- * Every payload is self-contained (clinic/branch cards, assets, schemas travel with it) so portal
+ * Every payload is self-contained (organisation / facility cards, assets, schemas travel with it) so portal
  * pages never call staff-only endpoints.
  */
 export interface PortalRepository {
-  overview(patientId: Id): Promise<{ patient: Patient; orders: Order[]; documents: ResultDocument[]; companies: PortalCompany[]; branches: PortalBranch[] }>
-  order(patientId: Id, orderId: Id): Promise<{ order: Order; items: OrderItem[]; documents: ResultDocument[]; company: PortalCompany; branch?: PortalBranch | null }>
-  document(patientId: Id, documentId: Id): Promise<{ document: ResultDocument; template: ResultTemplate; item?: OrderItem; order: Order; items: OrderItem[]; schemas: AttributeSchema[]; serviceCodes: Record<Id, string>; category?: Category; company: PortalCompany; branch?: PortalBranch | null; assets: TemplateAsset[] }>
+  overview(patientId: Id): Promise<{ patient: Patient; orders: Order[]; documents: ResultDocument[]; orgs: PortalOrg[]; units: PortalUnit[] }>
+  order(patientId: Id, orderId: Id): Promise<{ order: Order; items: OrderItem[]; documents: ResultDocument[]; org: PortalOrg; unit?: PortalUnit | null }>
+  document(patientId: Id, documentId: Id): Promise<{ document: ResultDocument; template: ResultTemplate; item?: OrderItem; order: Order; items: OrderItem[]; schemas: AttributeSchema[]; serviceCodes: Record<Id, string>; category?: Category; org: PortalOrg; unit?: PortalUnit | null; assets: TemplateAsset[] }>
 }
 
 export interface Repositories {
   auth: AuthRepository
-  tenant: TenantRepository
+  org: OrgRepository
   staff: StaffRepository
   patients: PatientRepository
   catalog: CatalogRepository

@@ -1,6 +1,7 @@
 /**
  * /v/:token — what the QR code printed on a result opens: an authenticity check only. Whoever holds the paper sees
- * whether it is genuine (which clinic issued it, when, the numbers to compare, the patient's initials) or withdrawn —
+ * whether it is genuine (which organisation and facility issued it, when, the numbers to compare, the patient's
+ * initials) or withdrawn —
  * never the results, the PDF or an SMS code; those stay behind the SMS link (/d/:token).
  */
 import { useEffect, useState } from 'react'
@@ -18,8 +19,9 @@ type Check = {
   id: string
   status: 'valid' | 'revoked'
   title: string
-  companyName: string
-  branchName: string
+  /** the organisation (the nearest non-facility unit above the facility) and the facility that issued it */
+  orgName: string
+  unitName: string
   orderNumber: string
   doctorName: string
   patient: string
@@ -66,8 +68,9 @@ export default function PublicVerifyPage() {
     [
       { key: 'document', value: check.title },
       { key: 'patient', value: check.patient },
-      { key: 'clinic', value: check.companyName },
-      { key: 'branch', value: check.branchName },
+      // one line when the facility is the organisation itself (a facility right under a region node)
+      { key: 'org', value: check.orgName !== check.unitName ? check.orgName : '' },
+      { key: 'unit', value: check.unitName },
       { key: 'doctor', value: check.doctorName },
       { key: 'issued', value: fmtDateTime(check.issuedAt), tabular: true },
       ...(check.revokedAt ? [{ key: 'revokedAt', value: fmtDateTime(check.revokedAt), tabular: true }] : []),
@@ -110,7 +113,7 @@ export default function PublicVerifyPage() {
               </h1>
               <p className="text-[14px] text-ink-3">
                 {state.check.status === 'valid'
-                  ? t('portal.publicVerify.validHint', { clinic: state.check.companyName })
+                  ? t('portal.publicVerify.validHint', { org: state.check.orgName })
                   : t('portal.publicVerify.revokedHint')}
               </p>
             </div>

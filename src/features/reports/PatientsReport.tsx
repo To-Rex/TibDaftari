@@ -19,10 +19,10 @@ type TrendKey = 'all' | 'new' | 'back'
 type TopRow = PatientReport['topPatients'][number]
 const R = 'clinical.reports.pat'
 
-export function PatientsReport({ companyId, range, finance, canExport }: { companyId: Id; range: ReportRange; finance: boolean; canExport: boolean }) {
+export function PatientsReport({ scopeId, range, finance, canExport }: { scopeId: Id; range: ReportRange; finance: boolean; canExport: boolean }) {
   const { t } = useTranslation()
   const palette = useChartPalette()
-  const q = usePatientReport(companyId, range)
+  const q = usePatientReport(scopeId, range)
   const d = q.data
   const [trendKey, setTrendKey] = useState<TrendKey>('all')
   const trend = useMemo(() => (d?.trend ?? []).map((x) => ({ date: x.date, value: trendKey === 'all' ? x.patients : trendKey === 'new' ? x.new : x.patients - x.new })), [d, trendKey])

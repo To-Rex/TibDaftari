@@ -1,77 +1,103 @@
+/** Organisation-tree queries: the visible tree, one unit's card, SMS account / texts, mutations. */
+import { useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { Branch, BranchSmsInput, Company, CompanyListQuery, Id, SmsTemplateOverrides } from '@/domain'
+import type { Id, OrgUnit, SmsTemplateOverrides, UnitCreateInput, UnitSmsInput, UnitTreeQuery, UnitUpdateInput } from '@/domain'
+import { buildUnitTree, facilitiesUnder, flattenUnitTree, unitAncestors, unitsUnder } from '@/domain'
 import { repos } from '@/data'
 
 export const orgKeys = {
-  company: (id: Id) => ['company', id] as const,
-  companies: (q: CompanyListQuery) => ['companies', q] as const,
-  branches: (companyId: Id) => ['branches', companyId] as const,
-  branchSms: (branchId: Id) => ['branch-sms-templates', branchId] as const,
-  branchSmsAccount: (branchId: Id) => ['branch-sms-account', branchId] as const,
+  tree: (q: UnitTreeQuery = {}) => ['units', 'tree', q] as const,
+  unit: (id: Id) => ['unit', id] as const,
+  sms: (unitId: Id) => ['unit-sms', unitId] as const,
+  smsTemplates: (unitId: Id) => ['unit-sms-templates', unitId] as const,
 }
 
-export const useCompany = (id: Id) =>
-  useQuery({ queryKey: orgKeys.company(id), queryFn: () => repos.tenant.getCompany(id) })
+/** Every unit the caller may see (flat). Shared by the shell switchers and every unit picker. */
+export const useUnitTree = (q: UnitTreeQuery = {}, enabled = true) =>
+  useQuery({ queryKey: orgKeys.tree(q), queryFn: () => repos.org.tree(q), staleTime: 60_000, enabled })
 
-export const useCompanies = (q: CompanyListQuery) =>
-  useQuery({ queryKey: orgKeys.companies(q), queryFn: () => repos.tenant.listCompanies(q), placeholderData: (prev) => prev })
+export const useUnit = (id: Id | null | undefined) =>
+  useQuery({ queryKey: orgKeys.unit(id ?? ''), queryFn: () => repos.org.get(id as Id), enabled: !!id })
 
-export const useBranches = (companyId: Id) =>
-  useQuery({ queryKey: orgKeys.branches(companyId), queryFn: () => repos.tenant.listBranches(companyId) })
+/** The flat tree as nested nodes + handy derived lists (memoised). */
+export function useUnitTreeShape(units: OrgUnit[] | undefined) {
+  return useMemo(() => {
+    const list = units ?? []
+    const roots = buildUnitTree(list)
+    return {
+      units: list,
+      roots,
+      flat: flattenUnitTree(roots),
+      byId: new Map(list.map((u) => [u.id, u])),
+      under: (rootId: Id) => unitsUnder(list, rootId),
+      facilitiesUnder: (rootId: Id) => facilitiesUnder(list, rootId),
+      ancestors: (id: Id) => unitAncestors(list, id),
+    }
+  }, [units])
+}
 
-export function useSaveCompany() {
+function useInvalidateTree() {
   const qc = useQueryClient()
+  return (unitId?: Id) => {
+    void qc.invalidateQueries({ queryKey: ['units'] })
+    if (unitId) void qc.invalidateQueries({ queryKey: orgKeys.unit(unitId) })
+    void qc.invalidateQueries({ queryKey: ['unit'] })
+  }
+}
+
+export function useCreateUnit() {
+  const inv = useInvalidateTree()
   return useMutation({
-    mutationFn: (input: Partial<Company> & { id?: Id }) => repos.tenant.saveCompany(input),
-    onSuccess: (c) => {
-      qc.setQueryData(orgKeys.company(c.id), c)
-      void qc.invalidateQueries({ queryKey: ['company', c.id] })
-      void qc.invalidateQueries({ queryKey: ['companies'] })
-    },
+    mutationFn: (input: UnitCreateInput) => repos.org.create(input),
+    onSuccess: (u) => inv(u.parentId ?? undefined),
   })
 }
 
-export function useSaveBranch() {
+export function useUpdateUnit() {
   const qc = useQueryClient()
+  const inv = useInvalidateTree()
   return useMutation({
-    mutationFn: (input: Partial<Branch> & { companyId: Id; id?: Id }) => repos.tenant.saveBranch(input),
-    onSuccess: (b) => {
-      void qc.invalidateQueries({ queryKey: orgKeys.branches(b.companyId) })
-      void qc.invalidateQueries({ queryKey: ['company', b.companyId] })
-    },
+    mutationFn: ({ id, ...input }: UnitUpdateInput & { id: Id }) => repos.org.update(id, input),
+    onSuccess: (u) => { qc.setQueryData(orgKeys.unit(u.id), u); inv(u.id) },
   })
 }
 
-/** A branch's SMS texts (its own, or the company's while it has none). */
-export const useBranchSmsTemplates = (branchId: Id | null) =>
-  useQuery({ queryKey: orgKeys.branchSms(branchId ?? ''), queryFn: () => repos.tenant.getBranchSmsTemplates(branchId as Id), enabled: !!branchId })
+/** The unit's SMS account (its own Xabarchi key, an inherited one, or off). */
+export const useUnitSms = (unitId: Id | null) =>
+  useQuery({ queryKey: orgKeys.sms(unitId ?? ''), queryFn: () => repos.org.getSms(unitId as Id), enabled: !!unitId })
 
-export function useSaveBranchSmsTemplates() {
+export function useSaveUnitSms() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ branchId, ...input }: { branchId: Id; templates: SmsTemplateOverrides; applyToAll?: boolean }) => repos.tenant.saveBranchSmsTemplates(branchId, input),
+    mutationFn: ({ unitId, ...input }: UnitSmsInput & { unitId: Id }) => repos.org.saveSms(unitId, input),
     onSuccess: (r, v) => {
-      qc.setQueryData(orgKeys.branchSms(r.branchId), r)
-      // every branch (and the company default) changed
-      if (v.applyToAll) {
-        void qc.invalidateQueries({ queryKey: ['branch-sms-templates'] })
-        void qc.invalidateQueries({ queryKey: ['company'] })
-      }
+      qc.setQueryData(orgKeys.sms(v.unitId), r)
+      // every unit below inherits the change
+      void qc.invalidateQueries({ queryKey: ['unit-sms'] })
+      void qc.invalidateQueries({ queryKey: ['unit'] })
     },
   })
 }
 
-/** A branch's SMS account (its own Xabarchi key, the company's shared one, or off). */
-export const useBranchSms = (branchId: Id | null) =>
-  useQuery({ queryKey: orgKeys.branchSmsAccount(branchId ?? ''), queryFn: () => repos.tenant.getBranchSms(branchId as Id), enabled: !!branchId })
+/** The unit's SMS texts (its own, or inherited). */
+export const useUnitSmsTemplates = (unitId: Id | null) =>
+  useQuery({ queryKey: orgKeys.smsTemplates(unitId ?? ''), queryFn: () => repos.org.getSmsTemplates(unitId as Id), enabled: !!unitId })
 
-export function useSaveBranchSms(companyId: Id) {
+export function useSaveUnitSmsTemplates() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ branchId, ...input }: BranchSmsInput & { branchId: Id }) => repos.tenant.saveBranchSms(branchId, input),
+    mutationFn: ({ unitId, ...input }: { unitId: Id; templates: SmsTemplateOverrides; applyToAll?: boolean }) => repos.org.saveSmsTemplates(unitId, input),
     onSuccess: (r) => {
-      qc.setQueryData(orgKeys.branchSmsAccount(r.branchId), r)
-      void qc.invalidateQueries({ queryKey: orgKeys.branches(companyId) }) // the per-branch SMS status
+      qc.setQueryData(orgKeys.smsTemplates(r.unitId), r)
+      void qc.invalidateQueries({ queryKey: ['unit-sms-templates'] })
     },
+  })
+}
+
+export function useSetUnitTelegram() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ unitId, botToken }: { unitId: Id; botToken: string | null }) => repos.org.setTelegram(unitId, botToken),
+    onSuccess: (u) => { qc.setQueryData(orgKeys.unit(u.id), u); void qc.invalidateQueries({ queryKey: ['unit'] }) },
   })
 }

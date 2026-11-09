@@ -1,29 +1,34 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
-import { ArrowLeft, Copy, Lock, Plus, ShieldCheck, Trash2, Users } from 'lucide-react'
+import { ArrowLeft, Copy, Globe2, Lock, MapPin, Plus, ShieldCheck, Trash2, Users } from 'lucide-react'
 import { PERMISSIONS, type Permission, type Role } from '@/domain'
 import { ApiError } from '@/data'
-import { useStaffSession } from '@/features/session/useSession'
-import { usePermissions } from '@/features/auth/store'
+import { useAdminScope, usePermissions } from '@/features/auth/store'
 import { useDeleteRole, useRoles, useSaveRole } from '@/features/roles/queries'
 import { PermissionMatrix } from '@/features/roles/PermissionMatrix'
+import { useUnitTree, useUnitTreeShape } from '@/features/org/queries'
+import { UnitLevelBadge } from '@/features/employees/UnitLevelBadge'
 import { cn } from '@/shared/lib/cn'
 import { errorMessage } from '@/shared/lib/errors'
 import { Badge, Button, Card, ConfirmDialog, EmptyState, Field, Input, MotionItem, MotionList, Page, PageHeader, SearchInput, Skeleton, Textarea, fadeUp, stagger, toast } from '@/shared/ui'
 
-interface Draft { id?: string; name: string; description: string; permissions: Permission[]; isSystem: boolean; key: string; companyId: string | null }
-const toDraft = (r: Role): Draft => ({ id: r.id, name: r.name, description: r.description ?? '', permissions: [...r.permissions], isSystem: r.isSystem, key: r.key, companyId: r.companyId })
+/** `scopeUnitId` null = system role (available in every unit); else the unit whose subtree may use it. */
+interface Draft { id?: string; name: string; description: string; permissions: Permission[]; isSystem: boolean; key: string; scopeUnitId: string | null }
+const toDraft = (r: Role): Draft => ({ id: r.id, name: r.name, description: r.description ?? '', permissions: [...r.permissions], isSystem: r.isSystem, key: r.key, scopeUnitId: r.scopeUnitId })
 const sameDraft = (a: Draft, b: Draft) => a.name === b.name && a.description === b.description && a.permissions.join() === b.permissions.join()
 
+/** Roles visible from the administered unit: system roles + the roles defined on its path and in its subtree. */
 export default function RolesPage() {
   const { t } = useTranslation()
-  const { companyId } = useStaffSession()
+  const { scopeId } = useAdminScope()
   const { can } = usePermissions()
   const canWrite = can('admin.role.write')
-  const roles = useRoles(companyId)
+  const roles = useRoles(scopeId)
+  const tree = useUnitTree()
+  const shape = useUnitTreeShape(tree.data)
   const saveRole = useSaveRole()
-  const deleteRole = useDeleteRole(companyId)
+  const deleteRole = useDeleteRole(scopeId)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [draft, setDraft] = useState<Draft | null>(null)
   const [search, setSearch] = useState('')
@@ -31,8 +36,15 @@ export default function RolesPage() {
   /** < lg: master-detail collapses to list OR detail */
   const [view, setView] = useState<'list' | 'detail'>('list')
 
-  const list = useMemo(() => [...(roles.data ?? [])].sort((a, b) => Number(b.isSystem) - Number(a.isSystem)), [roles.data])
+  const list = useMemo(() => [...(roles.data ?? [])].sort((a, b) => Number(b.isSystem) - Number(a.isSystem) || Number(b.scopeUnitId === null) - Number(a.scopeUnitId === null)), [roles.data])
   const countOf = (i: number) => list[i]?.employeeCount
+  const scopeUnit = shape.byId.get(scopeId)
+  /** where a role is defined: the system, or a unit of the tree (its name; the unit when it is known) */
+  const originOf = (scopeUnitId: string | null) => {
+    if (scopeUnitId === null) return { system: true as const, label: t('admin.roles.systemRole'), unit: undefined }
+    const unit = shape.byId.get(scopeUnitId)
+    return { system: false as const, label: unit?.name ?? t('admin.roles.otherUnit'), unit }
+  }
 
   useEffect(() => {
     if (!list.length) return
@@ -48,13 +60,14 @@ export default function RolesPage() {
   const startNew = (from?: Role) => {
     setSelectedId(null)
     setView('detail')
-    setDraft({ name: from ? t('admin.roles.copyOf', { name: from.name }) : t('admin.roles.newName'), description: from?.description ?? '', permissions: from ? [...from.permissions] : [], isSystem: false, key: '', companyId })
+    // a new role belongs to the administered unit (the API sets the scope from the path)
+    setDraft({ name: from ? t('admin.roles.copyOf', { name: from.name }) : t('admin.roles.newName'), description: from?.description ?? '', permissions: from ? [...from.permissions] : [], isSystem: false, key: '', scopeUnitId: scopeId })
   }
   const submit = async () => {
     if (!draft) return
     if (!draft.name.trim()) return toast.error(t('admin.roles.nameRequired'))
     try {
-      const r = await saveRole.mutateAsync({ companyId, id: draft.id, name: draft.name.trim(), description: draft.description.trim() || undefined, permissions: draft.permissions })
+      const r = await saveRole.mutateAsync({ scopeId, id: draft.id, name: draft.name.trim(), description: draft.description.trim() || undefined, permissions: draft.permissions })
       toast.success(t('admin.roles.saved'))
       setSelectedId(r.id)
     } catch (e) {
@@ -76,6 +89,8 @@ export default function RolesPage() {
     }
   }
 
+  const draftOrigin = draft ? originOf(draft.scopeUnitId) : null
+
   return (
     <Page>
       <PageHeader title={t('admin.roles.title')} description={t('admin.roles.subtitle')}
@@ -90,6 +105,7 @@ export default function RolesPage() {
             <MotionList variants={stagger} initial="hidden" animate="show" className="flex flex-col p-2">
               {list.map((r, i) => {
                 const active = r.id === selectedId
+                const origin = originOf(r.scopeUnitId)
                 return (
                   <MotionItem key={r.id} variants={fadeUp}>
                     <button type="button" onClick={() => { setSelectedId(r.id); setView('detail') }} className={cn('relative w-full text-left flex items-center gap-3 rounded-[10px] px-3 py-2.5 min-h-11 transition-colors', active ? 'text-ink' : 'hover:bg-surface-2 text-ink-2')}>
@@ -97,7 +113,7 @@ export default function RolesPage() {
                       <span className={cn('relative grid size-9 shrink-0 place-items-center rounded-lg [&>svg]:size-4', r.key === 'superadmin' ? 'bg-accent/15 text-accent' : r.isSystem ? 'bg-brand text-white' : 'bg-surface-2 text-ink-3')}>{r.key === 'superadmin' ? <Lock /> : <ShieldCheck />}</span>
                       <span className="relative min-w-0 flex-1">
                         <span className="flex flex-wrap items-center gap-1.5 min-w-0"><span className="text-[14px] font-medium truncate">{r.name}</span>{r.isSystem && <Badge size="sm" tone="brand">{t('admin.roles.system')}</Badge>}</span>
-                        <span className="block text-[12px] text-ink-3 tabular">{r.permissions.length} · {countOf(i) == null ? '…' : t('admin.roles.employeesCount', { count: countOf(i) })}</span>
+                        <span className="block text-[12px] text-ink-3 tabular truncate" title={origin.unit?.path}>{r.permissions.length} · {countOf(i) == null ? '…' : t('admin.roles.employeesCount', { count: countOf(i) })} · {origin.label}</span>
                       </span>
                     </button>
                   </MotionItem>
@@ -139,6 +155,20 @@ export default function RolesPage() {
                   </div>
                 )}
               </div>
+              {/* where the role is defined and therefore where it can be used */}
+              {draftOrigin && (
+                <p className="mt-3 flex flex-wrap items-center gap-2 text-[13px] text-ink-3">
+                  {draftOrigin.system ? <Globe2 className="size-3.5 shrink-0" /> : <MapPin className="size-3.5 shrink-0" />}
+                  <span>{t('admin.roles.definedAt')}:</span>
+                  <Badge tone={draftOrigin.system ? 'brand' : 'neutral'} size="sm">{draftOrigin.label}</Badge>
+                  {draftOrigin.unit && <UnitLevelBadge level={draftOrigin.unit.level} />}
+                  <span className="basis-full sm:basis-auto">
+                    {!draft.id
+                      ? t('admin.roles.newRoleScope', { unit: scopeUnit?.name ?? '' })
+                      : draftOrigin.system ? t('admin.roles.systemRoleHint') : t('admin.roles.unitRoleHint', { unit: draftOrigin.label })}
+                  </span>
+                </p>
+              )}
               {isSuper && <p className="mt-3 flex items-center gap-2 text-[13px] text-ink-3"><Lock className="size-3.5" />{t('admin.roles.readonlySuper')}</p>}
             </Card>
             <div className="sticky top-16 z-20 -mx-1 px-1 py-2 bg-bg/90 backdrop-blur-md flex items-center gap-3 justify-between">

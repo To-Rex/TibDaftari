@@ -1,7 +1,7 @@
 /** Compact list view of the template gallery — one row per template, sortable columns, the same row actions. */
 import { useTranslation } from 'react-i18next'
 import { Check, MoreHorizontal } from 'lucide-react'
-import type { Branch, Category, ResultTemplate, ServiceType } from '@/domain'
+import type { Category, Id, ResultTemplate, ServiceType } from '@/domain'
 import type { GallerySort, SortDir } from '@/features/template-editor/galleryFilters'
 import { isGeneric } from '@/features/template-editor/galleryFilters'
 import type { TemplateKind } from '@/features/template-editor/kind'
@@ -13,13 +13,16 @@ import { Badge, DataTable, Menu, type Column } from '@/shared/ui'
 const TONE = { draft: 'warn', active: 'ok', archived: 'neutral' } as const
 const SORT_COLUMN: Partial<Record<GallerySort, string>> = { name: 'name', usage: 'usage', updated: 'updated' }
 
-export function TemplateListView({ rows, loading, kind, serviceTypes, categories, branches, canWrite, canPublish, actionsFor, selecting, selected, onToggle, sort, dir, onSort, empty }: {
+export function TemplateListView({ rows, loading, kind, serviceTypes, categories, scopeId, unitName, canWrite, canPublish, actionsFor, selecting, selected, onToggle, sort, dir, onSort, empty }: {
   rows: ResultTemplate[]
   loading?: boolean
   kind: TemplateKind
   serviceTypes: ServiceType[]
   categories: Category[]
-  branches: Branch[]
+  /** the unit the gallery works in — templates owned by another (higher) unit are shown as inherited */
+  scopeId: Id
+  /** unit names from the organisation tree (owner, bound units) */
+  unitName: (id: Id) => string | undefined
   canWrite: boolean
   canPublish: boolean
   actionsFor: (tpl: ResultTemplate) => TemplateActions
@@ -35,7 +38,6 @@ export function TemplateListView({ rows, loading, kind, serviceTypes, categories
   const C = 'catalog.templates.col'
   const svcName = new Map(serviceTypes.map((s) => [s.id, s.name]))
   const catName = new Map(categories.map((c) => [c.id, c.name]))
-  const branchName = new Map(branches.map((b) => [b.id, b.name]))
   const paperLabel = (tpl: ResultTemplate) => (tpl.doc.paper.startsWith('Receipt') ? t('catalog.editor.receiptPaper', { mm: tpl.doc.paper.slice(7) }) : tpl.doc.paper)
   const scopeLabel = (tpl: ResultTemplate) => (tpl.scope === 'item' ? t('catalog.services.scopeItem') : tpl.scope === 'receipt' ? t('catalog.services.scopeReceipt') : t('catalog.services.scopeOrder'))
 
@@ -75,11 +77,24 @@ export function TemplateListView({ rows, loading, kind, serviceTypes, categories
       },
     ] : []),
     {
-      key: 'branches', header: t(`${C}.branches`), hideBelow: 'lg', card: 'field',
+      key: 'owner', header: t(`${C}.owner`), hideBelow: 'lg', card: 'meta',
       cell: (r) => {
-        const names = r.branchIds.map((id) => branchName.get(id)).filter(Boolean) as string[]
-        if (!names.length) return <span className="text-ink-3">{t('catalog.templates.allBranches')}</span>
-        return <span className="text-ink-2" title={names.join(' · ')}>{names.length > 2 ? t('catalog.templates.nBranches', { n: names.length }) : names.join(' · ')}</span>
+        const inherited = r.ownerUnitId !== scopeId
+        const name = unitName(r.ownerUnitId)
+        return (
+          <span className="flex min-w-0 flex-col gap-0.5" data-owner={inherited ? 'inherited' : 'own'}>
+            <span className="truncate text-ink-2" title={name}>{name ?? '—'}</span>
+            {inherited && <Badge size="sm" tone="neutral" className="w-fit">{t('catalog.owner.inherited')}</Badge>}
+          </span>
+        )
+      },
+    },
+    {
+      key: 'units', header: t(`${C}.units`), hideBelow: 'lg', card: 'field',
+      cell: (r) => {
+        const names = (r.unitIds ?? []).map((id) => unitName(id)).filter(Boolean) as string[]
+        if (!names.length) return <span className="text-ink-3">{t('catalog.templates.allUnits')}</span>
+        return <span className="text-ink-2" title={names.join(' · ')}>{names.length > 2 ? t('catalog.templates.nUnits', { n: names.length }) : names.join(' · ')}</span>
       },
     },
     { key: 'usage', header: t(`${C}.usage`), sortable: true, align: 'right', width: '110px', hideBelow: 'md', card: 'meta', cell: (r) => <span className="tabular text-ink-2">{t('catalog.templates.usage', { n: r.usage })}</span> },

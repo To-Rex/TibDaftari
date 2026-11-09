@@ -3,11 +3,10 @@
  * (the hidden `<Receipt>` sheet) otherwise — or whichever the device's print settings force.
  */
 import type { TFunction } from 'i18next'
-import type { ReceiptProps } from '@/features/reception/Receipt'
 import { errorMessage } from '@/shared/lib/errors'
 import { toast } from '@/shared/ui'
 import { api } from '@/data/http/client'
-import { buildReceiptElements } from './receiptElements'
+import { buildReceiptElements, type ReceiptPrintData } from './receiptElements'
 import { printPdfInBrowser } from './printDocument'
 import { loadPrintSettings, tprintsPrint, tprintsPrintReceiptPdf, TPrintsError, type PrintMode, type PrintSettings } from './tprints'
 
@@ -22,10 +21,10 @@ const toBase64 = (buf: ArrayBuffer): string => {
 
 /**
  * Returns how the cheque was printed. `force` overrides the stored mode (menu actions).
- * With `templateId` (an active receipt template of the branch) the cheque is the template rendered by the
+ * With `templateId` (an active receipt template usable at the facility) the cheque is the template rendered by the
  * API as a PDF; otherwise the built-in cheque (TPrints elements / the hidden <Receipt> sheet).
  */
-export async function printReceipt(props: ReceiptProps, t: TFunction, force?: Exclude<PrintMode, 'auto'>, templateId?: string): Promise<'service' | 'browser'> {
+export async function printReceipt(props: ReceiptPrintData, t: TFunction, force?: Exclude<PrintMode, 'auto'>, templateId?: string): Promise<'service' | 'browser'> {
   const s = loadPrintSettings()
   const mode = force ?? s.mode
   if (templateId) {
@@ -51,7 +50,7 @@ export async function printReceipt(props: ReceiptProps, t: TFunction, force?: Ex
 }
 
 /** The built-in cheque: TPrints elements, or the hidden <Receipt> sheet through the browser dialog. */
-async function printBuiltIn(props: ReceiptProps, t: TFunction, mode: PrintMode, s: PrintSettings): Promise<'service' | 'browser'> {
+async function printBuiltIn(props: ReceiptPrintData, t: TFunction, mode: PrintMode, s: PrintSettings): Promise<'service' | 'browser'> {
   if (mode === 'browser') {
     browserPrint()
     return 'browser'

@@ -9,8 +9,7 @@ import { cn } from '@/shared/lib/cn'
 import { ageFrom, fmtDate, fmtMoney, fmtNumber, fmtPhone, fmtRelative } from '@/shared/lib/format'
 import { routes } from '@/shared/config/routes'
 import { useDebounce } from '@/shared/hooks/useDebounce'
-import { usePermissions } from '@/features/auth/store'
-import { useStaffSession } from '@/features/session/useSession'
+import { usePermissions, useStaffScope } from '@/features/auth/store'
 import { usePatientsList } from '@/features/patients/queries'
 import { PatientDrawer } from '@/features/patients/PatientDrawer'
 
@@ -19,7 +18,7 @@ const TAGS = ['VIP', 'Shartnoma', 'Bola', 'Homilador']
 export default function PatientsPage() {
   const { t } = useTranslation()
   const nav = useNavigate()
-  const { companyId, branchId } = useStaffSession()
+  const { scopeId } = useStaffScope()
   const { can } = usePermissions()
   const [sp, setSp] = useSearchParams()
   const [search, setSearch] = useState('')
@@ -33,10 +32,10 @@ export default function PatientsPage() {
 
   useEffect(() => { if (sp.get('new') === '1' && can('reception.patient.write')) { setDrawer(true); sp.delete('new'); setSp(sp, { replace: true }) } }, [sp, setSp, can])
 
-  // the top-bar branch scopes the list: patients registered in / seen at that branch (all branches for admins who chose so)
-  const params = useMemo(() => ({ page, pageSize, search: dq || undefined, tag, sortBy, sortDir, branchId: branchId ?? undefined }), [page, pageSize, dq, tag, sortBy, sortDir, branchId])
-  useEffect(() => setPage(1), [branchId])
-  const q = usePatientsList(companyId, params)
+  // the list is the scope facility's (the top-bar switch): patients registered there or seen there
+  const params = useMemo(() => ({ page, pageSize, search: dq || undefined, tag, sortBy, sortDir }), [page, pageSize, dq, tag, sortBy, sortDir])
+  useEffect(() => setPage(1), [scopeId])
+  const q = usePatientsList(scopeId, params)
   const onSort = (key: string) => { if (key === sortBy) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc')); else { setSortBy(key); setSortDir(key === 'fullName' ? 'asc' : 'desc') }; setPage(1) }
 
   const cols: Column<Patient>[] = [
@@ -74,7 +73,7 @@ export default function PatientsPage() {
           )}
         </Card>
       </motion.div>
-      <PatientDrawer open={drawer} onClose={() => setDrawer(false)} companyId={companyId} onSaved={(p) => { setDrawer(false); nav(routes.app.patient(p.id)) }} onPickExisting={(p) => { setDrawer(false); nav(routes.app.patient(p.id)) }} />
+      <PatientDrawer open={drawer} onClose={() => setDrawer(false)} scopeId={scopeId} onSaved={(p) => { setDrawer(false); nav(routes.app.patient(p.id)) }} onPickExisting={(p) => { setDrawer(false); nav(routes.app.patient(p.id)) }} />
     </Page>
   )
 }

@@ -1,13 +1,15 @@
 import { useEffect, useMemo } from 'react'
-import { useForm, Controller } from 'react-hook-form'
+import { useForm, Controller, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
-import type { Category, Employee, Id } from '@/domain'
+import type { Category, Employee, Id, Role } from '@/domain'
+import { unitsUnder } from '@/domain'
 import { ApiError, repos } from '@/data'
 import { usePermissions } from '@/features/auth/store'
-import { useBranches } from '@/features/org/queries'
+import { useUnitTree } from '@/features/org/queries'
+import { UnitMultiPicker, UnitPicker } from '@/features/org/UnitPicker'
 import { useRoles } from '@/features/roles/queries'
 import { errorMessage } from '@/shared/lib/errors'
 import { cn } from '@/shared/lib/cn'
@@ -22,13 +24,18 @@ const schema = z
     phone: z.string().trim().optional(),
     email: z.string().trim().email().optional().or(z.literal('')),
     roleId: z.string().min(1),
-    branchIds: z.array(z.string()),
+    /** home unit (any level under the scope); empty only for a superadmin */
+    unitId: z.string().nullable(),
+    /** extra units the employee also works in */
+    unitIds: z.array(z.string()),
     categoryIds: z.array(z.string()),
+    isSuperAdmin: z.boolean(),
     password: z.string(),
     passwordConfirm: z.string(),
     active: z.boolean(),
   })
   .superRefine((v, ctx) => {
+    if (!v.isSuperAdmin && !v.unitId) ctx.addIssue({ code: 'custom', path: ['unitId'], message: 'required' })
     if (v.password && v.password.length < 6) ctx.addIssue({ code: 'custom', path: ['password'], message: 'short' })
     if (v.password !== v.passwordConfirm) ctx.addIssue({ code: 'custom', path: ['passwordConfirm'], message: 'mismatch' })
   })
@@ -49,35 +56,52 @@ function flattenTree(cats: Category[]): { cat: Category; depth: number }[] {
   return out
 }
 
-export function EmployeeForm({ companyId, employee, onSaved, onCancel, formId = 'employee-form' }: { companyId: Id; employee?: Employee; onSaved: (e: Employee) => void; onCancel?: () => void; formId?: string }) {
+/**
+ * Create / edit an employee inside `scopeId` (the administered unit): home unit + extra units are picked from the
+ * scope's subtree, the role from the roles visible to the scope (system roles + the lineage's own roles).
+ */
+export function EmployeeForm({ scopeId, employee, onSaved, onCancel, formId = 'employee-form' }: { scopeId: Id; employee?: Employee; onSaved: (e: Employee) => void; onCancel?: () => void; formId?: string }) {
   const { t } = useTranslation()
   const { isSuperAdmin } = usePermissions()
   const isEdit = !!employee
-  const roles = useRoles(companyId)
-  const branches = useBranches(companyId)
-  const categories = useQuery({ queryKey: ['categories', companyId], queryFn: () => repos.catalog.listCategories(companyId) })
+  const roles = useRoles(scopeId)
+  const tree = useUnitTree()
+  const categories = useQuery({ queryKey: ['categories', scopeId], queryFn: () => repos.catalog.listCategories(scopeId) })
   const save = useSaveEmployee()
+
+  const scopedUnits = useMemo(() => unitsUnder(tree.data ?? [], scopeId), [tree.data, scopeId])
+  const unitName = (id: string | null) => (id ? tree.data?.find((u) => u.id === id)?.name : undefined)
 
   const defaults = useMemo<Values>(() => ({
     fullName: employee?.fullName ?? '', login: employee?.login ?? '', phone: employee?.phone ?? '', email: employee?.email ?? '',
-    roleId: employee?.roleId ?? '', branchIds: employee?.branchIds ?? [], categoryIds: employee?.categoryIds ?? [],
+    roleId: employee?.roleId ?? '', unitId: employee ? employee.unitId : scopeId, unitIds: employee?.unitIds ?? [], categoryIds: employee?.categoryIds ?? [],
+    isSuperAdmin: !!employee?.isSuperAdmin,
     password: '', passwordConfirm: '', active: employee ? employee.status === 'active' : true,
-  }), [employee])
+  }), [employee, scopeId])
 
   const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: defaults, mode: 'onBlur' })
   const { register, control, handleSubmit, reset, setError, formState: { errors, isSubmitting } } = form
   useEffect(() => reset(defaults), [defaults, reset])
+  const superDraft = useWatch({ control, name: 'isSuperAdmin' })
 
-  const tree = useMemo(() => flattenTree(categories.data ?? []), [categories.data])
+  const catTree = useMemo(() => flattenTree(categories.data ?? []), [categories.data])
   const visibleRoles = (roles.data ?? []).filter((r) => r.key !== 'superadmin' || isSuperAdmin || employee?.roleId === r.id)
+  const systemRoles = visibleRoles.filter((r) => r.scopeUnitId === null)
+  const unitRoles = visibleRoles.filter((r) => r.scopeUnitId !== null)
+  const roleOption = (r: Role) => {
+    const name = r.scopeUnitId ? unitName(r.scopeUnitId) : undefined
+    return <option key={r.id} value={r.id}>{name ? `${r.name} — ${name}` : r.name}</option>
+  }
 
   const submit = handleSubmit(async (v) => {
     if (!isEdit && !v.password) return setError('password', { message: 'short' })
     try {
       const saved = await save.mutateAsync({
-        companyId, id: employee?.id, fullName: v.fullName, login: v.login, phone: v.phone || undefined, email: v.email || undefined,
-        roleId: v.roleId, branchIds: v.branchIds, categoryIds: v.categoryIds, status: v.active ? 'active' : 'inactive',
-        password: v.password || undefined,
+        scopeId, id: employee?.id, fullName: v.fullName, login: v.login, phone: v.phone || undefined, email: v.email || undefined,
+        roleId: v.roleId, unitId: v.unitId, unitIds: v.unitIds.filter((id) => id !== v.unitId), categoryIds: v.categoryIds,
+        status: v.active ? 'active' : 'inactive', password: v.password || undefined,
+        // only a superadmin may grant / revoke the flag; everyone else leaves it untouched
+        ...(isSuperAdmin ? { isSuperAdmin: v.isSuperAdmin } : {}),
       })
       toast.success(isEdit ? t('admin.employees.saved') : t('admin.employees.created'))
       onSaved(saved)
@@ -102,43 +126,46 @@ export function EmployeeForm({ companyId, employee, onSaved, onCancel, formId = 
           {(id) => (
             <Select id={id} {...register('roleId')} invalid={!!errors.roleId} disabled={roles.isLoading}>
               <option value="">{t('common.select')}</option>
-              {visibleRoles.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+              {systemRoles.length > 0 && <optgroup label={t('admin.roles.systemRoles')}>{systemRoles.map(roleOption)}</optgroup>}
+              {unitRoles.length > 0 && <optgroup label={t('admin.roles.unitRoles')}>{unitRoles.map(roleOption)}</optgroup>}
             </Select>
           )}
         </Field>
         <Field label={t('admin.employees.phone')} optionalText={t('common.optional')}>
           {(id) => <Input id={id} placeholder="+998 90 000-00-00" {...register('phone')} />}
         </Field>
-        <Field label={t('admin.employees.email')} optionalText={t('common.optional')} error={errors.email && t('admin.company.invalidEmail')}>
+        <Field label={t('admin.employees.email')} optionalText={t('common.optional')} error={errors.email && t('admin.employees.invalidEmail')}>
           {(id) => <Input id={id} type="email" {...register('email')} invalid={!!errors.email} />}
         </Field>
       </div>
 
-      <Field label={t('admin.employees.branches')} hint={t('admin.employees.branchesHint')}>
-        {() => (
-          <Controller control={control} name="branchIds" render={({ field }) => (
-            <div className="flex flex-wrap gap-2">
-              {branches.isLoading && <Skeleton className="h-9 w-40" />}
-              {(branches.data ?? []).map((b) => {
-                const on = field.value.includes(b.id)
-                return (
-                  <button type="button" key={b.id} onClick={() => field.onChange(on ? field.value.filter((x) => x !== b.id) : [...field.value, b.id])}
-                    className={cn('min-h-10 rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-all text-left break-words max-w-full', on ? 'border-brand bg-brand-soft text-brand-ink' : 'border-line bg-surface text-ink-2 hover:border-line-strong')}>
-                    <span className="font-mono text-[11.5px] mr-1.5 opacity-70">{b.code}</span>{b.name}
-                  </button>
-                )
-              })}
-            </div>
-          )} />
-        )}
-      </Field>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label={t('admin.employees.unit')} required={!superDraft} hint={t('admin.employees.unitHint')} error={errors.unitId && t('admin.employees.unitRequired')}>
+          {() => (
+            <Controller control={control} name="unitId" render={({ field }) => (
+              tree.isLoading ? <Skeleton className="h-10" /> : (
+                <UnitPicker units={scopedUnits} value={field.value} onChange={field.onChange} allowEmpty={superDraft} placeholder={t('common.select')} disabled={tree.isLoading} />
+              )
+            )} />
+          )}
+        </Field>
+        <Field label={t('admin.employees.extraUnits')} optionalText={t('common.optional')} hint={t('admin.employees.extraUnitsHint')}>
+          {() => (
+            <Controller control={control} name="unitIds" render={({ field }) => (
+              tree.isLoading ? <Skeleton className="h-10" /> : (
+                <UnitMultiPicker units={scopedUnits} value={field.value} onChange={field.onChange} />
+              )
+            )} />
+          )}
+        </Field>
+      </div>
 
       <Field label={t('admin.employees.categories')} hint={t('admin.employees.categoriesHint')}>
         {() => (
           <Controller control={control} name="categoryIds" render={({ field }) => (
             <div className="max-h-56 overflow-y-auto rounded-[var(--radius-sm)] border border-line bg-surface p-2">
               {categories.isLoading && <Skeleton className="h-24" />}
-              {tree.map(({ cat, depth }) => (
+              {catTree.map(({ cat, depth }) => (
                 <div key={cat.id} className="flex items-center h-8 rounded-md hover:bg-surface-2 px-2" style={{ paddingLeft: 8 + depth * 18 }}>
                   <Checkbox className="text-[13.5px]" checked={field.value.includes(cat.id)} onChange={(e) => field.onChange(e.target.checked ? [...field.value, cat.id] : field.value.filter((x) => x !== cat.id))}
                     label={<span className={cn(depth === 0 && 'font-medium')}>{cat.name}</span>} />
@@ -161,6 +188,12 @@ export function EmployeeForm({ companyId, employee, onSaved, onCancel, formId = 
       <Controller control={control} name="active" render={({ field }) => (
         <Switch checked={field.value} onChange={field.onChange} label={t('admin.employees.isActive')} description={t('admin.employees.isActiveHint')} />
       )} />
+
+      {isSuperAdmin && (
+        <Controller control={control} name="isSuperAdmin" render={({ field }) => (
+          <Switch checked={field.value} onChange={field.onChange} label={t('admin.employees.superAdmin')} description={t('admin.employees.superAdminHint')} />
+        )} />
+      )}
 
       {onCancel && (
         <div className="flex flex-wrap justify-end gap-2 pt-2">

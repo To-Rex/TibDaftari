@@ -1,5 +1,5 @@
 /**
- * Which services of the branch print a result document: the services with no template at all (approval cannot
+ * Which services of the unit print a result document: the services with no template at all (approval cannot
  * issue a document) and those falling back to a template not bound to them — each with "create a template for
  * it" and "show the templates that fit it".
  */

@@ -134,7 +134,7 @@ export function LandingValue({ patientHref, staffHref }: LandingValueProps) {
                 <span className="grid size-10 place-items-center rounded-xl bg-brand-soft text-brand-ink transition-transform duration-300 group-hover:rotate-3 group-hover:scale-110"><Building2 className="size-4.5" /></span>
                 <h3 className="mt-6 text-[17px] font-semibold">{t('landing.managementCardOneTitle')}</h3>
                 <p className="mt-2 max-w-md text-[13px] leading-relaxed text-ink-2">{t('landing.managementCardOneText')}</p>
-                <div className="mt-5 flex items-center gap-2 text-[11.5px] font-medium text-brand-ink"><span className="rounded-md bg-brand-soft px-2 py-1">{t('landing.managementCardOneChipOne')}</span><span className="rounded-md bg-brand-soft px-2 py-1">{t('landing.managementCardOneChipTwo')}</span><span className="rounded-md bg-brand-soft px-2 py-1">{t('landing.managementCardOneChipThree')}</span></div>
+                <div className="mt-5 flex items-center gap-2 text-[11.5px] font-medium text-brand-ink"><span className="rounded-md bg-brand-soft px-2 py-1">{t('landing.managementCardOneChipOne')}</span><span className="rounded-md bg-brand-soft px-2 py-1">{t('landing.managementCardOneChipTwo')}</span><span className="rounded-md bg-brand-soft px-2 py-1">{t('landing.managementCardOneChipThree')}</span><span className="rounded-md bg-brand-soft px-2 py-1">{t('landing.managementCardOneChipFour')}</span></div>
               </motion.article>
               <motion.article
                 initial={{ opacity: 0, y: reduce ? 0 : 20 }}

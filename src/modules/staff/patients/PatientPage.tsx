@@ -7,8 +7,7 @@ import { Avatar, Badge, Button, Card, EmptyState, Page, PageHeader, Skeleton, Ta
 import { ageFrom, fmtDate, fmtMoney, fmtPhone, fmtRelative } from '@/shared/lib/format'
 import { errorMessage } from '@/shared/lib/errors'
 import { routes } from '@/shared/config/routes'
-import { usePermissions } from '@/features/auth/store'
-import { useStaffSession } from '@/features/session/useSession'
+import { usePermissions, useStaffScope } from '@/features/auth/store'
 import { usePatient } from '@/features/patients/queries'
 import { PatientDrawer } from '@/features/patients/PatientDrawer'
 import { PatientDetails, PatientDocuments } from '@/features/patients/PatientDetails'
@@ -16,14 +15,13 @@ import { PortalAccessModal } from '@/features/patients/PortalAccessModal'
 import { useDocuments, useOrdersList } from '@/features/orders/queries'
 import { OrdersTable } from '@/features/orders/OrdersTable'
 import { useNewOrder } from '@/features/reception/useNewOrder'
-import { BranchPickerModal } from '@/features/reception/BranchPickerModal'
 
 type Tab = 'orders' | 'results' | 'info'
 
 export default function PatientPage() {
   const { t } = useTranslation()
   const { patientId = '' } = useParams()
-  const { companyId, branchId } = useStaffSession()
+  const { scopeId } = useStaffScope()
   const { can } = usePermissions()
   const q = usePatient(patientId)
   const [tab, setTab] = useState<Tab>('orders')
@@ -32,10 +30,10 @@ export default function PatientPage() {
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState('createdAt')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
-  // cheques and results of the selected branch only — the patient may also be a client of other branches
-  const params = useMemo(() => ({ patientId, page, pageSize: 10, sortBy, sortDir, branchId: branchId ?? undefined }), [patientId, page, sortBy, sortDir, branchId])
-  const orders = useOrdersList(companyId, params, !!patientId)
-  const docs = useDocuments({ patientId, branchId: branchId ?? undefined }, tab === 'results')
+  // cheques and results of the scope facility only — the patient may also be a client of other facilities
+  const params = useMemo(() => ({ patientId, page, pageSize: 10, sortBy, sortDir }), [patientId, page, sortBy, sortDir])
+  const orders = useOrdersList(scopeId, params, !!patientId)
+  const docs = useDocuments({ patientId, unitId: scopeId }, tab === 'results')
   const newOrder = useNewOrder()
   const p = q.data
 
@@ -107,9 +105,8 @@ export default function PatientPage() {
         </motion.div>
       </AnimatePresence>
 
-      {p && <PatientDrawer open={edit} onClose={() => setEdit(false)} companyId={companyId} patient={p} onSaved={() => setEdit(false)} />}
+      {p && <PatientDrawer open={edit} onClose={() => setEdit(false)} scopeId={scopeId} patient={p} onSaved={() => setEdit(false)} />}
       {p && <PortalAccessModal patient={p} open={access} onClose={() => setAccess(false)} />}
-      <BranchPickerModal open={newOrder.pickerOpen} onClose={newOrder.closePicker} companyId={companyId} onPick={newOrder.pickBranch} loading={newOrder.creating} />
     </Page>
   )
 }

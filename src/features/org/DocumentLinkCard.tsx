@@ -1,28 +1,31 @@
 /**
  * "Natija havolasi" — for how many days after a result is issued its SMS link opens the PDF without an SMS code
- * (`company.documentFreeViewDays`; 0 = a code every time, the default). After that the link asks for the code as
- * before. The backend reads the setting on every request, so a shorter period (or 0) closes open links at once.
+ * (`settings.documentFreeViewDays`; 0 = a code every time, the default). The value is inherited down the tree:
+ * a unit without its own value uses the nearest ancestor's; saving here sets it for this unit and everything under
+ * it. The backend reads the setting on every request, so a shorter period (or 0) closes open links at once.
  * The QR printed on the document is not affected: it only checks authenticity.
  */
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { addDays } from 'date-fns'
-import { CalendarClock, LockKeyhole, LockKeyholeOpen, QrCode, ShieldAlert } from 'lucide-react'
-import type { Company } from '@/domain'
+import { ArrowUpFromLine, CalendarClock, LockKeyhole, LockKeyholeOpen, QrCode, ShieldAlert } from 'lucide-react'
+import type { OrgUnit } from '@/domain'
 import { cn } from '@/shared/lib/cn'
 import { errorMessage } from '@/shared/lib/errors'
 import { fmtDate } from '@/shared/lib/format'
 import { Badge, Button, Card, CardHeader, Input, toast } from '@/shared/ui'
-import { useSaveCompany } from './queries'
+import { useUpdateUnit } from './queries'
 
 /** same cap as the backend (`DOCUMENT_FREE_VIEW_MAX_DAYS`) */
 export const DOCUMENT_FREE_VIEW_MAX_DAYS = 90
 const PRESETS = [0, 1, 3, 7, 14, 30]
 
-export function DocumentLinkCard({ company, readOnly }: { company: Company; readOnly?: boolean }) {
+export function DocumentLinkCard({ unit, readOnly }: { unit: OrgUnit; readOnly?: boolean }) {
   const { t } = useTranslation()
-  const save = useSaveCompany()
-  const saved = company.documentFreeViewDays ?? 0
+  const save = useUpdateUnit()
+  const saved = unit.settings?.documentFreeViewDays ?? 0
+  // the unit has no value of its own: what it shows comes from an ancestor (or the platform default)
+  const inherited = !!unit.parentId && !('documentFreeViewDays' in (unit.settings?.own ?? {}))
   const [days, setDays] = useState(saved)
   // "Boshqa": any number of days the presets do not offer
   const [custom, setCustom] = useState(!PRESETS.includes(saved))
@@ -35,7 +38,7 @@ export function DocumentLinkCard({ company, readOnly }: { company: Company; read
   const submit = async () => {
     if (!valid || !dirty) return
     try {
-      await save.mutateAsync({ id: company.id, documentFreeViewDays: days })
+      await save.mutateAsync({ id: unit.id, documentFreeViewDays: days })
       toast.success(t('admin.docLink.saved'))
     } catch (e) {
       toast.error(errorMessage(e))
@@ -57,6 +60,11 @@ export function DocumentLinkCard({ company, readOnly }: { company: Company; read
           ? <Badge tone="warn" dot>{t('admin.docLink.badgeOn', { n: saved })}</Badge>
           : <Badge tone="ok" dot>{t('admin.docLink.badgeOff')}</Badge>} />
       <fieldset disabled={readOnly} className="flex min-w-0 flex-col gap-4">
+        {inherited && (
+          <p className="flex items-start gap-2 rounded-[var(--radius)] border border-line bg-surface-2/40 px-3.5 py-2.5 text-[12.5px] text-ink-2" data-doc-link-inherited>
+            <ArrowUpFromLine className="mt-0.5 size-4 shrink-0 text-ink-3" />{t('admin.docLink.inheritedHint')}
+          </p>
+        )}
         <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t('admin.docLink.title')}>
           {PRESETS.map((n) => option(String(n), !custom && days === n, () => { setCustom(false); setDays(n) }, n === 0 ? t('admin.docLink.always') : label(n)))}
           {option('custom', custom, () => { setCustom(true); if (!(days >= 1)) setDays(1) }, t('admin.docLink.custom'))}

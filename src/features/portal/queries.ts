@@ -1,12 +1,10 @@
 /**
  * Patient-portal react-query hooks. All keys are scoped by patientId and by how the patient signed in:
  * an SMS-code session sees every patient of the phone, a login session only its own — they never share a cache.
- * Only `repos.portal.*` (patient token) is used here — clinic/branch cards, template assets and
- * schemas arrive inside the portal payloads, so no staff-only endpoint is ever called from the portal.
  */
 import { useQuery } from '@tanstack/react-query'
 import type { Id } from '@/domain'
-import type { PortalBranch } from '@/data'
+import type { PortalOrg, PortalUnit } from '@/data'
 import { repos } from '@/data'
 import { useAuth } from '@/features/auth/store'
 
@@ -48,6 +46,22 @@ export const usePortalDocument = (patientId: Id, documentId: Id | undefined) => 
   })
 }
 
-/** Branch id → name map built from the overview payload (every clinic the patient has visited). */
-export const branchNameMap = (branches: PortalBranch[] | undefined): Map<Id, string> =>
-  new Map((branches ?? []).map((b) => [b.id, b.name]))
+/** "Tashkilot · Muassasa" — just one of them when the other is missing or they carry the same name. */
+export const placeLabel = (org?: string | null, unit?: string | null): string | undefined =>
+  org && unit && org !== unit ? `${org} · ${unit}` : org || unit || undefined
+
+/**
+ * Where a cheque / document was made, resolved from the overview payload: the facility (`unit`) and the organisation
+ * above it (`org`). A row's own `unitName` is the fallback when the facility is not in the list.
+ */
+export function placeNames(data?: { orgs: PortalOrg[]; units: PortalUnit[] }) {
+  const units = new Map((data?.units ?? []).map((u) => [u.id, u]))
+  const orgs = new Map((data?.orgs ?? []).map((o) => [o.id, o]))
+  const unitOf = (unitId: Id) => units.get(unitId)
+  const orgOf = (unitId: Id) => {
+    const u = units.get(unitId)
+    return u?.orgId ? orgs.get(u.orgId) : undefined
+  }
+  const place = (row: { unitId: Id; unitName?: string | null }) => placeLabel(orgOf(row.unitId)?.name, unitOf(row.unitId)?.name ?? row.unitName)
+  return { unitOf, orgOf, place }
+}

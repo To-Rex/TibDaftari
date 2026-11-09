@@ -14,8 +14,8 @@ import { errorMessage } from '@/shared/lib/errors'
 import { DocumentPreview } from './DocumentPreview'
 import { useApproveOrder, useOrderScopeItems, useOrderScopeTemplates } from './orderScope'
 
-export function OrderScopePanel({ companyId, employeeId, item, order, patient, onApproved }: {
-  companyId: Id
+export function OrderScopePanel({ scopeId, employeeId, item, order, patient, onApproved }: {
+  scopeId: Id
   employeeId: Id
   item: OrderItem
   order: Order | undefined
@@ -24,12 +24,12 @@ export function OrderScopePanel({ companyId, employeeId, item, order, patient, o
 }) {
   const { t } = useTranslation()
   const { can } = usePermissions()
-  const templates = useOrderScopeTemplates(companyId, item)
+  const templates = useOrderScopeTemplates(scopeId, item)
   const [templateId, setTemplateId] = useState<string | undefined>()
   const list = templates.data ?? []
   const template = list.find((x) => x.id === templateId) ?? list[0]
   useEffect(() => { if (list[0] && !list.some((x) => x.id === templateId)) setTemplateId(list[0].id) }, [list, templateId])
-  const { items, covered, loading } = useOrderScopeItems(companyId, order?.id, template)
+  const { items, covered, loading } = useOrderScopeItems(scopeId, order?.id, template)
   const approve = useApproveOrder()
   const [confirmOpen, setConfirmOpen] = useState(false)
 
@@ -88,7 +88,7 @@ export function OrderScopePanel({ companyId, employeeId, item, order, patient, o
 
       <div className="border-t border-line bg-surface-2/50 p-3 sm:p-5">
         <div className="mx-auto max-w-[794px]">
-          <DocumentPreview companyId={companyId} item={item} order={order} patient={patient} schema={null} fixedTemplate={template} showTemplateSelect={false} items={items} loadingItems={loading} />
+          <DocumentPreview scopeId={scopeId} item={item} order={order} patient={patient} schema={null} fixedTemplate={template} showTemplateSelect={false} items={items} loadingItems={loading} />
         </div>
       </div>
 

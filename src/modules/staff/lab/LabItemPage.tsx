@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { ArrowLeft, FileCheck2, FileText, Save, Send, ShieldCheck, Undo2, AlertTriangle } from 'lucide-react'
 import type { ValueMap } from '@/domain'
 import { DynamicForm, validateValues } from '@/features/dynamic-form'
-import { usePermissions } from '@/features/auth/store'
+import { usePermissions, useStaffScope } from '@/features/auth/store'
 import { useStaffSession } from '@/features/session/useSession'
 import { useItemContext, useSaveValues, useSubmitItem } from '@/features/lab/queries'
 import { useUnsavedGuard } from '@/features/lab/useUnsavedGuard'
@@ -27,7 +27,8 @@ import { useQuery } from '@tanstack/react-query'
 export default function LabItemPage() {
   const { t } = useTranslation()
   const { itemId = '' } = useParams()
-  const { employeeId, companyId } = useStaffSession()
+  const { employeeId } = useStaffSession()
+  const { scopeId } = useStaffScope()
   const { can } = usePermissions()
   const { item, order, patient, schema, loading } = useItemContext(itemId)
 
@@ -213,7 +214,7 @@ export default function LabItemPage() {
 
       <Modal open={docOpen} onClose={() => setDocOpen(false)} title={doc.data?.title ?? t('clinical.lab.viewDocument')} size="xl">
         {it && (
-          <DocumentPreview companyId={companyId} item={it} order={order.data?.order} patient={patient.data} schema={schema.data} fixedTemplate={docTemplate.data} showTemplateSelect={false} docLink={doc.data?.verifyLink} />
+          <DocumentPreview scopeId={scopeId} item={it} order={order.data?.order} patient={patient.data} schema={schema.data} fixedTemplate={docTemplate.data} showTemplateSelect={false} docLink={doc.data?.verifyLink} />
         )}
       </Modal>
     </Page>

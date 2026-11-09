@@ -8,8 +8,12 @@ import { fmtMoney } from '@/shared/lib/format'
 import { cn } from '@/shared/lib/cn'
 import { Badge, DataTable, EmptyState, Menu, Switch, type Column } from '@/shared/ui'
 
-export function ServiceTypeTable({ rows, loading, schemas, templates, categories = [], canWrite, onEdit, onDelete, onToggleActive, emptyAction, onCreateTemplate }: {
+export function ServiceTypeTable({ rows, loading, schemas, templates, categories = [], canWrite, scopeId, unitName, onEdit, onDelete, onToggleActive, emptyAction, onCreateTemplate }: {
   rows: ServiceType[]; loading: boolean; schemas: AttributeSchema[]; templates: ResultTemplate[]; categories?: Category[]; canWrite: boolean
+  /** the unit the page works in — services owned by another (higher) unit are shown as inherited */
+  scopeId?: Id
+  /** owner unit name from the organisation tree */
+  unitName?: (id: Id) => string | undefined
   /** create a template for a service that has none (opens the new-template flow) */
   onCreateTemplate?: (s: ServiceType) => void
   onEdit: (s: ServiceType) => void; onDelete: (s: ServiceType) => void; onToggleActive: (s: ServiceType, v: boolean) => void; emptyAction?: ReactNode
@@ -33,6 +37,16 @@ export function ServiceTypeTable({ rows, loading, schemas, templates, categories
     )
     return <span className="text-ink-3">—</span>
   }
+  const ownerCell = (s: ServiceType) => {
+    const inherited = !!scopeId && s.ownerUnitId !== scopeId
+    const name = unitName?.(s.ownerUnitId)
+    return (
+      <span className="flex min-w-0 flex-col gap-0.5" data-owner={inherited ? 'inherited' : 'own'}>
+        <span className="truncate text-[12.5px] text-ink-2 md:max-w-[160px] 2xl:max-w-[220px]" title={name}>{name ?? '—'}</span>
+        {inherited && <Badge size="sm" tone="neutral" className="w-fit">{t('catalog.owner.inherited')}</Badge>}
+      </span>
+    )
+  }
   const columns: Column<ServiceType>[] = [
     { key: 'name', header: t('common.name'), card: 'title', cell: (s) => (
       <div className="min-w-0 md:max-w-[200px] 2xl:max-w-[280px] 3xl:max-w-[400px]">
@@ -43,9 +57,9 @@ export function ServiceTypeTable({ rows, loading, schemas, templates, categories
     // category is only meaningful in card mode (the table is already scoped by the tree) — hidden in the table on every width
     { key: 'category', header: t('catalog.services.category'), card: 'meta', className: 'hidden', cell: (s) => <span className="truncate">{catOf(s.categoryId)?.name ?? '—'}</span> },
     { key: 'price', header: t('common.price'), align: 'right', card: 'meta', cell: (s) => {
-      // prices of switched-off branches are not in effect anywhere, so they do not count as overrides
-      const off = s.disabledBranchIds ?? []
-      const n = Object.keys(s.branchPrices).filter((b) => !off.includes(b)).length
+      // prices of switched-off units are not in effect anywhere, so they do not count as overrides
+      const off = s.disabledUnitIds ?? []
+      const n = Object.keys(s.unitPrices ?? {}).filter((u) => !off.includes(u)).length
       return (
         <div className="md:text-right">
           <span className="tabular font-medium whitespace-nowrap text-ink">{fmtMoney(s.price)}</span>
@@ -56,6 +70,8 @@ export function ServiceTypeTable({ rows, loading, schemas, templates, categories
         </div>
       )
     } },
+    // owner unit: whose catalogue the service comes from (inherited from a higher unit, or this unit's own)
+    ...(unitName ? [{ key: 'owner', header: t('catalog.owner.label'), hideBelow: 'md' as const, card: 'meta' as const, cell: ownerCell }] : []),
     { key: 'tat', header: t('catalog.services.turnaroundShort'), align: 'center', hideBelow: 'md', className: 'max-2xl:hidden', cell: (s) => <span className="tabular text-ink-2">{s.turnaroundDays} {t('common.days')}</span> },
     // schema + default template share one column in the table (stacked); separate rows in card mode
     { key: 'schema', header: <span className="md:whitespace-normal md:leading-tight md:inline-block md:max-w-[150px]">{t('catalog.services.schema')}<span className="hidden md:inline text-ink-3"> / {t('catalog.services.defaultTemplateShort')}</span></span>, hideBelow: 'md', cell: (s) => (

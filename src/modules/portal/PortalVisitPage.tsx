@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { ArrowLeft, FileQuestion } from 'lucide-react'
 import { usePatientSession } from '@/features/session/useSession'
 import { stagger } from '@/features/portal/motion'
-import { usePortalOrder } from '@/features/portal/queries'
+import { placeLabel, usePortalOrder } from '@/features/portal/queries'
 import { orderActiveCount, orderReadyCount, paymentTone } from '@/features/portal/status'
+import { PlaceCard } from '@/features/portal/components/PlaceCard'
 import { VisitItemCard } from '@/features/portal/components/VisitItemCard'
 import { routes } from '@/shared/config/routes'
 import { fmtDateTime, fmtMoney } from '@/shared/lib/format'
@@ -59,7 +60,9 @@ export default function PortalVisitPage() {
   const { orderId } = useParams<{ orderId: string }>()
   const session = usePatientSession()
   const q = usePortalOrder(session.patientId, orderId)
-  const branch = q.data?.branch
+  // the organisation (letterhead) and the facility the cheque was written at
+  const org = q.data?.org
+  const unit = q.data?.unit
 
   if (q.isError) {
     return (
@@ -101,8 +104,7 @@ export default function PortalVisitPage() {
         {order ? (
           <>
             <p className="text-ink-3 text-[12.5px]">
-              {q.data?.company.name}
-              {branch && <> · {branch.name}</>}
+              {placeLabel(org?.name, unit?.name ?? order.unitName)}
               {' · '}
               <span className="tabular">{fmtDateTime(order.createdAt)}</span>
             </p>
@@ -189,6 +191,7 @@ export default function PortalVisitPage() {
               </div>
             )}
           </Card>
+          <PlaceCard org={org} unit={unit} />
           {order?.note && (
             <Card className="text-ink-2 text-[13.5px] leading-relaxed">
               <p className="text-ink-3 mb-1 text-[12px] font-medium tracking-[0.05em] uppercase">

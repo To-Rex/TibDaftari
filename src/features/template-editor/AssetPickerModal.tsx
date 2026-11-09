@@ -10,11 +10,11 @@ import { useDeleteAsset, useUploadAsset } from '@/features/catalog/queries'
 const KINDS: TemplateAsset['kind'][] = ['logo', 'stamp', 'signature', 'image']
 const MAX_IMAGE_BYTES = 10_000_000
 
-/** Pick a company asset (logo/stamp/signature/image) or upload a new one (→ data URI). */
-export function AssetPickerModal({ open, onClose, assets, companyId, onPick, canDelete }: { open: boolean; onClose: () => void; assets: TemplateAsset[]; companyId: string; onPick: (a: TemplateAsset) => void; canDelete?: boolean }) {
+/** Pick one of the unit's assets (logo/stamp/signature/image) or upload a new one (→ data URI); `scopeId` = the unit that owns them. */
+export function AssetPickerModal({ open, onClose, assets, scopeId, onPick, canDelete }: { open: boolean; onClose: () => void; assets: TemplateAsset[]; scopeId: string; onPick: (a: TemplateAsset) => void; canDelete?: boolean }) {
   const { t } = useTranslation()
-  const upload = useUploadAsset(companyId)
-  const remove = useDeleteAsset(companyId)
+  const upload = useUploadAsset(scopeId)
+  const remove = useDeleteAsset(scopeId)
   const fileRef = useRef<HTMLInputElement>(null)
   const [kind, setKind] = useState<TemplateAsset['kind']>('image')
   const [confirmDelete, setConfirmDelete] = useState<TemplateAsset | null>(null)

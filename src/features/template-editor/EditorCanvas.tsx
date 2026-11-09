@@ -33,8 +33,8 @@ export function EditorCanvas({ ctx, assets, fitSignal, className }: { ctx: Rende
     const c = scrollRef.current
     if (!c) return
     const small = window.matchMedia('(max-width: 1279px)').matches
-    const pad = small ? 24 : 64
-    const z = small ? (c.clientWidth - pad) / size.w : Math.min((c.clientWidth - pad) / size.w, (c.clientHeight - pad) / size.h)
+    const fitPad = small ? 24 : 64
+    const z = small ? (c.clientWidth - fitPad) / size.w : Math.min((c.clientWidth - fitPad) / size.w, (c.clientHeight - fitPad) / size.h)
     setZoom(Math.max(0.25, Math.min(2, z)))
   }, [fitSignal, size.w, size.h, setZoom])
 

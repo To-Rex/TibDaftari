@@ -1,6 +1,6 @@
 /**
  * Template import / export — a portable JSON file (`.tibdaftari-template.json`).
- *   • bindings travel as service CODES / category CODES (ids differ between companies/backends);
+ *   • bindings travel as service CODES / category CODES (ids differ between installations);
  *   • images referenced by assetId are embedded as data URIs so the file is self-contained;
  *   • import validates with zod, re-creates assets (deduped by kind+name), remaps ids and
  *     saves the template as a DRAFT — nothing existing is overwritten.
@@ -127,13 +127,13 @@ export interface ImportResult {
  * Re-create assets (dedup by kind+name+dimensions), remap ids inside the doc,
  * resolve bindings by code, and save as a NEW draft template.
  */
-export async function importTemplateFile(companyId: string, file: TemplateFile, ctx: { assets: TemplateAsset[]; serviceTypes: ServiceType[]; categories: Category[]; existingNames: string[] }): Promise<ImportResult> {
+export async function importTemplateFile(scopeId: string, file: TemplateFile, ctx: { assets: TemplateAsset[]; serviceTypes: ServiceType[]; categories: Category[]; existingNames: string[] }): Promise<ImportResult> {
   const idMap = new Map<string, string>()
   let created = 0, reused = 0
   for (const a of file.assets) {
     const found = ctx.assets.find((x) => x.kind === a.kind && x.name === a.name && x.width === a.width && x.height === a.height)
     if (found) { idMap.set(a.id, found.id); reused++; continue }
-    const up = await repos.templates.uploadAsset(companyId, { kind: a.kind, name: a.name, url: a.dataUrl, width: a.width, height: a.height })
+    const up = await repos.templates.uploadAsset(scopeId, { kind: a.kind, name: a.name, url: a.dataUrl, width: a.width, height: a.height })
     idMap.set(a.id, up.id)
     created++
   }
@@ -149,7 +149,8 @@ export async function importTemplateFile(companyId: string, file: TemplateFile, 
   let name = file.template.name
   if (ctx.existingNames.includes(name)) { let i = 2; while (ctx.existingNames.includes(`${file.template.name} (${i})`)) i++; name = `${file.template.name} (${i})` }
 
-  // branch bindings are NOT transferred (branch ids differ between installations) — imported templates apply to every branch until bound
-  const template = await repos.templates.save({ companyId, name, description: file.template.description, scope: file.template.scope, language: file.template.language, serviceTypeIds, categoryIds, branchIds: [], doc, status: 'draft' })
+  // unit bindings are NOT transferred (unit ids differ between installations) — an imported template is owned by the
+  // scope and applies to its whole subtree until bound
+  const template = await repos.templates.save({ scopeId, name, description: file.template.description, scope: file.template.scope, language: file.template.language, serviceTypeIds, categoryIds, unitIds: [], doc, status: 'draft' })
   return { template, createdAssets: created, reusedAssets: reused, unresolvedServiceCodes, unresolvedCategoryCodes }
 }

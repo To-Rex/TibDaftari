@@ -1,11 +1,16 @@
-import { useAuth } from '@/features/auth/store'
+import { useAdminScope, useAuth, useStaffScope } from '@/features/auth/store'
 
-/** Convenience accessors for staff pages (throws if used outside RequireStaff). */
+/**
+ * Convenience accessors for staff pages (throws if used outside RequireStaff).
+ * `scopeId` = the facility the staff app works in (falls back to the administered unit);
+ * `adminScopeId` = the administered unit (admin pages). Prefer `useStaffScope()` / `useAdminScope()` directly.
+ */
 export function useStaffSession() {
   const staff = useAuth((s) => s.staff)
-  const branchId = useAuth((s) => s.branchId)
+  const { scopeId, facilityId, scopeUnitId } = useStaffScope()
+  const { scopeId: adminScopeId } = useAdminScope()
   if (!staff) throw new Error('useStaffSession outside staff routes')
-  return { staff, companyId: staff.companyId, employeeId: staff.employeeId, branchId }
+  return { staff, employeeId: staff.employeeId, scopeId, facilityId, scopeUnitId, adminScopeId }
 }
 
 export function usePatientSession() {

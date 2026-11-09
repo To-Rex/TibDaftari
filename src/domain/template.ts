@@ -5,7 +5,7 @@ import type { AuditStamp, Id } from './common'
    96 dpi. A4 portrait = 794 × 1123. Elements are z-ordered by index.
    Bindings use `{path}` placeholders resolved against a render context:
      {patient.fullName} {order.number} {item.serviceName} {employee.doctor}
-     {values.<fieldKey>} {company.name} {branch.name} {today}
+     {values.<fieldKey>} {org.name} {unit.name} {today}   (company.* / branch.* = aliases of org.* / unit.*)
    Tables bind to a `table` field key or to a static column set.
 ------------------------------------------------------------------- */
 
@@ -202,7 +202,8 @@ export type TemplateScope = 'item' | 'order' | 'receipt'
 
 export interface ResultTemplate extends AuditStamp {
   id: Id
-  companyId: Id
+  /** the unit that owns the template (any level); visible to its whole subtree */
+  ownerUnitId: Id
   name: string
   description?: string
   status: TemplateStatus
@@ -210,8 +211,8 @@ export interface ResultTemplate extends AuditStamp {
   /** service types this template can render (N:N). Empty = generic. */
   serviceTypeIds: Id[]
   categoryIds: Id[]
-  /** branches this template belongs to. Empty = every branch of the company. */
-  branchIds: Id[]
+  /** units (and their subtrees) this template is limited to. Empty = the owner's whole subtree. */
+  unitIds: Id[]
   /** item / order = result documents; receipt = the cheque printed at the front desk */
   scope: TemplateScope
   language: 'uz' | 'ru' | 'en'
@@ -222,7 +223,7 @@ export interface ResultTemplate extends AuditStamp {
 
 export interface TemplateAsset {
   id: Id
-  companyId: Id
+  ownerUnitId: Id
   kind: 'logo' | 'stamp' | 'signature' | 'image'
   name: string
   url: string // absolute URL (backend /api/v1/files/{id}) or data URI while uploading
@@ -327,17 +328,21 @@ export const STANDARD_PLACEHOLDERS: { group: string; items: { key: string; label
   {
     group: 'organisation',
     items: [
-      { key: 'company.name', label: 'Tashkilot' },
-      { key: 'company.legalName', label: 'Yuridik nomi' },
-      { key: 'company.slug', label: 'Tashkilot kodi' },
-      { key: 'company.phone', label: 'Tashkilot telefoni' },
-      { key: 'company.email', label: 'Tashkilot emaili' },
-      { key: 'company.address', label: 'Tashkilot manzili' },
-      { key: 'branch.name', label: 'Filial' },
-      { key: 'branch.code', label: 'Filial kodi' },
-      { key: 'branch.phone', label: 'Filial telefoni' },
-      { key: 'branch.address', label: 'Filial manzili' },
-      { key: 'branch.timezone', label: 'Vaqt mintaqasi' },
+      // `org` = the organisation the facility belongs to (the nearest viloyat / tuman / davlat node),
+      // `unit` = the facility itself. `company.*` / `branch.*` are aliases of the same values for older templates.
+      { key: 'org.name', label: 'Tashkilot' },
+      { key: 'org.shortName', label: 'Tashkilot qisqa nomi' },
+      { key: 'org.legalName', label: 'Yuridik nomi' },
+      { key: 'org.phone', label: 'Tashkilot telefoni' },
+      { key: 'org.email', label: 'Tashkilot emaili' },
+      { key: 'org.address', label: 'Tashkilot manzili' },
+      { key: 'unit.name', label: 'Muassasa' },
+      { key: 'unit.code', label: 'Muassasa kodi' },
+      { key: 'unit.phone', label: 'Muassasa telefoni' },
+      { key: 'unit.address', label: 'Muassasa manzili' },
+      { key: 'unit.timezone', label: 'Vaqt mintaqasi' },
+      { key: 'unit.district', label: 'Tuman / shahar' },
+      { key: 'unit.region', label: 'Viloyat' },
       { key: 'category.name', label: 'Bo‘lim (kategoriya)' },
       { key: 'category.code', label: 'Bo‘lim kodi' },
       { key: 'category.phone', label: 'Bo‘lim telefoni' },

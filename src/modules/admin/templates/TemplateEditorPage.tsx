@@ -4,9 +4,9 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { Braces, Layers, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import type { TemplateAsset } from '@/domain'
-import { usePermissions } from '@/features/auth/store'
-import { useStaffSession } from '@/features/session/useSession'
-import { useBranches, useCategories, useSaveTemplate, useServiceTypes, useTemplate, useTemplateStatus } from '@/features/catalog/queries'
+import { useAdminScope, usePermissions } from '@/features/auth/store'
+import { useUnitTree, useUnitTreeShape } from '@/features/org/queries'
+import { useCategories, useSaveTemplate, useServiceTypes, useTemplate, useTemplateStatus } from '@/features/catalog/queries'
 import { useLeavePrompt } from '@/features/schema-editor/useLeavePrompt'
 import { AssetPickerModal } from '@/features/template-editor/AssetPickerModal'
 import { BindingsFields, type Bindings } from '@/features/template-editor/BindingsFields'
@@ -36,20 +36,24 @@ export default function TemplateEditorPage() {
   const { t } = useTranslation()
   const nav = useNavigate()
   const { templateId } = useParams()
-  const { companyId: sessionCompanyId } = useStaffSession()
+  // the administered unit: the catalogue lists (its lineage), the assets and the saves go through it
+  const { scopeId } = useAdminScope()
   const { can } = usePermissions()
   const canWrite = can('admin.template.write')
   const canPublish = can('admin.template.publish')
 
   const tplQ = useTemplate(templateId)
-  const companyId = tplQ.data?.companyId ?? sessionCompanyId
   // a cheque template goes back to /admin/receipts, a result document to /admin/templates
   const { pathname } = useLocation()
   const backTo = templateListRoute(tplQ.data ? templateKind(tplQ.data) : pathname.startsWith(routes.admin.receipts) ? 'receipt' : 'result')
-  const serviceTypes = useServiceTypes(companyId, {})
-  const categories = useCategories(companyId)
-  const branches = useBranches(companyId)
-  const save = useSaveTemplate(companyId)
+  const serviceTypes = useServiceTypes(scopeId, {})
+  const categories = useCategories(scopeId)
+  // the organisation tree for the unit binding: only units under the template's owner (the scope when the owner is above what we see)
+  const unitTree = useUnitTree()
+  const shape = useUnitTreeShape(unitTree.data)
+  const ownerId = tplQ.data?.ownerUnitId
+  const bindRoot = ownerId && shape.byId.has(ownerId) ? ownerId : scopeId
+  const save = useSaveTemplate(scopeId)
   const setStatus = useTemplateStatus()
 
   const loaded = useEditorStore((s) => s.template?.id)
@@ -58,7 +62,7 @@ export default function TemplateEditorPage() {
   const isReceipt = useEditorStore((s) => s.meta?.scope === 'receipt')
   const preview = useEditorStore((s) => s.preview)
   const dirty = useIsDirty()
-  const { schema, ctx, assets, services } = useTemplateSchema(previewStId, companyId)
+  const { schema, ctx, assets, services } = useTemplateSchema(previewStId, scopeId)
 
   // load into store when template arrives (once per id)
   useEffect(() => {
@@ -95,7 +99,7 @@ export default function TemplateEditorPage() {
     if (!s.template || !canWrite) return null
     if (!s.meta.name.trim()) { toast.error(t('catalog.templates.nameRequired')); return null }
     try {
-      const saved = await save.mutateAsync({ id: s.template.id, name: s.meta.name.trim(), doc: s.doc, serviceTypeIds: s.meta.serviceTypeIds, categoryIds: s.meta.categoryIds, branchIds: s.meta.branchIds, scope: s.meta.scope, language: s.meta.language })
+      const saved = await save.mutateAsync({ id: s.template.id, name: s.meta.name.trim(), doc: s.doc, serviceTypeIds: s.meta.serviceTypeIds, categoryIds: s.meta.categoryIds, unitIds: s.meta.unitIds, scope: s.meta.scope, language: s.meta.language })
       s.markSaved(saved)
       toast.success(t('catalog.templates.saved'))
       return saved
@@ -198,11 +202,11 @@ export default function TemplateEditorPage() {
         )
       })()}
 
-      <AssetPickerModal open={!!assetPick} onClose={() => setAssetPick(null)} assets={assets} companyId={companyId} onPick={pickAsset} canDelete={canWrite} />
+      <AssetPickerModal open={!!assetPick} onClose={() => setAssetPick(null)} assets={assets} scopeId={scopeId} onPick={pickAsset} canDelete={canWrite} />
 
       <Modal open={bindingsOpen} onClose={() => setBindingsOpen(false)} title={t('catalog.editor.bindings')} description={t('catalog.editor.bindingsHint')} size="lg"
         footer={<><Button variant="ghost" onClick={() => setBindingsOpen(false)}>{t('common.cancel')}</Button><Button onClick={() => { if (bindDraft) useEditorStore.getState().setMeta(bindDraft); setBindingsOpen(false) }}>{t('common.done')}</Button></>}>
-        {bindDraft && <BindingsFields value={bindDraft} onChange={setBindDraft} kind={templateKind(bindDraft)} serviceTypes={serviceTypes.data ?? []} categories={categories.data ?? []} branches={branches.data ?? []} />}
+        {bindDraft && <BindingsFields value={bindDraft} onChange={setBindDraft} kind={templateKind(bindDraft)} serviceTypes={serviceTypes.data ?? []} categories={categories.data ?? []} units={unitTree.data ?? []} rootId={bindRoot} />}
       </Modal>
 
       <ConfirmDialog open={activateAsk} onClose={() => setActivateAsk(false)} loading={setStatus.isPending || save.isPending} title={t('catalog.templates.activateTitle', { name: useEditorStore.getState().meta.name })} description={t('catalog.templates.activateHint')} confirmText={t('catalog.templates.activate')} cancelText={t('common.cancel')} onConfirm={() => void activate()} />

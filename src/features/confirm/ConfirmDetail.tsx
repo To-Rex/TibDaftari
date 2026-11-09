@@ -24,8 +24,8 @@ import { useTemplate } from './queries'
 import { useQuery } from '@tanstack/react-query'
 import { repos } from '@/data'
 
-export function ConfirmDetail({ companyId, itemId, approvedOnly, onBack, onApprove, onReject, onRevoke, approving, justApproved, onOrderApproved }: {
-  companyId: Id
+export function ConfirmDetail({ scopeId, itemId, approvedOnly, onBack, onApprove, onReject, onRevoke, approving, justApproved, onOrderApproved }: {
+  scopeId: Id
   itemId: Id | null
   /** the registrar desk: only approved results are shown (anything else — e.g. an old link — is not opened) */
   approvedOnly?: boolean
@@ -54,7 +54,7 @@ export function ConfirmDetail({ companyId, itemId, approvedOnly, onBack, onAppro
   const { employeeId } = useStaffSession()
   // approved order-scoped document → render with all covered items
   const approvedOrderTpl = docTemplate.data?.scope === 'order' ? docTemplate.data : undefined
-  const approvedItems = useOrderScopeItems(companyId, approvedOrderTpl ? order.data?.order.id : undefined, approvedOrderTpl)
+  const approvedItems = useOrderScopeItems(scopeId, approvedOrderTpl ? order.data?.order.id : undefined, approvedOrderTpl)
 
   if (!itemId) {
     return (
@@ -153,7 +153,7 @@ export function ConfirmDetail({ companyId, itemId, approvedOnly, onBack, onAppro
       )}
 
       {it && it.status !== 'approved' && (
-        <OrderScopePanel companyId={companyId} employeeId={employeeId} item={it} order={order.data?.order} patient={patient.data} onApproved={onOrderApproved} />
+        <OrderScopePanel scopeId={scopeId} employeeId={employeeId} item={it} order={order.data?.order} patient={patient.data} onApproved={onOrderApproved} />
       )}
 
       {it && (
@@ -175,7 +175,7 @@ export function ConfirmDetail({ companyId, itemId, approvedOnly, onBack, onAppro
               ) : (
                 <motion.div key="d" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }} className="mx-auto max-w-[794px]">
                   <DocumentPreview
-                    companyId={companyId}
+                    scopeId={scopeId}
                     item={it}
                     order={order.data?.order}
                     patient={patient.data}

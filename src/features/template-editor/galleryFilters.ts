@@ -1,8 +1,9 @@
 /**
  * Template gallery filtering, sorting and service coverage — pure functions over the already-loaded lists
- * (templates, services, categories), shared by the result-document and cheque galleries.
+ * (templates, services, categories, the organisation tree), shared by the result-document and cheque galleries.
  */
 import type { Category, Id, PaperSize, ResultTemplate, ServiceType } from '@/domain'
+import { serviceAvailableIn } from '@/domain'
 import { descendantIds } from '@/features/catalog/tree'
 import type { TemplateKind } from './kind'
 
@@ -21,11 +22,11 @@ export interface GalleryFilters {
   serviceTypeId: Id | ''
   language: 'all' | ResultTemplate['language']
   paper: 'all' | PaperSize
-  /** only while the top bar shows every branch: a branch, or 'none' = bound to no branch */
-  branch: 'all' | 'none' | Id
+  /** a unit of the scope's subtree: only the templates usable there (owner on its path, bound to it or to no unit) */
+  unitId: Id | ''
 }
 
-export const EMPTY_FILTERS: GalleryFilters = { scope: 'all', binding: 'all', categoryId: '', serviceTypeId: '', language: 'all', paper: 'all', branch: 'all' }
+export const EMPTY_FILTERS: GalleryFilters = { scope: 'all', binding: 'all', categoryId: '', serviceTypeId: '', language: 'all', paper: 'all', unitId: '' }
 
 export const RESULT_PAPERS: PaperSize[] = ['A4', 'A5', 'Letter']
 export const RECEIPT_PAPERS: PaperSize[] = ['Receipt80', 'Receipt58']
@@ -42,14 +43,10 @@ export function collationLocale(lang: string | undefined): string {
 /** Default direction of each sort: names A→Z, everything else newest / most used first. */
 export const defaultSortDir = (s: GallerySort): SortDir => (s === 'name' ? 'asc' : 'desc')
 
-/**
- * The filters that actually apply on this page: service/category/scope/binding filters mean nothing for
- * cheques, and the branch filter only exists while the top bar shows every branch.
- */
-export function effectiveFilters(f: GalleryFilters, kind: TemplateKind, topBarBranchId: Id | null): GalleryFilters {
+/** The filters that actually apply on this page: service/category/scope/binding filters mean nothing for cheques. */
+export function effectiveFilters(f: GalleryFilters, kind: TemplateKind): GalleryFilters {
   const out = { ...f }
   if (kind === 'receipt') Object.assign(out, { scope: 'all', binding: 'all', categoryId: '', serviceTypeId: '' })
-  if (topBarBranchId) out.branch = 'all'
   const papers = kind === 'receipt' ? RECEIPT_PAPERS : RESULT_PAPERS
   if (out.paper !== 'all' && !papers.includes(out.paper)) out.paper = 'all'
   return out
@@ -64,18 +61,33 @@ export const isGeneric = (t: Pick<ResultTemplate, 'serviceTypeIds' | 'categoryId
 export const boundToService = (t: Pick<ResultTemplate, 'serviceTypeIds' | 'categoryIds'>, s: Pick<ServiceType, 'id' | 'categoryId'>): boolean =>
   t.serviceTypeIds.includes(s.id) || t.categoryIds.includes(s.categoryId)
 
-export function filterTemplates(list: ResultTemplate[], f: GalleryFilters, ctx: { services: ServiceType[]; categories: Category[] }): ResultTemplate[] {
+/**
+ * Where a filter / coverage looks from: a unit and its path (root → … → the unit, ids), plus the ids the tree
+ * knows. Mirrors the API's `list_active_templates(unit)`: the owner must be on the path, and either no unit
+ * binding or one on the path. An owner the tree does not know (an ancestor above what the caller may see) is
+ * taken as on the path — the API already filtered the list to the scope's lineage.
+ */
+export interface UnitView { unitId: Id; pathIds: ReadonlySet<Id>; knownIds?: ReadonlySet<Id> }
+
+export const templateUsableAt = (t: Pick<ResultTemplate, 'ownerUnitId' | 'unitIds'>, at: UnitView): boolean => {
+  const ownerKnown = !at.knownIds || at.knownIds.has(t.ownerUnitId)
+  if (ownerKnown && !at.pathIds.has(t.ownerUnitId)) return false
+  const bound = t.unitIds ?? []
+  return !bound.length || bound.some((u) => at.pathIds.has(u))
+}
+
+export function filterTemplates(list: ResultTemplate[], f: GalleryFilters, ctx: { services: ServiceType[]; categories: Category[]; unit?: UnitView | null }): ResultTemplate[] {
   const service = f.serviceTypeId ? ctx.services.find((s) => s.id === f.serviceTypeId) : undefined
   const catIds = f.categoryId ? descendantIds(ctx.categories, f.categoryId) : null
   const serviceCat = catIds ? new Map(ctx.services.map((s) => [s.id, s.categoryId])) : null
+  const at = f.unitId && ctx.unit && ctx.unit.unitId === f.unitId ? ctx.unit : null
   return list.filter((t) => {
     if (f.scope !== 'all' && t.scope !== f.scope) return false
     if (f.binding === 'bound' && isGeneric(t)) return false
     if (f.binding === 'generic' && !isGeneric(t)) return false
     if (f.language !== 'all' && t.language !== f.language) return false
     if (f.paper !== 'all' && t.doc.paper !== f.paper) return false
-    if (f.branch === 'none' && t.branchIds.length) return false
-    if (f.branch !== 'all' && f.branch !== 'none' && !t.branchIds.includes(f.branch)) return false
+    if (at && !templateUsableAt(t, at)) return false
     if (catIds && serviceCat && !t.categoryIds.some((c) => catIds.has(c)) && !t.serviceTypeIds.some((s) => catIds.has(serviceCat.get(s) ?? ''))) return false
     if (f.serviceTypeId && !(service ? boundToService(t, service) || isGeneric(t) : t.serviceTypeIds.includes(f.serviceTypeId))) return false
     return true
@@ -107,14 +119,17 @@ export interface Coverage {
 }
 
 /**
- * Which services of the branch print a result document, mirroring the API's resolution on approval: an active
- * template bound to the service or its category, else an active template without service bindings
- * (`find_generic_template`), else none. A template counts in the branch when bound to it or to no branch.
+ * Which services print a result document, mirroring the API's resolution on approval: an active template bound
+ * to the service or its category, else an active template without service bindings (`find_generic_template`),
+ * else none. With a unit (`at`) only the templates usable there and the services offered there count; without
+ * one, everything managed from the scope.
  */
-export function templateCoverage(templates: ResultTemplate[], services: ServiceType[], branchId: Id | null, locale?: string): Coverage {
-  const active = templates.filter((t) => t.status === 'active' && t.scope !== 'receipt' && (!branchId || !t.branchIds.length || t.branchIds.includes(branchId)))
+export function templateCoverage(templates: ResultTemplate[], services: ServiceType[], at: UnitView | null, locale?: string): Coverage {
+  const active = templates.filter((t) => t.status === 'active' && t.scope !== 'receipt' && (!at || templateUsableAt(t, at)))
   const anyFallback = active.some((t) => !t.serviceTypeIds.length)
-  const needing = services.filter((s) => s.isActive && s.schemaId).sort((a, b) => a.name.localeCompare(b.name, locale, { sensitivity: 'base', numeric: true }))
+  const needing = services
+    .filter((s) => s.isActive && s.schemaId && (!at || serviceAvailableIn(s, at.unitId)))
+    .sort((a, b) => a.name.localeCompare(b.name, locale, { sensitivity: 'base', numeric: true }))
   const out: Coverage = { needing, direct: 0, fallback: [], missing: [] }
   for (const s of needing) {
     if (active.some((t) => boundToService(t, s))) out.direct++
@@ -138,7 +153,13 @@ export function loadGalleryState(kind: TemplateKind): GalleryState {
     const raw = sessionStorage.getItem(stateKey(kind))
     if (!raw) return DEFAULT_STATE
     const v = JSON.parse(raw) as Partial<GalleryState>
-    return { status: v.status ?? 'all', search: typeof v.search === 'string' ? v.search : '', filters: { ...EMPTY_FILTERS, ...(v.filters ?? {}) } }
+    // only the known filter keys (a filter remembered by an older build is dropped)
+    const filters = { ...EMPTY_FILTERS }
+    for (const k of Object.keys(EMPTY_FILTERS) as (keyof GalleryFilters)[]) {
+      const val = (v.filters as Partial<Record<string, unknown>> | undefined)?.[k]
+      if (typeof val === 'string') (filters as Record<string, string>)[k] = val
+    }
+    return { status: v.status ?? 'all', search: typeof v.search === 'string' ? v.search : '', filters }
   } catch {
     return DEFAULT_STATE
   }

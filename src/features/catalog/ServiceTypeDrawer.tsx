@@ -1,21 +1,25 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { AttributeSchema, Branch, Category, Id, ResultTemplate, ServiceType } from '@/domain'
+import { Trash2 } from 'lucide-react'
+import type { AttributeSchema, Category, Id, OrgUnit, ResultTemplate, ServiceType } from '@/domain'
 import { boundToService, isGeneric } from '@/features/template-editor/galleryFilters'
-import { Button, Checkbox, Drawer, Field, Input, Segmented, Select, Switch, Textarea } from '@/shared/ui'
-import { cn } from '@/shared/lib/cn'
+import { UnitMultiPicker, UnitPicker } from '@/features/org/UnitPicker'
+import { Badge, Button, Checkbox, Drawer, Field, IconButton, Input, Segmented, Select, Switch, Textarea } from '@/shared/ui'
 import { categoryPath } from './tree'
 
 export interface ServiceTypeDraft {
   id?: Id
+  /** the unit that owns the service (set when editing; a new service is owned by the scope) */
+  ownerUnitId?: Id
   name: string
   code: string
   description: string
   categoryId: Id
   price: number
-  branchPrices: Record<Id, number>
-  /** branches where the service is switched off (not offered at their reception) */
-  disabledBranchIds: Id[]
+  /** price overrides per unit — apply to the unit and everything under it (nearest level wins) */
+  unitPrices: Record<Id, number>
+  /** units (and their subtrees) where the service is switched off — not offered at their receptions */
+  disabledUnitIds: Id[]
   turnaroundDays: number
   schemaId: Id | null
   documentScope: 'item' | 'order'
@@ -25,20 +29,23 @@ export interface ServiceTypeDraft {
 
 export const draftFromServiceType = (s?: ServiceType | null, categoryId: Id = ''): ServiceTypeDraft =>
   s
-    ? { id: s.id, name: s.name, code: s.code ?? '', description: s.description ?? '', categoryId: s.categoryId, price: s.price, branchPrices: { ...s.branchPrices }, disabledBranchIds: [...(s.disabledBranchIds ?? [])], turnaroundDays: s.turnaroundDays, schemaId: s.schemaId, documentScope: s.documentScope, defaultTemplateId: s.defaultTemplateId, isActive: s.isActive }
-    : { name: '', code: '', description: '', categoryId, price: 0, branchPrices: {}, disabledBranchIds: [], turnaroundDays: 1, schemaId: null, documentScope: 'item', defaultTemplateId: null, isActive: true }
+    ? { id: s.id, ownerUnitId: s.ownerUnitId, name: s.name, code: s.code ?? '', description: s.description ?? '', categoryId: s.categoryId, price: s.price, unitPrices: { ...(s.unitPrices ?? {}) }, disabledUnitIds: [...(s.disabledUnitIds ?? [])], turnaroundDays: s.turnaroundDays, schemaId: s.schemaId, documentScope: s.documentScope, defaultTemplateId: s.defaultTemplateId, isActive: s.isActive }
+    : { name: '', code: '', description: '', categoryId, price: 0, unitPrices: {}, disabledUnitIds: [], turnaroundDays: 1, schemaId: null, documentScope: 'item', defaultTemplateId: null, isActive: true }
 
 /** What the drawer asks the page to do besides saving the service. */
 export interface ServiceTypeSubmitOptions {
-  /** the chosen default template is not bound to the service yet: bind its same-named copies in the other branches as well */
+  /** the chosen default template is not bound to the service yet: bind its same-named copies in the other units as well */
   bindCopies: boolean
 }
 
-export function ServiceTypeDrawer({ open, onClose, initial, categories, branches, schemas, templates, onSubmit, saving, branchId }: {
-  open: boolean; onClose: () => void; initial: ServiceTypeDraft | null; categories: Category[]; branches: Branch[]; schemas: AttributeSchema[]; templates: ResultTemplate[]
+export function ServiceTypeDrawer({ open, onClose, initial, categories, units, scopeId, schemas, templates, onSubmit, saving }: {
+  open: boolean; onClose: () => void; initial: ServiceTypeDraft | null; categories: Category[]
+  /** the visible organisation tree (flat) — unit pickers and unit names */
+  units: OrgUnit[]
+  /** the unit the admin panel works in: the owner of a new service, and the root of the pickers when the owner is not in the tree */
+  scopeId: Id
+  schemas: AttributeSchema[]; templates: ResultTemplate[]
   onSubmit: (d: ServiceTypeDraft, opts: ServiceTypeSubmitOptions) => void; saving?: boolean
-  /** the branch selected in the top bar (templates are branch-owned); null = all branches */
-  branchId?: Id | null
 }) {
   const { t } = useTranslation()
   const [d, setD] = useState<ServiceTypeDraft>(draftFromServiceType())
@@ -47,39 +54,61 @@ export function ServiceTypeDrawer({ open, onClose, initial, categories, branches
   useEffect(() => { if (open && initial) { setD(initial); setTouched(false); setBindCopies(true) } }, [open, initial])
   const set = <K extends keyof ServiceTypeDraft>(k: K, v: ServiceTypeDraft[K]) => setD((s) => ({ ...s, [k]: v }))
 
+  const unitById = useMemo(() => new Map(units.map((u) => [u.id, u])), [units])
+  const unitName = (id: Id) => unitById.get(id)?.name ?? '…'
+  // the service applies to the owner's subtree, so per-unit settings live under the owner (the scope while it is unknown)
+  const ownerId = d.ownerUnitId ?? scopeId
+  const rootId = unitById.has(ownerId) ? ownerId : scopeId
+  const owner = unitById.get(ownerId)
+  const inherited = !!d.id && ownerId !== scopeId
+
   const nameErr = touched && !d.name.trim() ? t('common.required') : undefined
   const catErr = touched && !d.categoryId ? t('common.required') : undefined
   const published = schemas.filter((s) => s.status === 'published')
   // "Standart andoza": every result template (cheque templates are not result documents) — those already bound to
   // the service (or its category, or generic) first, then all the others; picking one of those binds it on save.
-  // Templates are branch-owned: with a branch selected only its templates are offered (plus the current default).
   const svc = { id: d.id ?? '', categoryId: d.categoryId }
   const covers = (tp: ResultTemplate) => isGeneric(tp) || boundToService(tp, svc)
-  const branchName = (id: Id) => branches.find((b) => b.id === id)?.name
   const tplGroups = useMemo(() => {
     const byName = (a: ResultTemplate, b: ResultTemplate) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base', numeric: true })
-    const pool = templates.filter((tp) => tp.scope !== 'receipt' && (!branchId || !tp.branchIds.length || tp.branchIds.includes(branchId) || tp.id === d.defaultTemplateId))
+    const pool = templates.filter((tp) => tp.scope !== 'receipt')
     const isBound = (tp: ResultTemplate) => isGeneric(tp) || boundToService(tp, { id: d.id ?? '', categoryId: d.categoryId })
     return { bound: pool.filter(isBound).sort(byName), others: pool.filter((tp) => !isBound(tp)).sort(byName) }
-  }, [templates, branchId, d.id, d.categoryId, d.defaultTemplateId])
+  }, [templates, d.id, d.categoryId])
   const tplLabel = (tp: ResultTemplate) => [
     tp.name,
     tp.scope === 'order' ? t('catalog.services.scopeOrder') : null,
     tp.status !== 'active' ? t(`catalog.templates.status.${tp.status}`) : null,
     isGeneric(tp) ? t('catalog.services.generic') : null,
-    !branchId ? tp.branchIds.map(branchName).filter(Boolean).join(', ') || null : null,
+    (tp.unitIds ?? []).map(unitName).join(', ') || null,
   ].filter(Boolean).join(' · ')
   const chosen = templates.find((tp) => tp.id === d.defaultTemplateId)
   const willBind = !!chosen && !covers(chosen)
-  // the chosen template's copies in the other branches (same name and level) that are not bound to the service yet
+  // the chosen template's copies in the other units (same name and level) that are not bound to the service yet
   const copies = chosen ? templates.filter((tp) => tp.id !== chosen.id && tp.scope === chosen.scope && tp.name === chosen.name && !covers(tp)) : []
+  const copyUnits = [...new Set(copies.flatMap((tp) => (tp.unitIds?.length ? tp.unitIds : [tp.ownerUnitId]).map(unitName)))].join(', ')
   const submit = () => { setTouched(true); if (!d.name.trim() || !d.categoryId) return; onSubmit({ ...d, name: d.name.trim(), code: d.code.trim().toUpperCase() }, { bindCopies: bindCopies && copies.length > 0 }) }
   const num = (v: string) => (v === '' ? 0 : Math.max(0, Number(v) || 0))
+
+  // per-unit prices: one row per override, a picker adds a unit of the owner's subtree with the base price prefilled
+  const priceRows = Object.keys(d.unitPrices)
+  const addPriceUnit = (id: Id | null) => { if (!id || id in d.unitPrices) return; set('unitPrices', { ...d.unitPrices, [id]: d.price }) }
+  const removePriceUnit = (id: Id) => { const next = { ...d.unitPrices }; delete next[id]; set('unitPrices', next) }
+  const setPrice = (id: Id, v: string) => set('unitPrices', { ...d.unitPrices, [id]: num(v) })
+  const ownerOff = d.disabledUnitIds.includes(ownerId)
 
   return (
     <Drawer open={open} onClose={onClose} title={d.id ? t('catalog.services.edit') : t('catalog.services.new')} description={t('catalog.services.drawerHint')} width="max-w-2xl"
       footer={<><Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button><Button onClick={submit} loading={saving}>{t('common.save')}</Button></>}>
       <div className="flex flex-col gap-5">
+        {owner && (
+          <div className="flex flex-wrap items-center gap-2 text-[12.5px] text-ink-3" data-service-owner>
+            <span>{t('catalog.owner.label')}:</span>
+            <span className="font-medium text-ink-2">{owner.name}</span>
+            <Badge size="sm" tone={inherited ? 'neutral' : 'brand'}>{inherited ? t('catalog.owner.inherited') : t('catalog.owner.own')}</Badge>
+            {inherited && <span className="basis-full text-[12px]">{t('catalog.owner.inheritedHint')}</span>}
+          </div>
+        )}
         <div className="grid grid-cols-[1fr_130px] gap-3">
           <Field label={t('common.name')} required error={nameErr}>{(id) => <Input id={id} value={d.name} onChange={(e) => set('name', e.target.value)} invalid={!!nameErr} placeholder={t('catalog.services.namePh')} autoFocus />}</Field>
           <Field label={t('catalog.tree.code')}>{(id) => <Input id={id} value={d.code} onChange={(e) => set('code', e.target.value)} mono placeholder="CBC" />}</Field>
@@ -97,33 +126,37 @@ export function ServiceTypeDrawer({ open, onClose, initial, categories, branches
           <Field label={t('catalog.services.turnaround')}>{(id) => <Input id={id} type="number" min={0} value={d.turnaroundDays} onChange={(e) => set('turnaroundDays', num(e.target.value))} mono rightSlot={<span className="text-[12px] text-ink-3 pr-1">{t('common.days')}</span>} />}</Field>
         </div>
 
-        {branches.length > 0 && (
-          <div className="rounded-[var(--radius)] border border-line bg-surface-2/40 p-3" data-branch-settings>
-            <p className="text-[12.5px] font-medium text-ink-2">{t('catalog.services.branches')}</p>
-            <p className="text-[12px] text-ink-3 mb-2">{t('catalog.services.branchesHint')}</p>
-            <div className="flex flex-col gap-2">
-              {branches.map((b) => {
-                // switched off in this branch: hidden at its reception; its price override is kept for when it comes back
-                const off = d.disabledBranchIds.includes(b.id)
-                const v = d.branchPrices[b.id]
-                return (
-                  <div key={b.id} className="grid grid-cols-[auto_1fr_120px] sm:grid-cols-[auto_1fr_180px] items-center gap-3" data-branch-row={off ? 'off' : 'on'}>
-                    <Switch size="sm" checked={!off} ariaLabel={`${b.name} — ${off ? t('catalog.services.branchOff') : t('catalog.services.branchOn')}`}
-                      onChange={(on) => set('disabledBranchIds', on ? d.disabledBranchIds.filter((x) => x !== b.id) : [...d.disabledBranchIds, b.id])} />
-                    <span className={cn('text-[13.5px] truncate', off && 'text-ink-3')}>{b.name} <span className="text-ink-3 font-mono text-[12px]">{b.code}</span></span>
-                    {off ? (
-                      <span className="text-[12px] font-medium text-warn truncate">{t('catalog.services.branchOff')}</span>
-                    ) : (
-                      <Input type="number" min={0} step={1000} mono placeholder={String(d.price)} value={v ?? ''} className="h-9" aria-label={`${b.name} — ${t('common.price')}`}
-                        onChange={(e) => { const bp = { ...d.branchPrices }; if (e.target.value === '') delete bp[b.id]; else bp[b.id] = num(e.target.value); set('branchPrices', bp) }} />
-                    )}
-                  </div>
-                )
-              })}
+        {units.length > 0 && (
+          <div className="rounded-[var(--radius)] border border-line bg-surface-2/40 p-3 flex flex-col gap-4" data-unit-settings>
+            <div>
+              <p className="text-[12.5px] font-medium text-ink-2">{t('catalog.services.unitPrices')}</p>
+              <p className="text-[12px] text-ink-3 mb-2">{t('catalog.services.unitPricesHint')}</p>
+              <div className="flex flex-col gap-2">
+                {priceRows.map((uid) => {
+                  const u = unitById.get(uid)
+                  const off = d.disabledUnitIds.includes(uid)
+                  return (
+                    <div key={uid} className="grid grid-cols-[1fr_120px_auto] sm:grid-cols-[1fr_180px_auto] items-center gap-2" data-unit-price-row={off ? 'off' : 'on'}>
+                      <span className="min-w-0 truncate text-[13.5px]" title={u?.path}>
+                        {u?.name ?? '…'}
+                        {u?.code && <span className="ml-1.5 font-mono text-[12px] text-ink-3">{u.code}</span>}
+                        {off && <span className="ml-1.5 text-[12px] text-warn">{t('catalog.services.unitOff')}</span>}
+                      </span>
+                      <Input type="number" min={0} step={1000} mono value={d.unitPrices[uid] ?? ''} className="h-9" aria-label={`${u?.name ?? uid} — ${t('common.price')}`} onChange={(e) => setPrice(uid, e.target.value)} />
+                      <IconButton size="sm" label={t('common.delete')} onClick={() => removePriceUnit(uid)}><Trash2 /></IconButton>
+                    </div>
+                  )
+                })}
+                {priceRows.length === 0 && <p className="text-[12.5px] text-ink-3">{t('catalog.services.noUnitPrices')}</p>}
+                <UnitPicker units={units} rootId={rootId} value={null} onChange={addPriceUnit} allowEmpty placeholder={t('catalog.services.addUnitPrice')} className="sm:max-w-sm" />
+              </div>
             </div>
-            {branches.every((b) => d.disabledBranchIds.includes(b.id)) && (
-              <p className="mt-2 text-[12px] text-danger" data-all-branches-off>{t('catalog.services.allBranchesOff')}</p>
-            )}
+            <div>
+              <p className="text-[12.5px] font-medium text-ink-2">{t('catalog.services.disabledUnits')}</p>
+              <p className="text-[12px] text-ink-3 mb-2">{t('catalog.services.disabledUnitsHint')}</p>
+              <UnitMultiPicker units={units} rootId={rootId} value={d.disabledUnitIds} onChange={(ids) => set('disabledUnitIds', ids)} />
+              {ownerOff && <p className="mt-2 text-[12px] text-danger" data-owner-off>{t('catalog.services.ownerOff')}</p>}
+            </div>
           </div>
         )}
 
@@ -146,7 +179,7 @@ export function ServiceTypeDrawer({ open, onClose, initial, categories, branches
             {willBind && <p className="text-[12px] text-brand-ink" data-will-bind>{t('catalog.services.willBind', { name: chosen!.name })}</p>}
             {copies.length > 0 && (
               <Checkbox checked={bindCopies} onChange={(e) => setBindCopies(e.target.checked)} data-bind-copies
-                label={<span className="text-[12.5px]">{t('catalog.services.bindCopies', { n: copies.length, branches: [...new Set(copies.flatMap((tp) => tp.branchIds.map(branchName)).filter(Boolean))].join(', ') })}</span>} />
+                label={<span className="text-[12.5px]">{t('catalog.services.bindCopies', { n: copies.length, units: copyUnits })}</span>} />
             )}
           </div>
         )}</Field>

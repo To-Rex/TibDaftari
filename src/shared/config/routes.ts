@@ -30,8 +30,11 @@ export const routes = {
   },
   admin: {
     root: '/admin',
-    company: '/admin/company',
-    branches: '/admin/branches',
+    /** the administered unit's own card (profile, settings) */
+    unit: '/admin/unit',
+    /** the units under it: viloyatlar / tumanlar / muassasalar */
+    units: '/admin/units',
+    unitDetail: (id = ':unitId') => `/admin/units/${id}`,
     employees: '/admin/employees',
     employee: (id = ':employeeId') => `/admin/employees/${id}`,
     roles: '/admin/roles',

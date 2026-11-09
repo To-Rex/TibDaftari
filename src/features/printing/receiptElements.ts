@@ -3,18 +3,42 @@
  * so a thermal printer and the browser print dialog produce the same document.
  */
 import type { TFunction } from 'i18next'
-import type { ReceiptProps } from '@/features/reception/Receipt'
+import type { Order, OrderItem, Payment } from '@/domain'
 import { paymentMethodLabel } from '@/features/orders/status'
 import { fmtDateTime, fmtMoney, fmtPhone } from '@/shared/lib/format'
 import type { PrintElement } from './tprints'
 
-export function buildReceiptElements({ order, items, payments, company, branch, cashier }: ReceiptProps, t: TFunction): PrintElement[] {
+/** Letterhead card of a unit: the organisation's name heads the cheque, the facility's name / address / phone follow. */
+export interface ReceiptUnitCard { name: string; phone?: string | null; address?: string | null }
+
+/**
+ * What the built-in cheque prints: the cheque itself plus the organisation (`org` — the unit above the facility)
+ * and the facility (`unit`). `company` / `branch` are accepted as ALIASES of `org` / `unit` for callers written
+ * before the organisation tree.
+ */
+export interface ReceiptPrintData {
+  order: Order
+  items: OrderItem[]
+  payments: Payment[]
+  org?: ReceiptUnitCard | null
+  unit?: ReceiptUnitCard | null
+  /** alias of `org` */
+  company?: ReceiptUnitCard | null
+  /** alias of `unit` */
+  branch?: ReceiptUnitCard | null
+  cashier?: string
+}
+
+export function buildReceiptElements(data: ReceiptPrintData, t: TFunction): PrintElement[] {
+  const { order, items, payments, cashier } = data
+  const org = data.org ?? data.company
+  const unit = data.unit ?? data.branch
   const live = items.filter((i) => i.status !== 'cancelled')
   const remaining = Math.max(0, order.total - order.paidAmount)
-  const phone = branch?.phone ?? company?.phone
+  const phone = unit?.phone ?? org?.phone
   const el: PrintElement[] = []
-  if (company?.name) el.push({ type: 'title', value: company.name, size: 2 })
-  if (branch) el.push({ type: 'text', value: `${branch.name}${branch.address ? `, ${branch.address}` : ''}`, align: 'center' })
+  if (org?.name) el.push({ type: 'title', value: org.name, size: 2 })
+  if (unit) el.push({ type: 'text', value: `${unit.name}${unit.address ? `, ${unit.address}` : ''}`, align: 'center' })
   if (phone) el.push({ type: 'text', value: fmtPhone(phone), align: 'center' })
   el.push({ type: 'line', char: '=' })
   el.push({ type: 'row', left: t('staff.reception.receipt.number'), right: order.number, bold: true })

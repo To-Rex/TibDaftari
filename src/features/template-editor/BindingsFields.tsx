@@ -1,18 +1,22 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Check } from 'lucide-react'
-import type { Branch, Category, ServiceType } from '@/domain'
+import type { Category, Id, OrgUnit, ServiceType } from '@/domain'
+import { UnitMultiPicker } from '@/features/org/UnitPicker'
 import { cn } from '@/shared/lib/cn'
 import { Badge, Field, SearchInput, Segmented, Select } from '@/shared/ui'
 import { categoryPath } from '@/features/catalog/tree'
 
-export interface Bindings { serviceTypeIds: string[]; categoryIds: string[]; branchIds: string[]; scope: 'item' | 'order' | 'receipt'; language: 'uz' | 'ru' | 'en' }
+/** `unitIds`: units (and their subtrees) the template is limited to — empty = the owner's whole subtree. */
+export interface Bindings { serviceTypeIds: string[]; categoryIds: string[]; unitIds: string[]; scope: 'item' | 'order' | 'receipt'; language: 'uz' | 'ru' | 'en' }
 
-/** Shared form body: bind template to service types (searchable multi-select) / categories, scope, language. */
-export function BindingsFields({ value, onChange, serviceTypes, categories, branches, kind, branchError }: {
-  value: Bindings; onChange: (b: Bindings) => void; serviceTypes: ServiceType[]; categories: Category[]; branches?: Branch[]
-  /** shown under the branch picker (e.g. "choose a branch" on create) */
-  branchError?: string
+/** Shared form body: bind template to service types (searchable multi-select) / categories, units, scope, language. */
+export function BindingsFields({ value, onChange, serviceTypes, categories, units, rootId, kind }: {
+  value: Bindings; onChange: (b: Bindings) => void; serviceTypes: ServiceType[]; categories: Category[]
+  /** the visible organisation tree (flat); without it the unit binding is not shown */
+  units?: OrgUnit[]
+  /** the template's owner (or the scope): only units under it can be chosen */
+  rootId?: Id
   /** which library the template belongs to: a cheque keeps its scope, a result document picks item/order (default: from the scope) */
   kind?: 'result' | 'receipt'
 }) {
@@ -25,8 +29,6 @@ export function BindingsFields({ value, onChange, serviceTypes, categories, bran
   }, [serviceTypes, q])
   const toggle = (id: string) => onChange({ ...value, serviceTypeIds: value.serviceTypeIds.includes(id) ? value.serviceTypeIds.filter((x) => x !== id) : [...value.serviceTypeIds, id] })
   const toggleCat = (id: string) => onChange({ ...value, categoryIds: value.categoryIds.includes(id) ? value.categoryIds.filter((x) => x !== id) : [...value.categoryIds, id] })
-  // a template belongs to ONE branch (each branch owns its templates); picking another chip moves it there
-  const pickBranch = (id: string) => onChange({ ...value, branchIds: [id] })
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-3">
@@ -39,15 +41,12 @@ export function BindingsFields({ value, onChange, serviceTypes, categories, bran
           </Select>
         )}</Field>
       </div>
-      {branches && branches.length > 1 && (
-        <Field label={t('catalog.templates.bindBranch')} hint={t('catalog.templates.bindBranchHint')} error={branchError}>{() => (
-          <div className="flex flex-wrap gap-1.5" role="radiogroup" data-branch-picker>
-            {branches.map((b) => { const on = (value.branchIds ?? []).includes(b.id); return (
-              <button key={b.id} type="button" onClick={() => pickBranch(b.id)} role="radio" aria-checked={on}
-                className={cn('inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium transition-colors', on ? 'border-brand bg-brand-soft/60 text-brand-ink' : 'border-line hover:border-line-strong text-ink-2')}>
-                {on && <Check className="size-3.5" />}{b.name}
-              </button>
-            ) })}
+      {units && units.length > 0 && (
+        <Field label={t('catalog.templates.bindUnits')} hint={t('catalog.templates.bindUnitsHint')}>{() => (
+          <div data-unit-picker>
+            {/* units of the owner's subtree only (`rootId`): a template can never reach above its owner */}
+            <UnitMultiPicker units={units} rootId={rootId} value={value.unitIds ?? []} onChange={(unitIds) => onChange({ ...value, unitIds })} />
+            {!(value.unitIds ?? []).length && <p className="mt-1.5 text-[12px] text-ink-3">{t('catalog.templates.allUnits')}</p>}
           </div>
         )}</Field>
       )}

@@ -1,16 +1,31 @@
 import type { Id, IsoDateTime } from '../common'
+import type { UnitLevel } from '../org'
 import type { Permission } from './permissions'
 
 export type Actor = 'staff' | 'patient'
 
-/** Session for a staff member (superadmin / admin / employee). */
+/** The employee's home unit as the API returns it with the session (enough for the first paint). */
+export interface SessionUnit {
+  id: Id
+  level: UnitLevel
+  name: string
+  code?: string | null
+  countryId: Id
+  /** "O‘zbekiston Respublikasi › Xorazm viloyati › Bog‘ot tumani › Bog‘ot tumani SES" */
+  path: string
+}
+
+/** Session for a staff member (superadmin / administrator / employee). */
 export interface StaffSession {
   actor: 'staff'
   employeeId: Id
-  companyId: Id
-  branchId: Id | null // null = company-wide (admin) — UI asks to pick a branch when needed
-  /** branches the employee is assigned to; only superadmin/admin may work outside them */
-  branchIds: Id[]
+  /** home unit (any level of the tree); null for a superadmin, who picks any unit */
+  unitId: Id | null
+  /** every scope root of the employee (home + extra units): they may work in these subtrees */
+  unitIds: Id[]
+  unit: SessionUnit | null
+  /** the home unit when it is a facility — where this employee's cheques are written */
+  facilityId: Id | null
   isSuperAdmin: boolean
   roleKey: string
   fullName: string

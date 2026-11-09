@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
-import { ArrowUpRight, GitBranch, Globe, Plus, Printer, Settings2, User, Wallet } from 'lucide-react'
+import { ArrowUpRight, Globe, Hospital, Plus, Printer, Settings2, User, Wallet } from 'lucide-react'
 import { repos } from '@/data'
 import type { OrderItem, Payment } from '@/domain'
 import { Badge, Button, Card, EmptyState, Page, PageHeader, Skeleton, toast } from '@/shared/ui'
@@ -11,8 +11,8 @@ import { errorMessage } from '@/shared/lib/errors'
 import { cn } from '@/shared/lib/cn'
 import { fmtDateTime, fmtMoney, fmtPhone } from '@/shared/lib/format'
 import { routes } from '@/shared/config/routes'
-import { usePermissions } from '@/features/auth/store'
-import { useStaffSession } from '@/features/session/useSession'
+import { useAuth, usePermissions, useStaffScope } from '@/features/auth/store'
+import { useUnitTree, useUnitTreeShape } from '@/features/org/queries'
 import { useAddItems, useOrder, useRemoveItem } from '@/features/orders/queries'
 import { LATE_EDIT, paymentLocked, removeLocked } from '@/features/orders/paymentWindow'
 import { EditPaymentModal } from '@/features/reception/EditPaymentModal'
@@ -32,7 +32,9 @@ import { PrintSettingsModal } from '@/features/printing/PrintSettingsModal'
 export default function OrderPage() {
   const { t } = useTranslation()
   const { orderId = '' } = useParams()
-  const { companyId, employeeId, staff } = useStaffSession()
+  const { scopeId } = useStaffScope()
+  const staff = useAuth((s) => s.staff)!
+  const employeeId = staff.employeeId
   const { can, isSuperAdmin } = usePermissions()
   const q = useOrder(orderId)
   const addItems = useAddItems(orderId)
@@ -51,15 +53,17 @@ export default function OrderPage() {
   const items = useMemo(() => q.data?.items ?? [], [q.data])
   const payments = useMemo(() => q.data?.payments ?? [], [q.data])
 
-  const company = useQuery({ queryKey: ['company', companyId], queryFn: () => repos.tenant.getCompany(companyId), staleTime: 300_000 })
-  const branches = useQuery({ queryKey: ['branches', companyId], queryFn: () => repos.tenant.listBranches(companyId), staleTime: 300_000 })
+  // the cheque's facility and the organisation above it (the nearest non-facility unit) — the built-in cheque's letterhead
+  const tree = useUnitTree()
+  const shape = useUnitTreeShape(tree.data)
+  const unit = order ? shape.byId.get(order.unitId) : undefined
+  const org = useMemo(() => (order ? shape.ancestors(order.unitId).filter((u) => u.level !== 'facility').at(-1) : undefined), [shape, order])
   const creator = useQuery({ queryKey: ['employee', order?.createdByEmployeeId], queryFn: () => repos.staff.getEmployee(order!.createdByEmployeeId), enabled: !!order, staleTime: 300_000 })
-  const branch = branches.data?.find((b) => b.id === order?.branchId)
   // one receipt object feeds both the hidden print sheet and the TPrints job
-  const receipt: ReceiptProps = { order: order!, items, payments, company: company.data, branch, cashier: creator.data?.fullName ?? staff.fullName }
-  // an active receipt template of the order's branch (designed in Andozalar) replaces the built-in cheque layout
-  const templates = useTemplates(companyId, {})
-  const receiptTemplateId = useMemo(() => pickReceiptTemplate(templates.data ?? [], order?.branchId)?.id, [templates.data, order?.branchId])
+  const receipt: ReceiptProps = { order: order!, items, payments, org: org ? { name: org.shortName ?? org.name, phone: org.phone, address: org.address } : null, unit, cashier: creator.data?.fullName ?? staff.fullName }
+  // an active receipt template of the cheque's facility (designed in Andozalar) replaces the built-in cheque layout
+  const templates = useTemplates(scopeId, {})
+  const receiptTemplateId = useMemo(() => pickReceiptTemplate(templates.data ?? [], order?.unitId)?.id, [templates.data, order?.unitId])
   const inOrder = useMemo(() => new Set(items.filter((i) => i.status !== 'cancelled').map((i) => i.serviceTypeId)), [items])
   // money taken more than a day ago: reception can't give it back any more (admin / rahbar / superadmin can)
   const lateEdit = can(LATE_EDIT) || isSuperAdmin
@@ -92,7 +96,7 @@ export default function OrderPage() {
           <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13.5px]">
             <Link to={routes.app.patient(order.patientId)} className="group inline-flex min-w-0 items-center gap-1.5 font-medium text-ink hover:text-brand-ink"><User className="size-4 shrink-0 text-ink-3" /><span className="break-words">{order.patientName}</span><ArrowUpRight className="size-3.5 opacity-0 transition-opacity group-hover:opacity-100" /></Link>
             <span className="tabular">{fmtPhone(order.patientPhone)}</span>
-            <span className="inline-flex items-center gap-1.5"><GitBranch className="size-4 text-ink-3" />{branch?.name ?? '—'}</span>
+            <span className="inline-flex items-center gap-1.5"><Hospital className="size-4 text-ink-3" />{order.unitName ?? unit?.name ?? '—'}</span>
             <span className="text-ink-3 tabular">{fmtDateTime(order.createdAt)}{creator.data ? ` · ${creator.data.fullName}` : ''}</span>
           </span>
         ) : undefined}
@@ -111,7 +115,7 @@ export default function OrderPage() {
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
               <Card className="flex h-[min(560px,80dvh)] min-w-0 flex-col max-sm:p-4">
                 <div className="mb-3 flex items-center gap-2"><span className="grid size-8 place-items-center rounded-lg bg-brand-soft text-brand-ink"><Plus className="size-4" /></span><h3 className="text-[15px] font-semibold">{t('staff.reception.addService')}</h3></div>
-                {order && <ServicePicker companyId={companyId} branchId={order.branchId} inOrder={inOrder} onAdd={(id) => void onAdd(id)} adding={adding} disabled={addItems.isPending} />}
+                {order && <ServicePicker unitId={order.unitId} inOrder={inOrder} onAdd={(id) => void onAdd(id)} adding={adding} disabled={addItems.isPending} />}
               </Card>
             </motion.div>
           )}

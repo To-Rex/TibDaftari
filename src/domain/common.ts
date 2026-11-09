@@ -7,7 +7,7 @@ export type Money = number // integer UZS (tiyin-free); formatted in UI
 
 export type Locale = 'uz' | 'ru' | 'en'
 
-/** Server-style paged response — the future FastAPI contract. */
+/** Server-style paged response (FastAPI contract). */
 export interface Page<T> {
   items: T[]
   page: number
@@ -30,10 +30,12 @@ export interface AuditStamp {
   createdBy?: Id
 }
 
-/** Every tenant-owned entity carries these. */
-export interface TenantScoped {
-  companyId: Id
-  branchId?: Id
+/** Every operational row (cheque, payment, document, message…) belongs to the facility that did the work. */
+export interface UnitScoped {
+  /** the facility (`OrgUnit` with level `facility`) */
+  unitId: Id
+  /** its name, resolved by the API for lists */
+  unitName?: string | null
 }
 
 export const emptyPage = <T>(pageSize = 20): Page<T> => ({

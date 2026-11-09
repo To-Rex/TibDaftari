@@ -4,11 +4,14 @@ import type { AuditStamp, Id, Money } from './common'
    Catalog = Category tree → ServiceType (analysis / disease / service)
    → AttributeSchema (dynamic fields whose values are entered per order
    item and later bound into result templates).
+   Every catalogue row is OWNED by a unit of the organisation tree (`ownerUnitId`, any level) and is visible to
+   the owner's whole subtree: a national catalogue on the country node, regional additions on a viloyat, a
+   facility's own services on the facility.
 ------------------------------------------------------------------- */
 
 export interface Category extends AuditStamp {
   id: Id
-  companyId: Id
+  ownerUnitId: Id
   parentId: Id | null
   name: string
   code?: string
@@ -18,7 +21,7 @@ export interface Category extends AuditStamp {
   isActive: boolean
   /** department phone printed on result documents ({category.phone}); legacy `category.tel_lab` */
   phone?: string
-  /** Which workflow this branch of the tree follows. New modules add kinds. */
+  /** Which workflow this part of the tree follows. New modules add kinds. */
   workflow: WorkflowKind
 }
 
@@ -31,16 +34,20 @@ export type WorkflowKind =
 
 export interface ServiceType extends AuditStamp {
   id: Id
-  companyId: Id
+  ownerUnitId: Id
   categoryId: Id
   name: string
   code?: string
   description?: string
+  /** base price */
   price: Money
-  /** branch-specific price override; falls back to price */
-  branchPrices: Record<Id, Money>
-  /** branches where the service is switched off — not offered at reception there; empty = every branch */
-  disabledBranchIds: Id[]
+  /** price overrides per unit — apply to that unit and everything under it (nearest level wins) */
+  unitPrices: Record<Id, Money>
+  /** units where the service is switched off (and everything under them); empty = offered everywhere */
+  disabledUnitIds: Id[]
+  /** when listed for a unit: the price / availability in effect there */
+  effectivePrice?: Money | null
+  available?: boolean | null
   turnaroundDays: number
   order: number
   isActive: boolean
@@ -53,9 +60,19 @@ export interface ServiceType extends AuditStamp {
   stats?: { ordered30d: number }
 }
 
-/** Is the service offered in this branch? No branch (company-wide views) hides nothing. */
-export const serviceAvailableIn = (s: Pick<ServiceType, 'disabledBranchIds'>, branchId: Id | null | undefined): boolean =>
-  !branchId || !(s.disabledBranchIds ?? []).includes(branchId)
+/** Is the service offered at this unit? Prefers the API's `available`; without a unit (management views) hides nothing. */
+export const serviceAvailableIn = (s: Pick<ServiceType, 'disabledUnitIds' | 'available'>, unitId: Id | null | undefined): boolean => {
+  if (!unitId) return true
+  if (s.available != null) return s.available
+  return !(s.disabledUnitIds ?? []).includes(unitId)
+}
+
+/** The price in effect for a unit: the API's `effectivePrice`, else the unit's own override, else the base price. */
+export const servicePriceIn = (s: Pick<ServiceType, 'price' | 'unitPrices' | 'effectivePrice'>, unitId: Id | null | undefined): Money => {
+  if (s.effectivePrice != null) return s.effectivePrice
+  if (unitId && s.unitPrices && s.unitPrices[unitId] != null) return s.unitPrices[unitId]
+  return s.price
+}
 
 /* ---------------------------- Attribute schema ---------------------------- */
 
@@ -146,7 +163,7 @@ export type FieldDef =
 
 export interface AttributeSchema extends AuditStamp {
   id: Id
-  companyId: Id
+  ownerUnitId: Id
   name: string
   description?: string
   version: number

@@ -12,13 +12,14 @@ import { deliveredVia, documentTitle, isRecent } from '../status'
 
 export function ResultRow({
   doc,
-  clinic,
+  place,
   orderNumber,
   showChannels,
   className,
 }: {
   doc: ResultDocument
-  clinic?: string
+  /** where it was made — "Tashkilot · Muassasa" (see `placeNames`) */
+  place?: string
   orderNumber?: string
   showChannels?: boolean
   className?: string
@@ -43,8 +44,8 @@ export function ResultRow({
         <div className="min-w-0 flex-1">
           <p className="text-ink line-clamp-2 text-[14.5px] font-medium xs:truncate">{documentTitle(doc)}</p>
           <p className="text-ink-3 mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[12.5px]">
-            {clinic && <span className="max-w-full truncate">{clinic}</span>}
-            {clinic && orderNumber && <span aria-hidden>·</span>}
+            {place && <span className="max-w-full truncate">{place}</span>}
+            {place && orderNumber && <span aria-hidden>·</span>}
             {orderNumber && <span className="tabular">{orderNumber}</span>}
             {/* watch/tiny phones: status + date move into the meta line */}
             <span className="tabular text-ok xs:hidden">· {t('portal.status.approved')} · {fmtDate(doc.createdAt)}</span>

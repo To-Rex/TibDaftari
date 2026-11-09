@@ -59,8 +59,6 @@ const receptionUz = {
   recentOrders: 'Oxirgi cheklar',
   noOrders: 'Hali chek yo‘q',
   orderCreated: 'Chek ochildi',
-  pickBranch: 'Filialni tanlang',
-  pickBranchHint: 'Chek qaysi filialda ochilsin?',
   items: 'Xizmatlar',
   noItems: 'Chek bo‘sh',
   noItemsHint: 'Quyidagi ro‘yxatdan xizmat tanlang — bir bosishda qo‘shiladi',
@@ -160,6 +158,7 @@ const patientsUz = {
   noDocs: 'Natijalar yo‘q',
   noDocsHint: 'Vrach tasdiqlagan natijalar shu yerda ko‘rinadi',
   docFinal: 'Tayyor',
+  registeredAt: 'Ro‘yxatga olingan muassasa',
   form: {
     titleNew: 'Yangi bemor',
     subtitleNew: 'F.I.Sh. va telefon yetarli — qolganini keyin to‘ldirish mumkin',
@@ -172,7 +171,7 @@ const patientsUz = {
     secDocs: 'Hujjatlar',
     secDocsHint: 'takrorlanishni aniqlash uchun',
     secExtra: 'Qo‘shimcha',
-    namePh: 'Familiya Ism Sharif', genderHint: 'Bemor jinsini belgilang — natija blankasi va me’yorlar shunga qarab shakllanadi', geoFromBranch: 'Filial joylashuvi bo‘yicha to‘ldirildi — o‘zgartirish mumkin',
+    namePh: 'Familiya Ism Sharif', genderHint: 'Bemor jinsini belgilang — natija blankasi va me’yorlar shunga qarab shakllanadi', geoFromUnit: 'Muassasa joylashuvi bo‘yicha to‘ldirildi — o‘zgartirish mumkin',
     passport: 'Passport seriya va raqami',
     pinfl: 'JSHSHIR (PINFL)',
     region: 'Viloyat',
@@ -270,6 +269,7 @@ const ordersUz = {
   del: 'O‘chirish', delTitle: 'Chekni o‘chirish', delHint: '{{number}} raqamli chek butunlay o‘chiriladi. Bu amalni qaytarib bo‘lmaydi.', delConfirm: 'O‘chirish', deleted: 'Chek o‘chirildi',
   capPeriod: 'Davr', capAllDays: 'barcha kunlar', capStatus: 'Holat', capPayment: 'To‘lov', capSearch: 'Qidiruv', capSort: 'Saralash',
   sumCount: 'Cheklar:', sumTotal: 'Jami:', sumPaid: 'To‘langan:', sumDebt: 'Qarz:', sumNote: 'Summalar bekor qilingan cheklarsiz; to‘lov turlari — qaytarilmagan to‘lovlar',
+  colUnit: 'Muassasa', unit: 'Muassasa', unitHint: 'Boshqaruvingizdagi muassasalardan birini yoki hammasini tanlang', unitCurrent: 'Joriy muassasa ({{name}})', unitAll: 'Barcha muassasalar',
 }
 const commonUz = {
   orderStatus: { draft: 'Qoralama', open: 'Ochiq', in_progress: 'Jarayonda', completed: 'Yakunlangan', cancelled: 'Bekor qilingan' },
@@ -298,7 +298,6 @@ const receptionRu = {
   noMatch: 'Пациент не найден', noMatchHint: 'Проверьте написание или добавьте нового пациента', newPatient: 'Новый пациент',
   lastVisit: 'Последний визит', ordersShort: 'чек.', itemsShort: 'услуг', pickPatientTitle: 'Пациент не выбран', pickPatientHint: 'Выберите пациента слева — здесь появятся его данные и чеки',
   yearsOld: 'лет', discount: 'Скидка', statOrders: 'Чеки', statSpent: 'Всего оплачено', newOrder: 'Новый чек', recentOrders: 'Последние чеки', noOrders: 'Чеков пока нет', orderCreated: 'Чек открыт',
-  pickBranch: 'Выберите филиал', pickBranchHint: 'В каком филиале открыть чек?',
   items: 'Услуги', noItems: 'Чек пуст', noItemsHint: 'Выберите услугу из списка ниже — добавляется одним нажатием', colService: 'Услуга', colCategory: 'Направление', colFinal: 'Итого',
   addService: 'Добавить услугу', serviceSearchPh: 'Название или код услуги…', servicesCount: 'услуг', inOrder: 'в чеке',
   totals: 'Счёт', subtotal: 'Сумма услуг', paid: 'Оплачено', remaining: 'Остаток', pay: 'Принять оплату', payTitle: 'Принять оплату', payConfirm: 'Принять {{amount}}',
@@ -324,11 +323,12 @@ const patientsRu = {
   colAge: 'Возраст · дата рожд.', colLastVisit: 'Последний визит', colOrders: 'Чеки', colSpent: 'Всего оплачено', colDiscount: 'Скидка', colCreated: 'Зарегистрирован',
   tabOrders: 'Чеки', tabResults: 'Результаты', tabInfo: 'Данные', portal: 'Кабинет', portalLinked: 'Подключён', portalNotLinked: 'Не подключён',
   noDocs: 'Результатов нет', noDocsHint: 'Подтверждённые врачом результаты появятся здесь', docFinal: 'Готов',
+  registeredAt: 'Учреждение регистрации',
   form: {
     titleNew: 'Новый пациент', subtitleNew: 'Достаточно ФИО и телефона — остальное можно заполнить позже', titleEdit: 'Редактировать пациента',
     create: 'Зарегистрировать', createAnyway: 'Всё равно создать', savedNew: 'Пациент зарегистрирован', savedEdit: 'Изменения сохранены',
     secMain: 'Основное', secDocs: 'Документы', secDocsHint: 'для поиска дубликатов', secExtra: 'Дополнительно',
-    namePh: 'Фамилия Имя Отчество', genderHint: 'Укажите пол пациента — от него зависят бланк результата и нормы', geoFromBranch: 'Заполнено по расположению филиала — можно изменить', passport: 'Серия и номер паспорта', pinfl: 'ПИНФЛ', region: 'Область', district: 'Район / город', street: 'Улица, дом', streetPh: 'Например: ул. Амира Темура, 12',
+    namePh: 'Фамилия Имя Отчество', genderHint: 'Укажите пол пациента — от него зависят бланк результата и нормы', geoFromUnit: 'Заполнено по расположению учреждения — можно изменить', passport: 'Серия и номер паспорта', pinfl: 'ПИНФЛ', region: 'Область', district: 'Район / город', street: 'Улица, дом', streetPh: 'Например: ул. Амира Темура, 12',
     workplace: 'Место работы', discount: 'Скидка', contract: 'Номер договора', note: 'Примечание',
     errName: 'Введите полное имя (минимум 3 символа)', errPhone: 'Номер телефона должен содержать 9 цифр', errPinfl: 'ПИНФЛ состоит из 14 цифр', errDiscount: 'От 0 до 100',
     dupTitle: 'Возможный дубликат', dupHint: 'Пациент с таким телефоном / паспортом / ПИНФЛ уже существует. Откройте его или всё равно создайте нового.', openExisting: 'Открыть',
@@ -381,6 +381,7 @@ const ordersRu = {
   del: 'Удалить', delTitle: 'Удалить чек', delHint: 'Чек {{number}} будет удалён безвозвратно.', delConfirm: 'Удалить', deleted: 'Чек удалён',
   capPeriod: 'Период', capAllDays: 'все дни', capStatus: 'Статус', capPayment: 'Оплата', capSearch: 'Поиск', capSort: 'Сортировка',
   sumCount: 'Чеков:', sumTotal: 'Итого:', sumPaid: 'Оплачено:', sumDebt: 'Долг:', sumNote: 'Суммы без отменённых чеков; способы оплаты — невозвращённые оплаты',
+  colUnit: 'Учреждение', unit: 'Учреждение', unitHint: 'Выберите одно из учреждений под вашим управлением или все', unitCurrent: 'Текущее учреждение ({{name}})', unitAll: 'Все учреждения',
 }
 const commonRu = {
   orderStatus: { draft: 'Черновик', open: 'Открыт', in_progress: 'В работе', completed: 'Завершён', cancelled: 'Отменён' },
@@ -409,7 +410,6 @@ const receptionEn = {
   noMatch: 'No patient found', noMatchHint: 'Check the spelling or add a new patient', newPatient: 'New patient',
   lastVisit: 'Last visit', ordersShort: 'orders', itemsShort: 'items', pickPatientTitle: 'No patient selected', pickPatientHint: 'Pick a patient on the left — their details and orders will appear here',
   yearsOld: 'y.o.', discount: 'Discount', statOrders: 'Orders', statSpent: 'Total paid', newOrder: 'New order', recentOrders: 'Recent orders', noOrders: 'No orders yet', orderCreated: 'Order opened',
-  pickBranch: 'Choose a branch', pickBranchHint: 'Which branch should the order be opened in?',
   items: 'Services', noItems: 'Order is empty', noItemsHint: 'Pick a service from the list below — added with one click', colService: 'Service', colCategory: 'Category', colFinal: 'Final',
   addService: 'Add service', serviceSearchPh: 'Service name or code…', servicesCount: 'services', inOrder: 'in order',
   totals: 'Bill', subtotal: 'Services subtotal', paid: 'Paid', remaining: 'Remaining', pay: 'Take payment', payTitle: 'Take payment', payConfirm: 'Take {{amount}}',
@@ -435,11 +435,12 @@ const patientsEn = {
   colAge: 'Age · birth date', colLastVisit: 'Last visit', colOrders: 'Orders', colSpent: 'Total paid', colDiscount: 'Discount', colCreated: 'Registered',
   tabOrders: 'Orders', tabResults: 'Results', tabInfo: 'Details', portal: 'Portal', portalLinked: 'Linked', portalNotLinked: 'Not linked',
   noDocs: 'No results', noDocsHint: 'Doctor-approved results will appear here', docFinal: 'Final',
+  registeredAt: 'Registered at',
   form: {
     titleNew: 'New patient', subtitleNew: 'Full name and phone are enough — the rest can be filled in later', titleEdit: 'Edit patient',
     create: 'Register', createAnyway: 'Create anyway', savedNew: 'Patient registered', savedEdit: 'Changes saved',
     secMain: 'Main', secDocs: 'Documents', secDocsHint: 'used to detect duplicates', secExtra: 'Additional',
-    namePh: 'Last name First name Middle name', genderHint: 'Set the patient’s gender — the result sheet and reference ranges depend on it', geoFromBranch: 'Prefilled from the branch location — you can change it', passport: 'Passport series and number', pinfl: 'PINFL', region: 'Region', district: 'District / city', street: 'Street, house', streetPh: 'e.g. Amir Temur street, 12',
+    namePh: 'Last name First name Middle name', genderHint: 'Set the patient’s gender — the result sheet and reference ranges depend on it', geoFromUnit: 'Prefilled from the facility location — you can change it', passport: 'Passport series and number', pinfl: 'PINFL', region: 'Region', district: 'District / city', street: 'Street, house', streetPh: 'e.g. Amir Temur street, 12',
     workplace: 'Workplace', discount: 'Discount', contract: 'Contract number', note: 'Note',
     errName: 'Enter the full name (at least 3 characters)', errPhone: 'Phone number must have 9 digits', errPinfl: 'PINFL is 14 digits', errDiscount: 'Between 0 and 100',
     dupTitle: 'Possible duplicate', dupHint: 'A patient with this phone / passport / PINFL already exists. Open them or create a new one anyway.', openExisting: 'Open',
@@ -492,6 +493,7 @@ const ordersEn = {
   del: 'Delete', delTitle: 'Delete order', delHint: 'Order {{number}} will be permanently deleted. This cannot be undone.', delConfirm: 'Delete', deleted: 'Order deleted',
   capPeriod: 'Period', capAllDays: 'all days', capStatus: 'Status', capPayment: 'Payment', capSearch: 'Search', capSort: 'Sort',
   sumCount: 'Orders:', sumTotal: 'Total:', sumPaid: 'Paid:', sumDebt: 'Debt:', sumNote: 'Amounts exclude cancelled orders; payment methods count non-refunded payments',
+  colUnit: 'Facility', unit: 'Facility', unitHint: 'Pick one of the facilities under your unit, or all of them', unitCurrent: 'Current facility ({{name}})', unitAll: 'All facilities',
 }
 const commonEn = {
   orderStatus: { draft: 'Draft', open: 'Open', in_progress: 'In progress', completed: 'Completed', cancelled: 'Cancelled' },

@@ -4,12 +4,12 @@ import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
 import { Activity, KeyRound, LogIn, Pencil, ShieldCheck, UserCog, UserX, UserCheck } from 'lucide-react'
 import type { PermissionOverrides } from '@/domain'
-import { useStaffSession } from '@/features/session/useSession'
-import { usePermissions } from '@/features/auth/store'
+import { useAdminScope, useAuth, usePermissions } from '@/features/auth/store'
 import { useEmployee, useSaveEmployee, useSetOverrides } from '@/features/employees/queries'
 import { EmployeeForm } from '@/features/employees/EmployeeForm'
+import { UnitLevelBadge } from '@/features/employees/UnitLevelBadge'
 import { useRoles } from '@/features/roles/queries'
-import { useBranches } from '@/features/org/queries'
+import { useUnitTree, useUnitTreeShape } from '@/features/org/queries'
 import { PermissionMatrix } from '@/features/roles/PermissionMatrix'
 import { routes } from '@/shared/config/routes'
 import { errorMessage } from '@/shared/lib/errors'
@@ -22,12 +22,14 @@ const sameOverrides = (a: PermissionOverrides, b: PermissionOverrides) => a.allo
 export default function EmployeePage() {
   const { t } = useTranslation()
   const { employeeId: routeId = '' } = useParams<{ employeeId: string }>()
-  const { companyId, employeeId: meId } = useStaffSession()
+  const { scopeId } = useAdminScope()
+  const meId = useAuth((s) => s.staff?.employeeId)
   const { can } = usePermissions()
   const canWrite = can('admin.employee.write')
   const employee = useEmployee(routeId)
-  const roles = useRoles(companyId)
-  const branches = useBranches(companyId)
+  const roles = useRoles(scopeId)
+  const tree = useUnitTree()
+  const shape = useUnitTreeShape(tree.data)
   const save = useSaveEmployee()
   const setOverrides = useSetOverrides()
   const [tab, setTab] = useState<Tab>('info')
@@ -38,6 +40,8 @@ export default function EmployeePage() {
 
   const e = employee.data
   const role = useMemo(() => roles.data?.find((r) => r.id === e?.roleId), [roles.data, e?.roleId])
+  const homeUnit = e?.unitId ? shape.byId.get(e.unitId) : undefined
+  const roleOrigin = role ? (role.scopeUnitId === null ? t('admin.roles.systemRole') : shape.byId.get(role.scopeUnitId)?.name) : undefined
   useEffect(() => { if (e) setDraft(e.overrides) }, [e])
   const dirty = e ? !sameOverrides(draft, e.overrides) : false
 
@@ -45,7 +49,7 @@ export default function EmployeePage() {
     if (!e) return
     const next = e.status === 'active' ? 'inactive' : 'active'
     try {
-      await save.mutateAsync({ companyId, id: e.id, status: next })
+      await save.mutateAsync({ scopeId, id: e.id, status: next })
       toast.success(next === 'active' ? t('admin.employees.activated') : t('admin.employees.deactivated'))
       setConfirm(false)
     } catch (err) {
@@ -77,9 +81,14 @@ export default function EmployeePage() {
           <span className="flex items-center gap-3 sm:gap-4 min-w-0">
             <Avatar name={e.fullName} hue={e.avatarHue} size="lg" className="shrink-0" />
             <span className="flex flex-col min-w-0">
-              <span className="flex items-center gap-2 flex-wrap break-words">{e.fullName}<Badge tone={e.status === 'active' ? 'ok' : 'neutral'} dot>{e.status === 'active' ? t('common.active') : t('common.inactive')}</Badge>{e.id === meId && <Badge tone="brand">{t('admin.employees.self')}</Badge>}</span>
+              <span className="flex items-center gap-2 flex-wrap break-words">
+                {e.fullName}
+                <Badge tone={e.status === 'active' ? 'ok' : 'neutral'} dot>{e.status === 'active' ? t('common.active') : t('common.inactive')}</Badge>
+                {e.isSuperAdmin && <Badge tone="accent">{t('admin.employees.superAdmin')}</Badge>}
+                {e.id === meId && <Badge tone="brand">{t('admin.employees.self')}</Badge>}
+              </span>
               <span className="text-[13.5px] font-normal text-ink-3 tracking-normal mt-0.5 break-words">
-                <span className="font-mono">@{e.login}</span> · {role?.name ?? '—'} · {t('admin.employees.lastLogin')}: {e.lastLoginAt ? fmtRelative(e.lastLoginAt) : t('admin.employees.never')}
+                <span className="font-mono">@{e.login}</span> · {role?.name ?? '—'}{e.unitName ? ` · ${e.unitName}` : ''} · {t('admin.employees.lastLogin')}: {e.lastLoginAt ? fmtRelative(e.lastLoginAt) : t('admin.employees.never')}
               </span>
             </span>
           </span>
@@ -94,16 +103,29 @@ export default function EmployeePage() {
             <div className="flex flex-col gap-5">
               <Card>
                 {editing ? (
-                  <EmployeeForm companyId={companyId} employee={e} onCancel={() => setEditing(false)} onSaved={() => setEditing(false)} />
+                  <EmployeeForm scopeId={scopeId} employee={e} onCancel={() => setEditing(false)} onSaved={() => setEditing(false)} />
                 ) : (
                   <dl className="grid gap-x-8 gap-y-4 grid-cols-[repeat(auto-fit,minmax(min(100%,220px),1fr))] text-[14px]">
                     <Item label={t('admin.employees.fullName')}>{e.fullName}</Item>
                     <Item label={t('admin.employees.login')}><span className="font-mono">{e.login}</span></Item>
                     <Item label={t('admin.employees.phone')}><span className="tabular">{e.phone || '—'}</span></Item>
                     <Item label={t('admin.employees.email')}><span className="break-all">{e.email || '—'}</span></Item>
-                    <Item label={t('admin.employees.role')}><Badge tone={role?.isSystem ? 'brand' : 'neutral'}>{role?.name ?? '—'}</Badge></Item>
-                    <Item label={t('admin.employees.branches')}>
-                      <span className="flex flex-wrap gap-1">{e.branchIds.length ? e.branchIds.map((id) => <Badge key={id}>{branches.data?.find((b) => b.id === id)?.name ?? id}</Badge>) : <span className="text-warn">{t('admin.employees.noBranch')}</span>}</span>
+                    <Item label={t('admin.employees.role')}>
+                      <span className="flex flex-wrap items-center gap-1.5">
+                        <Badge tone={role?.isSystem ? 'brand' : 'neutral'}>{role?.name ?? '—'}</Badge>
+                        {roleOrigin && <span className="text-[12.5px] text-ink-3">{roleOrigin}</span>}
+                      </span>
+                    </Item>
+                    <Item label={t('admin.employees.unit')}>
+                      {e.unitId ? (
+                        <span className="flex flex-wrap items-center gap-1.5" title={homeUnit?.path}>
+                          <span>{e.unitName ?? homeUnit?.name ?? '—'}</span>
+                          {(e.unitLevel ?? homeUnit?.level) && <UnitLevelBadge level={(e.unitLevel ?? homeUnit?.level)!} />}
+                        </span>
+                      ) : e.isSuperAdmin ? <Badge tone="accent">{t('admin.employees.superAdmin')}</Badge> : <span className="text-warn">{t('admin.employees.noUnit')}</span>}
+                    </Item>
+                    <Item label={t('admin.employees.extraUnits')}>
+                      <span className="flex flex-wrap gap-1">{e.unitIds.length ? e.unitIds.map((id) => <Badge key={id}>{shape.byId.get(id)?.name ?? id}</Badge>) : <span className="text-ink-3">—</span>}</span>
                     </Item>
                     <Item label={t('admin.employees.memberSince')}><span className="tabular">{fmtDate(e.createdAt)}</span></Item>
                     <Item label={t('admin.employees.lastLogin')}><span className="tabular">{e.lastLoginAt ? fmtRelative(e.lastLoginAt) : t('admin.employees.never')}</span></Item>

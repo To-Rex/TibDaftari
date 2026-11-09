@@ -4,8 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { ArrowLeft, Eye, EyeOff, Rocket, Save } from 'lucide-react'
 import type { AttributeSchema } from '@/domain'
-import { usePermissions } from '@/features/auth/store'
-import { useStaffSession } from '@/features/session/useSession'
+import { useAdminScope, usePermissions } from '@/features/auth/store'
 import { usePublishSchema, useSaveSchema, useSchema } from '@/features/catalog/queries'
 import { FieldList } from '@/features/schema-editor/FieldList'
 import { FieldPropertyEditor } from '@/features/schema-editor/FieldPropertyEditor'
@@ -24,13 +23,13 @@ export default function SchemaEditorPage() {
   const { t } = useTranslation()
   const nav = useNavigate()
   const { schemaId } = useParams()
-  const { companyId } = useStaffSession()
+  const { scopeId } = useAdminScope()
   const { can } = usePermissions()
   const canWrite = can('admin.schema.write')
 
   const schemaQ = useSchema(schemaId)
   const ed = useSchemaEditor(schemaQ.data)
-  const save = useSaveSchema(companyId)
+  const save = useSaveSchema(scopeId)
   const publish = usePublishSchema()
   const [preview, setPreview] = useState(true)
   const isDesktop = useMediaQuery('(min-width: 1280px)')

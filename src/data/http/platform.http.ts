@@ -1,4 +1,4 @@
-/** HTTP PlatformRepository — activity across every clinic by territory (`app/modules/platform`). Superadmin only. */
+/** HTTP PlatformRepository — territory statistics over the organisation tree (`app/modules/platform`). */
 import type { RegionStats } from '@/domain'
 import type { PlatformRepository } from '@/data/repositories'
 import { api } from './client'

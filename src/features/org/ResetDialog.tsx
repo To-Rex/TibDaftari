@@ -1,13 +1,15 @@
 /**
- * Superadmin reset ("like newborn") of a company or one branch. Shows what each part would remove (a preview from
- * the API), lets the superadmin choose the parts (dependencies follow automatically), and only resets after the
- * company slug / branch code is typed and the irreversibility is acknowledged. Irreversible by design.
+ * Superadmin reset ("like newborn") of a unit and everything under it. Shows what each part would remove (a preview
+ * from the API), lets the superadmin choose the parts (dependencies follow automatically), and only resets after the
+ * confirmation word — the facility code, else the unit name — is typed and the irreversibility is acknowledged.
+ * The parts differ by level: a facility offers orders, patients, templates, staff, prices; a unit above it also
+ * catalog and the units under it. Irreversible by design.
  */
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { CheckCircle2, ShieldCheck, TriangleAlert } from 'lucide-react'
-import type { ResetPreview, ResetResult, ResetTarget } from '@/domain'
+import { CircleCheck, ShieldCheck, TriangleAlert } from 'lucide-react'
+import type { Id, ResetPreview, ResetResult } from '@/domain'
 import { repos } from '@/data'
 import { useAuth } from '@/features/auth/store'
 import { cn } from '@/shared/lib/cn'
@@ -39,33 +41,33 @@ const withoutDependents = (keys: Set<string>, removed: string, parts: ResetPrevi
   return out
 }
 
-export function ResetDialog({ target, id, open, onClose, onDone }: {
-  target: ResetTarget
-  id: string | null
+export function ResetDialog({ unitId, open, onClose, onDone }: {
+  unitId: Id | null
   open: boolean
   onClose: () => void
   onDone?: (r: ResetResult) => void
 }) {
   const { t } = useTranslation()
   const qc = useQueryClient()
-  const preview = useQuery({ queryKey: ['reset-preview', target, id], queryFn: () => repos.tenant.resetPreview(target, id!), enabled: open && !!id, staleTime: 0, gcTime: 0 })
+  const preview = useQuery({ queryKey: ['unit-reset-preview', unitId], queryFn: () => repos.org.resetPreview(unitId!), enabled: open && !!unitId, staleTime: 0, gcTime: 0 })
   const parts = useMemo(() => preview.data?.parts ?? [], [preview.data])
+  // texts differ by level: a facility ("muassasa") vs a unit above it
+  const scope = preview.data?.level === 'facility' ? 'facility' : 'unit'
   const [picked, setPicked] = useState<Set<string>>(new Set())
   const [word, setWord] = useState('')
   const [ack, setAck] = useState(false)
   const [result, setResult] = useState<ResetResult | null>(null)
   // a fresh dialog starts with everything selected — "like newborn" is what this is for
-  useEffect(() => { if (open) { setWord(''); setAck(false); setResult(null) } }, [open, id])
+  useEffect(() => { if (open) { setWord(''); setAck(false); setResult(null) } }, [open, unitId])
   useEffect(() => { if (preview.data) setPicked(new Set(preview.data.parts.map((p) => p.key))) }, [preview.data])
 
   const run = useMutation({
-    mutationFn: () => repos.tenant.reset(target, id!, { parts: [...picked], confirm: word.trim() }),
+    mutationFn: () => repos.org.reset(unitId!, { parts: [...picked], confirm: word.trim() }),
     onSuccess: async (r) => {
       setResult(r)
       toast.success(t(`${R}.done`))
-      // a company without its branches: the stored branch choice points nowhere any more
-      const auth = useAuth.getState()
-      if (target === 'company' && r.parts.includes('branches') && auth.staff?.companyId === id) auth.setBranch(null)
+      // the units under it are gone: the stored facility choice may point nowhere any more
+      if (r.parts.includes('units')) useAuth.getState().setFacility(null)
       await qc.invalidateQueries()
       onDone?.(r)
     },
@@ -78,14 +80,15 @@ export function ResetDialog({ target, id, open, onClose, onDone }: {
   const canRun = wordOk && ack && picked.size > 0 && !run.isPending
   const toggle = (key: string, on: boolean) => setPicked((s) => (on ? withRequired(new Set([...s, key]), parts) : withoutDependents(s, key, parts)))
   const preset = (keys: string[]) => setPicked(withRequired(new Set(keys.filter((k) => parts.some((p) => p.key === k))), parts))
-  const countLine = (counts: Record<string, number>) => Object.entries(counts).map(([k, v]) => t(`${R}.n.${k}`, { n: fmtNumber(v) })).join(' · ')
+  const countLine = (counts: Record<string, number>) => Object.entries(counts).map(([k, v]) => t(`${R}.n.${k}`, { n: fmtNumber(v), defaultValue: `${k}: ${fmtNumber(v)}` })).join(' · ')
   const total = (counts: Record<string, number>) => Object.values(counts).reduce((a, b) => a + b, 0)
-  const partLabel = (key: string) => t(`${R}.${target}.${key}.title`)
+  const partLabel = (key: string) => t(`${R}.${scope}.${key}.title`, { defaultValue: key })
+  const partHint = (key: string) => t(`${R}.${scope}.${key}.hint`, { defaultValue: '' })
 
   return (
     <Modal open={open} onClose={() => !run.isPending && onClose()} size="lg"
-      title={t(`${R}.${target}.title`, { name: name || '…' })}
-      description={result ? undefined : t(`${R}.${target}.subtitle`)}
+      title={t(`${R}.${scope}.title`, { name: name || '…' })}
+      description={result ? undefined : t(`${R}.${scope}.subtitle`)}
       footer={result
         ? <Button onClick={onClose}>{t('common.done')}</Button>
         : <>
@@ -94,10 +97,10 @@ export function ResetDialog({ target, id, open, onClose, onDone }: {
           </>}>
       {result ? (
         <div className="flex flex-col gap-3" data-reset-result>
-          <p className="flex items-center gap-2 text-[14px] font-semibold text-ok"><CheckCircle2 className="size-5" />{t(`${R}.doneTitle`, { name })}</p>
+          <p className="flex items-center gap-2 text-[14px] font-semibold text-ok"><CircleCheck className="size-5" />{t(`${R}.doneTitle`, { name })}</p>
           <p className="text-[13px] text-ink-2">{t(`${R}.doneParts`, { parts: result.parts.map(partLabel).join(', ') })}</p>
           <ul className="grid gap-1.5 rounded-[var(--radius)] border border-line bg-surface-2/40 p-3 text-[13px] sm:grid-cols-2">
-            {Object.entries(result.counts).filter(([, v]) => v > 0).map(([k, v]) => <li key={k} className="tabular text-ink-2">{t(`${R}.n.${k}`, { n: fmtNumber(v) })}</li>)}
+            {Object.entries(result.counts).filter(([, v]) => v > 0).map(([k, v]) => <li key={k} className="tabular text-ink-2">{t(`${R}.n.${k}`, { n: fmtNumber(v), defaultValue: `${k}: ${fmtNumber(v)}` })}</li>)}
             {Object.values(result.counts).every((v) => !v) && <li className="text-ink-3">{t(`${R}.nothing`)}</li>}
           </ul>
         </div>
@@ -107,7 +110,7 @@ export function ResetDialog({ target, id, open, onClose, onDone }: {
             <TriangleAlert className="mt-0.5 size-5 shrink-0 text-danger" />
             <div className="min-w-0">
               <p className="font-semibold text-danger">{t(`${R}.irreversible`)}</p>
-              <p className="text-ink-2">{t(`${R}.${target}.scopeNote`)}</p>
+              <p className="text-ink-2">{t(`${R}.${scope}.scopeNote`)}</p>
             </div>
           </div>
 
@@ -129,7 +132,7 @@ export function ResetDialog({ target, id, open, onClose, onDone }: {
                         <Checkbox checked={on} onChange={(e) => toggle(p.key, e.target.checked)} aria-label={partLabel(p.key)} data-part={p.key} />
                         <div className="min-w-0 flex-1">
                           <p className="text-[13.5px] font-semibold text-ink">{partLabel(p.key)}</p>
-                          <p className="text-[12px] text-ink-3">{t(`${R}.${target}.${p.key}.hint`)}</p>
+                          {partHint(p.key) && <p className="text-[12px] text-ink-3">{partHint(p.key)}</p>}
                           <p className={cn('mt-0.5 text-[12px] tabular', total(p.counts) ? 'text-ink-2' : 'text-ink-3')}>{total(p.counts) ? countLine(p.counts) : t(`${R}.empty`)}</p>
                           {on && forcedBy.length > 0 && <p className="mt-0.5 text-[11.5px] text-warn">{t(`${R}.requiredBy`, { parts: forcedBy.join(', ') })}</p>}
                         </div>
@@ -137,7 +140,7 @@ export function ResetDialog({ target, id, open, onClose, onDone }: {
                     )
                   })}
                 </ul>
-                <p className="flex items-start gap-2 text-[12px] text-ink-3"><ShieldCheck className="mt-0.5 size-4 shrink-0 text-ok" />{t(`${R}.${target}.kept`)}</p>
+                <p className="flex items-start gap-2 text-[12px] text-ink-3"><ShieldCheck className="mt-0.5 size-4 shrink-0 text-ok" />{t(`${R}.${scope}.kept`)}</p>
                 <Field label={t(`${R}.typeToConfirm`, { word: confirmWord })}>
                   {(fid) => <Input id={fid} value={word} onChange={(e) => setWord(e.target.value)} placeholder={confirmWord} autoComplete="off" spellCheck={false} invalid={!!word && !wordOk} data-reset-confirm />}
                 </Field>

@@ -7,8 +7,7 @@ import { repos } from '@/data'
 import { Card, CardHeader, Page, PageHeader, Segmented, Skeleton, Stat, fadeUp, stagger } from '@/shared/ui'
 import { fmtDate, fmtMoney, fmtNumber } from '@/shared/lib/format'
 import { presetRange, type DatePreset } from '@/shared/lib/dates'
-import { useStaffSession } from '@/features/session/useSession'
-import { usePermissions } from '@/features/auth/store'
+import { useAuth, usePermissions, useStaffScope } from '@/features/auth/store'
 import { TrendChart } from '@/features/dashboard/TrendChart'
 import { CategoryBars } from '@/features/dashboard/CategoryBars'
 import { QuickActions } from '@/features/dashboard/QuickActions'
@@ -18,7 +17,9 @@ type Metric = 'revenue' | 'orders'
 
 export default function DashboardPage() {
   const { t } = useTranslation()
-  const { staff, companyId, branchId } = useStaffSession()
+  // the facility the staff app works in (every number below is its)
+  const { scopeId } = useStaffScope()
+  const staff = useAuth((s) => s.staff)!
   const { can } = usePermissions()
   // `reports.finance.recent` without finance.read: revenue of the last 7 days only (the registrar role has both now)
   const recentOnly = !can('reports.finance.read') && can('reports.finance.recent')
@@ -27,8 +28,8 @@ export default function DashboardPage() {
   const range = useMemo(() => presetRange(preset), [preset])
 
   const q = useQuery({
-    queryKey: ['dashboard', companyId, branchId, range.from, range.to],
-    queryFn: () => repos.reports.dashboard(companyId, { branchId: branchId ?? undefined, dateFrom: range.from, dateTo: range.to }),
+    queryKey: ['dashboard', scopeId, range.from, range.to],
+    queryFn: () => repos.reports.dashboard(scopeId, { dateFrom: range.from, dateTo: range.to }),
     placeholderData: (prev) => prev,
   })
   const d = q.data

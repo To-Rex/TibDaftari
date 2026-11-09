@@ -1,6 +1,10 @@
 /**
  * Shared shell for the Staff (/app) and Admin (/admin) modules:
- * collapsible sidebar, top bar with branch switcher, notifications, user menu.
+ * collapsible sidebar, top bar with the unit switchers, notifications, user menu.
+ *
+ * Scope: the admin panel works in `scopeUnitId` (the administrator's unit — a viloyat, a tuman or a facility; a
+ * superadmin picks any unit of the tree). The staff app always works in ONE facility (`facilityId`) under that
+ * scope, so no list ever mixes facilities. Both are validated against the tree the API returns.
  */
 import { useEffect, useMemo, useState, type ReactNode, useCallback } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
@@ -8,13 +12,14 @@ import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'motion/react'
 import {
-  ReceiptText, FileCheck2, LayoutDashboard, ClipboardList, Users, FlaskConical, BadgeCheck, BarChart3, MessageSquare, Building2, GitBranch, UserCog,
+  ReceiptText, FileCheck2, LayoutDashboard, ClipboardList, Users, FlaskConical, BadgeCheck, BarChart3, MessageSquare, Building2, UserCog,
   ShieldCheck, FolderTree, ListChecks, LayoutTemplate, Send, PanelLeftClose, PanelLeftOpen, Bell, LogOut, ChevronDown, Menu as MenuIcon, X, Globe2, Receipt, ArrowLeftRight,
-  Check, Loader2,
+  Check, Loader2, Map, MapPin, Hospital, Landmark,
 } from 'lucide-react'
-import type { Permission } from '@/domain'
+import type { OrgUnit, Permission, UnitLevel } from '@/domain'
 import { repos } from '@/data'
-import { canSwitchBranch, useAuth, usePermissions } from '@/features/auth/store'
+import { useAuth, usePermissions } from '@/features/auth/store'
+import { useUnitTree, useUnitTreeShape } from '@/features/org/queries'
 import { useGlobalHotkeys } from '@/features/hotkeys/useGlobalHotkeys'
 import { HotkeysButton, HotkeysHelp } from '@/features/hotkeys/HotkeysHelp'
 import { preloadRouteChunks, warmWorkspaceData } from '@/features/session/warmup'
@@ -26,55 +31,76 @@ import { storage } from '@/shared/lib/storage'
 interface NavItem { to: string; label: string; icon: ReactNode; perm?: Permission | Permission[]; end?: boolean; badge?: number; /** "G" + this letter jumps to the page */ key?: string }
 interface NavSection { title?: string; items: NavItem[] }
 
+const LEVEL_ICON: Record<UnitLevel, ReactNode> = { country: <Globe2 />, region: <Map />, district: <MapPin />, facility: <Hospital /> }
+
+/** The tree + the resolved scope unit and facility for the current session (corrects stale stored choices). */
+export function useWorkspace() {
+  const staff = useAuth((s) => s.staff)!
+  const scopeUnitId = useAuth((s) => s.scopeUnitId)
+  const facilityId = useAuth((s) => s.facilityId)
+  const setScopeUnit = useAuth((s) => s.setScopeUnit)
+  const setFacility = useAuth((s) => s.setFacility)
+  const tree = useUnitTree()
+  const shape = useUnitTreeShape(tree.data)
+  // the scope: the stored choice when it exists in the tree, else the home unit, else (superadmin) the first root
+  const scopeUnit: OrgUnit | undefined = useMemo(() => {
+    if (!tree.data) return undefined
+    return (scopeUnitId && shape.byId.get(scopeUnitId)) || (staff.unitId && shape.byId.get(staff.unitId)) || shape.roots[0]
+  }, [tree.data, scopeUnitId, staff.unitId, shape])
+  const facilities = useMemo(() => (scopeUnit ? shape.facilitiesUnder(scopeUnit.id) : []), [scopeUnit, shape])
+  // the facility: the stored one when it lies under the scope, else the home facility, else the first one
+  const facility: OrgUnit | undefined = useMemo(() => {
+    if (!scopeUnit) return undefined
+    return facilities.find((f) => f.id === facilityId) ?? facilities.find((f) => f.id === staff.facilityId) ?? facilities[0]
+  }, [scopeUnit, facilities, facilityId, staff.facilityId])
+  useEffect(() => {
+    if (scopeUnit && scopeUnit.id !== scopeUnitId) setScopeUnit(scopeUnit.id)
+  }, [scopeUnit, scopeUnitId, setScopeUnit])
+  useEffect(() => {
+    if (scopeUnit && (facility?.id ?? null) !== facilityId) setFacility(facility?.id ?? null)
+  }, [scopeUnit, facility, facilityId, setFacility])
+  return { staff, tree, shape, scopeUnit, facilities, facility, setScopeUnit, setFacility }
+}
+
 export function AppShell({ module }: { module: 'staff' | 'admin' }) {
   const { t } = useTranslation()
   const { can, isSuperAdmin } = usePermissions()
-  const staff = useAuth((s) => s.staff)!
+  const ws = useWorkspace()
+  const { scopeUnit, facility, facilities, tree } = ws
   const [collapsed, setCollapsed] = useState(() => storage.get('clinic.sidebar', false))
   const [mobileOpen, setMobileOpen] = useState(false)
   const loc = useLocation()
   useEffect(() => setMobileOpen(false), [loc.pathname])
   useEffect(() => storage.set('clinic.sidebar', collapsed), [collapsed])
-  // instant navigation: shared data prefetched once per company, route chunks loaded on idle
+
+  // the unit the pages of this module work in
+  const workUnitId = module === 'staff' ? (facility?.id ?? scopeUnit?.id ?? null) : (scopeUnit?.id ?? null)
+  // instant navigation: shared data prefetched once per unit, route chunks loaded on idle
   const qc = useQueryClient()
-  useEffect(() => { warmWorkspaceData(qc, staff.companyId, module); preloadRouteChunks() }, [qc, staff.companyId, module])
+  useEffect(() => { if (workUnitId) { warmWorkspaceData(qc, workUnitId, module); preloadRouteChunks() } }, [qc, workUnitId, module])
 
-  // The staff app always works inside ONE branch (cheques, patients, lab, confirm, reports, messages). "All branches"
-  // is an admin-panel view only: a superadmin/admin arriving here with it gets their home branch (else the first
-  // active one) before any page loads, so no list ever mixes branches.
-  const shellBranchId = useAuth((st) => st.branchId)
-  const setBranch = useAuth((st) => st.setBranch)
-  const needsBranch = module === 'staff' && !shellBranchId && canSwitchBranch(staff)
-  const shellBranches = useQuery({ queryKey: ['branches', staff.companyId], queryFn: () => repos.tenant.listBranches(staff.companyId), enabled: needsBranch })
-  useEffect(() => {
-    if (!needsBranch || !shellBranches.data) return
-    const active = shellBranches.data.filter((b) => b.isActive)
-    const pick = active.find((b) => b.id === staff.branchId) ?? active.find((b) => (staff.branchIds ?? []).includes(b.id)) ?? active[0]
-    if (pick) setBranch(pick.id)
-  }, [needsBranch, shellBranches.data, staff, setBranch])
-  // a company without any active branch has nothing to scope to — its pages open as they are
-  const waitingForBranch = needsBranch && (!shellBranches.data || shellBranches.data.some((b) => b.isActive))
+  // the staff app waits until the tree is known and a facility is picked (a scope with no facility opens as it is)
+  const waiting = !tree.data || (module === 'staff' && facilities.length > 0 && !facility)
 
-  // the sidebar counters (lab / confirm / SMS queues) follow the selected branch like the pages they point to
-  const badgeBranchId = useAuth((s) => s.branchId)
+  // the sidebar counters (lab / confirm / SMS queues) follow the unit the pages show
   const pending = useQuery({
-    queryKey: ['shell-badges', staff.companyId, badgeBranchId],
+    queryKey: ['shell-badges', workUnitId],
     queryFn: async () => {
       const today = new Date().toISOString().slice(0, 10)
-      const d = await repos.reports.dashboard(staff.companyId, { branchId: badgeBranchId ?? undefined, dateFrom: today, dateTo: today })
+      const d = await repos.reports.dashboard(workUnitId as string, { dateFrom: today, dateTo: today })
       return { lab: d.pendingLab, confirm: d.pendingApproval, sms: d.smsQueued }
     },
     refetchInterval: 30_000,
-    enabled: !waitingForBranch, // never a company-wide count while the staff app is still picking its branch
+    enabled: !waiting && !!workUnitId,
   })
 
   const sections: NavSection[] = useMemo(() => {
     if (module === 'admin') {
       return [
         { items: [{ to: routes.admin.root, label: t('nav.dashboard'), icon: <LayoutDashboard />, end: true, key: 'd' }] },
-        { title: t('nav.company'), items: [
-          { to: routes.admin.company, label: t('nav.company'), icon: <Building2 />, perm: 'admin.company.read', key: 'k' },
-          { to: routes.admin.branches, label: t('nav.branches'), icon: <GitBranch />, perm: 'admin.branch.write', key: 'f' },
+        { title: t('nav.organisation'), items: [
+          { to: routes.admin.unit, label: t('nav.unit'), icon: <Building2 />, perm: 'admin.unit.read', key: 'k' },
+          { to: routes.admin.units, label: t('nav.units'), icon: <Landmark />, perm: ['admin.unit.manage', 'admin.unit.read'], key: 'f' },
           { to: routes.admin.employees, label: t('nav.employees'), icon: <UserCog />, perm: 'admin.employee.read', key: 'x' },
           { to: routes.admin.roles, label: t('nav.roles'), icon: <ShieldCheck />, perm: 'admin.role.write', key: 'r' },
         ] },
@@ -86,7 +112,7 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
         ] },
         { title: t('common.settings'), items: [
           { to: routes.admin.sms, label: t('nav.smsSettings'), icon: <Send />, perm: 'admin.settings.write', key: 'm' },
-          ...(isSuperAdmin ? [{ to: routes.admin.platform, label: t('nav.platform'), icon: <Globe2 />, perm: 'platform.company.manage' as Permission, key: 'p' }] : []),
+          { to: routes.admin.platform, label: t('nav.territory'), icon: <Globe2 />, perm: ['platform.unit.manage', 'reports.operations.read'] as Permission[], key: 'p' },
         ] },
       ]
     }
@@ -109,7 +135,7 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
         { to: routes.app.messages, label: t('nav.messages'), icon: <MessageSquare />, perm: ['messaging.send', 'messaging.broadcast'], badge: pending.data?.sms, key: 'x' },
       ] },
     ]
-  }, [module, t, isSuperAdmin, pending.data, can])
+  }, [module, t, pending.data, can])
 
   const visible = sections.map((s) => ({ ...s, items: s.items.filter((i) => !i.perm || can(i.perm)) })).filter((s) => s.items.length)
   // keyboard: "G" + letter jumps to a page the user may open; "?" opens the reference
@@ -117,7 +143,7 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
   const [help, setHelp] = useState(false)
   const openHelp = useCallback(() => setHelp(true), [])
   useGlobalHotkeys({ nav: navHotkeys, onHelp: openHelp })
-  const canAdmin = can(['admin.company.read', 'admin.employee.read', 'admin.catalog.read', 'admin.template.read'])
+  const canAdmin = can(['admin.unit.read', 'admin.employee.read', 'admin.catalog.read', 'admin.template.read']) || isSuperAdmin
 
   const sidebar = (
     <div className="flex h-full flex-col">
@@ -187,82 +213,91 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
       </AnimatePresence>
 
       <div className={cn('app-shell-content relative transition-[padding] duration-300 ease-[var(--ease-out)]', collapsed ? 'lg:pl-[72px]' : 'lg:pl-[248px]')}>
-        <TopBar onMenu={() => setMobileOpen(true)} module={module} onHelp={openHelp} />
-        {waitingForBranch ? <div className="grid min-h-[40vh] place-items-center" data-branch-pending><Loader2 className="size-6 animate-spin text-ink-3" /></div> : <Outlet />}
+        <TopBar onMenu={() => setMobileOpen(true)} module={module} onHelp={openHelp} ws={ws} />
+        {waiting ? <div className="grid min-h-[40vh] place-items-center" data-unit-pending><Loader2 className="size-6 animate-spin text-ink-3" /></div> : <Outlet />}
       </div>
     <HotkeysHelp open={help} onClose={() => setHelp(false)} nav={navHotkeys} />
       </div>
   )
 }
 
-function TopBar({ onMenu, module, onHelp }: { onMenu: () => void; module: 'staff' | 'admin'; onHelp: () => void }) {
+function TopBar({ onMenu, module, onHelp, ws }: { onMenu: () => void; module: 'staff' | 'admin'; onHelp: () => void; ws: ReturnType<typeof useWorkspace> }) {
   const { t } = useTranslation()
   const nav = useNavigate()
-  const { staff, branchId, setBranch, logoutStaff, homeCompanyId, setActiveCompany } = useAuth()
-  const s = staff!
-  const branches = useQuery({ queryKey: ['branches', s.companyId], queryFn: () => repos.tenant.listBranches(s.companyId) })
-  // superadmin: company switcher (manage any clinic from the same session)
-  const companies = useQuery({ queryKey: ['companies', 'switcher'], queryFn: () => repos.tenant.listCompanies({ page: 1, pageSize: 100 }), enabled: s.isSuperAdmin, staleTime: 60_000 })
-  const activeCompany = companies.data?.items.find((c) => c.id === s.companyId)
-  const isForeign = s.isSuperAdmin && !!homeCompanyId && s.companyId !== homeCompanyId
+  const logoutStaff = useAuth((s) => s.logoutStaff)
+  const { staff: s, shape, scopeUnit, facilities, facility, setScopeUnit, setFacility } = ws
   const notif = useQuery({ queryKey: ['notifications'], queryFn: () => repos.messaging.notifications(), refetchInterval: 60_000 })
   const unread = notif.data?.filter((n) => !n.read).length ?? 0
-  const activeBranches = (branches.data ?? []).filter((b) => b.isActive)
-  const current = activeBranches.find((b) => b.id === branchId)
-  // superadmin/admin: any branch (and, in the admin panel, all of them); everyone else: only their assigned branches
-  const switcher = canSwitchBranch(s)
-  const myBranches = switcher ? activeBranches : activeBranches.filter((b) => (s.branchIds ?? []).includes(b.id))
-  const pill = 'app-branch-switcher inline-flex h-9 min-w-0 shrink items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 text-[13px] font-medium shadow-1 sm:gap-2 sm:px-3'
+  const pill = 'app-unit-switcher inline-flex h-9 min-w-0 shrink items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 text-[13px] font-medium shadow-1 sm:gap-2 sm:px-3'
+  // the scope switcher: every unit the employee may administer (their subtree(s)); for a superadmin the whole tree
+  const scopeChoices = useMemo(() => {
+    const roots = s.isSuperAdmin ? shape.roots : shape.roots.filter((r) => s.unitIds.includes(r.id) || shape.ancestors(r.id).some((a) => s.unitIds.includes(a.id)))
+    const allowed = new Set(s.isSuperAdmin ? shape.units.map((u) => u.id) : s.unitIds.flatMap((id) => shape.under(id).map((u) => u.id)))
+    return flattenRoots(roots).filter((u) => allowed.has(u.id))
+  }, [s.isSuperAdmin, s.unitIds, shape])
+  const levelLabel = (u: OrgUnit) => t(`org.level.${u.level}`)
 
   return (
     <header className="app-topbar sticky top-0 z-30 flex h-14 items-center gap-1.5 border-b border-line bg-bg/86 px-2 backdrop-blur-md xs:gap-2 xs:px-3 sm:h-16 sm:gap-3 sm:px-6">
       <IconButton label="menu" className="lg:hidden shrink-0" onClick={onMenu}><MenuIcon /></IconButton>
       <div className="lg:hidden max-xs:hidden shrink-0"><Logo compact /></div>
 
-      {/* Company switcher — superadmin only */}
-      {s.isSuperAdmin && (
-        <Menu
-          align="start"
-          trigger={(open) => (
-            <button type="button" title={activeCompany?.name ?? ''} className={cn('inline-flex h-9 min-w-0 shrink items-center gap-1.5 rounded-full border px-2.5 text-[13px] font-medium shadow-1 transition-colors sm:gap-2 sm:px-3 hover:border-line-strong', isForeign ? 'border-accent/50 bg-accent/10 text-accent' : 'border-line bg-surface', open && 'border-brand')}>
-              <Building2 className="size-4 shrink-0" />
-              <span className="max-sm:hidden max-w-[120px] md:max-w-[180px] truncate">{activeCompany?.name ?? '…'}</span>
-              <ChevronDown className="size-3.5 shrink-0 text-ink-3" />
-            </button>
-          )}
-          items={[
-            ...(companies.data?.items ?? []).map((c) => ({
-              key: c.id,
-              label: <span className="flex flex-col"><span>{c.name}{c.id === homeCompanyId ? ` · ${t('admin.platform.homeCompany')}` : ''}</span><span className="text-[11.5px] text-ink-3">{c.slug}{c.isActive ? '' : ` · ${t('admin.platform.inactive')}`}</span></span>,
-              onSelect: () => { setActiveCompany(c.id); nav(routes.admin.root) },
-              icon: c.id === s.companyId ? <Check /> : <Building2 />,
-            })),
-            { key: 'platform', label: t('nav.platform'), icon: <Globe2 />, onSelect: () => nav(routes.admin.platform) },
-          ]}
-        />
+      {/* Scope switcher — the administered unit (admin panel; a superadmin sees it everywhere) */}
+      {(module === 'admin' || s.isSuperAdmin) && scopeUnit && (
+        scopeChoices.length > 1 ? (
+          <Menu
+            align="start"
+            trigger={(open) => (
+              <button type="button" title={scopeUnit.path} className={cn(pill, 'transition-colors hover:border-line-strong', open && 'border-brand')} data-scope-switcher>
+                <span className="shrink-0 text-brand [&>svg]:size-4">{LEVEL_ICON[scopeUnit.level]}</span>
+                <span className="max-sm:hidden max-w-[140px] md:max-w-[200px] 2xl:max-w-[280px] truncate">{scopeUnit.name}</span>
+                <ChevronDown className="size-3.5 shrink-0 text-ink-3" />
+              </button>
+            )}
+            items={scopeChoices.map((u) => ({
+              key: u.id,
+              label: (
+                <span className="flex items-center gap-2" style={{ paddingLeft: `${Math.max(0, u.depth - (scopeChoices[0]?.depth ?? 0)) * 12}px` }}>
+                  <span className="flex flex-col min-w-0"><span className="truncate">{u.name}</span><span className="text-[11.5px] text-ink-3">{levelLabel(u)}{u.code ? ` · ${u.code}` : ''}{u.isActive ? '' : ` · ${t('org.inactive')}`}</span></span>
+                </span>
+              ),
+              onSelect: () => { setScopeUnit(u.id); if (module === 'admin') nav(routes.admin.root) },
+              icon: u.id === scopeUnit.id ? <Check /> : LEVEL_ICON[u.level],
+            }))}
+          />
+        ) : (
+          <span title={scopeUnit.path} className={cn(pill, 'cursor-default')} data-scope-fixed>
+            <span className="shrink-0 text-brand [&>svg]:size-4">{LEVEL_ICON[scopeUnit.level]}</span>
+            <span className="max-sm:hidden max-w-[140px] md:max-w-[200px] 2xl:max-w-[280px] truncate">{scopeUnit.name}</span>
+          </span>
+        )
       )}
 
-      {/* Branch scope: a switcher for superadmin/admin (or an employee assigned to several branches), otherwise a fixed label */}
-      {switcher || myBranches.length > 1 ? (
-        <Menu
-          align="start"
-          trigger={(open) => (
-            <button type="button" title={current ? current.name : t('common.allBranches')} className={cn(pill, 'transition-colors hover:border-line-strong', open && 'border-brand')}>
-              <GitBranch className="size-4 shrink-0 text-brand" />
-              <span className="max-sm:hidden max-w-[120px] md:max-w-[160px] 2xl:max-w-[240px] truncate">{current ? current.name : t('common.allBranches')}</span>
-              <ChevronDown className="size-3.5 shrink-0 text-ink-3" />
-            </button>
-          )}
-          items={[
-            ...(switcher && module === 'admin' ? [{ key: 'all', label: t('common.allBranches'), onSelect: () => setBranch(null), icon: <Building2 /> }] : []),
-            ...myBranches.map((b) => ({ key: b.id, label: <span className="flex flex-col"><span>{b.name}</span><span className="text-[11.5px] text-ink-3">{b.code}</span></span>, onSelect: () => setBranch(b.id), icon: <GitBranch /> })),
-          ]}
-        />
-      ) : (
-        <span title={current ? current.name : t('common.allBranches')} className={cn(pill, 'cursor-default')} data-branch-fixed>
-          <GitBranch className="size-4 shrink-0 text-brand" />
-          <span className="max-sm:hidden max-w-[120px] md:max-w-[160px] 2xl:max-w-[240px] truncate">{current ? current.name : t('common.allBranches')}</span>
-        </span>
+      {/* Facility switcher — the staff app works in one facility under the scope */}
+      {module === 'staff' && scopeUnit && facilities.length > 0 && (
+        facilities.length > 1 ? (
+          <Menu
+            align="start"
+            trigger={(open) => (
+              <button type="button" title={facility?.path ?? ''} className={cn(pill, 'transition-colors hover:border-line-strong', open && 'border-brand')} data-facility-switcher>
+                <Hospital className="size-4 shrink-0 text-brand" />
+                <span className="max-sm:hidden max-w-[120px] md:max-w-[160px] 2xl:max-w-[240px] truncate">{facility?.name ?? t('org.pickFacility')}</span>
+                <ChevronDown className="size-3.5 shrink-0 text-ink-3" />
+              </button>
+            )}
+            items={facilities.map((f) => ({
+              key: f.id,
+              label: <span className="flex flex-col"><span>{f.name}</span><span className="text-[11.5px] text-ink-3">{f.districtName ?? ''}{f.code ? ` · ${f.code}` : ''}</span></span>,
+              onSelect: () => setFacility(f.id),
+              icon: f.id === facility?.id ? <Check /> : <Hospital />,
+            }))}
+          />
+        ) : (
+          <span title={facility?.path ?? ''} className={cn(pill, 'cursor-default')} data-facility-fixed>
+            <Hospital className="size-4 shrink-0 text-brand" />
+            <span className="max-sm:hidden max-w-[120px] md:max-w-[160px] 2xl:max-w-[240px] truncate">{facility?.name ?? ''}</span>
+          </span>
+        )
       )}
       {module === 'admin' && <Badge tone="brand" size="sm" className="max-sm:hidden">{t('nav.admin')}</Badge>}
 
@@ -309,6 +344,12 @@ function TopBar({ onMenu, module, onHelp }: { onMenu: () => void; module: 'staff
   )
 }
 
-/** Small helper for pages: current branch scope (null = all). */
-export const useBranchScope = () => useAuth((s) => s.branchId)
+/** Depth-first flatten of nested unit nodes (parents before children). */
+function flattenRoots(roots: (OrgUnit & { children: OrgUnit[] })[]): OrgUnit[] {
+  const out: OrgUnit[] = []
+  const walk = (n: OrgUnit & { children?: OrgUnit[] }) => { out.push(n); (n.children ?? []).forEach((c) => walk(c as OrgUnit & { children?: OrgUnit[] })) }
+  roots.forEach(walk)
+  return out
+}
+
 export { Tooltip }

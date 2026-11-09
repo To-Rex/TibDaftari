@@ -1,7 +1,7 @@
 /**
  * The territory the platform pages look at, kept in the URL (`?country=&region=&district=`) so a drill-down is a
- * link and the browser's back button walks up again. Both platform tabs read the same params, so a region picked on
- * the Hududlar tab is still selected on the Klinikalar tab.
+ * link and the browser's back button walks up again. An administrator below the country level never stores the
+ * country: it follows from their own unit.
  */
 import { useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'

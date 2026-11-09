@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Info, MessageSquare, Plus, Settings2 } from 'lucide-react'
 import type { MessageStatus, OutboxMessage } from '@/domain'
-import { usePermissions } from '@/features/auth/store'
-import { useStaffSession } from '@/features/session/useSession'
+import { useWorkspace } from '@/app/layouts/AppShell'
+import { usePermissions, useStaffScope } from '@/features/auth/store'
 import { ComposeDrawer } from '@/features/messaging/ComposeDrawer'
 import { MESSAGE_STATUSES, MessageStatusBadge } from '@/features/messaging/MessageStatusBadge'
 import { useOutbox, useOutboxCounts } from '@/features/messaging/queries'
@@ -18,7 +18,8 @@ type Tab = 'all' | MessageStatus
 
 export default function MessagesPage() {
   const { t } = useTranslation()
-  const { companyId, branchId } = useStaffSession()
+  const { scopeId } = useStaffScope()
+  const { shape } = useWorkspace()
   const { can } = usePermissions()
   const [tab, setTab] = useState<Tab>('all')
   const [search, setSearch] = useState('')
@@ -26,22 +27,27 @@ export default function MessagesPage() {
   const [pageSize, setPageSize] = useState(20)
   const [compose, setCompose] = useState(false)
   const q = useDebounce(search.trim(), 300)
-  useEffect(() => setPage(1), [tab, q, pageSize, branchId])
+  useEffect(() => setPage(1), [tab, q, pageSize, scopeId])
 
-  // the outbox of the selected branch (messages are stamped with the branch of their cheque / sender)
-  const params = { status: tab === 'all' ? undefined : tab, search: q || undefined, page, pageSize, branchId: branchId ?? undefined }
+  // the outbox of the scope unit — the facility the staff app works in (messages are stamped with the facility of their cheque / sender)
+  const params = { status: tab === 'all' ? undefined : tab, search: q || undefined, page, pageSize }
   const [live, setLive] = useState(false)
-  const list = useOutbox(companyId, params, live ? 3000 : 30_000)
+  const list = useOutbox(scopeId, params, live ? 3000 : 30_000)
   const rows = useMemo(() => list.data?.items ?? [], [list.data])
   useEffect(() => setLive(rows.some((m) => m.status === 'queued' || m.status === 'sent')), [rows])
 
   // one GROUP BY request for every status tab
-  const countsQ = useOutboxCounts(companyId, { search: q || undefined, branchId: branchId ?? undefined }, live ? 3000 : 30_000)
+  const countsQ = useOutboxCounts(scopeId, { search: q || undefined }, live ? 3000 : 30_000)
   const countOf = useMemo(() => Object.fromEntries(MESSAGE_STATUSES.map((s) => [s, countsQ.data?.[s]])) as Record<MessageStatus, number | undefined>, [countsQ.data])
+
+  // only a scope above facility level (no facility chosen under it) mixes facilities — then say which one sent each message
+  const scopeUnit = shape.byId.get(scopeId)
+  const showUnit = !!scopeUnit && scopeUnit.level !== 'facility'
 
   const columns: Column<OutboxMessage>[] = [
     { key: 'to', header: t('common.phone'), width: '170px', card: 'title', cell: (m) => <span className="font-mono text-[13px] tabular">{fmtPhone(m.to)}</span> },
     { key: 'text', header: t('clinical.messages.text'), card: 'field', cell: (m) => <div className="max-w-[560px] truncate text-ink-2 max-md:line-clamp-3 max-md:whitespace-normal max-md:break-words" title={m.text}>{m.text}</div> },
+    ...(showUnit ? [{ key: 'unit', header: t('clinical.messages.unit'), hideBelow: 'lg', width: '160px', card: 'meta', cell: (m) => <span className="truncate text-ink-2" title={m.unitName ?? ''}>{m.unitName ?? '—'}</span> } as Column<OutboxMessage>] : []),
     { key: 'kind', header: t('clinical.messages.kind'), hideBelow: 'lg', width: '140px', card: 'meta', cell: (m) => <Badge size="sm">{t(`clinical.messages.kind_${m.kind}`)}</Badge> },
     { key: 'status', header: t('common.status'), width: '150px', card: 'meta', cell: (m) => (
       <div className="flex min-w-0 flex-col gap-0.5">
@@ -95,7 +101,7 @@ export default function MessagesPage() {
         )}
       </Card>
 
-      <ComposeDrawer open={compose} onClose={() => setCompose(false)} companyId={companyId} canBroadcast={can('messaging.broadcast')} />
+      <ComposeDrawer open={compose} onClose={() => setCompose(false)} scopeId={scopeId} canBroadcast={can('messaging.broadcast')} />
     </Page>
   )
 }

@@ -32,7 +32,7 @@ export function LocationFields({ value, onChange, disabled, preselectCountryCode
   const noDistricts = !!value.regionId && districts.isSuccess && districts.data.length === 0
   return (
     <div className={cn('grid gap-4 sm:grid-cols-3', className)}>
-      <Field label={t('admin.company.country')} optionalText={t('common.optional')}>
+      <Field label={t('org.country')} optionalText={t('common.optional')}>
         {(id) => (
           <Select id={id} value={value.countryId} disabled={disabled} onChange={(e) => { cleared.current = !e.target.value; onChange({ countryId: e.target.value, regionId: '', districtId: '' }) }}>
             <option value="">{t('common.select')}</option>
@@ -40,7 +40,7 @@ export function LocationFields({ value, onChange, disabled, preselectCountryCode
           </Select>
         )}
       </Field>
-      <Field label={t('admin.company.region')} optionalText={t('common.optional')}>
+      <Field label={t('org.region')} optionalText={t('common.optional')}>
         {(id) => (
           <Select id={id} value={value.regionId} disabled={disabled || !value.countryId} onChange={(e) => onChange({ ...value, regionId: e.target.value, districtId: '' })}>
             <option value="">{t('common.select')}</option>
@@ -48,10 +48,10 @@ export function LocationFields({ value, onChange, disabled, preselectCountryCode
           </Select>
         )}
       </Field>
-      <Field label={t('admin.company.district')} optionalText={t('common.optional')}>
+      <Field label={t('org.district')} optionalText={t('common.optional')}>
         {(id) => (
           <Select id={id} value={value.districtId} disabled={disabled || !value.regionId || noDistricts} onChange={(e) => onChange({ ...value, districtId: e.target.value })}>
-            <option value="">{noDistricts ? t('admin.company.noDistricts') : t('common.select')}</option>
+            <option value="">{noDistricts ? t('org.noDistricts') : t('common.select')}</option>
             {districts.data?.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
           </Select>
         )}

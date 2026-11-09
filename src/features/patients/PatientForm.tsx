@@ -10,8 +10,8 @@ import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import { Phone, User } from 'lucide-react'
 import type { Patient, PatientUpsertInput } from '@/domain'
-import { useBranches, useCompany } from '@/features/org/queries'
-import { useStaffSession } from '@/features/session/useSession'
+import { useStaffScope } from '@/features/auth/store'
+import { useUnitTree, useUnitTreeShape } from '@/features/org/queries'
 import { Field, Input, Select, Textarea } from '@/shared/ui'
 import { cn } from '@/shared/lib/cn'
 import { formatLocalPhone, fromE164, localDigits, toE164 } from './phone'
@@ -86,15 +86,12 @@ export function PatientForm({ formId, patient, onSubmit, onDraftChange }: Patien
     mode: 'onBlur',
   })
   const regionId = watch('regionId')
-  // most walk-ins live where the clinic is: a new patient starts at the current branch's location
-  // (the company's when the branch has none), and the region list follows that country
-  const { companyId, branchId } = useStaffSession()
-  const branches = useBranches(companyId)
-  const company = useCompany(companyId)
-  const home = useMemo(() => {
-    const branch = branchId ? branches.data?.find((b) => b.id === branchId) : undefined
-    return (branch?.countryId || branch?.regionId ? branch : company.data) ?? null
-  }, [branchId, branches.data, company.data])
+  // most walk-ins live where the facility is: a new patient starts at the scope facility's location, and the
+  // region list follows that facility's country
+  const { scopeId } = useStaffScope()
+  const tree = useUnitTree()
+  const shape = useUnitTreeShape(tree.data)
+  const home = shape.byId.get(scopeId) ?? null
   const regions = useRegions(home?.countryId ?? undefined)
   const districts = useDistricts(regionId || undefined)
 
@@ -158,7 +155,7 @@ export function PatientForm({ formId, patient, onSubmit, onDraftChange }: Patien
         </div>
       </Section>
 
-      <Section title={t('common.address')} hint={prefilled && regionId === home?.regionId ? t('staff.patients.form.geoFromBranch') : undefined}>
+      <Section title={t('common.address')} hint={prefilled && regionId === home?.regionId ? t('staff.patients.form.geoFromUnit') : undefined}>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t('staff.patients.form.region')}>
             {(id) => (

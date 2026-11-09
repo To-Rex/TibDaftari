@@ -9,11 +9,12 @@ import { fmtPhone, fmtRelative } from '@/shared/lib/format'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import { usePatientSearch } from '@/features/patients/queries'
 
-export function PatientSearchPanel({ companyId, selectedId, onSelect, onNew, inputRef, canCreate }: { companyId: Id; selectedId?: Id; onSelect: (p: Patient) => void; onNew: () => void; inputRef: RefObject<HTMLInputElement | null>; canCreate: boolean }) {
+/** `scopeId` = the facility the staff app works in (its visit statistics rank the results). */
+export function PatientSearchPanel({ scopeId, selectedId, onSelect, onNew, inputRef, canCreate }: { scopeId: Id; selectedId?: Id; onSelect: (p: Patient) => void; onNew: () => void; inputRef: RefObject<HTMLInputElement | null>; canCreate: boolean }) {
   const { t } = useTranslation()
   const [q, setQ] = useState('')
   const dq = useDebounce(q.trim(), 250)
-  const search = usePatientSearch(companyId, dq)
+  const search = usePatientSearch(scopeId, dq)
   const [cursor, setCursor] = useState(0)
   const listRef = useRef<HTMLUListElement>(null)
   const results = search.data ?? []

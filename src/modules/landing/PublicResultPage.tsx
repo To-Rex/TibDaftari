@@ -1,11 +1,12 @@
 /**
  * /d/:token — the result link sent by SMS / Telegram (and the QR of documents issued before 2026-10-29; newer QR
  * codes open the authenticity check /v/:token instead). It shows the authenticity card (what was issued, by which
- * clinic, when). The PDF is protected by an SMS code sent to the phone the document belongs to (the PDF comes back in
- * the same verify request) — except during the clinic's code-free window (admin setting: N days after the result was
- * issued, `otpRequired: false` + `freeUntil`), when "Hujjatni ko‘rish" opens it straight away; a window that closed in
- * the meantime falls back to the code. A code that is already on its way survives a page reload (sessionStorage),
- * and when the clinic cannot send SMS at all the page says so instead of waiting for a code that never comes.
+ * organisation, when). The PDF is protected by an SMS code sent to the phone the document belongs to (the PDF comes
+ * back in the same verify request) — except during the organisation's code-free window (unit setting: N days after
+ * the result was issued, `otpRequired: false` + `freeUntil`), when "Hujjatni ko‘rish" opens it straight away; a window
+ * that closed in the meantime falls back to the code. A code that is already on its way survives a page reload
+ * (sessionStorage), and when the facility cannot send SMS at all the page says so instead of waiting for a code that
+ * never comes.
  */
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -21,9 +22,10 @@ import { LanguageSwitcher, Logo, ThemeToggle } from '@/shared/ui'
 type Info = {
   id: string
   title: string
-  companyName: string
+  /** the organisation that issued it (the nearest non-facility unit above the facility) */
+  orgName: string
   issuedAt: string
-  /** false while the clinic's code-free window runs (an older API leaves it out = a code is needed) */
+  /** false while the organisation's code-free window runs (an older API leaves it out = a code is needed) */
   otpRequired?: boolean
   freeUntil?: string | null
 }
@@ -318,8 +320,8 @@ export default function PublicResultPage() {
                 <dd className="text-right font-medium">{state.info.title}</dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-ink-3">{t('portal.publicResult.clinic')}</dt>
-                <dd className="text-right font-medium">{state.info.companyName}</dd>
+                <dt className="text-ink-3">{t('portal.publicResult.org')}</dt>
+                <dd className="text-right font-medium">{state.info.orgName}</dd>
               </div>
               <div className="flex justify-between gap-4">
                 <dt className="text-ink-3">{t('portal.publicResult.issued')}</dt>

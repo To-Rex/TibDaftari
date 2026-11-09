@@ -1,12 +1,33 @@
-/** Builds a RenderContext from domain objects (mirror of the backend context builder). */
-import type { AttributeSchema, Branch, Category, Company, Order, OrderItem, Patient, Payment, RenderContext, RenderItem } from '@/domain'
+/**
+ * Builds a RenderContext from domain objects (mirror of the backend `renderer/context.py`).
+ *
+ * Organisation keys: `org` is the organisation a document is issued by — the nearest unit above facility level on
+ * the facility's path (name, shortName, legalName, phone, email, address, logoUrl) — and `unit` is the facility
+ * itself (name, code, phone, address, timezone, district / region). `company` and `branch` are kept as ALIASES of
+ * `org` / `unit` so templates written before the organisation tree (`{company.name}`, `{branch.code}` …) render
+ * unchanged; `company.slug` (the old cheque prefix) is the facility code.
+ */
+import type { AttributeSchema, Category, Order, OrderItem, OrgUnit, Patient, Payment, RenderContext, RenderItem } from '@/domain'
 import { itemStatusMeta, orderStatusMeta, paymentMethodLabel, paymentStatusMeta } from '@/features/orders/status'
 import { ageFrom, ageMonthsFrom, fmtDate, fmtDateTime, fmtMoney, fmtPhone, fmtTime } from '@/shared/lib/format'
 import i18n from '@/shared/i18n'
 
-type CompanyCtx = Pick<Company, 'name'> & Partial<Pick<Company, 'legalName' | 'slug' | 'phone' | 'email' | 'address'>>
-type BranchCtx = Pick<Branch, 'name'> & Partial<Pick<Branch, 'code' | 'address' | 'timezone' | 'phone'>>
+/** The organisation's letterhead data — an `OrgUnit` row of any level above facility fits as it is. */
+export type OrgCtx = Pick<OrgUnit, 'name'> & Partial<Pick<OrgUnit, 'shortName' | 'legalName' | 'phone' | 'email' | 'address' | 'logoUrl'>>
+/** The facility — an `OrgUnit` row of level `facility` fits as it is. */
+export type UnitCtx = Pick<OrgUnit, 'name'> & Partial<Pick<OrgUnit, 'shortName' | 'code' | 'kind' | 'phone' | 'email' | 'address' | 'timezone' | 'districtName' | 'regionName'>>
 type CategoryCtx = Pick<Category, 'name'> & Partial<Pick<Category, 'code' | 'phone'>>
+
+/** `org.*` placeholders. */
+export interface OrgBlock { name: string; shortName: string; legalName: string; phone?: string; email?: string; address?: string; logoUrl?: string }
+/** `unit.*` placeholders (`phone` formatted for print). */
+export interface UnitBlock { name: string; shortName: string; code: string; kind: string; phone?: string; email?: string; address?: string; timezone: string; district: string; region: string }
+/** The render context with the organisation-tree blocks (`company` / `branch` inside are their aliases). */
+export type DocumentRenderContext = RenderContext & { org: OrgBlock; unit: UnitBlock }
+
+/** Sample organisation / facility for editor previews when no real document is selected. */
+const SAMPLE_ORG: OrgCtx = { name: 'TibDaftari tibbiyot markazlari', shortName: 'TibDaftari', legalName: 'TibDaftari MChJ', email: 'info@tibdaftari.uz' }
+const SAMPLE_UNIT: UnitCtx = { name: 'Urganch shahar muassasasi', shortName: 'Urganch', code: 'UR', kind: 'clinic', timezone: 'Asia/Tashkent', districtName: 'Urganch shahri', regionName: 'Xorazm viloyati' }
 
 export function buildRenderContext(input: {
   patient?: Pick<Patient, 'fullName' | 'phone' | 'birthDate' | 'gender' | 'address' | 'passportNumber' | 'pinfl' | 'workplace' | 'discountPercent' | 'contractNumber' | 'note' | 'tags'> | null
@@ -15,8 +36,13 @@ export function buildRenderContext(input: {
   item?: Pick<OrderItem, 'serviceName' | 'serviceTypeId' | 'categoryName' | 'price' | 'finalPrice' | 'status' | 'schemaVersion' | 'enteredAt' | 'submittedAt' | 'approvedAt' | 'technicianName' | 'doctorName' | 'rejectReason' | 'labNote' | 'values'> | null
   /** catalog code of the primary item (not stored on OrderItem) */
   serviceCode?: string
-  company?: CompanyCtx | null
-  branch?: (BranchCtx & { phone?: string | null }) | null
+  /** the organisation that issues the document — the nearest unit above facility level (`org.*`) */
+  org?: OrgCtx | null
+  /** the facility that did the work (`unit.*`) */
+  unit?: UnitCtx | null
+  /** aliases of `org` / `unit` for callers written before the organisation tree */
+  company?: OrgCtx | null
+  branch?: UnitCtx | null
   category?: CategoryCtx | null
   schema?: AttributeSchema | null
   districtName?: string
@@ -28,9 +54,11 @@ export function buildRenderContext(input: {
   items?: { item: OrderItem; schema: AttributeSchema | null; code: string }[]
   /** the issued document's public verification link — the template's QR element encodes it */
   docLink?: string | null
-}): RenderContext {
+}): DocumentRenderContext {
   const p = input.patient
   const address = [input.districtName, p?.address?.street].filter(Boolean).join(', ')
+  const org = orgBlock(input.org ?? input.company)
+  const unit = unitBlock(input.unit ?? input.branch)
   return {
     patient: {
       fullName: p?.fullName ?? '',
@@ -72,8 +100,12 @@ export function buildRenderContext(input: {
       rejectReason: input.item?.rejectReason ?? '',
       schemaVersion: input.item?.schemaVersion != null ? String(input.item.schemaVersion) : '',
     },
-    company: { name: input.company?.name ?? '', legalName: input.company?.legalName, slug: input.company?.slug, phone: input.company?.phone, email: input.company?.email, address: input.company?.address },
-    branch: { name: input.branch?.name ?? '', code: input.branch?.code, address: input.branch?.address, phone: input.branch?.phone ? fmtPhone(input.branch.phone) : undefined, timezone: input.branch?.timezone },
+    org,
+    unit,
+    // aliases — templates authored before the organisation tree keep rendering ({company.name}, {branch.code});
+    // `company.slug` (the old cheque prefix) is the facility code
+    company: { ...org, slug: unit.code },
+    branch: unit,
     category: { name: input.category?.name ?? '', code: input.category?.code, phone: input.category?.phone },
     today: fmtDate(new Date().toISOString()),
     now: fmtDateTime(new Date().toISOString()),
@@ -93,6 +125,16 @@ export const toRenderItem = (x: { item: OrderItem; schema: AttributeSchema | nul
   price: fmtMoney(x.item.price, false), finalPrice: fmtMoney(x.item.finalPrice, false), category: x.item.categoryName,
   schemaVersion: x.item.schemaVersion != null ? String(x.item.schemaVersion) : undefined,
 })
+
+/** `org.*`: the organisation's letterhead data. Mirror of the backend `org_block`. */
+function orgBlock(o: OrgCtx | null | undefined): OrgBlock {
+  return { name: o?.name ?? '', shortName: o?.shortName || o?.name || '', legalName: o?.legalName ?? '', phone: o?.phone ?? undefined, email: o?.email ?? undefined, address: o?.address ?? undefined, logoUrl: o?.logoUrl ?? undefined }
+}
+
+/** `unit.*`: the facility — its code is the cheque prefix; district / region come from the unit row. Mirror of `unit_block`. */
+function unitBlock(u: UnitCtx | null | undefined): UnitBlock {
+  return { name: u?.name ?? '', shortName: u?.shortName || u?.name || '', code: u?.code ?? '', kind: u?.kind ?? '', phone: u?.phone ? fmtPhone(u.phone) : undefined, email: u?.email ?? undefined, address: u?.address ?? undefined, timezone: u?.timezone ?? '', district: u?.districtName ?? '', region: u?.regionName ?? '' }
+}
 
 /** `order.*`: number/date always; totals when the order carries them (receipts). Mirror of the backend `_order_block`. */
 function orderBlock(o: NonNullable<Parameters<typeof buildRenderContext>[0]['order']> | null | undefined): RenderContext['order'] {
@@ -116,7 +158,7 @@ function orderBlock(o: NonNullable<Parameters<typeof buildRenderContext>[0]['ord
 }
 
 /** Sample context for RECEIPT templates: three services, a discount, a partial payment. */
-export function sampleReceiptRenderContext(company?: CompanyCtx | null, branch?: (BranchCtx & { phone?: string | null }) | null): RenderContext {
+export function sampleReceiptRenderContext(org?: OrgCtx | null, unit?: UnitCtx | null): DocumentRenderContext {
   const now = new Date().toISOString()
   const services = [['PAR', 'Парозитологик тахлил', 'Parazitologiya', 52000], ['BAK', 'Бактериологик тахлил', 'Bakteriologiya', 160000], ['IFA', 'ИФА ВГ “B”', 'Virusologiya', 41000]] as const
   const subtotal = services.reduce((s, x) => s + x[3], 0)
@@ -124,8 +166,8 @@ export function sampleReceiptRenderContext(company?: CompanyCtx | null, branch?:
   const ctx = buildRenderContext({
     patient: { fullName: 'Karimova Madina Aziz qizi', phone: '998901234567', birthDate: '1992-04-12', gender: 'female', address: { street: 'Al-Xorazmiy ko‘chasi, 12-uy' }, passportNumber: 'AB1234567', pinfl: '50101992040012', workplace: 'TibDaftari', discountPercent: 10, contractNumber: 'SH-00124', note: 'Doimiy mijoz', tags: ['VIP'] },
     order: { number: 'UR-001240', createdAt: now, subtotal, discountPercent: discount, discountAmount: Math.floor(subtotal * discount / 100), total, paidAmount: total - 50000, itemCount: services.length, status: 'in_progress', payment: 'partial' },
-    company: company ?? { name: 'TibDaftari', legalName: 'TibDaftari MChJ', slug: 'tibdaftari', email: 'info@tibdaftari.uz' },
-    branch: branch ?? { name: 'Markaziy filial', code: 'M', timezone: 'Asia/Tashkent' },
+    org: org ?? SAMPLE_ORG,
+    unit: unit ?? SAMPLE_UNIT,
     payments: [{ createdAt: now, method: 'cash', amount: total - 50000 }],
     cashier: 'Umida Qodirova',
     districtName: 'Urganch shahri',
@@ -167,8 +209,8 @@ export function sampleValues(schema: AttributeSchema | null): RenderContext['val
 }
 
 /** Sample context for ORDER-scoped previews: one RenderItem per bound service. */
-export function sampleOrderRenderContext(services: { code: string; name: string; serviceTypeId: string; schema: AttributeSchema | null }[], company?: CompanyCtx | null, branch?: BranchCtx | null, category?: CategoryCtx | null): RenderContext {
-  const base = sampleRenderContext(services[0]?.schema ?? null, company, branch, category)
+export function sampleOrderRenderContext(services: { code: string; name: string; serviceTypeId: string; schema: AttributeSchema | null }[], org?: OrgCtx | null, unit?: UnitCtx | null, category?: CategoryCtx | null): DocumentRenderContext {
+  const base = sampleRenderContext(services[0]?.schema ?? null, org, unit, category)
   return {
     ...base,
     items: services.map((s) => ({ code: s.code, serviceTypeId: s.serviceTypeId, serviceName: s.name, status: 'approved', statusLabel: 'Tasdiqlangan', values: sampleValues(s.schema), schema: s.schema, enteredAt: base.item.enteredAt, submittedAt: base.item.submittedAt, approvedAt: base.item.approvedAt, technician: base.item.technician, doctor: base.item.doctor, price: fmtMoney(50000, false), finalPrice: fmtMoney(45000, false), category: category?.name, schemaVersion: '1' })),
@@ -176,15 +218,15 @@ export function sampleOrderRenderContext(services: { code: string; name: string;
 }
 
 /** Sample context for editor previews when no real item is selected. */
-export function sampleRenderContext(schema: AttributeSchema | null, company?: CompanyCtx | null, branch?: BranchCtx | null, category?: CategoryCtx | null): RenderContext {
+export function sampleRenderContext(schema: AttributeSchema | null, org?: OrgCtx | null, unit?: UnitCtx | null, category?: CategoryCtx | null): DocumentRenderContext {
   const values = sampleValues(schema)
   return buildRenderContext({
     patient: { fullName: 'Karimova Madina Aziz qizi', phone: '998901234567', birthDate: '1992-04-12', gender: 'female', address: { street: 'Al-Xorazmiy ko‘chasi, 12-uy' }, passportNumber: 'AB1234567', pinfl: '50101992040012', workplace: 'TibDaftari', discountPercent: 0, contractNumber: 'SH-00124', note: 'Doimiy mijoz', tags: ['VIP'] },
     order: { number: 'UR-001240', createdAt: new Date().toISOString(), subtotal: 50000, discountPercent: 0, discountAmount: 0, total: 50000, paidAmount: 50000, itemCount: 1, note: 'Namuna izoh', status: 'completed', payment: 'paid' },
     item: { serviceName: 'Namuna xizmat', serviceTypeId: 'sample', categoryName: 'Laboratoriya', price: 50000, finalPrice: 45000, status: 'approved', schemaVersion: 1, enteredAt: new Date().toISOString(), submittedAt: new Date().toISOString(), approvedAt: new Date().toISOString(), technicianName: 'D. Rahimova', doctorName: 'A. Jumaniyazov', labNote: 'Namuna sifati qoniqarli', values },
     serviceCode: 'LG-001',
-    company: company ?? { name: 'TibDaftari', legalName: 'TibDaftari MChJ', slug: 'tibdaftari', email: 'info@tibdaftari.uz' },
-    branch: branch ?? { name: 'Markaziy filial', code: 'M', timezone: 'Asia/Tashkent' },
+    org: org ?? SAMPLE_ORG,
+    unit: unit ?? SAMPLE_UNIT,
     category: category ?? { name: 'Laboratoriya', code: 'LAB', phone: '97-092-08-88; 97-457-83-89' },
     schema,
     districtName: 'Urganch shahri',

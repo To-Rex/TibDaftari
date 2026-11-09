@@ -34,8 +34,8 @@ const ReportsPage = lazy(() => import('@/modules/staff/reports/ReportsPage'))
 const MessagesPage = lazy(() => import('@/modules/staff/messages/MessagesPage'))
 /* Admin */
 const AdminDashboard = lazy(() => import('@/modules/admin/AdminDashboardPage'))
-const CompanyPage = lazy(() => import('@/modules/admin/company/CompanyPage'))
-const BranchesPage = lazy(() => import('@/modules/admin/company/BranchesPage'))
+const UnitPage = lazy(() => import('@/modules/admin/org/UnitPage'))
+const UnitsPage = lazy(() => import('@/modules/admin/org/UnitsPage'))
 const EmployeesPage = lazy(() => import('@/modules/admin/employees/EmployeesPage'))
 const EmployeePage = lazy(() => import('@/modules/admin/employees/EmployeePage'))
 const RolesPage = lazy(() => import('@/modules/admin/roles/RolesPage'))
@@ -124,8 +124,11 @@ export const router = createBrowserRouter([
         element: <AppShell module="admin" />,
         children: [
           { index: true, element: page(<AdminDashboard />) },
-          { element: <RequirePerm perm="admin.company.read" />, children: [{ path: routes.admin.company, element: page(<CompanyPage />) }] },
-          { element: <RequirePerm perm="admin.branch.write" />, children: [{ path: routes.admin.branches, element: page(<BranchesPage />) }] },
+          { element: <RequirePerm perm="admin.unit.read" />, children: [{ path: routes.admin.unit, element: page(<UnitPage />) }] },
+          { element: <RequirePerm perm={['admin.unit.manage', 'admin.unit.read']} />, children: [
+            { path: routes.admin.units, element: page(<UnitsPage />) },
+            { path: routes.admin.unitDetail(), element: page(<UnitPage />) },
+          ] },
           { element: <RequirePerm perm="admin.employee.read" />, children: [
             { path: routes.admin.employees, element: page(<EmployeesPage />) },
             { path: routes.admin.employee(), element: page(<EmployeePage />) },
@@ -143,7 +146,7 @@ export const router = createBrowserRouter([
             { path: routes.admin.receipt(), element: page(<TemplateEditorPage />) },
           ] },
           { element: <RequirePerm perm="admin.settings.write" />, children: [{ path: routes.admin.sms, element: page(<SmsSettingsPage />) }] },
-          { element: <RequirePerm perm="platform.company.manage" />, children: [{ path: routes.admin.platform, element: page(<PlatformPage />) }] },
+          { element: <RequirePerm perm={['platform.unit.manage', 'reports.operations.read']} />, children: [{ path: routes.admin.platform, element: page(<PlatformPage />) }] },
         ],
       },
     ],

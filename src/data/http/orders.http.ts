@@ -20,15 +20,16 @@ export type WorklistRow = OrderItem & {
 const withPdfUrl = (d: ResultDocument): ResultDocument => ({ ...d, pdfUrl: absoluteUrl(d.pdfUrl) })
 
 /**
- * `listDocuments` has no companyId in the interface but the backend route is company-scoped
- * (`GET /companies/{cid}/documents`), so the company is read from the staff session.
- * Imported lazily to avoid a data → features → data import cycle.
+ * `listDocuments` has no scope in the interface but the backend route is unit-scoped
+ * (`GET /units/{id}/documents`), so the working unit is read from the staff session (the facility when the staff
+ * app has one, else the administrator's scope). Imported lazily to avoid a data → features → data import cycle.
  */
-const currentCompanyId = async (): Promise<Id> => {
+const currentScopeId = async (): Promise<Id> => {
   const { useAuth } = await import('@/features/auth/store')
-  const cid = useAuth.getState().staff?.companyId
-  if (!cid) throw new ApiError(401, 'unauthorized', 'Xodim sessiyasi topilmadi')
-  return cid
+  const { facilityId, scopeUnitId, staff } = useAuth.getState()
+  const id = facilityId ?? scopeUnitId ?? staff?.unitId
+  if (!id) throw new ApiError(401, 'unauthorized', 'Xodim sessiyasi topilmadi')
+  return id
 }
 
 /** The list's extra filters as query params (arrays repeat the key, empty ones are skipped). */
@@ -39,15 +40,15 @@ const extraFilters = (q: OrderListFilters) => ({
 })
 
 export const ordersHttp: OrderRepository = {
-  list: (companyId, q) =>
-    api.get<Page<Order>>(`/companies/${companyId}/orders`, {
+  list: (scopeId, q) =>
+    api.get<Page<Order>>(`/units/${scopeId}/orders`, {
       query: {
         page: q.page,
         pageSize: q.pageSize,
         search: q.search,
         sortBy: q.sortBy,
         sortDir: q.sortDir,
-        branchId: q.branchId,
+        unitId: q.unitId,
         status: q.status,
         payment: q.payment,
         dateFrom: q.dateFrom,
@@ -57,26 +58,26 @@ export const ordersHttp: OrderRepository = {
       },
     }),
 
-  exportXlsx: (companyId, q) =>
-    api.get<Blob>(`/companies/${companyId}/orders/export.xlsx`, {
+  exportXlsx: (scopeId, q) =>
+    api.get<Blob>(`/units/${scopeId}/orders/export.xlsx`, {
       blob: true,
-      query: { search: q.search, sortBy: q.sortBy, sortDir: q.sortDir, branchId: q.branchId, status: q.status, payment: q.payment, dateFrom: q.dateFrom, dateTo: q.dateTo, patientId: q.patientId, ...extraFilters(q), lang: q.lang, caption: q.caption },
+      query: { search: q.search, sortBy: q.sortBy, sortDir: q.sortDir, unitId: q.unitId, status: q.status, payment: q.payment, dateFrom: q.dateFrom, dateTo: q.dateTo, patientId: q.patientId, ...extraFilters(q), lang: q.lang, caption: q.caption },
     }),
 
-  summary: (companyId, q) =>
-    api.get<OrderSummary>(`/companies/${companyId}/orders/summary`, {
-      query: { search: q.search, branchId: q.branchId, status: q.status, payment: q.payment, dateFrom: q.dateFrom, dateTo: q.dateTo, patientId: q.patientId, ...extraFilters(q) },
+  summary: (scopeId, q) =>
+    api.get<OrderSummary>(`/units/${scopeId}/orders/summary`, {
+      query: { search: q.search, unitId: q.unitId, status: q.status, payment: q.payment, dateFrom: q.dateFrom, dateTo: q.dateTo, patientId: q.patientId, ...extraFilters(q) },
     }),
 
   get: (id) => api.get<{ order: Order; items: OrderItem[]; payments: Payment[] }>(`/orders/${id}`),
 
-  create: (companyId, _employeeId, input) =>
-    api.post<{ order: Order; items: OrderItem[] }>(`/companies/${companyId}/orders`, {
+  create: (scopeId, _employeeId, input) =>
+    api.post<{ order: Order; items: OrderItem[] }>(`/units/${scopeId}/orders`, compact({
       patientId: input.patientId,
-      branchId: input.branchId,
+      unitId: input.unitId,
       serviceTypeIds: input.serviceTypeIds,
       note: input.note,
-    }),
+    })),
 
   addItems: (orderId, serviceTypeIds) =>
     api.post<{ order: Order; items: OrderItem[] }>(`/orders/${orderId}/items`, { serviceTypeIds }),
@@ -99,21 +100,21 @@ export const ordersHttp: OrderRepository = {
 
   delete: (orderId) => api.delete<Order>(`/orders/${orderId}`),
 
-  worklistCounts: (companyId, q) =>
-    api.get<WorklistCounts>(`/companies/${companyId}/worklist/counts`, {
-      query: { search: q.search, branchId: q.branchId, categoryIds: q.categoryIds, dateFrom: q.dateFrom, dateTo: q.dateTo },
+  worklistCounts: (scopeId, q) =>
+    api.get<WorklistCounts>(`/units/${scopeId}/worklist/counts`, {
+      query: { search: q.search, unitId: q.unitId, categoryIds: q.categoryIds, dateFrom: q.dateFrom, dateTo: q.dateTo },
     }),
 
   /** `categoryIds` / `status` are repeated query keys (`status=a&status=b`). */
-  worklist: (companyId, q) =>
-    api.get<Page<WorklistRow>>(`/companies/${companyId}/worklist`, {
+  worklist: (scopeId, q) =>
+    api.get<Page<WorklistRow>>(`/units/${scopeId}/worklist`, {
       query: {
         page: q.page,
         pageSize: q.pageSize,
         search: q.search,
         sortBy: q.sortBy,
         sortDir: q.sortDir,
-        branchId: q.branchId,
+        unitId: q.unitId,
         categoryIds: q.categoryIds,
         status: q.status,
         dateFrom: q.dateFrom,
@@ -145,9 +146,9 @@ export const ordersHttp: OrderRepository = {
   revokeItem: (itemId, reason) => api.post<{ item: OrderItem; items: OrderItem[]; documentId?: string | null }>(`/items/${itemId}/revoke`, { reason }),
 
   listDocuments: async (q) => {
-    const companyId = await currentCompanyId()
-    const docs = await api.get<ResultDocument[]>(`/companies/${companyId}/documents`, {
-      query: { orderId: q.orderId, patientId: q.patientId, branchId: q.branchId },
+    const scopeId = await currentScopeId()
+    const docs = await api.get<ResultDocument[]>(`/units/${scopeId}/documents`, {
+      query: { orderId: q.orderId, patientId: q.patientId, unitId: q.unitId },
     })
     return docs.map(withPdfUrl)
   },

@@ -1,18 +1,18 @@
 import type { AuditStamp, Id, IsoDateTime } from './common'
 
 export type MessageChannel = 'sms' | 'telegram' | 'portal'
-export type MessageStatus = 'scheduled' | 'queued' | 'sent' | 'delivered' | 'failed'
+export type MessageStatus = 'scheduled' | 'queued' | 'sent' | 'delivered' | 'failed' | 'cancelled'
 export type MessageKind = 'payment_receipt' | 'result_ready' | 'reminder' | 'broadcast' | 'otp' | 'portal_access'
 
 /**
- * Outbox message — the clinic backend owns scheduling/idempotency because the
- * external SMS provider (Xabarchi) has neither. providerMessageId is the
- * Xabarchi bigint id returned by POST /public/messages.
+ * Outbox message — the backend owns scheduling/idempotency because the external SMS provider (Xabarchi)
+ * has neither. providerMessageId is the Xabarchi bigint id returned by POST /public/messages.
+ * `unitId` = the facility the message went out from (its SMS account, or an inherited one, sent it).
  */
 export interface OutboxMessage extends AuditStamp {
   id: Id
-  companyId: Id
-  branchId?: Id
+  unitId?: Id | null
+  unitName?: string | null
   patientId?: Id
   orderId?: Id
   channel: MessageChannel
@@ -31,7 +31,7 @@ export interface Notification {
   id: Id
   title: string
   body: string
-  kind: 'info' | 'success' | 'warning'
+  kind: 'info' | 'success' | 'warning' | 'error'
   createdAt: IsoDateTime
   read: boolean
   link?: string

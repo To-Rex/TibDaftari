@@ -1,8 +1,9 @@
-/** "Filtrlar" panel of the cheque list: payment method, amount, debt, discount, department, service, cashier. */
+/** "Filtrlar" panel of the cheque list: facility (when the administered unit has several), payment method, amount,
+ *  debt, discount, department, service, cashier. */
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Check } from 'lucide-react'
-import type { Category, OrderSummary, ServiceType } from '@/domain'
+import type { Category, Id, OrderSummary, OrgUnit, ServiceType } from '@/domain'
 import { cn } from '@/shared/lib/cn'
 import { fmtNumber } from '@/shared/lib/format'
 import { Button, Drawer, Field, Input, Segmented, Select } from '@/shared/ui'
@@ -15,7 +16,7 @@ const tri = (v: boolean | undefined): Tri => (v === true ? 'yes' : v === false ?
 const fromTri = (v: Tri): boolean | undefined => (v === 'yes' ? true : v === 'no' ? false : undefined)
 const num = (s: string): number | undefined => { const d = s.replace(/\D/g, ''); return d ? Number(d) : undefined }
 
-export function OrdersFilterDrawer({ open, onClose, value, onChange, categories, services, summary }: {
+export function OrdersFilterDrawer({ open, onClose, value, onChange, categories, services, summary, facilities, currentUnitId }: {
   open: boolean
   onClose: () => void
   value: ExtraFilters
@@ -23,9 +24,15 @@ export function OrdersFilterDrawer({ open, onClose, value, onChange, categories,
   categories?: Category[]
   services?: ServiceType[]
   summary?: OrderSummary
+  /** the facilities under the administered unit — the picker shows when there are several */
+  facilities?: OrgUnit[]
+  /** the facility the staff app works in (the picker's default) */
+  currentUnitId?: Id | null
 }) {
   const { t } = useTranslation()
   const set = (patch: Partial<ExtraFilters>) => onChange({ ...value, ...patch })
+  const multiUnit = !!facilities && facilities.length > 1
+  const currentUnit = facilities?.find((f) => f.id === currentUnitId)
 
   // departments as a tree (sub-departments indented under their parent)
   const catOptions = useMemo(() => {
@@ -53,6 +60,18 @@ export function OrdersFilterDrawer({ open, onClose, value, onChange, categories,
         <Button onClick={onClose} data-orders-filters-apply>{summary ? t(`${O}.showN`, { n: fmtNumber(summary.count) }) : t('common.close')}</Button>
       </>}>
       <div className="flex flex-col gap-5" data-orders-filters>
+        {multiUnit && (
+          <Field label={t(`${O}.unit`)} hint={t(`${O}.unitHint`)}>
+            {(id) => (
+              <Select id={id} value={value.unitId === undefined ? '' : value.unitId === null ? 'all' : value.unitId}
+                onChange={(e) => set({ unitId: e.target.value === '' ? undefined : e.target.value === 'all' ? null : e.target.value })} data-unit>
+                <option value="">{t(`${O}.unitCurrent`, { name: currentUnit?.name ?? '' })}</option>
+                <option value="all">{t(`${O}.unitAll`)}</option>
+                {facilities!.map((f) => <option key={f.id} value={f.id}>{f.name}{f.districtName ? ` · ${f.districtName}` : ''}</option>)}
+              </Select>
+            )}
+          </Field>
+        )}
         <Field label={t(`${O}.method`)} hint={t(`${O}.methodHint`)}>
           {() => (
             <div className="flex flex-wrap gap-2">

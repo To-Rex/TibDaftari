@@ -19,7 +19,8 @@ export interface OrdersTableProps {
   onPage: (p: number) => void
   onPageSize?: (s: number) => void
   showPatient?: boolean
-  branchName?: (id: string) => string | undefined
+  /** the facility column — for a list that spans several facilities (the API fills `unitName`) */
+  showUnit?: boolean
   footer?: boolean
   /** delete action — rendered only when `canDelete` is true (permission-gated by the caller) */
   onDelete?: (order: Order) => void
@@ -28,14 +29,14 @@ export interface OrdersTableProps {
   lockOldPayments?: boolean
 }
 
-export function OrdersTable({ page, loading, sortBy, sortDir, onSort, onPage, onPageSize, showPatient = true, branchName, footer, onDelete, canDelete, lockOldPayments }: OrdersTableProps) {
+export function OrdersTable({ page, loading, sortBy, sortDir, onSort, onPage, onPageSize, showPatient = true, showUnit, footer, onDelete, canDelete, lockOldPayments }: OrdersTableProps) {
   const { t } = useTranslation()
   const nav = useNavigate()
   const rows = page?.items ?? []
   const cols: Column<Order>[] = [
     { key: 'number', header: t('staff.orders.colNumber'), sortable: true, cell: (o) => <span className="font-mono font-medium whitespace-nowrap">{o.number}</span>, width: '112px', card: 'title' },
     ...(showPatient ? [{ key: 'patientName', header: t('staff.orders.colPatient'), sortable: true, cell: (o: Order) => <span className="flex min-w-0 flex-col"><span className="font-medium break-words">{o.patientName}</span><span className="text-[12px] text-ink-3 tabular whitespace-nowrap">{fmtPhone(o.patientPhone)}</span></span>, card: 'meta' as const }] : []),
-    ...(branchName ? [{ key: 'branchId', header: t('common.branch'), cell: (o: Order) => <span className="text-ink-2">{branchName(o.branchId) ?? '—'}</span>, hideBelow: 'lg' as const, className: 'max-xl:hidden', card: 'field' as const }] : []),
+    ...(showUnit ? [{ key: 'unitName', header: t('staff.orders.colUnit'), cell: (o: Order) => <span className="text-ink-2">{o.unitName ?? '—'}</span>, hideBelow: 'lg' as const, className: 'max-xl:hidden', card: 'field' as const }] : []),
     { key: 'createdAt', header: t('common.date'), sortable: true, cell: (o) => <span className="tabular text-ink-2 xl:whitespace-nowrap">{fmtDateTime(o.createdAt)}</span>, hideBelow: 'md', card: 'meta' },
     { key: 'itemCount', header: t('staff.orders.colItems'), align: 'center', cell: (o) => <span className="tabular">{o.itemCount}</span>, hideBelow: 'sm', width: '80px', className: showPatient ? 'max-xl:hidden' : undefined },
     { key: 'total', header: t('common.total'), sortable: true, align: 'right', cell: (o) => <span className="font-semibold whitespace-nowrap">{fmtMoney(o.total, false)}</span> },

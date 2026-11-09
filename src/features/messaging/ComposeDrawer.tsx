@@ -3,26 +3,39 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
 import { CalendarClock, Send, Users } from 'lucide-react'
+import { useWorkspace } from '@/app/layouts/AppShell'
 import { cn } from '@/shared/lib/cn'
 import { errorMessage } from '@/shared/lib/errors'
 import { fmtPhone } from '@/shared/lib/format'
-import { useCompany } from '@/features/org/queries'
-import { Button, Drawer, Field, Input, Switch, Textarea, toast } from '@/shared/ui'
+import { Button, Drawer, Field, Input, Select, Switch, Textarea, toast } from '@/shared/ui'
 import { useSendSms } from './queries'
 import { parseRecipients, smsInfo } from './sms'
 
-export function ComposeDrawer({ open, onClose, companyId, canBroadcast }: { open: boolean; onClose: () => void; companyId: string; canBroadcast: boolean }) {
+export function ComposeDrawer({ open, onClose, scopeId, canBroadcast }: {
+  open: boolean
+  onClose: () => void
+  /** the unit the outbox page works in — the facility, or (no facility chosen under it) a unit above facility level */
+  scopeId: string
+  canBroadcast: boolean
+}) {
   const { t } = useTranslation()
   const [to, setTo] = useState('')
   const [text, setText] = useState('')
   const [schedule, setSchedule] = useState(false)
   const [when, setWhen] = useState('')
-  const send = useSendSms(companyId)
-  const company = useCompany(companyId)
-  // the quick texts carry the clinic's own name/phone (from the API), never a demo clinic
-  const brand = company.data?.name?.trim() ?? ''
+  const [pickedUnitId, setPickedUnitId] = useState('')
+  const send = useSendSms(scopeId)
+  // a message goes out from a facility: the scope itself, or — when the scope sits above facility level — one picked here
+  const { shape } = useWorkspace()
+  const scopeUnit = shape.byId.get(scopeId)
+  const isFacility = !scopeUnit || scopeUnit.level === 'facility'
+  const facilities = useMemo(() => (isFacility ? [] : shape.facilitiesUnder(scopeId)), [isFacility, shape, scopeId])
+  const unitId = isFacility ? undefined : facilities.some((f) => f.id === pickedUnitId) ? pickedUnitId : facilities[0]?.id
+  // the quick texts carry the sending facility's own name / phone, never a demo clinic
+  const sender = shape.byId.get(unitId ?? scopeId)
+  const brand = sender?.name?.trim() ?? ''
   const sign = brand ? ` ${brand}` : ''
-  const contact = company.data?.phone ? ` Batafsil: ${fmtPhone(company.data.phone)}.` : ''
+  const contact = sender?.phone ? ` Batafsil: ${fmtPhone(sender.phone)}.` : ''
   const quickTemplates = useMemo(() => [
     { key: 'ready', text: `Hurmatli bemor! Tahlil natijalaringiz tayyor. Portalda ko‘rishingiz mumkin.${sign}` },
     { key: 'reminder', text: `Eslatma: ertaga soat 09:00 da qabulga yozilgansiz. Iltimos, kechikmang.${sign}` },
@@ -32,12 +45,12 @@ export function ComposeDrawer({ open, onClose, companyId, canBroadcast }: { open
   const rec = useMemo(() => parseRecipients(to), [to])
   const info = useMemo(() => smsInfo(text), [text])
   const tooMany = !canBroadcast && rec.valid.length > 1
-  const canSend = rec.valid.length > 0 && text.trim().length > 0 && !tooMany && (!schedule || !!when)
+  const canSend = rec.valid.length > 0 && text.trim().length > 0 && !tooMany && (!schedule || !!when) && (isFacility || !!unitId)
 
   const reset = () => { setTo(''); setText(''); setSchedule(false); setWhen('') }
   const doSend = async () => {
     try {
-      const out = await send.mutateAsync({ to: rec.valid, text: text.trim(), kind: rec.valid.length > 1 ? 'broadcast' : 'reminder', scheduledAt: schedule && when ? new Date(when).toISOString() : undefined })
+      const out = await send.mutateAsync({ to: rec.valid, text: text.trim(), kind: rec.valid.length > 1 ? 'broadcast' : 'reminder', scheduledAt: schedule && when ? new Date(when).toISOString() : undefined, unitId })
       toast.success(t('clinical.messages.sentToast', { n: out.length }))
       reset(); onClose()
     } catch (e) { toast.error(errorMessage(e)) }
@@ -52,6 +65,16 @@ export function ComposeDrawer({ open, onClose, companyId, canBroadcast }: { open
         </Button>
       </>}>
       <div className="flex flex-col gap-5">
+        {!isFacility && (
+          <Field label={t('clinical.messages.fromUnit')} required hint={t('clinical.messages.fromUnitHint')} error={facilities.length === 0 ? t('clinical.messages.noFacility') : undefined}>
+            {(id) => (
+              <Select id={id} value={unitId ?? ''} onChange={(e) => setPickedUnitId(e.target.value)} disabled={facilities.length === 0} data-compose-unit>
+                {facilities.map((f) => <option key={f.id} value={f.id}>{f.name}{f.code ? ` · ${f.code}` : ''}</option>)}
+              </Select>
+            )}
+          </Field>
+        )}
+
         <Field label={t('clinical.messages.recipients')} required hint={t('clinical.messages.recipientsHint')} error={tooMany ? t('clinical.messages.noBroadcastPerm') : rec.invalid.length ? t('clinical.messages.invalidPhones', { list: rec.invalid.slice(0, 3).join(', ') }) : undefined}>
           {(id) => (
             <div className="relative">

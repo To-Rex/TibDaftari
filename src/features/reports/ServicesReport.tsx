@@ -17,9 +17,9 @@ type Order = 'most' | 'least'
 type Unused = ServicesReportData['unused'][number]
 const UNUSED_PREVIEW = 12
 
-export function ServicesReport({ companyId, range, finance, canExport }: { companyId: Id; range: ReportRange; finance: boolean; canExport: boolean }) {
+export function ServicesReport({ scopeId, range, finance, canExport }: { scopeId: Id; range: ReportRange; finance: boolean; canExport: boolean }) {
   const { t, i18n } = useTranslation()
-  const q = useServicesReport(companyId, range)
+  const q = useServicesReport(scopeId, range)
   const d = q.data
   const [order, setOrder] = useState<Order>('most')
   const [search, setSearch] = useState('')

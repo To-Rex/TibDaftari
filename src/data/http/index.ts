@@ -1,7 +1,7 @@
 /** HTTP repository set — the only data source of the app (TibDaftari FastAPI backend). */
 import type { Repositories } from '../repositories'
 import { authHttp } from './auth.http'
-import { tenantHttp } from './tenant.http'
+import { orgHttp } from './org.http'
 import { staffHttp } from './staff.http'
 import { patientsHttp } from './patients.http'
 import { catalogHttp } from './catalog.http'
@@ -14,7 +14,7 @@ import { portalHttp } from './portal.http'
 
 export const httpRepositories: Repositories = {
   auth: authHttp,
-  tenant: tenantHttp,
+  org: orgHttp,
   staff: staffHttp,
   patients: patientsHttp,
   catalog: catalogHttp,

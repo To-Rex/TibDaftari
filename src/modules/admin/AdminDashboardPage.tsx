@@ -3,61 +3,62 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'motion/react'
-import { ArrowRight, Building2, CheckCircle2, CircleAlert, FolderTree, GitBranch, LayoutTemplate, ListChecks, ReceiptText, Send, ShieldCheck, UserCog, Bell } from 'lucide-react'
+import { ArrowRight, Building2, CircleCheck, CircleAlert, FolderTree, Hospital, Landmark, LayoutTemplate, ListChecks, ReceiptText, Send, ShieldCheck, UserCog, Bell } from 'lucide-react'
 import { repos } from '@/data'
-import { useStaffSession } from '@/features/session/useSession'
-import { useCompany } from '@/features/org/queries'
+import { useAdminScope } from '@/features/auth/store'
+import { useUnit, useUnitTree } from '@/features/org/queries'
+import { UnitBreadcrumb } from '@/features/org/UnitBreadcrumb'
+import { UnitLevelBadge } from '@/features/org/unitUi'
 import { routes } from '@/shared/config/routes'
 import { cn } from '@/shared/lib/cn'
-import { fmtDate, fmtRelative } from '@/shared/lib/format'
+import { fmtDate, fmtNumber, fmtRelative } from '@/shared/lib/format'
 import { Avatar, Badge, Card, CardHeader, EmptyState, MotionItem, MotionList, Page, PageHeader, Skeleton, Stat, fadeUp, stagger } from '@/shared/ui'
 
 interface Check { key: string; ok: boolean; label: string; fail: string; to: string }
 
 export default function AdminDashboardPage() {
   const { t } = useTranslation()
-  const { companyId } = useStaffSession()
-  const company = useCompany(companyId)
+  const { scopeId } = useAdminScope()
+  const unit = useUnit(scopeId)
+  const tree = useUnitTree()
   const overview = useQuery({
-    queryKey: ['admin-overview', companyId],
+    queryKey: ['admin-overview', scopeId],
     queryFn: async () => {
-      const [branches, employees, serviceTypes, templates, schemas] = await Promise.all([
-        repos.tenant.listBranches(companyId),
-        repos.staff.listEmployees(companyId, { pageSize: 200 }),
-        repos.catalog.listServiceTypes(companyId),
-        repos.templates.list(companyId),
-        repos.catalog.listSchemas(companyId),
+      const [activeEmployees, serviceTypes, templates, schemas] = await Promise.all([
+        repos.staff.listEmployees(scopeId, { pageSize: 1, status: 'active' }),
+        repos.catalog.listServiceTypes(scopeId),
+        repos.templates.list(scopeId),
+        repos.catalog.listSchemas(scopeId),
       ])
-      return { branches, employees: employees.items, serviceTypes, templates, schemas }
+      return { activeEmployees: activeEmployees.total, serviceTypes, templates, schemas }
     },
+    enabled: !!scopeId,
   })
   const notifications = useQuery({ queryKey: ['notifications'], queryFn: () => repos.messaging.notifications() })
 
   const checks = useMemo<Check[]>(() => {
     const o = overview.data
-    const c = company.data
-    if (!o || !c) return []
+    const u = unit.data
+    if (!o || !u) return []
     const activeTpl = o.templates.filter((x) => x.status === 'active' && x.scope !== 'receipt') // cheque templates are not result documents
     const generic = activeTpl.some((x) => !x.serviceTypeIds.length && !x.categoryIds.length)
     const missing = o.serviceTypes.filter((s) => s.isActive && !generic && !activeTpl.some((x) => x.serviceTypeIds.includes(s.id) || x.categoryIds.includes(s.categoryId)))
-    const branchless = o.employees.filter((e) => e.status === 'active' && !e.branchIds.length)
     const published = o.schemas.filter((s) => s.status === 'published').length
-    // every active branch sends: with its own key, or on the shared company key (a branch switched off on purpose is fine)
-    const companyKey = c.sms.provider === 'xabarchi' && !!c.sms.apiKeyMasked
-    const liveBranches = o.branches.filter((b) => b.isActive)
-    const sends = (b: (typeof liveBranches)[number]) => b.smsMode === 'own' || (b.smsMode !== 'off' && companyKey)
-    const smsOk = liveBranches.length ? liveBranches.every((b) => b.smsMode === 'off' || sends(b)) && liveBranches.some(sends) : companyKey
+    // an SMS account somewhere on the path (own or inherited) — or SMS switched off on purpose
+    const smsOk = u.sms?.provider === 'xabarchi' || u.sms?.mode === 'off'
+    // a unit above the facilities needs at least one facility to write cheques in; a facility must be active
+    const facilitiesOk = u.level === 'facility' ? u.isActive : u.counts.facilities > 0
     return [
       { key: 'sms', ok: smsOk, label: t('admin.dashboard.checkSms'), fail: t('admin.dashboard.checkSmsFail'), to: routes.admin.sms },
       { key: 'tpl', ok: !missing.length, label: t('admin.dashboard.checkTemplates'), fail: t('admin.dashboard.checkTemplatesFail', { count: missing.length }), to: routes.admin.templates },
-      { key: 'br', ok: !branchless.length, label: t('admin.dashboard.checkBranchless'), fail: t('admin.dashboard.checkBranchlessFail', { count: branchless.length }), to: routes.admin.employees },
+      { key: 'fac', ok: facilitiesOk, label: t(u.level === 'facility' ? 'admin.dashboard.checkActive' : 'admin.dashboard.checkFacilities'), fail: t(u.level === 'facility' ? 'admin.dashboard.checkActiveFail' : 'admin.dashboard.checkFacilitiesFail'), to: u.level === 'facility' ? routes.admin.unit : routes.admin.units },
       { key: 'sch', ok: published > 0, label: t('admin.dashboard.checkSchemas'), fail: t('admin.dashboard.checkSchemasFail'), to: routes.admin.schemas },
     ]
-  }, [overview.data, company.data, t])
+  }, [overview.data, unit.data, t])
 
   const links = [
-    { to: routes.admin.company, icon: <Building2 />, title: t('admin.dashboard.quickCompany'), sub: t('admin.dashboard.quickCompanySub') },
-    { to: routes.admin.branches, icon: <GitBranch />, title: t('admin.dashboard.quickBranches'), sub: t('admin.dashboard.quickBranchesSub') },
+    { to: routes.admin.unit, icon: <Building2 />, title: t('admin.dashboard.quickUnit'), sub: t('admin.dashboard.quickUnitSub') },
+    { to: routes.admin.units, icon: <Landmark />, title: t('admin.dashboard.quickUnits'), sub: t('admin.dashboard.quickUnitsSub') },
     { to: routes.admin.employees, icon: <UserCog />, title: t('admin.dashboard.quickEmployees'), sub: t('admin.dashboard.quickEmployeesSub') },
     { to: routes.admin.roles, icon: <ShieldCheck />, title: t('admin.dashboard.quickRoles'), sub: t('admin.dashboard.quickRolesSub') },
     { to: routes.admin.catalog, icon: <FolderTree />, title: t('admin.dashboard.quickCatalog'), sub: t('admin.dashboard.quickCatalogSub') },
@@ -67,36 +68,36 @@ export default function AdminDashboardPage() {
   ]
 
   const o = overview.data
-  const c = company.data
+  const u = unit.data
   const done = checks.filter((x) => x.ok).length
   const activeSt = o?.serviceTypes.filter((s) => s.isActive).length ?? 0
   const activeTpl = o?.templates.filter((x) => x.status === 'active').length ?? 0
-  const activeEmp = o?.employees.filter((e) => e.status === 'active').length ?? 0
 
   return (
     <Page>
       <PageHeader title={t('admin.dashboard.title')} description={t('admin.dashboard.subtitle')} />
 
-      {/* Company card */}
-      <Card className="mb-6 relative overflow-hidden">
+      {/* Unit card */}
+      <Card className="mb-6 relative overflow-hidden" data-dashboard-unit>
         <div aria-hidden className="pointer-events-none absolute -right-20 -top-24 size-72 rounded-full bg-brand/8 blur-3xl" />
-        {c ? (
+        {u ? (
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
-            <Avatar name={c.name} src={c.logoUrl} size="xl" className="rounded-2xl shrink-0" />
+            <Avatar name={u.name} src={u.logoUrl ?? undefined} size="xl" className="rounded-2xl shrink-0" />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-[20px] font-semibold tracking-tight break-words min-w-0">{c.name}</h2>
-                <Badge tone={c.isActive ? 'ok' : 'neutral'} dot>{c.isActive ? t('common.active') : t('common.inactive')}</Badge>
+                <h2 className="text-[20px] font-semibold tracking-tight break-words min-w-0">{u.name}</h2>
+                <UnitLevelBadge unit={u} size="md" />
+                <Badge tone={u.isActive ? 'ok' : 'neutral'} dot>{u.isActive ? t('common.active') : t('common.inactive')}</Badge>
               </div>
-              {c.legalName && <p className="text-[13.5px] text-ink-3 mt-0.5">{c.legalName}</p>}
+              {tree.data && <UnitBreadcrumb units={tree.data} unitId={u.id} compact className="mt-1" />}
               <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[13px] text-ink-2 min-w-0">
-                {c.address && <span className="break-words min-w-0">{c.address}</span>}
-                {c.phone && <span className="tabular">{c.phone}</span>}
-                <span className="text-ink-3">{t('admin.dashboard.since')}: {fmtDate(c.createdAt)}</span>
-                <span className="font-mono text-ink-3 break-all">{t('admin.dashboard.companyId')}: {c.id}</span>
+                {u.address && <span className="break-words min-w-0">{u.address}</span>}
+                {u.phone && <span className="tabular">{u.phone}</span>}
+                <span className="text-ink-3">{t('admin.dashboard.since')}: {fmtDate(u.createdAt)}</span>
+                {u.code && <span className="font-mono text-ink-3">{u.code}</span>}
               </div>
             </div>
-            <Link to={routes.admin.company} className="inline-flex items-center gap-1.5 text-[13.5px] font-medium text-brand-ink hover:underline underline-offset-4 shrink-0">
+            <Link to={routes.admin.unit} className="inline-flex items-center gap-1.5 text-[13.5px] font-medium text-brand-ink hover:underline underline-offset-4 shrink-0">
               {t('common.edit')} <ArrowRight className="size-4" />
             </Link>
           </div>
@@ -108,13 +109,15 @@ export default function AdminDashboardPage() {
       {/* Stats */}
       <MotionList variants={stagger} initial="hidden" animate="show" className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,150px),1fr))] gap-3 sm:gap-4 mb-6">
         {[
-          { label: t('admin.dashboard.branches'), value: o?.branches.length, sub: o && t('admin.dashboard.ofTotal', { active: o.branches.filter((b) => b.isActive).length, total: o.branches.length }), icon: <GitBranch />, tone: 'brand' as const },
-          { label: t('admin.dashboard.employees'), value: o?.employees.length, sub: o && t('admin.dashboard.ofTotal', { active: activeEmp, total: o.employees.length }), icon: <UserCog />, tone: 'info' as const },
-          { label: t('admin.dashboard.serviceTypes'), value: o?.serviceTypes.length, sub: o && t('admin.dashboard.ofTotal', { active: activeSt, total: o.serviceTypes.length }), icon: <ListChecks />, tone: 'accent' as const },
-          { label: t('admin.dashboard.activeTemplates'), value: activeTpl, sub: o && t('admin.dashboard.ofTotal', { active: activeTpl, total: o.templates.length }), icon: <LayoutTemplate />, tone: 'ok' as const },
+          u?.level === 'facility'
+            ? { label: t('admin.dashboard.facility'), value: u ? (u.isActive ? t('common.active') : t('common.inactive')) : undefined, sub: u?.code ?? undefined, icon: <Hospital />, tone: 'brand' as const }
+            : { label: t('admin.dashboard.facilities'), value: u ? fmtNumber(u.counts.facilities) : undefined, sub: u && u.level !== 'district' ? t('admin.dashboard.districtsCount', { count: u.counts.districts }) : undefined, icon: <Hospital />, tone: 'brand' as const },
+          { label: t('admin.dashboard.employees'), value: u ? fmtNumber(u.counts.employees) : undefined, sub: o && u ? t('admin.dashboard.ofTotal', { active: o.activeEmployees, total: u.counts.employees }) : undefined, icon: <UserCog />, tone: 'info' as const },
+          { label: t('admin.dashboard.serviceTypes'), value: o ? fmtNumber(o.serviceTypes.length) : undefined, sub: o && t('admin.dashboard.ofTotal', { active: activeSt, total: o.serviceTypes.length }), icon: <ListChecks />, tone: 'accent' as const },
+          { label: t('admin.dashboard.activeTemplates'), value: o ? fmtNumber(activeTpl) : undefined, sub: o && t('admin.dashboard.ofTotal', { active: activeTpl, total: o.templates.length }), icon: <LayoutTemplate />, tone: 'ok' as const },
         ].map((s) => (
           <MotionItem key={s.label} variants={fadeUp}>
-            <Stat label={s.label} value={o ? s.value : <Skeleton className="h-7 w-12" />} sub={s.sub} icon={s.icon} tone={s.tone} />
+            <Stat label={s.label} value={s.value ?? <Skeleton className="h-7 w-12" />} sub={s.sub} icon={s.icon} tone={s.tone} />
           </MotionItem>
         ))}
       </MotionList>
@@ -133,7 +136,7 @@ export default function AdminDashboardPage() {
                 <MotionList variants={stagger} initial="hidden" animate="show" className="flex flex-col divide-y divide-line/70">
                   {checks.map((ch) => (
                     <MotionItem key={ch.key} variants={fadeUp} className="flex items-center gap-3 py-3 min-w-0">
-                      {ch.ok ? <CheckCircle2 className="size-5 text-ok shrink-0" /> : <CircleAlert className="size-5 text-warn shrink-0" />}
+                      {ch.ok ? <CircleCheck className="size-5 text-ok shrink-0" /> : <CircleAlert className="size-5 text-warn shrink-0" />}
                       <div className="min-w-0 flex-1">
                         <p className={cn('text-[14px] leading-5 break-words', ch.ok ? 'text-ink' : 'text-ink font-medium')}>{ch.label}</p>
                         {!ch.ok && <p className="text-[12.5px] text-ink-3">{ch.fail}</p>}

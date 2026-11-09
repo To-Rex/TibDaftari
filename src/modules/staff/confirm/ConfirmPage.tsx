@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { useStaffSession } from '@/features/session/useSession'
-import { usePermissions } from '@/features/auth/store'
+import { usePermissions, useStaffScope } from '@/features/auth/store'
 import { CategoryTabs, type CategorySelection } from '@/features/lab/CategoryTabs'
 import { DateRangeFilter, initialRange, type RangeState } from '@/features/lab/DateRangeFilter'
 import { useApproveItem, useLabCategories, useRejectItem, useRevokeItem, useWorklist } from '@/features/lab/queries'
@@ -19,7 +19,9 @@ type Queue = 'submitted' | 'approved'
 
 export default function ConfirmPage() {
   const { t } = useTranslation()
-  const { companyId, employeeId, branchId } = useStaffSession()
+  const { employeeId } = useStaffSession()
+  // the queue of the facility the staff app works in
+  const { scopeId } = useStaffScope()
   const { can } = usePermissions()
   const [sp, setSp] = useSearchParams()
   const selectedId = sp.get('item')
@@ -40,7 +42,7 @@ export default function ConfirmPage() {
   const [approveOpen, setApproveOpen] = useState<{ templateId?: string } | null>(null)
   const [justApproved, setJustApproved] = useState<string | null>(null)
 
-  const cats = useLabCategories(companyId, employeeId)
+  const cats = useLabCategories(scopeId, employeeId)
   const categoryIds = useMemo(() => {
     if (!cats.data) return undefined
     if (cat.rootId === 'all') return cats.data.allIds
@@ -49,7 +51,7 @@ export default function ConfirmPage() {
   }, [cats.data, cat])
   useEffect(() => setPage(1), [cat, queue, range, q])
 
-  const list = useWorklist(companyId, { branchId: branchId ?? undefined, categoryIds, status: [queue], dateFrom: range.range.from, dateTo: range.range.to, search: q || undefined, page, pageSize: 20 }, { refetchInterval: 30_000, enabled: !!cats.data })
+  const list = useWorklist(scopeId, { categoryIds, status: [queue], dateFrom: range.range.from, dateTo: range.range.to, search: q || undefined, page, pageSize: 20 }, { refetchInterval: 30_000, enabled: !!cats.data })
   const rows = useMemo(() => list.data?.items ?? [], [list.data])
 
   const approve = useApproveItem()
@@ -152,7 +154,7 @@ export default function ConfirmPage() {
           )}
         </Card>
         <div className={cn('min-w-0', !selectedId && 'max-lg:hidden')}>
-          <ConfirmDetail companyId={companyId} itemId={selectedId} approvedOnly={approvedOnly} onBack={() => select(null)} onApprove={(tid) => setApproveOpen({ templateId: tid })} onReject={() => setRejectOpen(true)} onRevoke={() => setRevokeOpen(true)} approving={approve.isPending} justApproved={justApproved}
+          <ConfirmDetail scopeId={scopeId} itemId={selectedId} approvedOnly={approvedOnly} onBack={() => select(null)} onApprove={(tid) => setApproveOpen({ templateId: tid })} onReject={() => setRejectOpen(true)} onRevoke={() => setRevokeOpen(true)} approving={approve.isPending} justApproved={justApproved}
             onOrderApproved={(ids) => { if (selectedId) { setJustApproved(selectedId); setTimeout(() => { setJustApproved(null); const next = rows.find((r) => !ids.includes(r.id)); select(next?.id ?? null) }, 900) } }} />
         </div>
       </div>

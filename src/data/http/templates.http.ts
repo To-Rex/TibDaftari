@@ -14,7 +14,7 @@ const templateBody = (input: Partial<ResultTemplate>, withStatus: boolean) =>
     description: input.description,
     serviceTypeIds: input.serviceTypeIds,
     categoryIds: input.categoryIds,
-    branchIds: input.branchIds,
+    unitIds: input.unitIds,
     scope: input.scope,
     language: input.language,
     doc: input.doc,
@@ -25,9 +25,9 @@ const templateBody = (input: Partial<ResultTemplate>, withStatus: boolean) =>
 const withAbsoluteUrl = (a: TemplateAsset): TemplateAsset => ({ ...a, url: absoluteUrl(a.url) ?? a.url })
 
 export const templatesHttp: TemplateRepository = {
-  list: (companyId, q) =>
-    api.get<ResultTemplate[]>(`/companies/${companyId}/templates`, {
-      query: { status: q?.status, serviceTypeId: q?.serviceTypeId, branchId: q?.branchId, search: q?.search },
+  list: (scopeId, q) =>
+    api.get<ResultTemplate[]>(`/units/${scopeId}/templates`, {
+      query: { status: q?.status, serviceTypeId: q?.serviceTypeId, unitId: q?.unitId, search: q?.search },
     }),
 
   get: (id) => api.get<ResultTemplate>(`/templates/${id}`),
@@ -35,23 +35,23 @@ export const templatesHttp: TemplateRepository = {
   save: (input) =>
     input.id
       ? api.put<ResultTemplate>(`/templates/${input.id}`, templateBody(input, false))
-      : api.post<ResultTemplate>(`/companies/${input.companyId}/templates`, templateBody(input, true)),
+      : api.post<ResultTemplate>(`/units/${input.scopeId}/templates`, templateBody(input, true)),
 
   setStatus: (id, status) => api.post<ResultTemplate>(`/templates/${id}/status`, { status }),
 
-  duplicate: (id, opts) => api.post<ResultTemplate>(`/templates/${id}/duplicate`, compact({ name: opts?.name, branchIds: opts?.branchIds })),
+  duplicate: (id, opts) => api.post<ResultTemplate>(`/templates/${id}/duplicate`, compact({ name: opts?.name, unitIds: opts?.unitIds })),
 
-  createDefaultReceipt: (companyId, input) => api.post<ResultTemplate>(`/companies/${companyId}/templates/default-receipt`, compact({ name: input?.name, branchIds: input?.branchIds, paper: input?.paper, language: input?.language })),
+  createDefaultReceipt: (scopeId, input) => api.post<ResultTemplate>(`/units/${scopeId}/templates/default-receipt`, compact({ name: input?.name, unitIds: input?.unitIds, paper: input?.paper, language: input?.language })),
 
   delete: (id) => api.delete<void>(`/templates/${id}`),
 
-  listAssets: async (companyId: Id) => (await api.get<TemplateAsset[]>(`/companies/${companyId}/assets`)).map(withAbsoluteUrl),
+  listAssets: async (scopeId: Id) => (await api.get<TemplateAsset[]>(`/units/${scopeId}/assets`)).map(withAbsoluteUrl),
 
   /** `asset.url` is a data URL; the API stores it as a file and returns `/api/v1/files/{id}`. */
-  uploadAsset: async (companyId, asset) => {
+  uploadAsset: async (scopeId, asset) => {
     const body = compact({ kind: asset.kind, name: asset.name, url: asset.url, width: asset.width, height: asset.height, employeeId: asset.employeeId })
-    return withAbsoluteUrl(await api.post<TemplateAsset>(`/companies/${companyId}/assets`, body))
+    return withAbsoluteUrl(await api.post<TemplateAsset>(`/units/${scopeId}/assets`, body))
   },
 
-  deleteAsset: (companyId, assetId) => api.delete<void>(`/companies/${companyId}/assets/${assetId}`),
+  deleteAsset: (scopeId, assetId) => api.delete<void>(`/units/${scopeId}/assets/${assetId}`),
 }

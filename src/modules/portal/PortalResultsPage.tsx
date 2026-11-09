@@ -4,14 +4,15 @@ import { AnimatePresence, motion } from 'motion/react'
 import { FolderOpen } from 'lucide-react'
 import { usePatientSession } from '@/features/session/useSession'
 import { stagger } from '@/features/portal/motion'
-import { usePortalOverview } from '@/features/portal/queries'
+import { placeNames, usePortalOverview } from '@/features/portal/queries'
 import { ResultRow } from '@/features/portal/components/ResultRow'
 import { FilterChips } from '@/features/portal/components/FilterChips'
 import { fmtDate } from '@/shared/lib/format'
 import { errorMessage } from '@/shared/lib/errors'
 import { Card, EmptyState, MotionList, Page, PageHeader, SkeletonRows, toast } from '@/shared/ui'
 
-type Filter = 'all' | 'month' | `c:${string}`
+/** all · this month · one organisation (`o:`) or, when there is a single organisation, one facility (`u:`) */
+type Filter = 'all' | 'month' | `o:${string}` | `u:${string}`
 
 export default function PortalResultsPage() {
   const { t } = useTranslation()
@@ -24,18 +25,21 @@ export default function PortalResultsPage() {
   }, [q.error, t])
 
   const data = q.data
-  const clinicName = (id: string) => data?.companies.find((c) => c.id === id)?.name
+  const { place } = placeNames(data)
   const orderOf = (id: string) => data?.orders.find((o) => o.id === id)
 
   const groups = useMemo(() => {
     const docs = data?.documents ?? []
+    const { orgOf } = placeNames(data)
     const nowKey = new Date().toISOString().slice(0, 7)
     const filtered = docs.filter((d) =>
       filter === 'all'
         ? true
         : filter === 'month'
           ? d.createdAt.slice(0, 7) === nowKey
-          : d.companyId === filter.slice(2),
+          : filter.startsWith('o:')
+            ? orgOf(d.unitId)?.id === filter.slice(2)
+            : d.unitId === filter.slice(2),
     )
     const map = new Map<string, typeof docs>()
     for (const d of filtered) {
@@ -49,12 +53,19 @@ export default function PortalResultsPage() {
     }))
   }, [data, filter])
 
+  // several organisations → a chip per organisation; one organisation with several facilities → a chip per facility
+  const orgs = data?.orgs ?? []
+  const units = data?.units ?? []
+  const placeChips: { value: Filter; label: string }[] =
+    orgs.length > 1
+      ? orgs.map((o) => ({ value: `o:${o.id}` as Filter, label: o.name }))
+      : units.length > 1
+        ? units.map((u) => ({ value: `u:${u.id}` as Filter, label: u.name }))
+        : []
   const chips = [
     { value: 'all' as Filter, label: t('portal.results.all'), count: data?.documents.length },
     { value: 'month' as Filter, label: t('portal.results.thisMonth') },
-    ...((data?.companies.length ?? 0) > 1
-      ? (data?.companies ?? []).map((c) => ({ value: `c:${c.id}` as Filter, label: c.name }))
-      : []),
+    ...placeChips,
   ]
 
   return (
@@ -109,7 +120,7 @@ export default function PortalResultsPage() {
                       <ResultRow
                         key={d.id}
                         doc={d}
-                        clinic={clinicName(d.companyId)}
+                        place={place(d)}
                         orderNumber={orderOf(d.orderId)?.number}
                         showChannels
                       />

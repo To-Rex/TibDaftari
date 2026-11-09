@@ -4,7 +4,7 @@ import { motion } from 'motion/react'
 import { CalendarDays, FileCheck2, FolderOpen, Wallet } from 'lucide-react'
 import { usePatientSession } from '@/features/session/useSession'
 import { stagger } from '@/features/portal/motion'
-import { branchNameMap, usePortalOverview } from '@/features/portal/queries'
+import { placeNames, usePortalOverview } from '@/features/portal/queries'
 import { firstName, isRecent } from '@/features/portal/status'
 import { SummaryCard } from '@/features/portal/components/SummaryCard'
 import { SectionHeader } from '@/features/portal/components/SectionHeader'
@@ -22,14 +22,14 @@ export default function PortalHomePage() {
   const { t } = useTranslation()
   const session = usePatientSession()
   const q = usePortalOverview(session.patientId)
-  const branchNames = branchNameMap(q.data?.branches)
+  // "Tashkilot · Muassasa" behind every cheque / document
+  const { place } = placeNames(q.data)
 
   useEffect(() => {
     if (q.error) toast.error(t('portal.common.loadError'), errorMessage(q.error))
   }, [q.error, t])
 
   const data = q.data
-  const clinicName = (companyId: string) => data?.companies.find((c) => c.id === companyId)?.name
   const orderOf = (orderId: string) => data?.orders.find((o) => o.id === orderId)
   const docs = data?.documents ?? []
   const orders = data?.orders ?? []
@@ -99,13 +99,7 @@ export default function PortalHomePage() {
             tone="brand"
             label={t('portal.home.lastVisit')}
             value={last ? fmtDate(last.createdAt) : '—'}
-            sub={
-              last
-                ? [clinicName(last.companyId), branchNames.get(last.branchId)]
-                    .filter(Boolean)
-                    .join(' · ')
-                : t('portal.home.noVisits')
-            }
+            sub={last ? place(last) : t('portal.home.noVisits')}
             to={last ? routes.portal.visit(last.id) : routes.portal.visits}
           />
           <SummaryCard
@@ -152,7 +146,7 @@ export default function PortalHomePage() {
                   <ResultRow
                     key={d.id}
                     doc={d}
-                    clinic={clinicName(d.companyId)}
+                    place={place(d)}
                     orderNumber={orderOf(d.orderId)?.number}
                   />
                 ))}
@@ -185,14 +179,7 @@ export default function PortalHomePage() {
                 className="divide-line divide-y"
               >
                 {orders.slice(0, 3).map((o) => (
-                  <VisitRow
-                    key={o.id}
-                    order={o}
-                    compact
-                    place={[clinicName(o.companyId), branchNames.get(o.branchId)]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  />
+                  <VisitRow key={o.id} order={o} compact place={place(o)} />
                 ))}
               </MotionList>
             )}

@@ -25,20 +25,24 @@ export function ResultInfoPanel({
   item,
   order,
   ctx,
-  clinic,
-  branch,
+  org,
+  unit,
   className,
 }: {
   item?: OrderItem
   order: Order
   ctx: RenderContext
-  clinic?: string
-  branch?: string
+  /** the organisation the result was issued by (the letterhead) */
+  org?: string
+  /** the facility that did the work */
+  unit?: string
   className?: string
 }) {
   const { t } = useTranslation()
   const abnormal = abnormalEntries(ctx)
   const checked = checkedCount(ctx)
+  // a facility right under a region node carries the organisation's own name — one line then
+  const sameName = !!org && !!unit && org === unit
 
   return (
     <div className={cn('flex flex-col gap-4', className)}>
@@ -51,10 +55,8 @@ export function ResultInfoPanel({
             label={t('portal.common.service')}
             value={item?.serviceName ?? ctx.item.serviceName}
           />
-          <Row
-            label={t('portal.common.clinic')}
-            value={[clinic, branch].filter(Boolean).join(' · ')}
-          />
+          <Row label={t('portal.common.org')} value={sameName ? undefined : org} />
+          <Row label={t('portal.common.unit')} value={unit} />
           <Row label={t('portal.common.doctor')} value={item?.doctorName} />
           <Row label={t('portal.common.technician')} value={item?.technicianName} />
           <Row label={t('portal.result.orderedAt')} value={fmtDate(order.createdAt)} />

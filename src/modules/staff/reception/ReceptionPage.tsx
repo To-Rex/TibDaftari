@@ -5,17 +5,16 @@ import { ArrowLeft, ClipboardList } from 'lucide-react'
 import type { Patient } from '@/domain'
 import { Button, Card, EmptyState, Kbd, Page, PageHeader } from '@/shared/ui'
 import { cn } from '@/shared/lib/cn'
-import { usePermissions } from '@/features/auth/store'
-import { useStaffSession } from '@/features/session/useSession'
+import { usePermissions, useStaffScope } from '@/features/auth/store'
 import { PatientDrawer } from '@/features/patients/PatientDrawer'
 import { PatientSearchPanel } from '@/features/reception/PatientSearchPanel'
 import { PatientSummary } from '@/features/reception/PatientSummary'
-import { BranchPickerModal } from '@/features/reception/BranchPickerModal'
 import { useNewOrder } from '@/features/reception/useNewOrder'
 
 export default function ReceptionPage() {
   const { t } = useTranslation()
-  const { companyId } = useStaffSession()
+  // the facility the staff app works in — patients are searched and cheques written there
+  const { scopeId } = useStaffScope()
   const { can } = usePermissions()
   const [selected, setSelected] = useState<Patient | null>(null)
   const [drawer, setDrawer] = useState<{ open: boolean; patient: Patient | null }>({ open: false, patient: null })
@@ -34,7 +33,7 @@ export default function ReceptionPage() {
         actions={<span className="max-md:hidden text-[12.5px] text-ink-3 inline-flex items-center gap-1.5">{t('staff.reception.shortcutHint')} <Kbd>/</Kbd> · <Kbd>?</Kbd></span>} />
       <div className="grid min-h-0 flex-1 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] 3xl:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
         <Card className={cn('flex min-h-[420px] min-w-0 flex-col lg:min-h-0', detailOnSmall && 'max-lg:hidden')} padded>
-          <PatientSearchPanel companyId={companyId} selectedId={selected?.id} onSelect={setSelected} onNew={() => setDrawer({ open: true, patient: null })} inputRef={inputRef} canCreate={canCreatePatient} />
+          <PatientSearchPanel scopeId={scopeId} selectedId={selected?.id} onSelect={setSelected} onNew={() => setDrawer({ open: true, patient: null })} inputRef={inputRef} canCreate={canCreatePatient} />
         </Card>
         <div className={cn('min-h-0 min-w-0', !detailOnSmall && 'max-lg:hidden')}>
           <AnimatePresence mode="wait" initial={false}>
@@ -44,7 +43,7 @@ export default function ReceptionPage() {
                   <Button variant="ghost" size="sm" leftIcon={<ArrowLeft className="size-4" />} onClick={() => setSelected(null)}>{t('common.back')}</Button>
                 </div>
                 <div className="min-h-0 flex-1">
-                  <PatientSummary companyId={companyId} patient={selected} onNewOrder={() => newOrder.start(selected.id)} creating={newOrder.creating} canCreate={canCreateOrder} canEdit={canCreatePatient} onEdit={() => setDrawer({ open: true, patient: selected })} />
+                  <PatientSummary scopeId={scopeId} patient={selected} onNewOrder={() => newOrder.start(selected.id)} creating={newOrder.creating} canCreate={canCreateOrder} canEdit={canCreatePatient} onEdit={() => setDrawer({ open: true, patient: selected })} />
                 </div>
               </div>
             ) : (
@@ -58,10 +57,9 @@ export default function ReceptionPage() {
         </div>
       </div>
 
-      <PatientDrawer open={drawer.open} onClose={() => setDrawer((d) => ({ ...d, open: false }))} companyId={companyId} patient={drawer.patient}
+      <PatientDrawer open={drawer.open} onClose={() => setDrawer((d) => ({ ...d, open: false }))} scopeId={scopeId} patient={drawer.patient}
         onSaved={(p) => { setSelected(p); setDrawer({ open: false, patient: null }) }}
         onPickExisting={(p) => { setSelected(p); setDrawer({ open: false, patient: null }) }} />
-      <BranchPickerModal open={newOrder.pickerOpen} onClose={newOrder.closePicker} companyId={companyId} onPick={newOrder.pickBranch} loading={newOrder.creating} />
     </Page>
   )
 }

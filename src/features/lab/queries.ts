@@ -1,10 +1,11 @@
-/** React-query hooks for lab / confirm workflows. */
+/** React-query hooks for lab / confirm workflows. `scopeId` = the facility the staff app works in. */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Category, Id, ItemStatus, ValueMap } from '@/domain'
 import { repos } from '@/data'
 
 export interface WorklistParams {
-  branchId?: Id
+  /** narrow to one unit under the scope (the scope is normally the facility itself, so this stays unset) */
+  unitId?: Id
   categoryIds?: Id[]
   status?: ItemStatus[]
   dateFrom?: string
@@ -15,17 +16,17 @@ export interface WorklistParams {
 }
 
 export const labKeys = {
-  worklist: (companyId: Id, p: WorklistParams) => ['worklist', companyId, p] as const,
+  worklist: (scopeId: Id, p: WorklistParams) => ['worklist', scopeId, p] as const,
   item: (id: Id) => ['item', id] as const,
   schema: (id: Id) => ['schema', id] as const,
-  categories: (companyId: Id) => ['categories', companyId] as const,
+  categories: (scopeId: Id) => ['categories', scopeId] as const,
   employee: (id: Id) => ['employee', id] as const,
 }
 
-export function useWorklist(companyId: Id, params: WorklistParams, opts?: { refetchInterval?: number; enabled?: boolean }) {
+export function useWorklist(scopeId: Id, params: WorklistParams, opts?: { refetchInterval?: number; enabled?: boolean }) {
   return useQuery({
-    queryKey: labKeys.worklist(companyId, params),
-    queryFn: () => repos.orders.worklist(companyId, params),
+    queryKey: labKeys.worklist(scopeId, params),
+    queryFn: () => repos.orders.worklist(scopeId, params),
     placeholderData: (prev) => prev,
     refetchInterval: opts?.refetchInterval,
     enabled: opts?.enabled ?? true,
@@ -33,10 +34,10 @@ export function useWorklist(companyId: Id, params: WorklistParams, opts?: { refe
 }
 
 /** Status-tab counters in ONE request (replaces one worklist request per tab). */
-export function useWorklistCounts(companyId: Id, params: Omit<WorklistParams, 'status' | 'page' | 'pageSize'>, opts?: { refetchInterval?: number; enabled?: boolean }) {
+export function useWorklistCounts(scopeId: Id, params: Omit<WorklistParams, 'status' | 'page' | 'pageSize'>, opts?: { refetchInterval?: number; enabled?: boolean }) {
   return useQuery({
-    queryKey: ['worklist-counts', companyId, params] as const,
-    queryFn: () => repos.orders.worklistCounts(companyId, params),
+    queryKey: ['worklist-counts', scopeId, params] as const,
+    queryFn: () => repos.orders.worklistCounts(scopeId, params),
     placeholderData: (prev) => prev,
     refetchInterval: opts?.refetchInterval,
     enabled: opts?.enabled ?? true,
@@ -50,15 +51,15 @@ export const useSchema = (schemaId: Id | null | undefined) =>
   useQuery({ queryKey: labKeys.schema(schemaId ?? ''), queryFn: () => repos.catalog.getSchema(schemaId!), enabled: !!schemaId, staleTime: 5 * 60_000 })
 
 /**
- * Lab categories visible to the current employee. Restricts to employee.categoryIds
- * (plus their subtree) when set. Returns top-level nodes with their allowed children.
+ * Lab categories visible to the current employee (the catalogue usable at the scope unit). Restricts to
+ * employee.categoryIds (plus their subtree) when set. Returns top-level nodes with their allowed children.
  */
-export function useLabCategories(companyId: Id, employeeId: Id) {
+export function useLabCategories(scopeId: Id, employeeId: Id) {
   return useQuery({
-    queryKey: [...labKeys.categories(companyId), 'lab', employeeId],
+    queryKey: [...labKeys.categories(scopeId), 'lab', employeeId],
     queryFn: async () => {
       const [cats, emp] = await Promise.all([
-        repos.catalog.listCategories(companyId),
+        repos.catalog.listCategories(scopeId),
         repos.staff.getEmployee(employeeId).catch(() => null),
       ])
       const lab = cats.filter((c) => c.workflow === 'lab' && c.isActive)

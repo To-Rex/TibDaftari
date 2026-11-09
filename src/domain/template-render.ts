@@ -96,8 +96,13 @@ export interface RenderContext {
     rejectReason?: string
     schemaVersion?: string
   }
-  company: { name: string; legalName?: string; slug?: string; phone?: string; email?: string; address?: string }
-  branch: { name: string; code?: string; address?: string; phone?: string | null; timezone?: string }
+  /** the organisation the facility belongs to (the nearest viloyat / tuman / davlat node) */
+  org: { name: string; shortName?: string | null; legalName?: string | null; phone?: string | null; email?: string | null; address?: string | null; logoUrl?: string | null }
+  /** the facility the document was issued at */
+  unit: { name: string; shortName?: string | null; code?: string | null; kind?: string | null; address?: string | null; phone?: string | null; email?: string | null; timezone?: string; district?: string | null; region?: string | null }
+  /** aliases of `org` / `unit` for templates saved before the unit model ({company.name}, {branch.code}); `company.slug` = unit code */
+  company: { name: string; legalName?: string | null; slug?: string | null; phone?: string | null; email?: string | null; address?: string | null }
+  branch: { name: string; code?: string | null; address?: string | null; phone?: string | null; timezone?: string }
   /** department (category) of the service — its phone is printed in SES letterheads */
   category: { name: string; code?: string; phone?: string }
   /** the issued document's public verification link — the QR element encodes it */

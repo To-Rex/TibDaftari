@@ -27,21 +27,21 @@ const R = 'clinical.reports.res'
 const SMS_TONE: Record<string, Tone> = { queued: 'neutral', sent: 'info', delivered: 'info', failed: 'danger' }
 const daysSince = (iso?: string | null) => (iso ? Math.max(0, Math.floor((Date.now() - Date.parse(iso)) / 86_400_000)) : 0)
 
-export function ResultsReport({ companyId, range, canExport }: { companyId: Id; range: ReportRange; canExport: boolean }) {
+export function ResultsReport({ scopeId, range, canExport }: { scopeId: Id; range: ReportRange; canExport: boolean }) {
   const { t } = useTranslation()
   const { can } = usePermissions()
   const palette = useChartPalette()
   const canResend = can(['confirm.result.approve', 'messaging.send', 'confirm.result.resend'])
-  const q = useResultsReport(companyId, range)
+  const q = useResultsReport(scopeId, range)
   const d = q.data
   const [status, setStatus] = useState<ResultListStatus>('not_received')
   const [search, setSearch] = useState('')
   const dSearch = useDebounce(search, 300)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
-  useEffect(() => setPage(1), [status, dSearch, range.dateFrom, range.dateTo, range.branchId])
+  useEffect(() => setPage(1), [status, dSearch, range.dateFrom, range.dateTo, range.unitId])
   const listQ = { ...range, status, page, pageSize, search: dSearch.trim() || undefined }
-  const list = useResultList(companyId, listQ)
+  const list = useResultList(scopeId, listQ)
   const [exporting, setExporting] = useState(false)
 
   const stat = (label: string, v: string | undefined, icon: React.ReactNode, tone: Tone, sub?: string) => (
@@ -116,7 +116,7 @@ export function ResultsReport({ companyId, range, canExport }: { companyId: Id; 
     try {
       const rows: ResultRow[] = []
       for (let p = 1; p <= 25; p++) {
-        const res = await repos.reports.resultList(companyId, { ...listQ, page: p, pageSize: 200 })
+        const res = await repos.reports.resultList(scopeId, { ...listQ, page: p, pageSize: 200 })
         rows.push(...res.items)
         if (p >= res.totalPages) break
       }

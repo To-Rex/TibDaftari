@@ -1,10 +1,20 @@
-/** Which receipt template prints a branch's cheques — mirror of the backend `find_receipt_template`. */
+/** Which receipt template prints a facility's cheques — mirror of the backend `_pick_template` for `scope == 'receipt'`. */
 import type { Id, ResultTemplate } from '@/domain'
 
-/** Active receipt template bound to the branch (fewest branches = most specific first), else a company-wide one. */
-export function pickReceiptTemplate(templates: ResultTemplate[], branchId: Id | null | undefined): ResultTemplate | undefined {
+/**
+ * The active receipt template usable at the facility: bound to the facility itself > bound to the nearest unit
+ * above it (`ancestorIds`, root → parent, as `unitAncestors` returns them) > bound to nothing; ties go to the
+ * older template. `templates` is what the API lists for the facility (`templates.list(scopeId, { unitId })`), so a
+ * binding that matches neither the facility nor a known ancestor is still taken for an ancestor's.
+ */
+export function pickReceiptTemplate(templates: ResultTemplate[], unitId: Id | null | undefined, ancestorIds: Id[] = []): ResultTemplate | undefined {
   const active = templates.filter((t) => t.scope === 'receipt' && t.status === 'active')
-  const fits = active.filter((t) => t.branchIds.length === 0 || (branchId != null && t.branchIds.includes(branchId)))
-  const specificity = (t: ResultTemplate) => (t.branchIds.length === 0 ? Number.MAX_SAFE_INTEGER : t.branchIds.length)
-  return [...fits].sort((a, b) => specificity(a) - specificity(b) || a.createdAt.localeCompare(b.createdAt))[0]
+  const nearestFirst = [...ancestorIds].filter((id) => id !== unitId).reverse()
+  const rank = (t: ResultTemplate): number => {
+    if (!t.unitIds.length) return nearestFirst.length + 2
+    if (unitId != null && t.unitIds.includes(unitId)) return 0
+    const i = nearestFirst.findIndex((a) => t.unitIds.includes(a))
+    return i >= 0 ? i + 1 : nearestFirst.length + 1
+  }
+  return [...active].sort((a, b) => rank(a) - rank(b) || a.createdAt.localeCompare(b.createdAt))[0]
 }

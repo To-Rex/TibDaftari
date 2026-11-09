@@ -10,11 +10,11 @@ import { repos } from '@/data'
 import { catalogKeys } from '@/features/catalog/queries'
 
 /** Active order-scope templates that cover this item (by service type or category). */
-export function useOrderScopeTemplates(companyId: Id, item: Pick<OrderItem, 'serviceTypeId' | 'categoryId' | 'branchId'> | undefined) {
+export function useOrderScopeTemplates(scopeId: Id, item: Pick<OrderItem, 'serviceTypeId' | 'categoryId' | 'unitId'> | undefined) {
   return useQuery({
-    queryKey: ['templates', companyId, 'order-scope', item?.serviceTypeId, item?.categoryId, item?.branchId],
+    queryKey: ['templates', scopeId, 'order-scope', item?.serviceTypeId, item?.categoryId, item?.unitId],
     queryFn: async () => {
-      const all = await repos.templates.list(companyId, { status: 'active', branchId: item!.branchId })
+      const all = await repos.templates.list(scopeId, { status: 'active', unitId: item!.unitId })
       return all.filter((t) => t.scope === 'order' && (t.serviceTypeIds.includes(item!.serviceTypeId) || t.categoryIds.includes(item!.categoryId)))
     },
     enabled: !!item,
@@ -23,15 +23,15 @@ export function useOrderScopeTemplates(companyId: Id, item: Pick<OrderItem, 'ser
 }
 
 /** Items of the order covered by the template + their schemas + service codes → ready for buildRenderContext. */
-export function useOrderScopeItems(companyId: Id, orderId: Id | undefined, template: ResultTemplate | undefined) {
+export function useOrderScopeItems(scopeId: Id, orderId: Id | undefined, template: ResultTemplate | undefined) {
   const covered = useQuery({
     queryKey: ['order-scope-items', orderId, template?.id, template?.version],
     queryFn: () => repos.orders.orderScopeItems(orderId!, template!.id),
     enabled: !!orderId && !!template,
   })
   // shared, prefetched lists (same keys as the catalog hooks) instead of one request per schema
-  const services = useQuery({ queryKey: catalogKeys.serviceTypes(companyId, {}), queryFn: () => repos.catalog.listServiceTypes(companyId, {}), staleTime: 5 * 60_000 })
-  const schemas = useQuery({ queryKey: catalogKeys.schemas(companyId), queryFn: () => repos.catalog.listSchemas(companyId), staleTime: 5 * 60_000 })
+  const services = useQuery({ queryKey: catalogKeys.serviceTypes(scopeId, {}), queryFn: () => repos.catalog.listServiceTypes(scopeId, {}), staleTime: 5 * 60_000 })
+  const schemas = useQuery({ queryKey: catalogKeys.schemas(scopeId), queryFn: () => repos.catalog.listSchemas(scopeId), staleTime: 5 * 60_000 })
   const schemaMap = useMemo(() => new Map<string, AttributeSchema>((schemas.data ?? []).map((s) => [s.id, s])), [schemas.data])
   const items = useMemo(() => {
     const codes = new Map((services.data ?? []).map((s) => [s.id, s.code ?? s.id]))

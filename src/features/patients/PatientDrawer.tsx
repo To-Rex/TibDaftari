@@ -20,7 +20,8 @@ type Draft = Pick<PatientUpsertInput, 'phone' | 'passportNumber' | 'pinfl'>
 export interface PatientDrawerProps {
   open: boolean
   onClose: () => void
-  companyId: Id
+  /** the facility the staff app works in — a new patient is registered there */
+  scopeId: Id
   /** when set, the drawer edits this patient; otherwise creates a new one */
   patient?: Patient | null
   onSaved: (p: Patient) => void
@@ -30,9 +31,9 @@ export interface PatientDrawerProps {
 
 const FORM_ID = 'patient-form'
 
-export function PatientDrawer({ open, onClose, companyId, patient, onSaved, onPickExisting }: PatientDrawerProps) {
+export function PatientDrawer({ open, onClose, scopeId, patient, onSaved, onPickExisting }: PatientDrawerProps) {
   const { t } = useTranslation()
-  const create = useCreatePatient(companyId)
+  const create = useCreatePatient(scopeId)
   const update = useUpdatePatient(patient?.id ?? '')
   const [dupes, setDupes] = useState<Patient[]>([])
   const [checking, setChecking] = useState(false)
@@ -49,10 +50,10 @@ export function PatientDrawer({ open, onClose, companyId, patient, onSaved, onPi
     if (!has) { setDupes([]); return }
     let alive = true
     const h = setTimeout(() => {
-      void repos.patients.findDuplicates(companyId, draft).then((r) => { if (alive) setDupes(r) }).catch(() => undefined)
+      void repos.patients.findDuplicates(scopeId, draft).then((r) => { if (alive) setDupes(r) }).catch(() => undefined)
     }, 350)
     return () => { alive = false; clearTimeout(h) }
-  }, [draft, companyId, editing, open])
+  }, [draft, scopeId, editing, open])
 
   const submit = async (input: PatientUpsertInput) => {
     try {
@@ -62,7 +63,7 @@ export function PatientDrawer({ open, onClose, companyId, patient, onSaved, onPi
         onSaved(p)
       } else {
         setChecking(true)
-        const found = await repos.patients.findDuplicates(companyId, input)
+        const found = await repos.patients.findDuplicates(scopeId, input)
         setChecking(false)
         if (found.length && !dupes.length) { setDupes(found); return }
         const p = await create.mutateAsync(input)

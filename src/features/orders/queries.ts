@@ -2,26 +2,27 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { repos } from '@/data'
 import type { ChangePaymentMethodInput, CreateOrderInput, Id, PageQuery, PayOrderInput, OrderListFilters } from '@/domain'
 
-export type OrderListParams = PageQuery & OrderListFilters & { branchId?: Id; status?: string; payment?: string; dateFrom?: string; dateTo?: string; patientId?: Id }
+/** Cheque list params. `unitId` narrows to one facility under the scope (the scope itself is usually the facility). */
+export type OrderListParams = PageQuery & OrderListFilters & { unitId?: Id; status?: string; payment?: string; dateFrom?: string; dateTo?: string; patientId?: Id }
 
 export const orderKeys = {
   all: ['orders'] as const,
-  list: (companyId: Id, q: OrderListParams) => ['orders', companyId, q] as const,
+  list: (scopeId: Id, q: OrderListParams) => ['orders', scopeId, q] as const,
   detail: (id: Id) => ['order', id] as const,
-  documents: (q: { orderId?: Id; patientId?: Id; branchId?: Id }) => ['documents', q] as const,
+  documents: (q: { orderId?: Id; patientId?: Id; unitId?: Id }) => ['documents', q] as const,
 }
 
-export const useOrdersList = (companyId: Id, q: OrderListParams, enabled = true) =>
-  useQuery({ queryKey: orderKeys.list(companyId, q), queryFn: () => repos.orders.list(companyId, q), enabled, placeholderData: (prev) => prev })
+export const useOrdersList = (scopeId: Id, q: OrderListParams, enabled = true) =>
+  useQuery({ queryKey: orderKeys.list(scopeId, q), queryFn: () => repos.orders.list(scopeId, q), enabled, placeholderData: (prev) => prev })
 
 /** Count + money + payments by method of the cheques the list's filters select. */
-export const useOrdersSummary = (companyId: Id, q: Omit<OrderListParams, 'page' | 'pageSize' | 'sortBy' | 'sortDir'>, enabled = true) =>
-  useQuery({ queryKey: ['orders', 'summary', companyId, q], queryFn: () => repos.orders.summary(companyId, q), enabled, placeholderData: (prev) => prev })
+export const useOrdersSummary = (scopeId: Id, q: Omit<OrderListParams, 'page' | 'pageSize' | 'sortBy' | 'sortDir'>, enabled = true) =>
+  useQuery({ queryKey: ['orders', 'summary', scopeId, q], queryFn: () => repos.orders.summary(scopeId, q), enabled, placeholderData: (prev) => prev })
 
 export const useOrder = (id: Id | undefined) =>
   useQuery({ queryKey: orderKeys.detail(id ?? ''), queryFn: () => repos.orders.get(id!), enabled: !!id })
 
-export const useDocuments = (q: { orderId?: Id; patientId?: Id; branchId?: Id }, enabled = true) =>
+export const useDocuments = (q: { orderId?: Id; patientId?: Id; unitId?: Id }, enabled = true) =>
   useQuery({ queryKey: orderKeys.documents(q), queryFn: () => repos.orders.listDocuments(q), enabled })
 
 /** Invalidate everything an order mutation may have touched. */
@@ -37,10 +38,11 @@ function useInvalidateOrders() {
   }
 }
 
-export function useCreateOrder(companyId: Id, employeeId: Id) {
+/** `scopeId` is the facility the cheque is written in (the API takes it from the path unit). */
+export function useCreateOrder(scopeId: Id, employeeId: Id) {
   const inv = useInvalidateOrders()
   return useMutation({
-    mutationFn: (input: CreateOrderInput) => repos.orders.create(companyId, employeeId, input),
+    mutationFn: (input: CreateOrderInput) => repos.orders.create(scopeId, employeeId, input),
     onSuccess: (r) => inv(r.order.id),
   })
 }

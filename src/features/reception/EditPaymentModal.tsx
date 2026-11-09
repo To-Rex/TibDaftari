@@ -1,6 +1,6 @@
 /**
  * Correcting how a taken payment was paid — e.g. card typed as cash, or part of it was by card. The amount, time,
- * cashier and branch stay (the backend keeps them), so only the method split of that money changes in the reports.
+ * cashier and facility stay (the backend keeps them), so only the method split of that money changes in the reports.
  * One method, or several balanced like in `PayModal` (they must cover the whole payment). Reception only within a day
  * of the payment; admin / rahbar any time (`paymentWindow`).
  */

@@ -1,22 +1,25 @@
 /** The extra filters in use, one chip each (× removes it), and the filtered cheques at a glance. */
 import { useTranslation } from 'react-i18next'
 import { X } from 'lucide-react'
-import type { Category, OrderSummary, ServiceType } from '@/domain'
+import type { Category, OrderSummary, OrgUnit, ServiceType } from '@/domain'
 import { fmtMoney, fmtNumber } from '@/shared/lib/format'
 import { EMPTY_EXTRA, type ExtraFilters } from './ordersFilters'
 import { paymentMethodLabel } from './status'
 
 const O = 'staff.orders'
 
-export function OrdersFilterChips({ value, onChange, categories, services, summary }: {
+export function OrdersFilterChips({ value, onChange, categories, services, summary, facilities }: {
   value: ExtraFilters
   onChange: (next: ExtraFilters) => void
   categories?: Category[]
   services?: ServiceType[]
   summary?: OrderSummary
+  /** the facilities under the administered unit (the facility chip needs their names) */
+  facilities?: OrgUnit[]
 }) {
   const { t } = useTranslation()
   const chips: { key: string; label: string; clear: Partial<ExtraFilters> }[] = []
+  if (value.unitId !== undefined && facilities && facilities.length > 1) chips.push({ key: 'unit', label: `${t(`${O}.unit`)}: ${value.unitId === null ? t(`${O}.unitAll`) : facilities.find((f) => f.id === value.unitId)?.name ?? '…'}`, clear: { unitId: undefined } })
   if (value.methods.length) chips.push({ key: 'methods', label: t(`${O}.chipMethod`, { v: value.methods.map(paymentMethodLabel).join(', ') }), clear: { methods: [] } })
   if (value.minTotal != null || value.maxTotal != null) {
     const v = value.minTotal != null && value.maxTotal != null ? `${fmtMoney(value.minTotal, false)} – ${fmtMoney(value.maxTotal, false)}` : value.minTotal != null ? `≥ ${fmtMoney(value.minTotal, false)}` : `≤ ${fmtMoney(value.maxTotal ?? 0, false)}`

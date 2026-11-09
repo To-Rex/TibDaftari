@@ -1,6 +1,6 @@
 /**
  * "Xizmat qo‘shish" panel: top-level categories as tabs, sub-categories as chips,
- * searchable service list with branch-aware price and one-click add.
+ * searchable service list with the facility's price and one-click add.
  */
 import { useMemo, useState, type ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
@@ -8,22 +8,19 @@ import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
 import { Check, Clock, Plus, Search } from 'lucide-react'
 import { repos } from '@/data'
-import { serviceAvailableIn, type Category, type Id, type ServiceType } from '@/domain'
+import { serviceAvailableIn, servicePriceIn, type Category, type Id } from '@/domain'
 import { Badge, EmptyState, SearchInput, Skeleton, Tabs } from '@/shared/ui'
 import { cn } from '@/shared/lib/cn'
 import { fmtMoney } from '@/shared/lib/format'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 
-export function branchPrice(st: ServiceType, branchId: Id) {
-  return st.branchPrices[branchId] ?? st.price
-}
-
-export function ServicePicker({ companyId, branchId, inOrder, onAdd, adding, disabled }: { companyId: Id; branchId: Id; inOrder: Set<Id>; onAdd: (serviceTypeId: Id) => void; adding?: Id | null; disabled?: boolean }) {
+/** `unitId` = the cheque's facility: it decides what is on offer and at what price. */
+export function ServicePicker({ unitId, inOrder, onAdd, adding, disabled }: { unitId: Id; inOrder: Set<Id>; onAdd: (serviceTypeId: Id) => void; adding?: Id | null; disabled?: boolean }) {
   const { t } = useTranslation()
-  const cats = useQuery({ queryKey: ['categories', companyId], queryFn: () => repos.catalog.listCategories(companyId), staleTime: 60_000 })
-  // the cheque's branch decides what is on offer: services switched off there are not listed (the API filters by
-  // `branchId`; the client check below also covers a list cached before the switch)
-  const services = useQuery({ queryKey: ['serviceTypes', companyId, 'active', branchId], queryFn: () => repos.catalog.listServiceTypes(companyId, { activeOnly: true, branchId }), staleTime: 60_000 })
+  const cats = useQuery({ queryKey: ['categories', unitId], queryFn: () => repos.catalog.listCategories(unitId), staleTime: 60_000 })
+  // the catalogue visible from the facility (its own rows and everything owned above it) with `available` /
+  // `effectivePrice` filled in for it; the client check below also covers a list cached before a switch
+  const services = useQuery({ queryKey: ['serviceTypes', unitId, 'active', unitId], queryFn: () => repos.catalog.listServiceTypes(unitId, { activeOnly: true, unitId }), staleTime: 60_000 })
   const [top, setTop] = useState<string>('all')
   const [sub, setSub] = useState<string | null>(null)
   const [q, setQ] = useState('')
@@ -38,9 +35,9 @@ export function ServicePicker({ companyId, branchId, inOrder, onAdd, adding, dis
     const scope = sub ? sub : top === 'all' ? null : top
     const allowed = scope ? descendants(active, scope) : null
     return all
-      .filter((s) => serviceAvailableIn(s, branchId) && (!allowed || allowed.has(s.categoryId)) && (!dq || s.name.toLowerCase().includes(dq) || (s.code ?? '').toLowerCase().includes(dq)))
+      .filter((s) => serviceAvailableIn(s, unitId) && (!allowed || allowed.has(s.categoryId)) && (!dq || s.name.toLowerCase().includes(dq) || (s.code ?? '').toLowerCase().includes(dq)))
       .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name))
-  }, [services.data, branchId, sub, top, active, dq])
+  }, [services.data, unitId, sub, top, active, dq])
 
   const catName = (id: Id) => active.find((c) => c.id === id)?.name ?? ''
 
@@ -73,6 +70,7 @@ export function ServicePicker({ companyId, branchId, inOrder, onAdd, adding, dis
             {list.map((s, i) => {
               const added = inOrder.has(s.id)
               const busy = adding === s.id
+              const price = fmtMoney(servicePriceIn(s, unitId))
               return (
                 <motion.li key={s.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: Math.min(i * 0.02, 0.25) }}>
                   <button type="button" disabled={disabled || busy} onClick={() => onAdd(s.id)}
@@ -83,10 +81,10 @@ export function ServicePicker({ companyId, branchId, inOrder, onAdd, adding, dis
                       <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12px] text-ink-3">
                         <span className="truncate">{catName(s.categoryId)}</span>
                         {s.turnaroundDays > 0 && <span className="inline-flex items-center gap-1 tabular"><Clock className="size-3" />{s.turnaroundDays} {t('common.days')}</span>}
-                        <span className="font-semibold text-ink tabular xs:hidden">{fmtMoney(branchPrice(s, branchId))}</span>
+                        <span className="font-semibold text-ink tabular xs:hidden">{price}</span>
                       </span>
                     </span>
-                    <span className="shrink-0 text-[14px] font-semibold tabular max-xs:hidden">{fmtMoney(branchPrice(s, branchId))}</span>
+                    <span className="shrink-0 text-[14px] font-semibold tabular max-xs:hidden">{price}</span>
                     <span className={cn('grid size-8 shrink-0 place-items-center rounded-full transition-colors', added ? 'bg-ok text-white' : 'bg-brand-soft text-brand-ink group-hover:bg-brand group-hover:text-white')}>
                       {added ? <Check className="size-4" /> : <Plus className="size-4" />}
                     </span>

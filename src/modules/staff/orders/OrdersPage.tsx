@@ -1,17 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
 import { ArrowDownUp, CalendarRange, FileSpreadsheet, SlidersHorizontal } from 'lucide-react'
 import { repos } from '@/data'
-import type { Order, OrderStatus, PaymentStatus } from '@/domain'
+import type { Id, Order, OrderStatus, PaymentStatus } from '@/domain'
 import { Button, Card, ConfirmDialog, Input, Page, PageHeader, SearchInput, Segmented, Select, Toolbar, toast } from '@/shared/ui'
 import { presetRange, type DateRange } from '@/shared/lib/dates'
 import { fmtDate, fmtMoney, fmtNumber } from '@/shared/lib/format'
 import { errorMessage } from '@/shared/lib/errors'
 import { useDebounce } from '@/shared/hooks/useDebounce'
-import { useStaffSession } from '@/features/session/useSession'
-import { usePermissions } from '@/features/auth/store'
+import { usePermissions, useStaffScope } from '@/features/auth/store'
+import { useWorkspace } from '@/app/layouts/AppShell'
 import { useCategories, useServiceTypes } from '@/features/catalog/queries'
 import { useDeleteOrder, useOrdersList, useOrdersSummary } from '@/features/orders/queries'
 import { LATE_EDIT } from '@/features/orders/paymentWindow'
@@ -23,7 +22,11 @@ import { ORDER_STATUSES, PAYMENT_STATUSES, orderStatusMeta, paymentMethodLabel, 
 
 export default function OrdersPage() {
   const { t, i18n } = useTranslation()
-  const { companyId, branchId } = useStaffSession()
+  const { scopeId, facilityId, scopeUnitId } = useStaffScope()
+  // an administrator with several facilities under the administered unit may widen the list to another facility or
+  // to all of them (the list is then read from the administered unit); everyone else sees the scope facility's cheques
+  const { facilities } = useWorkspace()
+  const multi = facilities.length > 1
   const { can, isSuperAdmin } = usePermissions()
   const canDelete = can(['reception.order.delete', LATE_EDIT])
   // a day after the first payment only admin / rahbar / superadmin delete the cheque
@@ -47,8 +50,19 @@ export default function OrdersPage() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>(initial.sortDir)
   useEffect(() => saveView({ search, status, payment, range, custom, extra, sortBy, sortDir, pageSize }), [search, status, payment, range, custom, extra, sortBy, sortDir, pageSize])
 
-  const categories = useCategories(companyId)
-  const services = useServiceTypes(companyId, {})
+  // the facility the list shows: the scope facility unless an administrator picked another one (or all of them);
+  // a saved choice that is not under the current scope any more falls back to the scope facility
+  const unitChoice: Id | null | undefined = !multi ? undefined
+    : extra.unitId === undefined ? facilityId
+      : extra.unitId === null ? null
+        : facilities.some((f) => f.id === extra.unitId) ? extra.unitId : facilityId
+  const listScope = multi ? (scopeUnitId ?? scopeId) : scopeId
+  const showUnit = multi && unitChoice == null
+  const unitName = (id: Id | null | undefined) => (id == null ? t('staff.orders.unitAll') : facilities.find((f) => f.id === id)?.name ?? '')
+  useEffect(() => setPage(1), [listScope, unitChoice])
+
+  const categories = useCategories(listScope)
+  const services = useServiceTypes(listScope, {})
 
   const dates = useMemo(() => {
     if (range === 'custom') {
@@ -59,13 +73,12 @@ export default function OrdersPage() {
     return { dateFrom: presetRange(range).from, dateTo: presetRange(range).to }
   }, [range, custom])
   const filters = useMemo(() => ({
-    search: dq || undefined, branchId: branchId ?? undefined, status: status === 'all' ? undefined : status, payment: payment === 'all' ? undefined : payment, ...dates,
+    search: dq || undefined, unitId: unitChoice ?? undefined, status: status === 'all' ? undefined : status, payment: payment === 'all' ? undefined : payment, ...dates,
     ...extraToQuery(dExtra, categories.data),
-  }), [dq, branchId, status, payment, dates, dExtra, categories.data])
+  }), [dq, unitChoice, status, payment, dates, dExtra, categories.data])
   const params = useMemo(() => ({ page, pageSize, sortBy, sortDir, ...filters }), [page, pageSize, sortBy, sortDir, filters])
-  const q = useOrdersList(companyId, params)
-  const summary = useOrdersSummary(companyId, filters)
-  const branches = useQuery({ queryKey: ['branches', companyId], queryFn: () => repos.tenant.listBranches(companyId), staleTime: 300_000 })
+  const q = useOrdersList(listScope, params)
+  const summary = useOrdersSummary(listScope, filters)
 
   const reset = <T,>(setter: (v: T) => void) => (v: T) => { setter(v); setPage(1) }
   // "Oraliq" starts from the period shown so far
@@ -82,6 +95,7 @@ export default function OrdersPage() {
       ? (dates.dateFrom || dates.dateTo ? `${dates.dateFrom ? fmtDate(dates.dateFrom) : '…'} – ${dates.dateTo ? fmtDate(dates.dateTo) : '…'}` : t(`${O}.capAllDays`))
       : `${t(`common.${range}`)} (${fmtDate(dates.dateFrom)}${dates.dateTo !== dates.dateFrom ? ` – ${fmtDate(dates.dateTo)}` : ''})`
     const parts = [`${t(`${O}.capPeriod`)}: ${period}`]
+    if (multi) parts.push(`${t(`${O}.unit`)}: ${unitName(unitChoice)}`)
     if (status !== 'all') parts.push(`${t(`${O}.capStatus`)}: ${orderStatusMeta(status).label}`)
     if (payment !== 'all') parts.push(`${t(`${O}.capPayment`)}: ${paymentStatusMeta(payment).label}`)
     if (dq) parts.push(`${t(`${O}.capSearch`)}: «${dq}»`)
@@ -102,7 +116,7 @@ export default function OrdersPage() {
     setExporting(true)
     try {
       const lang = (['uz', 'ru', 'en'] as const).find((l) => i18n.language?.startsWith(l)) ?? 'uz'
-      const blob = await repos.orders.exportXlsx(companyId, { ...filters, sortBy, sortDir, lang, caption: caption() })
+      const blob = await repos.orders.exportXlsx(listScope, { ...filters, sortBy, sortDir, lang, caption: caption() })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -166,16 +180,17 @@ export default function OrdersPage() {
           </Select>
         </label>
       </Toolbar>
-      <OrdersFilterChips value={extra} onChange={changeExtra} categories={categories.data} services={services.data} summary={summary.data} />
+      <OrdersFilterChips value={extra} onChange={changeExtra} categories={categories.data} services={services.data} summary={summary.data} facilities={multi ? facilities : undefined} />
       <OrdersSummaryBar summary={summary.data} />
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
         <Card padded={false} className="overflow-hidden">
           <OrdersTable page={q.data} loading={q.isFetching} sortBy={sortBy} sortDir={sortDir} onSort={onSort} onPage={setPage} onPageSize={(s) => { setPageSize(s); setPage(1) }} footer
-            branchName={branchId ? undefined : (id) => branches.data?.find((b) => b.id === id)?.name}
+            showUnit={showUnit}
             canDelete={canDelete} lockOldPayments={!lateEdit} onDelete={setDeleting} />
         </Card>
       </motion.div>
-      <OrdersFilterDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} value={extra} onChange={changeExtra} categories={categories.data} services={services.data} summary={summary.data} />
+      <OrdersFilterDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} value={extra} onChange={changeExtra} categories={categories.data} services={services.data} summary={summary.data}
+        facilities={multi ? facilities : undefined} currentUnitId={facilityId} />
       <ConfirmDialog open={!!deleting} onClose={() => setDeleting(null)} onConfirm={() => void confirmDelete()} danger loading={del.isPending}
         title={t('staff.orders.delTitle')} description={deleting ? t('staff.orders.delHint', { number: deleting.number }) : undefined}
         confirmText={t('staff.orders.delConfirm')} cancelText={t('common.cancel')} />

@@ -4,19 +4,19 @@ import type { PatientRepository } from '../repositories'
 import { api, compact } from './client'
 
 export const patientsHttp: PatientRepository = {
-  list: (companyId, q) => api.get<Page<Patient>>(`/companies/${companyId}/patients`, { query: { ...q } }),
+  list: (scopeId, q) => api.get<Page<Patient>>(`/units/${scopeId}/patients`, { query: { ...q } }),
 
-  get: (id, q) => api.get<Patient>(`/patients/${id}`, { query: { branchId: q?.branchId } }),
+  get: (id, q) => api.get<Patient>(`/patients/${id}`, { query: { unitId: q?.unitId } }),
 
-  search: (companyId, query, limit, branchId) =>
-    api.get<Patient[]>(`/companies/${companyId}/patients/search`, { query: { q: query, limit, branchId } }),
+  search: (scopeId, query, limit, unitId) =>
+    api.get<Patient[]>(`/units/${scopeId}/patients/search`, { query: { q: query, limit, unitId } }),
 
-  create: (companyId, input) => api.post<Patient>(`/companies/${companyId}/patients`, compact({ ...input })),
+  create: (scopeId, input) => api.post<Patient>(`/units/${scopeId}/patients`, compact({ ...input })),
 
   update: (id, input) => api.put<Patient>(`/patients/${id}`, compact({ ...input })),
 
   /** Backend only reads the identity keys (phone / passportNumber / pinfl); extras are ignored. */
-  findDuplicates: (companyId, input) => api.post<Patient[]>(`/companies/${companyId}/patients/duplicates`, compact({ ...input })),
+  findDuplicates: (scopeId, input) => api.post<Patient[]>(`/units/${scopeId}/patients/duplicates`, compact({ ...input })),
 
   setPortalAccess: (id, input) => api.put<PortalAccessResult>(`/patients/${id}/portal-access`, compact({ ...input })),
 

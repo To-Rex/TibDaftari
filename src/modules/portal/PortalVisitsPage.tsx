@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { CalendarDays } from 'lucide-react'
 import { usePatientSession } from '@/features/session/useSession'
 import { stagger } from '@/features/portal/motion'
-import { branchNameMap, usePortalOverview } from '@/features/portal/queries'
+import { placeNames, usePortalOverview } from '@/features/portal/queries'
 import { VisitRow } from '@/features/portal/components/VisitRow'
 import { errorMessage } from '@/shared/lib/errors'
 import {
@@ -24,7 +24,8 @@ export default function PortalVisitsPage() {
   const { t } = useTranslation()
   const session = usePatientSession()
   const q = usePortalOverview(session.patientId)
-  const branchNames = branchNameMap(q.data?.branches)
+  // "Tashkilot · Muassasa" behind every cheque
+  const { place } = placeNames(q.data)
   const [page, setPage] = useState(1)
 
   useEffect(() => {
@@ -34,9 +35,6 @@ export default function PortalVisitsPage() {
   const orders = q.data?.orders ?? []
   const totalPages = Math.max(1, Math.ceil(orders.length / PAGE_SIZE))
   const slice = orders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-  const clinicName = (id: string) => q.data?.companies.find((c) => c.id === id)?.name
-  const place = (companyId: string, branchId: string) =>
-    [clinicName(companyId), branchNames.get(branchId)].filter(Boolean).join(' · ')
 
   return (
     <Page width="medium" className="2xl:max-w-6xl 3xl:max-w-[1600px]">
@@ -66,7 +64,7 @@ export default function PortalVisitsPage() {
                 className="divide-line divide-y"
               >
                 {slice.map((o) => (
-                  <VisitRow key={o.id} order={o} place={place(o.companyId, o.branchId)} />
+                  <VisitRow key={o.id} order={o} place={place(o)} />
                 ))}
               </MotionList>
             </motion.div>

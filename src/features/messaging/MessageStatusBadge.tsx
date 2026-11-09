@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next'
-import { CalendarClock, Check, CheckCheck, Clock, XCircle } from 'lucide-react'
+import { Ban, CalendarClock, Check, CheckCheck, Clock, XCircle } from 'lucide-react'
 import type { MessageStatus } from '@/domain'
 import { Badge, type Tone } from '@/shared/ui'
 
-export const messageStatusTone: Record<MessageStatus, Tone> = { scheduled: 'info', queued: 'warn', sent: 'brand', delivered: 'ok', failed: 'danger' }
-export const MESSAGE_STATUSES: MessageStatus[] = ['scheduled', 'queued', 'sent', 'delivered', 'failed']
+export const messageStatusTone: Record<MessageStatus, Tone> = { scheduled: 'info', queued: 'warn', sent: 'brand', delivered: 'ok', failed: 'danger', cancelled: 'neutral' }
+export const MESSAGE_STATUSES: MessageStatus[] = ['scheduled', 'queued', 'sent', 'delivered', 'failed', 'cancelled']
 
 const icons: Record<MessageStatus, React.ReactNode> = {
   scheduled: <CalendarClock className="size-3" />,
@@ -12,6 +12,7 @@ const icons: Record<MessageStatus, React.ReactNode> = {
   sent: <Check className="size-3" />,
   delivered: <CheckCheck className="size-3" />,
   failed: <XCircle className="size-3" />,
+  cancelled: <Ban className="size-3" />,
 }
 
 export function MessageStatusBadge({ status }: { status: MessageStatus }) {

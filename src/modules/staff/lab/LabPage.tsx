@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { RefreshCw } from 'lucide-react'
 import type { ItemStatus } from '@/domain'
 import { useStaffSession } from '@/features/session/useSession'
+import { useStaffScope } from '@/features/auth/store'
 import { CategoryTabs, type CategorySelection } from '@/features/lab/CategoryTabs'
 import { DateRangeFilter, initialRange, type RangeState } from '@/features/lab/DateRangeFilter'
 import { WorklistTable } from '@/features/lab/WorklistTable'
@@ -20,7 +21,9 @@ const STATUS_FILTERS: StatusFilter[] = ['all', 'pending', 'entered', 'submitted'
 export default function LabPage() {
   const { t } = useTranslation()
   const nav = useNavigate()
-  const { companyId, employeeId, branchId } = useStaffSession()
+  const { employeeId } = useStaffSession()
+  // the worklist of the facility the staff app works in
+  const { scopeId } = useStaffScope()
 
   const [cat, setCat] = useState<CategorySelection>({ rootId: 'all', childId: null })
   const [status, setStatus] = useState<StatusFilter>('all')
@@ -30,7 +33,7 @@ export default function LabPage() {
   const [pageSize, setPageSize] = useState(20)
   const q = useDebounce(search.trim(), 300)
 
-  const cats = useLabCategories(companyId, employeeId)
+  const cats = useLabCategories(scopeId, employeeId)
   const categoryIds = useMemo(() => {
     if (!cats.data) return undefined
     if (cat.rootId === 'all') return cats.data.allIds
@@ -40,11 +43,11 @@ export default function LabPage() {
 
   useEffect(() => setPage(1), [cat, status, range, q, pageSize])
 
-  const base: WorklistParams = { branchId: branchId ?? undefined, categoryIds, dateFrom: range.range.from, dateTo: range.range.to, search: q || undefined }
-  const list = useWorklist(companyId, { ...base, status: status === 'all' ? undefined : [status], page, pageSize }, { refetchInterval: 30_000, enabled: !!cats.data })
+  const base: WorklistParams = { categoryIds, dateFrom: range.range.from, dateTo: range.range.to, search: q || undefined }
+  const list = useWorklist(scopeId, { ...base, status: status === 'all' ? undefined : [status], page, pageSize }, { refetchInterval: 30_000, enabled: !!cats.data })
 
   // per-status counts — one GROUP BY request for all tabs
-  const countsQ = useWorklistCounts(companyId, base, { enabled: !!cats.data, refetchInterval: 30_000 })
+  const countsQ = useWorklistCounts(scopeId, base, { enabled: !!cats.data, refetchInterval: 30_000 })
   const counts = Object.fromEntries(STATUS_FILTERS.map((s) => [s, countsQ.data?.[s]])) as Record<StatusFilter, number | undefined>
 
   const data = list.data

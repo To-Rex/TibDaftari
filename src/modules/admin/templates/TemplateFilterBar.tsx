@@ -1,8 +1,9 @@
-/** Gallery filters: document type, binding, category, service, language, paper and (all-branches view) branch. */
+/** Gallery filters: document type, binding, category, service, language, paper and the unit the templates are used at. */
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { Branch, Category, PaperSize, ServiceType } from '@/domain'
+import type { Category, Id, OrgUnit, PaperSize, ServiceType } from '@/domain'
 import { buildCategoryTree, categoryPath, descendantIds, flattenTree } from '@/features/catalog/tree'
+import { UnitPicker } from '@/features/org/UnitPicker'
 import { collationLocale, EMPTY_FILTERS, RECEIPT_PAPERS, RESULT_PAPERS, type GalleryFilters } from '@/features/template-editor/galleryFilters'
 import type { TemplateKind } from '@/features/template-editor/kind'
 import { cn } from '@/shared/lib/cn'
@@ -10,15 +11,15 @@ import { Select } from '@/shared/ui'
 
 const LANGS = [['uz', 'O‘zbekcha'], ['ru', 'Русский'], ['en', 'English']] as const
 
-export function TemplateFilterBar({ kind, value, onChange, services, categories, branches, showBranch, className }: {
+export function TemplateFilterBar({ kind, value, onChange, services, categories, units, rootId, className }: {
   kind: TemplateKind
   value: GalleryFilters
   onChange: (f: GalleryFilters) => void
   services: ServiceType[]
   categories: Category[]
-  branches: Branch[]
-  /** the branch filter exists only while the top bar shows every branch */
-  showBranch: boolean
+  /** the visible organisation tree (flat); the unit filter offers the units under `rootId` (the scope) */
+  units: OrgUnit[]
+  rootId?: Id
   className?: string
 }) {
   const { t, i18n } = useTranslation()
@@ -67,7 +68,7 @@ export function TemplateFilterBar({ kind, value, onChange, services, categories,
           </Select>
           <Select {...pick('categoryId', t(`${F}.categoryLabel`))} value={value.categoryId} onChange={(e) => onCategory(e.target.value)}>
             <option value="">{t(`${F}.categoryAll`)}</option>
-            {catRows.map((n) => <option key={n.cat.id} value={n.cat.id}>{' '.repeat(n.depth) + n.cat.name}</option>)}
+            {catRows.map((n) => <option key={n.cat.id} value={n.cat.id}>{' '.repeat(n.depth) + n.cat.name}</option>)}
           </Select>
           <Select {...pick('serviceTypeId', t(`${F}.serviceLabel`))} value={value.serviceTypeId} onChange={(e) => set('serviceTypeId', e.target.value)}>
             <option value="">{t(`${F}.serviceAll`)}</option>
@@ -87,12 +88,10 @@ export function TemplateFilterBar({ kind, value, onChange, services, categories,
         <option value="all">{t(`${F}.paperAll`)}</option>
         {papers.map((p) => <option key={p} value={p}>{paperLabel(p)}</option>)}
       </Select>
-      {showBranch && branches.length > 1 && (
-        <Select {...pick('branch', t(`${F}.branchLabel`))} value={value.branch} onChange={(e) => set('branch', e.target.value)}>
-          <option value="all">{t('catalog.templates.allBranches')}</option>
-          {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-          <option value="none">{t(`${F}.branchNone`)}</option>
-        </Select>
+      {units.length > 1 && (
+        <span data-filter="unitId" title={t(`${F}.unitLabel`)} className="contents">
+          <UnitPicker units={units} rootId={rootId} value={value.unitId || null} onChange={(id) => set('unitId', id ?? '')} allowEmpty placeholder={t(`${F}.unitAll`)} className={cls('unitId')} />
+        </span>
       )}
     </div>
   )

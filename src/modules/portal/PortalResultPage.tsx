@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
 import { ArrowLeft, BadgeCheck, Download, FileQuestion, Printer } from 'lucide-react'
 import { usePatientSession } from '@/features/session/useSession'
-import { usePortalDocument, usePortalOverview } from '@/features/portal/queries'
+import { placeLabel, usePortalDocument, usePortalOverview } from '@/features/portal/queries'
 import { documentTitle } from '@/features/portal/status'
 import { DocumentViewer } from '@/features/portal/components/DocumentViewer'
 import { ResultInfoPanel } from '@/features/portal/components/ResultInfoPanel'
@@ -22,8 +22,9 @@ export default function PortalResultPage() {
   // patient card comes from the overview (portal token); everything else travels with the document
   const overviewQ = usePortalOverview(session.patientId)
 
-  const company = q.data?.company
-  const branch = q.data?.branch
+  // the organisation (letterhead: `{org.*}`) and the facility that did the work (`{unit.*}`)
+  const org = q.data?.org
+  const unit = q.data?.unit
   const patient = overviewQ.data?.patient
   const serviceCode = q.data?.serviceCodes[q.data?.item?.serviceTypeId ?? '']
   const ready = !!q.data && overviewQ.isSuccess
@@ -36,8 +37,10 @@ export default function PortalResultPage() {
             order: q.data.order,
             item: q.data.item,
             serviceCode,
-            company,
-            branch,
+            // the renderer's `company` / `branch` inputs are the alias keys of the organisation / facility
+            // (`{org.*}` / `{unit.*}` — see the placeholder catalogue in domain/template.ts)
+            company: org,
+            branch: unit,
             category: q.data.category,
             schema: q.data.schemas.find((s) => s.id === q.data?.item?.schemaId) ?? null,
             // order-scoped documents (several services on one sheet)
@@ -48,7 +51,7 @@ export default function PortalResultPage() {
             docLink: q.data.document.verifyLink ?? (q.data.document.publicToken ? `${window.location.origin}/d/${q.data.document.publicToken}` : undefined),
           })
         : null,
-    [q.data, patient, serviceCode, company, branch],
+    [q.data, patient, serviceCode, org, unit],
   )
 
   const print = () => window.print()
@@ -95,8 +98,7 @@ export default function PortalResultPage() {
           {doc ? (
             <>
               <p className="text-ink-3 text-[12.5px]">
-                {company?.name}
-                {branch && <> · {branch.name}</>}
+                {placeLabel(org?.name, unit?.name ?? doc.unitName)}
                 {' · '}
                 <span className="tabular">{fmtDate(doc.createdAt)}</span>
               </p>
@@ -163,8 +165,8 @@ export default function PortalResultPage() {
               item={q.data.item}
               order={q.data.order}
               ctx={ctx}
-              clinic={company?.name}
-              branch={branch?.name}
+              org={org?.name}
+              unit={unit?.name ?? doc?.unitName ?? undefined}
             />
           ) : (
             <Card>

@@ -1,9 +1,10 @@
-import type { AuditStamp, Id, IsoDateTime, Money } from './common'
+import type { AuditStamp, Id, IsoDateTime, Money, UnitScoped } from './common'
 import type { ValueMap } from './catalog'
 
 /* ------------------------------------------------------------------
    Order (chek / visit) → OrderItem (one service) → Result (dynamic values)
-   Explicit status enums instead of nullable timestamps.
+   Explicit status enums instead of nullable timestamps. Every row belongs
+   to the FACILITY that did the work (`unitId`).
 ------------------------------------------------------------------- */
 
 export type OrderStatus = 'draft' | 'open' | 'in_progress' | 'completed' | 'cancelled'
@@ -16,10 +17,8 @@ export type ItemStatus =
   | 'rejected' // doctor sent back
   | 'cancelled'
 
-export interface Order extends AuditStamp {
+export interface Order extends AuditStamp, UnitScoped {
   id: Id
-  companyId: Id
-  branchId: Id
   number: string // human-readable e.g. UR-000123
   patientId: Id
   patientName: string // denormalised for lists
@@ -41,15 +40,13 @@ export interface Order extends AuditStamp {
   cancelledAt?: IsoDateTime
   /** non-refunded payments by method (the cheque list fills it) */
   paymentsByMethod?: { method: PaymentMethod; amount: Money }[]
-  /** oldest payment, refunded or not (cheque list) — a day later reception can no longer delete the cheque */
+  /** oldest payment, refunded or not — a day later reception can no longer delete the cheque */
   firstPaidAt?: IsoDateTime | null
 }
 
-export interface OrderItem extends AuditStamp {
+export interface OrderItem extends AuditStamp, UnitScoped {
   id: Id
   orderId: Id
-  companyId: Id
-  branchId: Id
   serviceTypeId: Id
   serviceName: string
   categoryId: Id
@@ -121,11 +118,9 @@ export interface OrderSummary {
   cashiers: { id: Id; name: string; count: number }[]
 }
 
-export interface Payment extends AuditStamp {
+export interface Payment extends AuditStamp, UnitScoped {
   id: Id
   orderId: Id
-  companyId: Id
-  branchId: Id
   amount: Money
   method: PaymentMethod
   employeeId: Id
@@ -155,7 +150,8 @@ export interface ChangePaymentMethodInput {
 
 export interface CreateOrderInput {
   patientId: Id
-  branchId: Id
+  /** the facility the cheque is written in; omitted when the request's scope unit is that facility */
+  unitId?: Id
   serviceTypeIds: Id[]
   note?: string
 }
@@ -170,9 +166,8 @@ export interface PayOrderInput {
 }
 
 /** Result document delivered to the patient (PDF), rendered from a template. */
-export interface ResultDocument extends AuditStamp {
+export interface ResultDocument extends AuditStamp, UnitScoped {
   id: Id
-  companyId: Id
   orderId: Id
   orderItemId?: Id // primary item (item-scoped documents)
   /** all items covered by an order-scoped document (e.g. hepatitis panel) */
@@ -180,7 +175,7 @@ export interface ResultDocument extends AuditStamp {
   templateId: Id
   templateVersion: number
   title: string
-  status: 'draft' | 'final'
+  status: 'draft' | 'final' | 'revoked'
   pdfUrl?: string
   deliveries: DocumentDelivery[]
   /** the SMS / Telegram link's token — `<app>/d/{token}` (authenticity card, the PDF behind an SMS code) */
@@ -194,7 +189,7 @@ export interface ResultDocument extends AuditStamp {
 export interface ResultSms {
   to: string
   text: string
-  /** the company has an SMS provider; without one the message is only recorded as failed */
+  /** the facility (or a unit above it) has an SMS provider; without one the message is only recorded as failed */
   configured: boolean
   queued: boolean
   status?: string | null

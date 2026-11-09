@@ -1,13 +1,14 @@
 /**
  * Workspace warm-up: right after a staff session is available we prefetch the data every
- * page needs (branches, catalog, schemas, templates, roles) and preload the lazily-split
- * route chunks during idle time — so the first navigation to any page is instant.
+ * page needs (catalog, schemas, templates, assets — and for the admin panel roles and the unit card)
+ * and preload the lazily-split route chunks during idle time — so the first navigation to any page is instant.
  * All calls are background & best-effort; failures are ignored.
  */
 import type { QueryClient } from '@tanstack/react-query'
 import { repos } from '@/data'
 import type { Id } from '@/domain'
 import { catalogKeys } from '@/features/catalog/queries'
+import { orgKeys } from '@/features/org/queries'
 
 const STAFF_ROUTE_CHUNKS = [
   () => import('@/modules/staff/DashboardPage'),
@@ -24,8 +25,8 @@ const STAFF_ROUTE_CHUNKS = [
 ]
 const ADMIN_ROUTE_CHUNKS = [
   () => import('@/modules/admin/AdminDashboardPage'),
-  () => import('@/modules/admin/company/CompanyPage'),
-  () => import('@/modules/admin/company/BranchesPage'),
+  () => import('@/modules/admin/org/UnitPage'),
+  () => import('@/modules/admin/org/UnitsPage'),
   () => import('@/modules/admin/employees/EmployeesPage'),
   () => import('@/modules/admin/employees/EmployeePage'),
   () => import('@/modules/admin/roles/RolesPage'),
@@ -48,21 +49,23 @@ const idle = (fn: () => void) => {
 
 const warmed = new Set<string>()
 
-/** Prefetch shared data for a company (deduped per session; React Query keeps it fresh from there). */
-export function warmWorkspaceData(qc: QueryClient, companyId: Id, module: 'staff' | 'admin') {
-  const tag = `${module}:${companyId}`
+/**
+ * Prefetch the shared data of a unit (deduped per session; React Query keeps it fresh from there).
+ * `unitId` is the unit the module works in: the facility for the staff app, the administered unit for the admin panel.
+ */
+export function warmWorkspaceData(qc: QueryClient, unitId: Id, module: 'staff' | 'admin') {
+  const tag = `${module}:${unitId}`
   if (warmed.has(tag)) return
   warmed.add(tag)
   const stale = 60_000
-  void qc.prefetchQuery({ queryKey: catalogKeys.branches(companyId), queryFn: () => repos.tenant.listBranches(companyId), staleTime: stale })
-  void qc.prefetchQuery({ queryKey: catalogKeys.categories(companyId), queryFn: () => repos.catalog.listCategories(companyId), staleTime: stale })
-  void qc.prefetchQuery({ queryKey: catalogKeys.serviceTypes(companyId, {}), queryFn: () => repos.catalog.listServiceTypes(companyId, {}), staleTime: stale })
-  void qc.prefetchQuery({ queryKey: catalogKeys.schemas(companyId), queryFn: () => repos.catalog.listSchemas(companyId), staleTime: stale })
-  void qc.prefetchQuery({ queryKey: catalogKeys.templates(companyId, {}), queryFn: () => repos.templates.list(companyId, {}), staleTime: stale })
-  void qc.prefetchQuery({ queryKey: catalogKeys.assets(companyId), queryFn: () => repos.templates.listAssets(companyId), staleTime: stale })
+  void qc.prefetchQuery({ queryKey: catalogKeys.categories(unitId), queryFn: () => repos.catalog.listCategories(unitId), staleTime: stale })
+  void qc.prefetchQuery({ queryKey: catalogKeys.serviceTypes(unitId, {}), queryFn: () => repos.catalog.listServiceTypes(unitId, {}), staleTime: stale })
+  void qc.prefetchQuery({ queryKey: catalogKeys.schemas(unitId), queryFn: () => repos.catalog.listSchemas(unitId), staleTime: stale })
+  void qc.prefetchQuery({ queryKey: catalogKeys.templates(unitId, {}), queryFn: () => repos.templates.list(unitId, {}), staleTime: stale })
+  void qc.prefetchQuery({ queryKey: catalogKeys.assets(unitId), queryFn: () => repos.templates.listAssets(unitId), staleTime: stale })
   if (module === 'admin') {
-    void qc.prefetchQuery({ queryKey: ['roles', companyId], queryFn: () => repos.staff.listRoles(companyId), staleTime: stale })
-    void qc.prefetchQuery({ queryKey: ['company', companyId], queryFn: () => repos.tenant.getCompany(companyId), staleTime: stale })
+    void qc.prefetchQuery({ queryKey: ['roles', unitId], queryFn: () => repos.staff.listRoles(unitId), staleTime: stale })
+    void qc.prefetchQuery({ queryKey: orgKeys.unit(unitId), queryFn: () => repos.org.get(unitId), staleTime: stale })
   }
 }
 

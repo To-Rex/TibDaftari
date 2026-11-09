@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Layers, Plus } from 'lucide-react'
 import type { AttributeSchema } from '@/domain'
-import { usePermissions } from '@/features/auth/store'
-import { useStaffSession } from '@/features/session/useSession'
+import { useAdminScope, usePermissions } from '@/features/auth/store'
 import { useSaveSchema, useSchemas } from '@/features/catalog/queries'
 import { SchemaCard } from '@/features/schema-editor/SchemaCard'
 import { routes } from '@/shared/config/routes'
@@ -17,11 +16,11 @@ type StatusFilter = 'all' | AttributeSchema['status']
 export default function SchemasPage() {
   const { t } = useTranslation()
   const nav = useNavigate()
-  const { companyId } = useStaffSession()
+  const { scopeId } = useAdminScope()
   const { can } = usePermissions()
   const canWrite = can('admin.schema.write')
-  const schemas = useSchemas(companyId)
-  const save = useSaveSchema(companyId)
+  const schemas = useSchemas(scopeId)
+  const save = useSaveSchema(scopeId)
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<StatusFilter>('all')
 

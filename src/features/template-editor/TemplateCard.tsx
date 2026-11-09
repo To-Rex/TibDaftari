@@ -2,7 +2,7 @@ import { memo, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
 import { Check, MoreHorizontal } from 'lucide-react'
-import type { Branch, Category, ResultTemplate, ServiceType } from '@/domain'
+import type { Category, Id, ResultTemplate, ServiceType } from '@/domain'
 import { paperSize } from '@/domain'
 import { DocumentRenderer } from '@/features/documents/DocumentRenderer'
 import { cn } from '@/shared/lib/cn'
@@ -14,8 +14,14 @@ import { useTemplateSchema } from './useTemplateSchema'
 
 const TONE = { draft: 'warn', active: 'ok', archived: 'neutral' } as const
 
-export const TemplateCard = memo(function TemplateCard({ tpl, companyId, serviceTypes, categories, branches, canWrite, canPublish, onOpen, onDuplicate, onSetStatus, onDelete, onExport, selecting, selected, onToggleSelect }: {
-  tpl: ResultTemplate; companyId: string; serviceTypes: ServiceType[]; categories: Category[]; branches?: Branch[]; canWrite: boolean; canPublish: boolean
+export const TemplateCard = memo(function TemplateCard({ tpl, scopeId, serviceTypes, categories, unitName, canWrite, canPublish, onOpen, onDuplicate, onSetStatus, onDelete, onExport, selecting, selected, onToggleSelect }: {
+  tpl: ResultTemplate
+  /** the unit the gallery works in (lists, letterhead of the thumbnail; owner badge "inherited" when it differs) */
+  scopeId: Id
+  serviceTypes: ServiceType[]; categories: Category[]
+  /** unit names from the organisation tree (owner, bound units) */
+  unitName?: (id: Id) => string | undefined
+  canWrite: boolean; canPublish: boolean
   onOpen: () => void; onDuplicate: () => void; onSetStatus: (s: ResultTemplate['status']) => void; onDelete: () => void; onExport?: () => void
   /** selection mode (bulk actions): a click toggles the card instead of opening it */
   selecting?: boolean; selected?: boolean; onToggleSelect?: () => void
@@ -24,7 +30,9 @@ export const TemplateCard = memo(function TemplateCard({ tpl, companyId, service
   const bound = tpl.serviceTypeIds.map((id) => serviceTypes.find((s) => s.id === id)).filter(Boolean) as ServiceType[]
   const cats = tpl.categoryIds.map((id) => categories.find((c) => c.id === id)).filter(Boolean) as Category[]
   const chips = [...bound.map((s) => s.name), ...cats.map((c) => c.name)]
-  const branchNames = (tpl.branchIds ?? []).map((id) => branches?.find((b) => b.id === id)?.name ?? null).filter(Boolean) as string[]
+  const unitNames = (tpl.unitIds ?? []).map((id) => unitName?.(id) ?? null).filter(Boolean) as string[]
+  const owner = unitName?.(tpl.ownerUnitId)
+  const inherited = tpl.ownerUnitId !== scopeId
   return (
     <motion.div variants={fadeUp} className="h-full">
       <Card padded={false} interactive onClick={selecting ? onToggleSelect : onOpen} role={selecting ? 'checkbox' : undefined} aria-checked={selecting ? !!selected : undefined} data-template-id={tpl.id}
@@ -34,7 +42,7 @@ export const TemplateCard = memo(function TemplateCard({ tpl, companyId, service
             {selected && <Check className="size-4" />}
           </span>
         )}
-        <Thumb tpl={tpl} companyId={companyId} />
+        <Thumb tpl={tpl} scopeId={scopeId} />
         <div className="p-4 flex flex-col gap-2.5 flex-1">
           <div className="flex items-start gap-2">
             <div className="min-w-0 flex-1">
@@ -52,9 +60,16 @@ export const TemplateCard = memo(function TemplateCard({ tpl, companyId, service
             <Badge size="sm">{tpl.language.toUpperCase()}</Badge>
             {tpl.scope !== 'receipt' && tpl.doc.paper !== 'A4' && <Badge size="sm">{tpl.doc.paper}</Badge>}
             <Badge size="sm" tone={tpl.scope === 'receipt' ? 'accent' : undefined}>{tpl.scope === 'item' ? t('catalog.services.scopeItem') : tpl.scope === 'receipt' ? t('catalog.services.scopeReceipt') : t('catalog.services.scopeOrder')}</Badge>
-            {branchNames.length > 2 ? <span title={branchNames.join(' · ')}><Badge size="sm" tone="brand">{t('catalog.templates.nBranches', { n: branchNames.length })}</Badge></span>
-              : branchNames.length > 0 ? <Badge size="sm" tone="brand">{branchNames.join(' · ')}</Badge> : <Badge size="sm">{t('catalog.templates.allBranches')}</Badge>}
+            {unitNames.length > 2 ? <span title={unitNames.join(' · ')}><Badge size="sm" tone="brand">{t('catalog.templates.nUnits', { n: unitNames.length })}</Badge></span>
+              : unitNames.length > 0 ? <Badge size="sm" tone="brand">{unitNames.join(' · ')}</Badge> : <Badge size="sm">{t('catalog.templates.allUnits')}</Badge>}
           </div>
+          {owner && (
+            <p className="flex items-center gap-1.5 text-[12px] text-ink-3 min-w-0" data-owner={inherited ? 'inherited' : 'own'}>
+              <span className="shrink-0">{t('catalog.owner.label')}:</span>
+              <span className="truncate text-ink-2" title={owner}>{owner}</span>
+              {inherited && <Badge size="sm" tone="neutral">{t('catalog.owner.inherited')}</Badge>}
+            </p>
+          )}
           <div className="mt-auto flex items-center gap-1 flex-wrap">
             {tpl.scope === 'receipt' ? <span className="text-[12px] text-ink-3">{tpl.doc.paper.startsWith('Receipt') ? t('catalog.editor.receiptPaper', { mm: tpl.doc.paper.slice(7) }) : tpl.doc.paper}</span>
               : chips.length === 0 ? <span className="text-[12px] text-ink-3">{t('catalog.services.generic')}</span> : chips.slice(0, 3).map((c) => <span key={c} className="h-6 rounded-full bg-surface-2 px-2 text-[11.5px] text-ink-2 truncate max-w-full sm:max-w-[140px] leading-6">{c}</span>)}
@@ -67,8 +82,8 @@ export const TemplateCard = memo(function TemplateCard({ tpl, companyId, service
 })
 
 /** Live mini thumbnail rendered via DocumentRenderer — scaled to the card width (phones → big monitors). */
-function Thumb({ tpl, companyId }: { tpl: ResultTemplate; companyId: string }) {
-  const { ctx, assets, loading } = useTemplateSchema(tpl.serviceTypeIds[0], companyId, tpl)
+function Thumb({ tpl, scopeId }: { tpl: ResultTemplate; scopeId: Id }) {
+  const { ctx, assets, loading } = useTemplateSchema(tpl.serviceTypeIds[0], scopeId, tpl)
   const size = paperSize(tpl.doc)
   const ref = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(240)

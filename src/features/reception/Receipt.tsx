@@ -5,7 +5,7 @@
  */
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
-import type { Branch, Company, Order, OrderItem, Payment } from '@/domain'
+import type { OrgUnit, Order, OrderItem, Payment } from '@/domain'
 import { fmtDateTime, fmtMoney, fmtPhone } from '@/shared/lib/format'
 import { paymentMethodLabel } from '@/features/orders/status'
 
@@ -13,8 +13,10 @@ export interface ReceiptProps {
   order: Order
   items: OrderItem[]
   payments: Payment[]
-  company?: Pick<Company, 'name' | 'phone' | 'address'> | null
-  branch?: Pick<Branch, 'name' | 'address' | 'phone'> | null
+  /** the organisation the facility belongs to (its nearest non-facility unit) — the cheque's header line */
+  org?: Pick<OrgUnit, 'name' | 'phone' | 'address'> | null
+  /** the facility the cheque was written in */
+  unit?: Pick<OrgUnit, 'name' | 'address' | 'phone'> | null
   cashier?: string
 }
 
@@ -36,8 +38,12 @@ const CSS = `
 }
 `
 
-export function Receipt({ order, items, payments, company, branch, cashier }: ReceiptProps) {
+export function Receipt({ order, items, payments, org, unit, cashier }: ReceiptProps) {
   const { t } = useTranslation()
+  const title = org?.name ?? unit?.name ?? ''
+  // the facility line under the organisation name (just its address when the facility itself is the title)
+  const sub = unit ? (unit.name !== title ? `${unit.name}${unit.address ? `, ${unit.address}` : ''}` : unit.address ?? '') : ''
+  const phone = unit?.phone ?? org?.phone
   const live = items.filter((i) => i.status !== 'cancelled')
   const remaining = Math.max(0, order.total - order.paidAmount)
   return createPortal(
@@ -45,9 +51,9 @@ export function Receipt({ order, items, payments, company, branch, cashier }: Re
       <style>{CSS}</style>
       <div className="sheet">
         <div className="center">
-          <h1>{company?.name ?? ''}</h1>
-          {branch && <div className="muted">{branch.name}{branch.address ? `, ${branch.address}` : ''}</div>}
-          {(branch?.phone ?? company?.phone) && <div className="muted">{fmtPhone(branch?.phone ?? company?.phone)}</div>}
+          <h1>{title}</h1>
+          {sub && <div className="muted">{sub}</div>}
+          {phone && <div className="muted">{fmtPhone(phone)}</div>}
         </div>
         <div className="rule" />
         <table>
