@@ -6,12 +6,13 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Earth, Landmark, Pencil, Plus } from 'lucide-react'
+import { Earth, Landmark, Pencil, Plus, Rocket } from 'lucide-react'
 import type { OrgUnit } from '@/domain'
 import { CHILD_LEVEL, unitsUnder } from '@/domain'
 import { useAdminScope, usePermissions } from '@/features/auth/store'
 import { useUnitTree, useUpdateUnit } from '@/features/org/queries'
 import { UnitDrawer } from '@/features/org/UnitDrawer'
+import { QuickStartDialog } from '@/features/org/quickstart/QuickStartDialog'
 import { UnitTreeView } from '@/features/org/UnitTreeView'
 import { useUnitLabels } from '@/features/org/unitUi'
 import { routes } from '@/shared/config/routes'
@@ -27,12 +28,15 @@ export default function UnitsPage() {
   const { scopeId } = useAdminScope()
   const { can, isSuperAdmin } = usePermissions()
   const canManage = can('admin.unit.manage')
+  // quick start: a facility ready to work in one request — needs the people too
+  const canQuickStart = canManage && can('admin.employee.write')
   const labels = useUnitLabels()
   const tree = useUnitTree()
   const update = useUpdateUnit()
   const [search, setSearch] = useState('')
   const [showInactive, setShowInactive] = useState(true)
   const [drawer, setDrawer] = useState<DrawerState>({ open: false, parent: null, unit: null })
+  const [quick, setQuick] = useState<{ open: boolean; parent: OrgUnit | null }>({ open: false, parent: null })
 
   const all = useMemo(() => tree.data ?? [], [tree.data])
   const under = useMemo(() => unitsUnder(all, scopeId), [all, scopeId])
@@ -61,7 +65,12 @@ export default function UnitsPage() {
   return (
     <Page>
       <PageHeader title={t('admin.units.title')} description={t('admin.units.subtitle')}
-        actions={canManage && scope && scope.level !== 'facility' && <Button data-hotkey="n" leftIcon={<Plus className="size-4" />} onClick={() => openAdd(scope)}>{t('admin.units.add')}</Button>} />
+        actions={canManage && scope && scope.level !== 'facility' && (
+          <div className="flex flex-wrap items-center gap-2">
+            {canQuickStart && <Button variant="secondary" leftIcon={<Rocket className="size-4 text-brand" />} onClick={() => setQuick({ open: true, parent: scope })} data-quick-start>{t('admin.quickStart.open')}</Button>}
+            <Button data-hotkey="n" leftIcon={<Plus className="size-4" />} onClick={() => openAdd(scope)}>{t('admin.units.add')}</Button>
+          </div>
+        )} />
 
       {tree.isLoading ? (
         <Card padded={false} className="overflow-hidden"><div className="space-y-3 p-4">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-11" />)}</div></Card>
@@ -88,6 +97,7 @@ export default function UnitsPage() {
               renderActions={canManage ? (u) => (
                 <>
                   {u.id !== scopeId && <Switch size="sm" checked={u.isActive} onChange={(v) => void toggleActive(u, v)} ariaLabel={t('admin.units.toggleActive')} disabled={update.isPending} className="mr-1 max-sm:hidden" />}
+                  {canQuickStart && u.level !== 'facility' && u.isActive && <IconButton size="sm" label={t('admin.quickStart.open')} onClick={() => setQuick({ open: true, parent: u })} data-quick-start-row={u.id}><Rocket className="text-brand" /></IconButton>}
                   {CHILD_LEVEL[u.level] && u.isActive && <IconButton size="sm" label={t('admin.units.addLevel', { level: labels.level(CHILD_LEVEL[u.level]!) })} onClick={() => openAdd(u)} data-add-child={u.id}><Plus /></IconButton>}
                   <IconButton size="sm" label={t('common.edit')} onClick={() => openEdit(u)} data-edit-unit={u.id}><Pencil /></IconButton>
                 </>
@@ -100,6 +110,7 @@ export default function UnitsPage() {
 
       <UnitDrawer open={drawer.open} onClose={close} parent={drawer.parent} parents={drawer.unit ? undefined : parents} unit={drawer.unit} units={all}
         onSaved={(u) => { if (!drawer.unit) nav(routes.admin.unitDetail(u.id)) }} />
+      <QuickStartDialog open={quick.open} onClose={() => setQuick((q) => ({ ...q, open: false }))} parent={quick.parent} parents={parents} units={all} />
     </Page>
   )
 }

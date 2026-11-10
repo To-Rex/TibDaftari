@@ -110,6 +110,66 @@ export interface OrgUnit extends AuditStamp {
   counts: UnitCounts
 }
 
+/* ---- quick start («Tezkor ishga tushirish»): one request → a facility ready to work ---- */
+
+export type QuickStartRole = 'registrator' | 'vrach' | 'laborant' | 'rahbar' | 'admin'
+export type QuickStartOwner = 'region' | 'district' | 'facility'
+
+export interface QuickStartCounts {
+  categories: number
+  serviceTypes: number
+  schemas: number
+  templates: number
+  receipts: number
+}
+export interface QuickStartNode { id: Id; name: string; level: UnitLevel; path: string }
+/** A facility whose working set (the catalogue it uses + the templates bound to it) can be copied onto the new one. */
+export interface QuickStartSample {
+  id: Id
+  name: string
+  code?: string | null
+  kind?: FacilityKind | null
+  path: string
+  counts: QuickStartCounts
+  /** its catalogue is owned above the new facility too — only the templates would be copied */
+  sameCatalogue: boolean
+}
+export interface QuickStartRoleInfo { key: QuickStartRole; id: Id; name: string; suffix: string }
+export interface QuickStartPreview {
+  parent: QuickStartNode
+  /** existing nodes for the chosen geo; null = would be created */
+  regionNode: QuickStartNode | null
+  districtNode: QuickStartNode | null
+  inherits: QuickStartCounts
+  inheritsFrom: string[]
+  samples: QuickStartSample[]
+  roles: QuickStartRoleInfo[]
+  defaultPassword: string
+}
+export interface QuickStartStaffInput { role: QuickStartRole; fullName: string; login: string }
+export interface QuickStartInput {
+  /** geo ids when the parent is a country (region + district) or a region (district) */
+  regionId?: Id
+  districtId?: Id
+  regionName?: string
+  districtName?: string
+  facility: { name: string; kind: FacilityKind; code: string; shortName?: string; legalName?: string; phone?: string; email?: string; address?: string; timezone?: string }
+  staff: QuickStartStaffInput[]
+  password: string
+  sample?: { facilityId: Id; owner: QuickStartOwner } | null
+  activateReceipt?: boolean
+}
+export interface QuickStartEmployee { id: Id; fullName: string; login: string; roleKey: string; roleName: string; password: string }
+export interface QuickStartResult {
+  facility: OrgUnit
+  /** the nodes CREATED on the way (null = reused) */
+  region: OrgUnit | null
+  district: OrgUnit | null
+  employees: QuickStartEmployee[]
+  catalog: { sampleName?: string | null; ownerName?: string | null; inherited: QuickStartCounts; copied: QuickStartCounts }
+  receipt: { id: Id; name: string; status: string } | null
+}
+
 /** A child of `parentId` (its level follows from the parent); without a parent a country node (platform only). */
 export interface UnitCreateInput {
   parentId?: Id | null

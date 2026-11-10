@@ -61,6 +61,9 @@ import type {
   OrderSummary,
   OrgUnit,
   UnitCreateInput,
+  QuickStartInput,
+  QuickStartPreview,
+  QuickStartResult,
   UnitUpdateInput,
   UnitTreeQuery,
   UnitSms,
@@ -106,6 +109,10 @@ export interface OrgRepository {
   resetPreview(unitId: Id): Promise<ResetPreview>
   /** Superadmin: IRREVERSIBLY reset the chosen parts; `confirm` = facility code / unit name. */
   reset(unitId: Id, input: { parts: string[]; confirm: string }): Promise<ResetResult>
+  /** Quick start preview under `parentId`: what a new facility would inherit, sample facilities, default roles. */
+  quickStartPreview(parentId: Id, q?: { regionId?: Id; districtId?: Id }): Promise<QuickStartPreview>
+  /** Quick start: ONE request creates a facility ready to work (nodes, staff, the sample's catalogue + templates, cheque). */
+  quickStart(parentId: Id, input: QuickStartInput): Promise<QuickStartResult>
 }
 
 export interface StaffRepository {

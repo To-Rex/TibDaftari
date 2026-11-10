@@ -1,5 +1,5 @@
 /** HTTP OrgRepository — the organisation tree (`app/modules/units`). */
-import type { OrgUnit, ResetPreview, ResetResult, SmsTestResult, UnitSms, UnitSmsTemplates } from '@/domain'
+import type { OrgUnit, QuickStartPreview, QuickStartResult, ResetPreview, ResetResult, SmsTestResult, UnitSms, UnitSmsTemplates } from '@/domain'
 import type { OrgRepository } from '../repositories'
 import { api, compact } from './client'
 
@@ -29,4 +29,8 @@ export const orgHttp: OrgRepository = {
   resetPreview: (unitId) => api.get<ResetPreview>(`/units/${unitId}/reset`),
 
   reset: (unitId, input) => api.post<ResetResult>(`/units/${unitId}/reset`, input),
+
+  quickStartPreview: (parentId, q) => api.get<QuickStartPreview>(`/units/${parentId}/quick-start`, { query: { regionId: q?.regionId, districtId: q?.districtId } }),
+
+  quickStart: (parentId, input) => api.post<QuickStartResult>(`/units/${parentId}/quick-start`, compact({ ...input })),
 }
