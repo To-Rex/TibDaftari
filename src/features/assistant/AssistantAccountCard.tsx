@@ -8,7 +8,7 @@ import { ArrowUpFromLine, Bot, BotOff, Eye, EyeOff, KeyRound, PlugZap } from 'lu
 import type { AssistantAccountMode, AssistantProvider, OrgUnit } from '@/domain'
 import { repos } from '@/data'
 import { errorMessage } from '@/shared/lib/errors'
-import { Badge, Button, Card, CardHeader, Field, Input, Segmented, Select, Skeleton, toast } from '@/shared/ui'
+import { Badge, Button, Card, CardHeader, Checkbox, Field, Input, Segmented, Select, Skeleton, toast } from '@/shared/ui'
 import { useAssistantAccount, useSaveAssistantAccount } from './queries'
 
 const PROVIDERS: Exclude<AssistantProvider, 'none'>[] = ['anthropic', 'openai', 'deepseek', 'deploy', 'custom']
@@ -43,21 +43,22 @@ function Editor({ unit, readOnly }: { unit: OrgUnit; readOnly?: boolean }) {
   const [apiKey, setApiKey] = useState('')
   const [showKey, setShowKey] = useState(false)
   const [effort, setEffort] = useState<'low' | 'medium' | 'high'>('medium')
-  const [maxTokens, setMaxTokens] = useState(2048)
+  // 0 = the model's own maximum output (the default)
+  const [maxTokens, setMaxTokens] = useState(0)
   const [testing, setTesting] = useState(false)
   useEffect(() => {
     if (!d) return
     setMode(d.mode)
     if (d.mode === 'own' && d.provider !== 'none') { setProvider(d.provider); setModel(d.model ?? ''); setBaseUrl(d.baseUrl ?? '') }
     setEffort((d.effort as 'low' | 'medium' | 'high') ?? 'medium')
-    setMaxTokens(d.maxTokens ?? 2048)
+    setMaxTokens(d.maxTokens ?? 0)
     setApiKey('')
   }, [d])
   const pickProvider = (p: Exclude<AssistantProvider, 'none'>) => { setProvider(p); setModel(PRESET_MODEL[p] ?? ''); setBaseUrl(PRESET_URL[p] ?? '') }
   const savedKey = own && !!d?.apiKeyMasked && d?.provider === provider
   const needsKey = mode === 'own' && !apiKey.trim() && !savedKey
   const needsUrl = mode === 'own' && provider === 'custom' && !baseUrl.trim()
-  const dirty = !!d && (mode !== d.mode || (mode === 'own' && (provider !== d.provider || model !== (d.model ?? '') || baseUrl !== (d.baseUrl ?? '') || !!apiKey.trim() || effort !== (d.effort ?? 'medium') || maxTokens !== (d.maxTokens ?? 2048))))
+  const dirty = !!d && (mode !== d.mode || (mode === 'own' && (provider !== d.provider || model !== (d.model ?? '') || baseUrl !== (d.baseUrl ?? '') || !!apiKey.trim() || effort !== (d.effort ?? 'medium') || maxTokens !== (d.maxTokens ?? 0))))
 
   const submit = async () => {
     if (needsKey) { toast.error(t('assistant.settings.keyRequired')); return }
@@ -113,8 +114,13 @@ function Editor({ unit, readOnly }: { unit: OrgUnit; readOnly?: boolean }) {
               {(id) => <Select id={id} value={effort} disabled={readOnly} onChange={(e) => setEffort(e.target.value as 'low' | 'medium' | 'high')}><option value="low">low</option><option value="medium">medium</option><option value="high">high</option></Select>}
             </Field>
           )}
-          <Field label={t('assistant.settings.maxTokens')}>
-            {(id) => <Input id={id} type="number" min={256} max={32000} step={256} value={maxTokens} disabled={readOnly} onChange={(e) => setMaxTokens(Math.max(256, Math.min(32000, Number(e.target.value) || 2048)))} />}
+          <Field label={t('assistant.settings.maxTokens')} hint={t('assistant.settings.maxTokensHint')}>
+            {(id) => (
+              <div className="flex flex-col gap-2">
+                <Checkbox checked={maxTokens === 0} disabled={readOnly} onChange={(e) => setMaxTokens(e.target.checked ? 0 : 16000)} label={t('assistant.settings.maxTokensMax')} data-assistant-max-tokens-max />
+                <Input id={id} type="number" min={256} max={200000} step={1024} value={maxTokens || ''} placeholder="∞" disabled={readOnly || maxTokens === 0} onChange={(e) => setMaxTokens(Math.max(256, Math.min(200000, Number(e.target.value) || 256)))} data-assistant-max-tokens />
+              </div>
+            )}
           </Field>
         </div>
       )}
