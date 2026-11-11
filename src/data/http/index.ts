@@ -11,6 +11,7 @@ import { messagingHttp } from './messaging.http'
 import { reportsHttp } from './reports.http'
 import { platformHttp } from './platform.http'
 import { portalHttp } from './portal.http'
+import { assistantHttp } from './assistant.http'
 
 export const httpRepositories: Repositories = {
   auth: authHttp,
@@ -24,6 +25,7 @@ export const httpRepositories: Repositories = {
   reports: reportsHttp,
   platform: platformHttp,
   portal: portalHttp,
+  assistant: assistantHttp,
 }
 
 export { ApiError, absoluteUrl, API_BASE } from './client'

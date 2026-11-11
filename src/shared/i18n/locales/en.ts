@@ -41,7 +41,7 @@ export const en: DeepPartial<Dictionary> = {
   nav: {
     dashboard: 'Dashboard', reception: 'Reception', patients: 'Patients', orders: 'Orders', lab: 'Laboratory', confirm: 'Approval', results: 'Results', reports: 'Reports', messages: 'Messages', admin: 'Administration',
     organisation: 'Organisation', unit: 'Unit', units: 'Units', territory: 'Territory', employees: 'Employees', roles: 'Roles & permissions', catalog: 'Service catalog', schemas: 'Result schemas', templates: 'Templates', receipts: 'Receipt templates',
-    smsSettings: 'SMS settings', platform: 'Platform', portalHome: 'Home', portalResults: 'Results', portalVisits: 'Visits', portalProfile: 'Profile', staffApp: 'Staff app',
+    smsSettings: 'SMS settings', platform: 'Platform', assistant: 'Assistant', assistantSettings: 'Assistant (AI)', portalHome: 'Home', portalResults: 'Results', portalVisits: 'Visits', portalProfile: 'Profile', staffApp: 'Staff app',
   },
   auth: {
     staffTitle: 'Staff sign in', staffSubtitle: 'Enter your login and password', staffFormLabel: 'Staff system', staffFlowLabel: 'Clinic flow', staffAsideTitle: 'One clinic flow, one shift.',

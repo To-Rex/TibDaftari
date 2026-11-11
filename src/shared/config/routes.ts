@@ -27,6 +27,7 @@ export const routes = {
     confirm: '/app/confirm',
     reports: '/app/reports',
     messages: '/app/messages',
+    assistant: '/app/assistant',
   },
   admin: {
     root: '/admin',
@@ -47,5 +48,7 @@ export const routes = {
     receipt: (id = ':templateId') => `/admin/receipts/${id}`,
     sms: '/admin/sms',
     platform: '/admin/platform',
+    assistant: '/admin/assistant',
+    assistantSettings: '/admin/assistant-settings',
   },
 } as const

@@ -55,6 +55,8 @@ export const PERMISSIONS = [
   'admin.settings.write',
   /** wipe a unit and everything under it ("like newborn") — superadmin and the installer, inside their scope */
   'admin.unit.reset',
+  /** the AI assistant («Yordamchi»): chat and its tools — each tool is gated by the keys above */
+  'assistant.use',
   // Platform (superadmin only): the whole tree, every country
   'platform.unit.manage',
 ] as const
@@ -86,6 +88,7 @@ export type PermissionModule =
   | 'messaging'
   | 'admin'
   | 'platform'
+  | 'assistant'
 
 export const moduleOf = (p: Permission): PermissionModule =>
   p.split('.')[0] as PermissionModule

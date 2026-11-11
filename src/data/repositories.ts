@@ -61,6 +61,13 @@ import type {
   OrderSummary,
   OrgUnit,
   UnitCreateInput,
+  AssistantAccount,
+  AssistantAccountInput,
+  AssistantSendResult,
+  AssistantStatus,
+  AssistantTestResult,
+  AssistantThread,
+  AssistantThreadDetail,
   QuickStartInput,
   QuickStartPreview,
   QuickStartResult,
@@ -113,6 +120,23 @@ export interface OrgRepository {
   quickStartPreview(parentId: Id, q?: { regionId?: Id; districtId?: Id }): Promise<QuickStartPreview>
   /** Quick start: ONE request creates a facility ready to work (nodes, staff, the sample's catalogue + templates, cheque). */
   quickStart(parentId: Id, input: QuickStartInput): Promise<QuickStartResult>
+}
+
+export interface AssistantRepository {
+  /** whether the assistant works for the caller at `unitId`, with which model, and the tools they may use */
+  status(unitId?: Id): Promise<AssistantStatus>
+  listThreads(): Promise<AssistantThread[]>
+  createThread(unitId?: Id, title?: string): Promise<AssistantThread>
+  getThread(id: Id): Promise<AssistantThreadDetail>
+  deleteThread(id: Id): Promise<void>
+  /** the model answers, runs read tools, proposes writes (returned as `pending`) */
+  send(threadId: Id, content: string, unitId?: Id): Promise<AssistantSendResult>
+  confirm(actionId: Id): Promise<AssistantSendResult>
+  cancel(actionId: Id): Promise<AssistantSendResult>
+  /** the unit's model account (its own or inherited); save; one round-trip test */
+  getAccount(unitId: Id): Promise<AssistantAccount>
+  saveAccount(unitId: Id, input: AssistantAccountInput): Promise<AssistantAccount>
+  testAccount(unitId: Id): Promise<AssistantTestResult>
 }
 
 export interface StaffRepository {
@@ -283,4 +307,5 @@ export interface Repositories {
   reports: ReportRepository
   platform: PlatformRepository
   portal: PortalRepository
+  assistant: AssistantRepository
 }

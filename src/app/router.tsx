@@ -47,6 +47,8 @@ const TemplateEditorPage = lazy(() => import('@/modules/admin/templates/Template
 const ReceiptTemplatesPage = lazy(() => import('@/modules/admin/templates/ReceiptTemplatesPage'))
 const SmsSettingsPage = lazy(() => import('@/modules/admin/settings/SmsSettingsPage'))
 const PlatformPage = lazy(() => import('@/modules/admin/platform/PlatformPage'))
+const AssistantPage = lazy(() => import('@/modules/assistant/AssistantPage'))
+const AssistantSettingsPage = lazy(() => import('@/modules/admin/settings/AssistantSettingsPage'))
 
 const S = ({ children }: { children: ReactNode }) => <Suspense fallback={<PageSpinner />}>{children}</Suspense>
 
@@ -117,6 +119,7 @@ export const router = createBrowserRouter([
           { element: <RequirePerm perm={['confirm.result.read', 'confirm.result.view']} />, children: [{ path: routes.app.confirm, element: page(<ConfirmPage />) }] },
           { element: <RequirePerm perm={['reports.finance.read', 'reports.operations.read']} />, children: [{ path: routes.app.reports, element: page(<ReportsPage />) }] },
           { element: <RequirePerm perm={['messaging.send', 'messaging.broadcast']} />, children: [{ path: routes.app.messages, element: page(<MessagesPage />) }] },
+          { element: <RequirePerm perm="assistant.use" />, children: [{ path: routes.app.assistant, element: page(<AssistantPage />) }] },
         ],
       },
       {
@@ -134,6 +137,8 @@ export const router = createBrowserRouter([
             { path: routes.admin.employee(), element: page(<EmployeePage />) },
           ] },
           { element: <RequirePerm perm="admin.role.write" />, children: [{ path: routes.admin.roles, element: page(<RolesPage />) }] },
+          { element: <RequirePerm perm="assistant.use" />, children: [{ path: routes.admin.assistant, element: page(<AssistantPage />) }] },
+          { element: <RequirePerm perm="admin.settings.write" />, children: [{ path: routes.admin.assistantSettings, element: page(<AssistantSettingsPage />) }] },
           { element: <RequirePerm perm="admin.catalog.read" />, children: [{ path: routes.admin.catalog, element: page(<CatalogPage />) }] },
           { element: <RequirePerm perm="admin.schema.write" />, children: [
             { path: routes.admin.schemas, element: page(<SchemasPage />) },
