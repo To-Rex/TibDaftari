@@ -47,7 +47,7 @@ export default function AdminDashboardPage() {
     const missing = o.serviceTypes.filter((s) => s.isActive && !generic && !activeTpl.some((x) => x.serviceTypeIds.includes(s.id) || x.categoryIds.includes(s.categoryId)))
     const published = o.schemas.filter((s) => s.status === 'published').length
     // an SMS account somewhere on the path (own or inherited) — or SMS switched off on purpose
-    const smsOk = u.sms?.provider === 'xabarchi' || u.sms?.mode === 'off'
+    const smsOk = (!!u.sms?.provider && u.sms.provider !== 'none') || u.sms?.mode === 'off'
     // a unit above the facilities needs at least one facility to write cheques in; a facility must be active
     const facilitiesOk = u.level === 'facility' ? u.isActive : u.counts.facilities > 0
     return [

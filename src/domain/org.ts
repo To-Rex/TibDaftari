@@ -14,7 +14,9 @@ export const CHILD_LEVEL: Record<UnitLevel, UnitLevel | null> = { country: 'regi
 export type FacilityKind = 'ses' | 'clinic' | 'laboratory' | 'polyclinic' | 'hospital' | 'pharmacy' | 'other'
 export const FACILITY_KINDS: FacilityKind[] = ['ses', 'clinic', 'laboratory', 'polyclinic', 'hospital', 'pharmacy', 'other']
 
-export type SmsProvider = 'xabarchi' | 'none'
+export type SmsProvider = 'xabarchi' | 'eskiz' | 'none'
+/** the providers a unit may enter an account for */
+export type SmsProviderChoice = 'xabarchi' | 'eskiz'
 export type SmsPriority = 'urgent' | 'transactional' | 'bulk'
 /** inherited = no account of its own (an ancestor's is used) · own = its own Xabarchi key · off = no SMS here and below */
 export type UnitSmsMode = 'inherited' | 'own' | 'off'
@@ -40,9 +42,14 @@ export interface UnitSettings {
 /** A unit's SMS account as the settings page shows it. */
 export interface UnitSms {
   mode: UnitSmsMode
-  /** what really sends this unit's SMS: a Xabarchi key somewhere up the tree, or none */
+  /** what really sends this unit's SMS: a Xabarchi or Eskiz account somewhere up the tree, or none */
   provider: SmsProvider
+  /** Xabarchi: the key's masked tail; Eskiz: the password, fully masked */
   apiKeyMasked?: string | null
+  /** Eskiz: the cabinet e-mail */
+  login?: string | null
+  /** Eskiz: the sender name (nick), e.g. 4546 */
+  sender?: string | null
   defaultPriority: SmsPriority
   senderNote?: string | null
   /** the unit whose account is in effect (itself or an ancestor); null = nothing configured */
@@ -51,8 +58,16 @@ export interface UnitSms {
 }
 export interface UnitSmsInput {
   mode: UnitSmsMode
-  /** write-only plaintext; omitted = keep the saved key */
+  /** which provider the own account uses (default: the saved one, else Xabarchi) */
+  provider?: SmsProviderChoice
+  /** Xabarchi key — write-only plaintext; omitted = keep the saved key */
   apiKey?: string
+  /** Eskiz cabinet e-mail */
+  login?: string
+  /** Eskiz password — write-only; omitted = keep the saved one */
+  password?: string
+  /** Eskiz sender name (nick) */
+  sender?: string
   defaultPriority?: SmsPriority
   senderNote?: string
 }
@@ -215,8 +230,11 @@ export interface UnitTreeQuery {
 
 export interface SmsTestResult {
   ok: boolean
+  provider?: SmsProvider
   providerMessageId?: string
   to?: string
+  /** Eskiz: the account's balance after the test (so‘m) */
+  balance?: number | null
 }
 
 /** Superadmin reset ("like newborn") of a unit and everything under it. */
