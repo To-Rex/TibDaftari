@@ -4,6 +4,7 @@
  */
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { motion } from 'motion/react'
 import { Loader2, SendHorizontal, Sparkles } from 'lucide-react'
 import type { AssistantStatus, Id, OrgUnit } from '@/domain'
 import { ApiError } from '@/data'
@@ -12,8 +13,34 @@ import { cn } from '@/shared/lib/cn'
 import { errorMessage } from '@/shared/lib/errors'
 import { Badge, Textarea, toast } from '@/shared/ui'
 import { UnitIcon } from '../org/unitUi'
-import { ChatMessage } from './ChatMessage'
+import { ChatMessage, UserBubble } from './ChatMessage'
 import { useResolveAction, useSendMessage, useThread } from './queries'
+
+const enter = { initial: { opacity: 0, y: 6 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.18, ease: 'easeOut' as const } }
+
+/** The assistant's "typing" bubble: three dots and a hint that changes the longer the model works. */
+function Typing({ mode }: { mode: 'reply' | 'action' }) {
+  const { t } = useTranslation()
+  const [sec, setSec] = useState(0)
+  useEffect(() => {
+    const id = window.setInterval(() => setSec((n) => n + 1), 1000)
+    return () => window.clearInterval(id)
+  }, [])
+  const hint = mode === 'action' ? t('assistant.typingAction') : sec < 5 ? t('assistant.typing1') : sec < 15 ? t('assistant.typing2') : t('assistant.typing3')
+  return (
+    <motion.div {...enter} className="flex items-end gap-2" data-chat-thinking data-chat-thinking-sec={sec}>
+      <span className="grid size-7 shrink-0 place-items-center rounded-full bg-brand-soft text-brand"><Sparkles className="size-3.5" /></span>
+      <div className="rounded-2xl rounded-bl-md border border-line bg-bg-elevated px-3.5 py-2.5 shadow-1">
+        <div className="flex items-center gap-2">
+          <span className="flex items-center gap-1" aria-hidden>
+            {[0, 1, 2].map((i) => <span key={i} className="size-1.5 rounded-full bg-brand animate-bounce" style={{ animationDelay: `${i * 0.15}s`, animationDuration: '0.9s' }} />)}
+          </span>
+          <span className="text-[12.5px] text-ink-3" aria-live="polite">{hint}</span>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
 
 export function AssistantChat({ threadId, unit, status, onFirstSend }: { threadId: Id | null; unit: OrgUnit | null; status: AssistantStatus; onFirstSend: (content: string) => Promise<Id> }) {
   const { t } = useTranslation()
@@ -23,17 +50,20 @@ export function AssistantChat({ threadId, unit, status, onFirstSend }: { threadI
   const resolve = useResolveAction(threadId ?? '')
   const [draft, setDraft] = useState('')
   const [starting, setStarting] = useState(false)
+  // the message just sent — on screen at once, replaced by the server's copy when the reply lands
+  const [outgoing, setOutgoing] = useState<string | null>(null)
   const bottom = useRef<HTMLDivElement>(null)
   const box = useRef<HTMLTextAreaElement>(null)
   const messages = thread.data?.messages ?? []
   const busy = send.isPending || resolve.isPending || starting
-  useEffect(() => { bottom.current?.scrollIntoView({ block: 'end' }) }, [messages.length, busy])
+  useEffect(() => { bottom.current?.scrollIntoView({ block: 'end', behavior: 'smooth' }) }, [messages.length, busy, outgoing])
   useEffect(() => { setDraft('') }, [threadId])
 
   const submit = async (text?: string) => {
     const content = (text ?? draft).trim()
     if (!content || busy) return
     setDraft('')
+    setOutgoing(content)
     try {
       if (!threadId) {
         setStarting(true)
@@ -46,6 +76,7 @@ export function AssistantChat({ threadId, unit, status, onFirstSend }: { threadI
       else toast.error(errorMessage(e))
       setDraft(content)
     } finally {
+      setOutgoing(null)
       setStarting(false)
       box.current?.focus()
     }
@@ -68,7 +99,7 @@ export function AssistantChat({ threadId, unit, status, onFirstSend }: { threadI
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4" data-chat-scroll>
-        {thread.isLoading && threadId ? <div className="flex justify-center py-10"><Loader2 className="size-5 animate-spin text-ink-3" /></div> : messages.length === 0 ? (
+        {thread.isLoading && threadId ? <div className="flex justify-center py-10"><Loader2 className="size-5 animate-spin text-ink-3" /></div> : messages.length === 0 && !outgoing ? (
           <div className="mx-auto max-w-xl pt-6 text-center" data-chat-welcome>
             <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-brand-soft text-brand"><Sparkles className="size-6" /></span>
             <h2 className="mt-3 text-[18px] font-semibold">{t('assistant.welcomeTitle', { name: me?.fullName.split(' ')[0] ?? '' })}</h2>
@@ -83,8 +114,9 @@ export function AssistantChat({ threadId, unit, status, onFirstSend }: { threadI
           </div>
         ) : (
           <div className="mx-auto flex max-w-3xl flex-col gap-3">
-            {messages.map((m) => <ChatMessage key={m.id} m={m} onResolve={onResolve} busy={resolve.isPending} />)}
-            {busy && <div className="flex items-center gap-2 text-[12.5px] text-ink-3" data-chat-thinking><Loader2 className="size-4 animate-spin" />{t('assistant.thinking')}</div>}
+            {messages.map((m) => <motion.div key={m.id} {...enter}><ChatMessage m={m} onResolve={onResolve} busy={resolve.isPending} /></motion.div>)}
+            {outgoing && <motion.div {...enter}><UserBubble content={outgoing} pending /></motion.div>}
+            {busy && <Typing mode={resolve.isPending ? 'action' : 'reply'} />}
             <div ref={bottom} />
           </div>
         )}
@@ -92,7 +124,7 @@ export function AssistantChat({ threadId, unit, status, onFirstSend }: { threadI
 
       <div className="border-t border-line bg-bg-elevated/80 px-4 py-3">
         <div className="mx-auto flex max-w-3xl items-end gap-2">
-          <Textarea ref={box} rows={1} value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={onKey} placeholder={t('assistant.composerPlaceholder')} disabled={busy}
+          <Textarea ref={box} rows={1} value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={onKey} placeholder={busy ? t('assistant.composerBusy') : t('assistant.composerPlaceholder')}
             className="max-h-40 min-h-11 flex-1 resize-none" data-chat-input />
           <button type="button" onClick={() => void submit()} disabled={busy || !draft.trim()} aria-label={t('assistant.send')} data-chat-send
             className={cn('grid size-11 shrink-0 place-items-center rounded-full text-white transition-colors', busy || !draft.trim() ? 'bg-brand/40' : 'bg-brand hover:bg-brand-strong')}>

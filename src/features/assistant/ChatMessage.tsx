@@ -107,15 +107,20 @@ export function ActionCard({ action, onResolve, busy }: { action: AssistantActio
 }
 
 
+/** The employee's bubble; `pending` = sent, the server has not answered yet (shown at once, slightly dimmed). */
+export function UserBubble({ content, pending }: { content: string; pending?: boolean }) {
+  const { t } = useTranslation()
+  return (
+    <div className="flex flex-col items-end" data-chat-msg={pending ? 'user-outgoing' : 'user'}>
+      <div className={cn('max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-brand px-3.5 py-2 text-[14px] leading-relaxed text-white shadow-1 transition-opacity', pending && 'opacity-75')}>{content}</div>
+      {pending && <span className="mt-0.5 inline-flex items-center gap-1 pr-1 text-[11px] text-ink-3"><Loader2 className="size-3 animate-spin" />{t('assistant.sending')}</span>}
+    </div>
+  )
+}
+
 export function ChatMessage({ m, onResolve, busy }: { m: AssistantMessage; onResolve?: (id: string, confirm: boolean) => void; busy?: boolean }) {
   const { t } = useTranslation()
-  if (m.role === 'user') {
-    return (
-      <div className="flex justify-end" data-chat-msg="user">
-        <div className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-brand px-3.5 py-2 text-[14px] leading-relaxed text-white shadow-1">{m.content}</div>
-      </div>
-    )
-  }
+  if (m.role === 'user') return <UserBubble content={m.content} />
   if (m.role === 'tool') {
     return m.isError ? <div className="flex justify-start" data-chat-msg="tool"><div className="inline-flex items-center gap-1.5 rounded-full border border-danger/30 bg-danger-soft/50 px-2.5 py-1 text-[12px] text-danger"><AlertTriangle className="size-3.5" />{t('assistant.toolError')} · {m.toolName}</div></div> : null
   }
