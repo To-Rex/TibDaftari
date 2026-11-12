@@ -133,10 +133,14 @@ export interface AssistantRepository {
   send(threadId: Id, content: string, unitId?: Id): Promise<AssistantSendResult>
   confirm(actionId: Id): Promise<AssistantSendResult>
   cancel(actionId: Id): Promise<AssistantSendResult>
-  /** the unit's model account (its own or inherited); save; one round-trip test */
+  /** the unit's model account (its own, inherited, or the platform's); save; one round-trip test */
   getAccount(unitId: Id): Promise<AssistantAccount>
   saveAccount(unitId: Id, input: AssistantAccountInput): Promise<AssistantAccount>
   testAccount(unitId: Id): Promise<AssistantTestResult>
+  /** the platform account — entered once by a superadmin, used by every unit without a closer one */
+  getPlatformAccount(): Promise<AssistantAccount>
+  savePlatformAccount(input: AssistantAccountInput): Promise<AssistantAccount>
+  testPlatformAccount(): Promise<AssistantTestResult>
 }
 
 export interface StaffRepository {

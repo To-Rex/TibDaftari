@@ -8,6 +8,7 @@ export const assistantKeys = {
   threads: () => ['assistant', 'threads'] as const,
   thread: (id: Id) => ['assistant', 'thread', id] as const,
   account: (unitId: Id) => ['assistant', 'account', unitId] as const,
+  platformAccount: () => ['assistant', 'platform-account'] as const,
 }
 
 export const useAssistantStatus = (unitId: Id | null) =>
@@ -68,6 +69,17 @@ export function useResolveAction(threadId: Id) {
 
 export const useAssistantAccount = (unitId: Id | null) =>
   useQuery({ queryKey: assistantKeys.account(unitId ?? ''), queryFn: () => repos.assistant.getAccount(unitId as Id), enabled: !!unitId })
+
+export const useAssistantPlatformAccount = (enabled = true) =>
+  useQuery({ queryKey: assistantKeys.platformAccount(), queryFn: () => repos.assistant.getPlatformAccount(), enabled })
+
+export function useSavePlatformAccount() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (input: AssistantAccountInput) => repos.assistant.savePlatformAccount(input),
+    onSuccess: (r) => { qc.setQueryData(assistantKeys.platformAccount(), r); void qc.invalidateQueries({ queryKey: ['assistant'] }) },
+  })
+}
 
 export function useSaveAssistantAccount() {
   const qc = useQueryClient()

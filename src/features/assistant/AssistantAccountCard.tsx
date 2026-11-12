@@ -1,15 +1,19 @@
 /**
- * The unit's AI account: inherited from above, its own (provider + model + key), or off for the subtree. The API
- * never returns the key — only its masked tail. A test button makes one short round-trip with the account in effect.
+ * An AI account editor for two targets: the PLATFORM account (a superadmin enters provider + key once; every unit
+ * without a closer account uses it) and a UNIT's account (inherited from above / the platform, its own, or off for
+ * the subtree). The API never returns the key — only its masked tail. A test button makes one short round-trip with
+ * the account in effect.
  */
 import { useEffect, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowUpFromLine, Bot, BotOff, Eye, EyeOff, KeyRound, PlugZap } from 'lucide-react'
+import { ArrowUpFromLine, Bot, BotOff, Eye, EyeOff, Globe, KeyRound, PlugZap } from 'lucide-react'
 import type { AssistantAccountMode, AssistantProvider, OrgUnit } from '@/domain'
 import { repos } from '@/data'
 import { errorMessage } from '@/shared/lib/errors'
 import { Badge, Button, Card, CardHeader, Checkbox, Field, Input, Segmented, Select, Skeleton, toast } from '@/shared/ui'
-import { useAssistantAccount, useSaveAssistantAccount } from './queries'
+import { useAssistantAccount, useAssistantPlatformAccount, useSaveAssistantAccount, useSavePlatformAccount } from './queries'
+
+export type AccountTarget = { kind: 'unit'; unit: OrgUnit } | { kind: 'platform' }
 
 const PROVIDERS: Exclude<AssistantProvider, 'none'>[] = ['anthropic', 'openai', 'deepseek', 'deploy', 'custom']
 const PRESET_MODEL: Record<string, string> = { anthropic: 'claude-opus-5-5', openai: 'gpt-4.1', deepseek: 'deepseek-chat', deploy: 'deepseek-ai/deepseek-v4.1-flash-1017', custom: '' }
@@ -20,20 +24,30 @@ const MODES: { value: AssistantAccountMode; icon: ReactNode }[] = [
   { value: 'off', icon: <BotOff /> },
 ]
 
-export function AssistantAccountCard({ unit, readOnly }: { unit: OrgUnit; readOnly?: boolean }) {
+export function AssistantAccountCard({ target, readOnly }: { target: AccountTarget; readOnly?: boolean }) {
   const { t } = useTranslation()
+  const platform = target.kind === 'platform'
   return (
-    <Card data-assistant-account>
-      <CardHeader className="max-xs:flex-col max-xs:items-start" title={<span className="inline-flex items-center gap-2"><Bot className="size-4 text-brand" />{t('assistant.settings.accountTitle')}</span>} description={t('assistant.settings.accountSub')} />
-      <Editor key={unit.id} unit={unit} readOnly={readOnly} />
+    <Card data-assistant-account={platform ? 'platform' : 'unit'}>
+      <CardHeader className="max-xs:flex-col max-xs:items-start"
+        title={<span className="inline-flex items-center gap-2">{platform ? <Globe className="size-4 text-brand" /> : <Bot className="size-4 text-brand" />}{t(platform ? 'assistant.settings.platformTitle' : 'assistant.settings.accountTitle')}</span>}
+        description={t(platform ? 'assistant.settings.platformSub' : 'assistant.settings.accountSub')} />
+      <Editor key={platform ? 'platform' : target.unit.id} target={target} readOnly={readOnly} />
     </Card>
   )
 }
 
-function Editor({ unit, readOnly }: { unit: OrgUnit; readOnly?: boolean }) {
+function Editor({ target, readOnly }: { target: AccountTarget; readOnly?: boolean }) {
   const { t } = useTranslation()
-  const current = useAssistantAccount(unit.id)
-  const save = useSaveAssistantAccount()
+  const platform = target.kind === 'platform'
+  const unitId = target.kind === 'unit' ? target.unit.id : null
+  const unitQ = useAssistantAccount(unitId)
+  const platformQ = useAssistantPlatformAccount(platform)
+  const current = platform ? platformQ : unitQ
+  const saveUnit = useSaveAssistantAccount()
+  const savePlatform = useSavePlatformAccount()
+  const saving = platform ? savePlatform.isPending : saveUnit.isPending
+  const modeKey = platform ? 'platformMode' : 'mode'
   const d = current.data
   const own = d?.mode === 'own'
   const [mode, setMode] = useState<AssistantAccountMode>('inherited')
@@ -62,15 +76,17 @@ function Editor({ unit, readOnly }: { unit: OrgUnit; readOnly?: boolean }) {
 
   const submit = async () => {
     if (needsKey) { toast.error(t('assistant.settings.keyRequired')); return }
+    const input = mode === 'own' ? { mode, provider, model: model.trim() || undefined, baseUrl: baseUrl.trim() || undefined, apiKey: apiKey.trim() || undefined, effort, maxTokens } : { mode }
     try {
-      await save.mutateAsync({ unitId: unit.id, input: mode === 'own' ? { mode, provider, model: model.trim() || undefined, baseUrl: baseUrl.trim() || undefined, apiKey: apiKey.trim() || undefined, effort, maxTokens } : { mode } })
+      if (unitId) await saveUnit.mutateAsync({ unitId, input })
+      else await savePlatform.mutateAsync(input)
       toast.success(t('assistant.settings.saved'))
     } catch (e) { toast.error(errorMessage(e)) }
   }
   const test = async () => {
     setTesting(true)
     try {
-      const r = await repos.assistant.testAccount(unit.id)
+      const r = unitId ? await repos.assistant.testAccount(unitId) : await repos.assistant.testPlatformAccount()
       if (r.ok) toast.success(t('assistant.settings.testOk', { ms: r.latencyMs, reply: r.reply ?? '' }))
       else toast.error(t('assistant.settings.testFail', { error: r.error ?? '' }))
     } catch (e) { toast.error(errorMessage(e)) } finally { setTesting(false) }
@@ -79,11 +95,13 @@ function Editor({ unit, readOnly }: { unit: OrgUnit; readOnly?: boolean }) {
   if (!d) return <Skeleton className="h-40" />
   return (
     <div className="flex flex-col gap-4">
-      <Segmented<AssistantAccountMode> value={mode} onChange={(v) => { if (!readOnly) setMode(v) }} wrap items={MODES.map((m) => ({ value: m.value, label: t(`assistant.settings.mode.${m.value}`), icon: m.icon }))} />
-      <p className="text-[12.5px] text-ink-3">{t(`assistant.settings.modeHint.${mode}`)}</p>
-      {mode === 'inherited' && (
-        <div className="rounded-[var(--radius)] border border-dashed border-line bg-surface-2/50 px-3 py-2.5 text-[13px]" data-assistant-inherited>
-          {d.configured && d.effectiveUnitName ? <>{t('assistant.settings.inheritedFrom', { name: d.effectiveUnitName })} <Badge size="sm" tone="brand" className="ml-1">{t(`assistant.settings.providers.${d.provider}`)}</Badge> {d.model && <span className="ml-1 font-mono text-[12px] text-ink-3">{d.model}</span>}</> : <span className="text-warn">{t('assistant.settings.nothingAbove')}</span>}
+      <Segmented<AssistantAccountMode> value={mode} onChange={(v) => { if (!readOnly) setMode(v) }} wrap items={MODES.map((m) => ({ value: m.value, label: t(`assistant.settings.${modeKey}.${m.value}`), icon: m.icon }))} />
+      <p className="text-[12.5px] text-ink-3">{t(`assistant.settings.${modeKey}Hint.${mode}`)}</p>
+      {mode === 'inherited' && !platform && (
+        <div className="rounded-[var(--radius)] border border-dashed border-line bg-surface-2/50 px-3 py-2.5 text-[13px]" data-assistant-inherited={d.configured ? (d.effectivePlatform ? 'platform' : 'unit') : 'none'}>
+          {d.configured && (d.effectivePlatform || d.effectiveUnitName)
+            ? <>{d.effectivePlatform ? t('assistant.settings.inheritedFromPlatform') : t('assistant.settings.inheritedFrom', { name: d.effectiveUnitName })} <Badge size="sm" tone="brand" className="ml-1">{t(`assistant.settings.providers.${d.provider}`)}</Badge> {d.model && <span className="ml-1 font-mono text-[12px] text-ink-3">{d.model}</span>}</>
+            : <span className="text-warn">{t('assistant.settings.nothingAbove')}</span>}
         </div>
       )}
       {mode === 'own' && (
@@ -126,7 +144,7 @@ function Editor({ unit, readOnly }: { unit: OrgUnit; readOnly?: boolean }) {
       )}
       {!readOnly && (
         <div className="flex flex-wrap items-center gap-2 border-t border-line pt-3">
-          <Button onClick={() => void submit()} loading={save.isPending} disabled={!dirty || needsUrl} data-assistant-save>{t('assistant.settings.save')}</Button>
+          <Button onClick={() => void submit()} loading={saving} disabled={!dirty || needsUrl} data-assistant-save>{t('assistant.settings.save')}</Button>
           <Button variant="secondary" leftIcon={<PlugZap className="size-4" />} onClick={() => void test()} loading={testing} disabled={!d.configured || dirty} data-assistant-test>{t('assistant.settings.test')}</Button>
         </div>
       )}

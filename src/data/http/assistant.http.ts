@@ -15,4 +15,7 @@ export const assistantHttp: AssistantRepository = {
   getAccount: (unitId) => api.get<AssistantAccount>(`/units/${unitId}/assistant`),
   saveAccount: (unitId, input) => api.put<AssistantAccount>(`/units/${unitId}/assistant`, compact({ ...input })),
   testAccount: (unitId) => api.post<AssistantTestResult>(`/units/${unitId}/assistant/test`, {}),
+  getPlatformAccount: () => api.get<AssistantAccount>('/assistant/platform-account'),
+  savePlatformAccount: (input) => api.put<AssistantAccount>('/assistant/platform-account', compact({ ...input })),
+  testPlatformAccount: () => api.post<AssistantTestResult>('/assistant/platform-account/test', {}),
 }

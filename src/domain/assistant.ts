@@ -22,6 +22,8 @@ export interface AssistantAccount {
   maxTokens?: number | null
   effectiveUnitId?: Id | null
   effectiveUnitName?: string | null
+  /** the account in effect is the platform's — entered once by a superadmin for everyone */
+  effectivePlatform?: boolean
   configured: boolean
 }
 export interface AssistantAccountInput {
@@ -43,6 +45,7 @@ export interface AssistantStatus {
   provider?: AssistantProvider | null
   model?: string | null
   effectiveUnitName?: string | null
+  effectivePlatform?: boolean
   tools: AssistantTool[]
   rateLimit: number
   rateWindowSeconds: number
