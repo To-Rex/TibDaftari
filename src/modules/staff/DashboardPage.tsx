@@ -54,7 +54,7 @@ export default function DashboardPage() {
       <PageHeader
         eyebrow={fmtDate(new Date().toISOString(), 'EEEE, d MMMM')}
         title={<span className="break-words">{`${greet}, ${firstName}`}</span>}
-        description={t('staff.dashboard.subtitle', { role: staff.roleKey })}
+        description={t('staff.dashboard.subtitle', { role: staff.roleName ?? staff.roleKey })}
         actions={<Segmented<Preset> value={preset} onChange={setPreset} className="max-w-full overflow-x-auto no-scrollbar" items={(recentOnly ? [{ value: 'today', label: t('common.today') }, { value: 'last7', label: t('common.last7') }] : [{ value: 'today', label: t('common.today') }, { value: 'last7', label: t('common.last7') }, { value: 'last30', label: t('common.last30') }]) as { value: Preset; label: string }[]} />}
       />
 

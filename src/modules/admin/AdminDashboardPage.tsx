@@ -1,11 +1,12 @@
-import { useMemo } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { motion } from 'motion/react'
 import { ArrowRight, Building2, CircleCheck, CircleAlert, FolderTree, Hospital, Landmark, LayoutTemplate, ListChecks, ReceiptText, Send, ShieldCheck, UserCog, Bell } from 'lucide-react'
 import { repos } from '@/data'
-import { useAdminScope } from '@/features/auth/store'
+import type { Permission } from '@/domain'
+import { useAdminScope, usePermissions } from '@/features/auth/store'
 import { useUnit, useUnitTree } from '@/features/org/queries'
 import { UnitBreadcrumb } from '@/features/org/UnitBreadcrumb'
 import { UnitLevelBadge } from '@/features/org/unitUi'
@@ -19,6 +20,7 @@ interface Check { key: string; ok: boolean; label: string; fail: string; to: str
 export default function AdminDashboardPage() {
   const { t } = useTranslation()
   const { scopeId } = useAdminScope()
+  const { can } = usePermissions()
   const unit = useUnit(scopeId)
   const tree = useUnitTree()
   const overview = useQuery({
@@ -56,16 +58,19 @@ export default function AdminDashboardPage() {
     ]
   }, [overview.data, unit.data, t])
 
-  const links = [
-    { to: routes.admin.unit, icon: <Building2 />, title: t('admin.dashboard.quickUnit'), sub: t('admin.dashboard.quickUnitSub') },
-    { to: routes.admin.units, icon: <Landmark />, title: t('admin.dashboard.quickUnits'), sub: t('admin.dashboard.quickUnitsSub') },
-    { to: routes.admin.employees, icon: <UserCog />, title: t('admin.dashboard.quickEmployees'), sub: t('admin.dashboard.quickEmployeesSub') },
-    { to: routes.admin.roles, icon: <ShieldCheck />, title: t('admin.dashboard.quickRoles'), sub: t('admin.dashboard.quickRolesSub') },
-    { to: routes.admin.catalog, icon: <FolderTree />, title: t('admin.dashboard.quickCatalog'), sub: t('admin.dashboard.quickCatalogSub') },
-    { to: routes.admin.templates, icon: <LayoutTemplate />, title: t('admin.dashboard.quickTemplates'), sub: t('admin.dashboard.quickTemplatesSub') },
-    { to: routes.admin.receipts, icon: <ReceiptText />, title: t('admin.dashboard.quickReceipts'), sub: t('admin.dashboard.quickReceiptsSub') },
-    { to: routes.admin.sms, icon: <Send />, title: t('admin.dashboard.quickSms'), sub: t('admin.dashboard.quickSmsSub') },
-  ]
+  // the pages this account may open (a read-only leader sees no roles / SMS settings card)
+  const links = ([
+    { to: routes.admin.unit, icon: <Building2 />, title: t('admin.dashboard.quickUnit'), sub: t('admin.dashboard.quickUnitSub'), perm: 'admin.unit.read' },
+    { to: routes.admin.units, icon: <Landmark />, title: t('admin.dashboard.quickUnits'), sub: t('admin.dashboard.quickUnitsSub'), perm: ['admin.unit.manage', 'admin.unit.read'] },
+    { to: routes.admin.employees, icon: <UserCog />, title: t('admin.dashboard.quickEmployees'), sub: t('admin.dashboard.quickEmployeesSub'), perm: 'admin.employee.read' },
+    { to: routes.admin.roles, icon: <ShieldCheck />, title: t('admin.dashboard.quickRoles'), sub: t('admin.dashboard.quickRolesSub'), perm: 'admin.role.write' },
+    { to: routes.admin.catalog, icon: <FolderTree />, title: t('admin.dashboard.quickCatalog'), sub: t('admin.dashboard.quickCatalogSub'), perm: 'admin.catalog.read' },
+    { to: routes.admin.templates, icon: <LayoutTemplate />, title: t('admin.dashboard.quickTemplates'), sub: t('admin.dashboard.quickTemplatesSub'), perm: 'admin.template.read' },
+    { to: routes.admin.receipts, icon: <ReceiptText />, title: t('admin.dashboard.quickReceipts'), sub: t('admin.dashboard.quickReceiptsSub'), perm: 'admin.template.read' },
+    { to: routes.admin.sms, icon: <Send />, title: t('admin.dashboard.quickSms'), sub: t('admin.dashboard.quickSmsSub'), perm: 'admin.settings.write' },
+  ] as { to: string; icon: ReactNode; title: string; sub: string; perm: Permission | Permission[] }[]).filter((l) => can(l.perm))
+  // the setup checks are for whoever may fix them; a read-only account sees the numbers and the activity only
+  const canSetup = can(['admin.unit.write', 'admin.settings.write', 'admin.template.write', 'admin.schema.write'])
 
   const o = overview.data
   const u = unit.data
@@ -98,7 +103,7 @@ export default function AdminDashboardPage() {
               </div>
             </div>
             <Link to={routes.admin.unit} className="inline-flex items-center gap-1.5 text-[13.5px] font-medium text-brand-ink hover:underline underline-offset-4 shrink-0">
-              {t('common.edit')} <ArrowRight className="size-4" />
+              {can('admin.unit.write') ? t('common.edit') : t('common.open')} <ArrowRight className="size-4" />
             </Link>
           </div>
         ) : (
@@ -125,7 +130,7 @@ export default function AdminDashboardPage() {
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] 3xl:grid-cols-[1.2fr_0.8fr]">
         <div className="flex flex-col gap-6">
           {/* Health */}
-          <Card>
+          {canSetup && <Card>
             <CardHeader className="max-xs:flex-col max-xs:items-start" title={t('admin.dashboard.health')} description={t('admin.dashboard.healthSub')}
               actions={checks.length ? <Badge tone={done === checks.length ? 'ok' : 'warn'}>{t('admin.dashboard.healthScore', { done, total: checks.length })}</Badge> : null} />
             {checks.length ? (
@@ -149,7 +154,7 @@ export default function AdminDashboardPage() {
             ) : (
               <div className="space-y-3">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-5" />)}</div>
             )}
-          </Card>
+          </Card>}
 
           {/* Quick links */}
           <div>

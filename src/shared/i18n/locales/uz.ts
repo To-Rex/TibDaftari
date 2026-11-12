@@ -14,6 +14,7 @@ export const uz = {
     close: 'Yopish',
     delete: 'O‘chirish',
     edit: 'Tahrirlash',
+    open: 'Ochish',
     create: 'Yaratish',
     add: 'Qo‘shish',
     search: 'Qidirish',

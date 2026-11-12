@@ -11,6 +11,7 @@ import { Button, Field, Input, toast } from '@/shared/ui'
 import { useAuth } from '@/features/auth/store'
 import { routes } from '@/shared/config/routes'
 import { ApiError } from '@/data'
+import { isLeaderRole } from '@/domain'
 
 const schema = z.object({ login: z.string().min(2), password: z.string().min(4) })
 type Form = z.infer<typeof schema>
@@ -26,8 +27,10 @@ export default function StaffLoginPage() {
   const onSubmit = async (v: Form) => {
     try {
       const s = await staffLogin(v.login, v.password)
-      // land in the module that fits THIS account; a remembered `from` of another user/module is ignored
-      const home = s.roleKey === 'admin' || s.roleKey === 'installer' || s.isSuperAdmin ? routes.admin.root : routes.app.root
+      // land in the module that fits THIS account; a remembered `from` of another user/module is ignored —
+      // a leader of a territory above the facility opens the reports of the whole territory
+      const home = s.roleKey === 'admin' || s.roleKey === 'installer' || s.isSuperAdmin ? routes.admin.root
+        : isLeaderRole(s.roleKey) && s.unit?.level !== 'facility' ? routes.app.reports : routes.app.root
       const from = loc.state?.from
       const dest = from && from.startsWith(home) ? from : home
       nav(dest, { replace: true })

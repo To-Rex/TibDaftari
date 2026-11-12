@@ -28,6 +28,8 @@ export interface StaffSession {
   facilityId: Id | null
   isSuperAdmin: boolean
   roleKey: string
+  /** the held role's display name («Viloyat rahbari», «Registrator / Kassir» …); absent on old cached sessions */
+  roleName?: string | null
   /** the held role; the UI locks the editing of one's own role with it */
   roleId: Id | null
   fullName: string

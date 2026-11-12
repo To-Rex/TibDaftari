@@ -297,7 +297,7 @@ function TopBar({ onMenu, module, onHelp, ws }: { onMenu: () => void; module: 's
               <Avatar name={s.fullName} size="sm" />
               <span className="max-md:hidden max-w-[160px] text-left leading-tight">
                 <span className="block truncate text-[13px] font-medium">{s.fullName}</span>
-                <span className="block text-[11px] text-ink-3 capitalize">{s.roleKey}</span>
+                <span className={cn('block truncate text-[11px] text-ink-3', !s.roleName && 'capitalize')}>{s.roleName ?? s.roleKey}</span>
               </span>
             </button>
           )}

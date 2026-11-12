@@ -5,6 +5,8 @@
  * WHERE a permission applies is not part of the key: it comes from the employee's unit (their home unit and
  * everything under it in the Davlat → Viloyat → Tuman → Muassasa tree).
  */
+import type { UnitLevel } from '../org'
+
 export const PERMISSIONS = [
   // Reception / registration
   'reception.patient.read',
@@ -62,6 +64,19 @@ export const PERMISSIONS = [
 ] as const
 
 export type Permission = (typeof PERMISSIONS)[number]
+
+/** The read-only leaders of a territory — «Davlat / Viloyat / Tuman / Muassasa rahbari»: role key → the level of the
+ *  tree the employee is homed at (extra units: more nodes of the same level, same country). They see every report,
+ *  statistic, list, card and document inside their units and change nothing. */
+export const LEADER_ROLE_LEVELS: Readonly<Record<string, UnitLevel>> = {
+  leader_country: 'country',
+  leader_region: 'region',
+  leader_district: 'district',
+  leader_facility: 'facility',
+}
+/** the level a leader role is pinned to; undefined for every other role key */
+export const leaderLevel = (key: string | undefined | null): UnitLevel | undefined => (key ? LEADER_ROLE_LEVELS[key] : undefined)
+export const isLeaderRole = (key: string | undefined | null) => !!leaderLevel(key)
 
 export const SUPERADMIN_ROLE_KEY = 'superadmin'
 /** O‘rnatuvchi — works like a superadmin, but only inside the units a superadmin gave them (their viloyat, several

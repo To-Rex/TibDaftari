@@ -5,16 +5,17 @@ import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import type { Category, Employee, Id, Role, UnitLevel } from '@/domain'
-import { INSTALLER_ROLE_KEY, isProtectedRole, unitsUnder } from '@/domain'
+import { INSTALLER_ROLE_KEY, isProtectedRole, leaderLevel, unitsUnder } from '@/domain'
 import { ApiError, repos } from '@/data'
 import { useAuth, usePermissions } from '@/features/auth/store'
 import { useUnitTree } from '@/features/org/queries'
 import { UnitMultiPicker, UnitPicker } from '@/features/org/UnitPicker'
+import { useUnitLabels } from '@/features/org/unitUi'
 import { useRoles } from '@/features/roles/queries'
 import { errorMessage } from '@/shared/lib/errors'
 import { cn } from '@/shared/lib/cn'
 import { Button, Checkbox, Field, Input, Select, Skeleton, Switch, toast } from '@/shared/ui'
-import { ShieldPlus } from 'lucide-react'
+import { Eye, ShieldPlus } from 'lucide-react'
 import { formKeyDown } from '@/features/patients/formKeys'
 import { useSaveEmployee } from './queries'
 
@@ -67,6 +68,7 @@ function flattenTree(cats: Category[]): { cat: Category; depth: number }[] {
  */
 export function EmployeeForm({ scopeId, employee, onSaved, onCancel, formId = 'employee-form' }: { scopeId: Id; employee?: Employee; onSaved: (e: Employee) => void; onCancel?: () => void; formId?: string }) {
   const { t } = useTranslation()
+  const labels = useUnitLabels()
   const { isSuperAdmin } = usePermissions()
   const meId = useAuth((st) => st.staff?.employeeId)
   const isEdit = !!employee
@@ -94,9 +96,20 @@ export function EmployeeForm({ scopeId, employee, onSaved, onCancel, formId = 'e
   const roleDraft = useWatch({ control, name: 'roleId' })
 
   const catTree = useMemo(() => flattenTree(categories.data ?? []), [categories.data])
-  // superadmin and installer are handed out by superadmins only (shown read-only when the employee already has one)
-  const visibleRoles = (roles.data ?? []).filter((r) => !(r.scopeUnitId === null && isProtectedRole(r.key)) || isSuperAdmin || employee?.roleId === r.id)
+  // superadmin and installer are handed out by superadmins only (shown read-only when the employee already has one);
+  // a leader role («Viloyat rahbari» …) is offered only where the scope holds a node of its level
+  const visibleRoles = (roles.data ?? []).filter((r) => {
+    if (employee?.roleId === r.id) return true
+    if (r.scopeUnitId !== null) return true
+    if (isProtectedRole(r.key)) return isSuperAdmin
+    const level = leaderLevel(r.key)
+    return !level || scopedUnits.some((u) => u.level === level)
+  })
   const installerDraft = visibleRoles.some((r) => r.id === roleDraft && r.scopeUnitId === null && r.key === INSTALLER_ROLE_KEY)
+  // the level a chosen leader role pins the home unit (and the extra units) to
+  const leaderDraft = leaderLevel(visibleRoles.find((r) => r.id === roleDraft && r.scopeUnitId === null)?.key)
+  const leaderLevels: UnitLevel[] | undefined = leaderDraft ? [leaderDraft] : undefined
+  const leaderName = leaderDraft ? labels.level(leaderDraft) : ''
   const systemRoles = visibleRoles.filter((r) => r.scopeUnitId === null)
   const unitRoles = visibleRoles.filter((r) => r.scopeUnitId !== null)
   const roleOption = (r: Role) => {
@@ -137,7 +150,7 @@ export function EmployeeForm({ scopeId, employee, onSaved, onCancel, formId = 'e
         <Field label={t('admin.employees.login')} required hint={t('admin.employees.loginHint')} error={errors.login && (errors.login.message === 'taken' ? t('admin.employees.loginTaken') : t('common.required'))}>
           {(id) => <Input id={id} mono autoComplete="off" {...register('login')} invalid={!!errors.login} />}
         </Field>
-        <Field label={t('admin.employees.role')} required error={errors.roleId && t('common.required')} hint={selfLocked ? t('admin.employees.selfLockedHint') : !isSuperAdmin ? t('admin.employees.superadminOnly') : installerDraft ? t('admin.employees.installerRoleHint') : undefined}>
+        <Field label={t('admin.employees.role')} required error={errors.roleId && t('common.required')} hint={selfLocked ? t('admin.employees.selfLockedHint') : installerDraft ? t('admin.employees.installerRoleHint') : leaderDraft ? t('admin.employees.leaderRoleHint', { level: leaderName }) : !isSuperAdmin ? t('admin.employees.superadminOnly') : undefined}>
           {(id) => (
             <Select id={id} {...register('roleId')} invalid={!!errors.roleId} disabled={roles.isLoading || selfLocked}>
               <option value="">{t('common.select')}</option>
@@ -163,22 +176,31 @@ export function EmployeeForm({ scopeId, employee, onSaved, onCancel, formId = 'e
           </div>
         </div>
       )}
+      {leaderDraft && (
+        <div className="flex gap-3 rounded-[var(--radius-sm)] border border-info/30 bg-info-soft/40 px-3.5 py-3 text-[13px] text-ink-2" data-leader-info={leaderDraft}>
+          <Eye className="mt-0.5 size-4 shrink-0 text-info" />
+          <div className="min-w-0">
+            <div className="font-semibold text-ink">{t('admin.employees.leaderTitle')}</div>
+            <div className="mt-0.5">{t('admin.employees.leaderInfo', { level: leaderName })}</div>
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label={installerDraft ? t('admin.employees.installerHome') : t('admin.employees.unit')} required={!superDraft} hint={installerDraft ? t('admin.employees.installerHomeHint') : t('admin.employees.unitHint')} error={errors.unitId && t('admin.employees.unitRequired')}>
+        <Field label={installerDraft ? t('admin.employees.installerHome') : leaderDraft ? t('admin.employees.leaderHome') : t('admin.employees.unit')} required={!superDraft} hint={installerDraft ? t('admin.employees.installerHomeHint') : leaderDraft ? t('admin.employees.leaderHomeHint', { level: leaderName }) : t('admin.employees.unitHint')} error={errors.unitId && t('admin.employees.unitRequired')}>
           {() => (
             <Controller control={control} name="unitId" render={({ field }) => (
               tree.isLoading ? <Skeleton className="h-10" /> : (
-                <UnitPicker units={scopedUnits} value={field.value} onChange={field.onChange} allowEmpty={superDraft} levels={installerDraft ? INSTALLER_HOME_LEVELS : undefined} placeholder={t('common.select')} disabled={tree.isLoading || selfLocked} />
+                <UnitPicker units={scopedUnits} value={field.value} onChange={field.onChange} allowEmpty={superDraft} levels={installerDraft ? INSTALLER_HOME_LEVELS : leaderLevels} placeholder={t('common.select')} disabled={tree.isLoading || selfLocked} />
               )
             )} />
           )}
         </Field>
-        <Field label={installerDraft ? t('admin.employees.installerExtra') : t('admin.employees.extraUnits')} optionalText={t('common.optional')} hint={installerDraft ? t('admin.employees.installerExtraHint') : t('admin.employees.extraUnitsHint')}>
+        <Field label={installerDraft ? t('admin.employees.installerExtra') : leaderDraft ? t('admin.employees.leaderExtra') : t('admin.employees.extraUnits')} optionalText={t('common.optional')} hint={installerDraft ? t('admin.employees.installerExtraHint') : leaderDraft ? t('admin.employees.leaderExtraHint', { level: leaderName }) : t('admin.employees.extraUnitsHint')}>
           {() => (
             <Controller control={control} name="unitIds" render={({ field }) => (
               tree.isLoading ? <Skeleton className="h-10" /> : (
-                <UnitMultiPicker units={scopedUnits} value={field.value} onChange={field.onChange} levels={installerDraft ? INSTALLER_EXTRA_LEVELS : undefined} disabled={selfLocked} />
+                <UnitMultiPicker units={scopedUnits} value={field.value} onChange={field.onChange} levels={installerDraft ? INSTALLER_EXTRA_LEVELS : leaderLevels} disabled={selfLocked} />
               )
             )} />
           )}
