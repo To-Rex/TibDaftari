@@ -98,7 +98,10 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
   const sections: NavSection[] = useMemo(() => {
     if (module === 'admin') {
       return [
-        { items: [{ to: routes.admin.root, label: t('nav.dashboard'), icon: <LayoutDashboard />, end: true, key: 'd' }] },
+        { items: [
+          { to: routes.admin.root, label: t('nav.dashboard'), icon: <LayoutDashboard />, end: true, key: 'd' },
+          { to: routes.admin.assistant, label: t('nav.assistant'), icon: <Sparkles />, perm: 'assistant.use', key: 'y' },
+        ] },
         { title: t('nav.organisation'), items: [
           { to: routes.admin.unit, label: t('nav.unit'), icon: <Building2 />, perm: 'admin.unit.read', key: 'k' },
           { to: routes.admin.units, label: t('nav.units'), icon: <Landmark />, perm: ['admin.unit.manage', 'admin.unit.read'], key: 'f' },
@@ -115,11 +118,13 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
           { to: routes.admin.sms, label: t('nav.smsSettings'), icon: <Send />, perm: 'admin.settings.write', key: 'm' },
           { to: routes.admin.platform, label: t('nav.territory'), icon: <Globe2 />, perm: ['platform.unit.manage', 'reports.operations.read'] as Permission[], key: 'p' },
         ] },
-        { items: [{ to: routes.admin.assistant, label: t('nav.assistant'), icon: <Sparkles />, perm: 'assistant.use', key: 'y' }] },
       ]
     }
     return [
-      { items: [{ to: routes.app.root, label: t('nav.dashboard'), icon: <LayoutDashboard />, end: true, key: 'd' }] },
+      { items: [
+        { to: routes.app.root, label: t('nav.dashboard'), icon: <LayoutDashboard />, end: true, key: 'd' },
+        { to: routes.app.assistant, label: t('nav.assistant'), icon: <Sparkles />, perm: 'assistant.use', key: 'y' },
+      ] },
       { title: t('nav.reception'), items: [
         { to: routes.app.reception, label: t('nav.reception'), icon: <ClipboardList />, perm: 'reception.order.create', key: 'q' },
         { to: routes.app.patients, label: t('nav.patients'), icon: <Users />, perm: 'reception.patient.read', key: 'b' },
@@ -136,7 +141,6 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
         { to: routes.app.reports, label: t('nav.reports'), icon: <BarChart3 />, perm: ['reports.finance.read', 'reports.operations.read'], key: 'h' },
         { to: routes.app.messages, label: t('nav.messages'), icon: <MessageSquare />, perm: ['messaging.send', 'messaging.broadcast'], badge: pending.data?.sms, key: 'x' },
       ] },
-      { items: [{ to: routes.app.assistant, label: t('nav.assistant'), icon: <Sparkles />, perm: 'assistant.use', key: 'y' }] },
     ]
   }, [module, t, pending.data, can])
 
