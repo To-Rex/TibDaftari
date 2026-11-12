@@ -2,9 +2,9 @@
  * One turn of the assistant chat: the user's bubble, the assistant's Markdown reply with the tools it ran as
  * chips, and — for a proposed write — the confirmation card the employee answers.
  */
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AlertTriangle, Ban, Check, CheckCircle2, Clock, Download, Eye, FileJson, FileSpreadsheet, FileText, Loader2, PencilLine, ShieldCheck, X } from 'lucide-react'
+import { AlertTriangle, Ban, Check, CheckCircle2, Clock, Download, Eye, FileImage, FileJson, FileSpreadsheet, FileText, FileType2, Loader2, PencilLine, ShieldCheck, X } from 'lucide-react'
 import type { AssistantAction, AssistantFile, AssistantMessage, AssistantToolCall } from '@/domain'
 import { repos } from '@/data'
 import { cn } from '@/shared/lib/cn'
@@ -14,7 +14,21 @@ import { Badge, Button, toast } from '@/shared/ui'
 import { Markdown } from './Markdown'
 
 const fmtSize = (n: number) => (n < 1024 ? `${n} B` : n < 1024 * 1024 ? `${(n / 1024).toFixed(n < 10 * 1024 ? 1 : 0)} KB` : `${(n / 1024 / 1024).toFixed(1)} MB`)
-const fileKind = (f: AssistantFile) => (/spreadsheet|excel/.test(f.contentType) || /\.xlsx?$/i.test(f.name) ? 'xlsx' : /json/.test(f.contentType) || /\.json$/i.test(f.name) ? 'json' : 'csv')
+type FileKind = 'xlsx' | 'csv' | 'json' | 'pdf' | 'docx' | 'image' | 'md' | 'txt'
+function fileKind(f: AssistantFile): FileKind {
+  const ct = f.contentType
+  const ext = (f.name.match(/\.([a-z0-9]+)$/i)?.[1] ?? '').toLowerCase()
+  if (ct.startsWith('image/') || ext === 'png' || ext === 'svg' || ext === 'jpg') return 'image'
+  if (ct.includes('pdf') || ext === 'pdf') return 'pdf'
+  if (ct.includes('wordprocessingml') || ext === 'docx') return 'docx'
+  if (ct.includes('spreadsheet') || ext === 'xlsx') return 'xlsx'
+  if (ct.includes('json') || ext === 'json') return 'json'
+  if (ct.includes('markdown') || ext === 'md') return 'md'
+  if (ct.startsWith('text/plain') || ext === 'txt') return 'txt'
+  return 'csv'
+}
+const KIND_ICON: Record<FileKind, typeof FileText> = { xlsx: FileSpreadsheet, csv: FileSpreadsheet, json: FileJson, pdf: FileType2, docx: FileText, image: FileImage, md: FileText, txt: FileText }
+const KIND_LABEL: Record<FileKind, string> = { xlsx: 'XLSX', csv: 'CSV', json: 'JSON', pdf: 'PDF', docx: 'Word', image: 'Rasm', md: 'Markdown', txt: 'TXT' }
 
 /** Save a blob through a temporary link — the browser's own download, named as the server named it. */
 function saveBlob(blob: Blob, name: string) {
@@ -28,28 +42,45 @@ function saveBlob(blob: Blob, name: string) {
   setTimeout(() => URL.revokeObjectURL(url), 1500)
 }
 
-/** A file a tool built: name, size, rows, one button that downloads it (owner-only on the server). */
+/** A picture a tool built, shown inline: fetched once with the caller's token (the server checks the owner). */
+function ImagePreview({ file }: { file: AssistantFile }) {
+  const [url, setUrl] = useState<string | null>(null)
+  useEffect(() => {
+    let alive = true
+    let obj: string | null = null
+    repos.assistant.downloadFile(file.id).then((blob) => { if (alive) { obj = URL.createObjectURL(blob); setUrl(obj) } }).catch(() => undefined)
+    return () => { alive = false; if (obj) URL.revokeObjectURL(obj) }
+  }, [file.id])
+  if (!url) return <div className="mt-2 h-40 w-full animate-pulse rounded-lg bg-surface-2" data-file-preview="loading" />
+  return <img src={url} alt={file.name} className="mt-2 max-h-80 w-auto max-w-full rounded-lg border border-line bg-white" data-file-preview="ready" />
+}
+
+/** A file a tool built: kind, name, size, rows, one button that downloads it (owner-only on the server); pictures preview inline. */
 export function FileCard({ file }: { file: AssistantFile }) {
   const { t } = useTranslation()
   const [busy, setBusy] = useState(false)
   const kind = fileKind(file)
-  const Icon = kind === 'xlsx' ? FileSpreadsheet : kind === 'json' ? FileJson : FileText
+  const Icon = KIND_ICON[kind]
   const expired = new Date(file.expiresAt).getTime() < Date.now()
   const download = async () => {
     setBusy(true)
     try { saveBlob(await repos.assistant.downloadFile(file.id), file.name) } catch (e) { toast.error(errorMessage(e)) } finally { setBusy(false) }
   }
+  const tone = kind === 'xlsx' || kind === 'csv' ? 'bg-ok-soft text-ok' : kind === 'pdf' ? 'bg-danger-soft text-danger' : kind === 'docx' ? 'bg-brand-soft text-brand' : kind === 'image' ? 'bg-warn-soft text-warn' : 'bg-surface-2 text-ink-2'
   return (
-    <div className="mt-2 flex items-center gap-3 rounded-[var(--radius)] border border-line bg-surface/70 px-3 py-2.5" data-assistant-file={file.id} data-file-kind={kind}>
-      <span className={cn('grid size-9 shrink-0 place-items-center rounded-lg', kind === 'xlsx' ? 'bg-ok-soft text-ok' : 'bg-surface-2 text-ink-2')}><Icon className="size-5" /></span>
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-[13.5px] font-medium" title={file.name}>{file.name}</div>
-        <div className="text-[12px] text-ink-3">
-          {kind.toUpperCase()} · {fmtSize(file.size)}{typeof file.rows === 'number' && <> · {t('assistant.file.rows', { n: file.rows })}</>}
-          {expired && <> · <span className="text-warn">{t('assistant.file.expired')}</span></>}
+    <div className="mt-2 rounded-[var(--radius)] border border-line bg-surface/70 px-3 py-2.5" data-assistant-file={file.id} data-file-kind={kind}>
+      <div className="flex items-center gap-3">
+        <span className={cn('grid size-9 shrink-0 place-items-center rounded-lg', tone)}><Icon className="size-5" /></span>
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-[13.5px] font-medium" title={file.name}>{file.name}</div>
+          <div className="text-[12px] text-ink-3">
+            {KIND_LABEL[kind]} · {fmtSize(file.size)}{typeof file.rows === 'number' && kind !== 'image' && <> · {t('assistant.file.rows', { n: file.rows })}</>}
+            {expired && <> · <span className="text-warn">{t('assistant.file.expired')}</span></>}
+          </div>
         </div>
+        <Button size="sm" leftIcon={busy ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />} disabled={busy || expired} onClick={() => void download()} data-file-download>{t('assistant.file.download')}</Button>
       </div>
-      <Button size="sm" leftIcon={busy ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />} disabled={busy || expired} onClick={() => void download()} data-file-download>{t('assistant.file.download')}</Button>
+      {kind === 'image' && !expired && <ImagePreview file={file} />}
     </div>
   )
 }
