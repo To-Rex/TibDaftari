@@ -52,7 +52,9 @@ export interface AssistantStatus {
 }
 
 export interface AssistantThread { id: Id; title: string; unitId?: Id | null; lastMessageAt?: string | null; createdAt: string }
-export interface AssistantToolCall { id: string; name: string; title: string; kind: AssistantToolKind; summary: string; status: string }
+/** a file a tool built (export_data / export_table) — downloaded by its owner from GET /assistant/files/{id} */
+export interface AssistantFile { id: Id; name: string; contentType: string; size: number; rows?: number | null; expiresAt: string; createdAt: string }
+export interface AssistantToolCall { id: string; name: string; title: string; kind: AssistantToolKind; summary: string; status: string; file?: AssistantFile | null }
 export interface AssistantAction {
   id: Id
   threadId: Id
@@ -73,6 +75,8 @@ export interface AssistantMessage {
   toolName?: string | null
   isError: boolean
   action?: AssistantAction | null
+  /** files the tools of this turn produced */
+  files?: AssistantFile[]
   createdAt: string
 }
 export interface AssistantThreadDetail { thread: AssistantThread; messages: AssistantMessage[]; pending: AssistantAction | null }

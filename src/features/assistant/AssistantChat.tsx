@@ -56,7 +56,7 @@ export function AssistantChat({ threadId, unit, status, onFirstSend }: { threadI
   const onResolve = (id: string, confirm: boolean) => {
     resolve.mutate({ actionId: id, confirm }, { onError: (e) => toast.error(errorMessage(e)) })
   }
-  const examples = [t('assistant.example4'), t('assistant.example1'), t('assistant.example2'), t('assistant.example3')]
+  const examples = [t('assistant.example4'), t('assistant.example1'), t('assistant.example5'), t('assistant.example2'), t('assistant.example3')]
 
   return (
     <div className="flex h-full min-h-0 flex-col" data-assistant-chat>

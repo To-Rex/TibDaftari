@@ -133,6 +133,8 @@ export interface AssistantRepository {
   send(threadId: Id, content: string, unitId?: Id): Promise<AssistantSendResult>
   confirm(actionId: Id): Promise<AssistantSendResult>
   cancel(actionId: Id): Promise<AssistantSendResult>
+  /** the bytes of a file the assistant built for the caller */
+  downloadFile(fileId: Id): Promise<Blob>
   /** the unit's model account (its own, inherited, or the platform's); save; one round-trip test */
   getAccount(unitId: Id): Promise<AssistantAccount>
   saveAccount(unitId: Id, input: AssistantAccountInput): Promise<AssistantAccount>

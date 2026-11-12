@@ -12,6 +12,7 @@ export const assistantHttp: AssistantRepository = {
   send: (threadId, content, unitId) => api.post<AssistantSendResult>(`/assistant/threads/${threadId}/messages`, compact({ content, unitId })),
   confirm: (actionId) => api.post<AssistantSendResult>(`/assistant/actions/${actionId}/confirm`, {}),
   cancel: (actionId) => api.post<AssistantSendResult>(`/assistant/actions/${actionId}/cancel`, {}),
+  downloadFile: (fileId) => api.get<Blob>(`/assistant/files/${fileId}`, { blob: true }),
   getAccount: (unitId) => api.get<AssistantAccount>(`/units/${unitId}/assistant`),
   saveAccount: (unitId, input) => api.put<AssistantAccount>(`/units/${unitId}/assistant`, compact({ ...input })),
   testAccount: (unitId) => api.post<AssistantTestResult>(`/units/${unitId}/assistant/test`, {}),

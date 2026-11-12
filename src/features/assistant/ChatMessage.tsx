@@ -2,14 +2,57 @@
  * One turn of the assistant chat: the user's bubble, the assistant's Markdown reply with the tools it ran as
  * chips, and — for a proposed write — the confirmation card the employee answers.
  */
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AlertTriangle, Ban, Check, CheckCircle2, Clock, Eye, Loader2, PencilLine, ShieldCheck, X } from 'lucide-react'
-import type { AssistantAction, AssistantMessage, AssistantToolCall } from '@/domain'
+import { AlertTriangle, Ban, Check, CheckCircle2, Clock, Download, Eye, FileJson, FileSpreadsheet, FileText, Loader2, PencilLine, ShieldCheck, X } from 'lucide-react'
+import type { AssistantAction, AssistantFile, AssistantMessage, AssistantToolCall } from '@/domain'
+import { repos } from '@/data'
 import { cn } from '@/shared/lib/cn'
+import { errorMessage } from '@/shared/lib/errors'
 import { fmtRelative } from '@/shared/lib/format'
-import { Badge, Button } from '@/shared/ui'
+import { Badge, Button, toast } from '@/shared/ui'
 import { Markdown } from './Markdown'
+
+const fmtSize = (n: number) => (n < 1024 ? `${n} B` : n < 1024 * 1024 ? `${(n / 1024).toFixed(n < 10 * 1024 ? 1 : 0)} KB` : `${(n / 1024 / 1024).toFixed(1)} MB`)
+const fileKind = (f: AssistantFile) => (/spreadsheet|excel/.test(f.contentType) || /\.xlsx?$/i.test(f.name) ? 'xlsx' : /json/.test(f.contentType) || /\.json$/i.test(f.name) ? 'json' : 'csv')
+
+/** Save a blob through a temporary link — the browser's own download, named as the server named it. */
+function saveBlob(blob: Blob, name: string) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = name
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1500)
+}
+
+/** A file a tool built: name, size, rows, one button that downloads it (owner-only on the server). */
+export function FileCard({ file }: { file: AssistantFile }) {
+  const { t } = useTranslation()
+  const [busy, setBusy] = useState(false)
+  const kind = fileKind(file)
+  const Icon = kind === 'xlsx' ? FileSpreadsheet : kind === 'json' ? FileJson : FileText
+  const expired = new Date(file.expiresAt).getTime() < Date.now()
+  const download = async () => {
+    setBusy(true)
+    try { saveBlob(await repos.assistant.downloadFile(file.id), file.name) } catch (e) { toast.error(errorMessage(e)) } finally { setBusy(false) }
+  }
+  return (
+    <div className="mt-2 flex items-center gap-3 rounded-[var(--radius)] border border-line bg-surface/70 px-3 py-2.5" data-assistant-file={file.id} data-file-kind={kind}>
+      <span className={cn('grid size-9 shrink-0 place-items-center rounded-lg', kind === 'xlsx' ? 'bg-ok-soft text-ok' : 'bg-surface-2 text-ink-2')}><Icon className="size-5" /></span>
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-[13.5px] font-medium" title={file.name}>{file.name}</div>
+        <div className="text-[12px] text-ink-3">
+          {kind.toUpperCase()} · {fmtSize(file.size)}{typeof file.rows === 'number' && <> · {t('assistant.file.rows', { n: file.rows })}</>}
+          {expired && <> · <span className="text-warn">{t('assistant.file.expired')}</span></>}
+        </div>
+      </div>
+      <Button size="sm" leftIcon={busy ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />} disabled={busy || expired} onClick={() => void download()} data-file-download>{t('assistant.file.download')}</Button>
+    </div>
+  )
+}
 
 function ToolChip({ c }: { c: AssistantToolCall }) {
   const done = c.status === 'ok' || c.status === 'done'
@@ -82,6 +125,7 @@ export function ChatMessage({ m, onResolve, busy }: { m: AssistantMessage; onRes
       <div className="max-w-[92%] min-w-0">
         {m.toolCalls.length > 0 && <div className="mb-1 flex flex-wrap gap-1.5">{m.toolCalls.map((c) => <ToolChip key={c.id} c={c} />)}</div>}
         {!empty && <div className="rounded-2xl rounded-bl-md border border-line bg-bg-elevated px-3.5 py-2.5 shadow-1"><Markdown text={m.content} /></div>}
+        {(m.files ?? []).map((f) => <FileCard key={f.id} file={f} />)}
         {m.action && <ActionCard action={m.action} onResolve={onResolve} busy={busy} />}
       </div>
     </div>

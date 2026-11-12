@@ -29,6 +29,8 @@ const uz = {
   example2: 'Xorazm viloyatidagi nofaol xodimlarni top',
   example3: 'Bog‘ot SES telefon raqamini +998 62 000-00-00 ga o‘zgartir',
   example4: 'Men nima qila olaman?',
+  example5: 'Shu oy cheklarini to‘langanlari bo‘yicha, summa kamayishida Excel qilib ber',
+  file: { download: 'Yuklab olish', rows: '{{n}} qator', expired: 'muddati o‘tgan' },
   toolRan: 'bajarildi', toolError: 'xato', toolPending: 'tasdiq kutilmoqda',
   action: {
     title: 'Tasdiqlash kerak',
@@ -126,6 +128,8 @@ const ru: typeof uz = {
   example2: 'Найди неактивных сотрудников Хорезмской области',
   example3: 'Измени телефон Богот СЭС на +998 62 000-00-00',
   example4: 'Что я могу сделать?',
+  example5: 'Сделай Excel чеков этого месяца — только оплаченные, по убыванию суммы',
+  file: { download: 'Скачать', rows: '{{n}} строк', expired: 'срок истёк' },
   toolRan: 'выполнено', toolError: 'ошибка', toolPending: 'ждёт подтверждения',
   action: {
     title: 'Требуется подтверждение',
@@ -223,6 +227,8 @@ const en: typeof uz = {
   example2: 'Find inactive employees in Xorazm region',
   example3: 'Change the phone of Bog‘ot SES to +998 62 000-00-00',
   example4: 'What can I do?',
+  example5: 'Export this month‘s cheques to Excel — paid only, by amount descending',
+  file: { download: 'Download', rows: '{{n}} rows', expired: 'expired' },
   toolRan: 'done', toolError: 'error', toolPending: 'awaiting confirmation',
   action: {
     title: 'Confirmation needed',
