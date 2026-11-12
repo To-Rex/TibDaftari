@@ -140,7 +140,6 @@ export const uz = {
     portalVisits: 'Tashriflar',
     portalProfile: 'Profil',
     assistant: 'Yordamchi',
-    assistantSettings: 'Yordamchi (AI)',
     staffApp: 'Xodimlar ilovasi',
   },
   auth: {

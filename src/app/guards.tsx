@@ -26,3 +26,11 @@ export function RequirePerm({ perm }: { perm: Permission | Permission[] }) {
   if (!can(perm)) return <EmptyState icon={<ShieldOff />} title={t('common.noAccess')} className="min-h-[60vh]" />
   return <Outlet />
 }
+
+/** Superadmins only — pages that configure the platform itself (e.g. the AI account everyone uses). */
+export function RequireSuperAdmin() {
+  const { isSuperAdmin } = usePermissions()
+  const { t } = useTranslation()
+  if (!isSuperAdmin) return <EmptyState icon={<ShieldOff />} title={t('common.noAccess')} className="min-h-[60vh]" />
+  return <Outlet />
+}

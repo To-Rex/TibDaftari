@@ -24,7 +24,7 @@ export default function AssistantPage() {
   const nav = useNavigate()
   const loc = useLocation()
   const qc = useQueryClient()
-  const { can } = usePermissions()
+  const { isSuperAdmin } = usePermissions()
   const staff = useAuth((s) => s.staff)
   const scopeUnitId = useAuth((s) => s.scopeUnitId)
   const facilityId = useAuth((s) => s.facilityId)
@@ -55,6 +55,9 @@ export default function AssistantPage() {
     return th.id
   }
 
+  // the settings page has no menu entry: superadmins reach it from here (the admin panel)
+  const settingsLink = inAdmin && isSuperAdmin
+
   const del = async (id: Id) => {
     try { await remove.mutateAsync(id); if (active === id) setCurrent(null); toast.success(t('assistant.deleted')) } catch (e) { toast.error(errorMessage(e)) }
   }
@@ -65,7 +68,7 @@ export default function AssistantPage() {
     return (
       <Page>
         <EmptyState icon={<Bot />} title={t('assistant.notConfigured')} description={t('assistant.notConfiguredHint')} className="min-h-[60vh]"
-          action={can('admin.settings.write') && <Button leftIcon={<Settings2 className="size-4" />} onClick={() => nav(routes.admin.assistantSettings)}>{t('assistant.openSettings')}</Button>} />
+          action={isSuperAdmin && <Button leftIcon={<Settings2 className="size-4" />} onClick={() => nav(routes.admin.assistantSettings)} data-assistant-settings-link>{t('assistant.openSettings')}</Button>} />
       </Page>
     )
   }
@@ -75,6 +78,7 @@ export default function AssistantPage() {
       <div className="flex items-center gap-2 border-b border-line px-3 py-2">
         <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-3">{t('assistant.threads')}</span>
         <Button size="xs" variant="soft" className="ml-auto" leftIcon={<MessageSquarePlus className="size-3.5" />} onClick={() => { setCurrent(null); setListOpen(false) }} data-thread-new>{t('assistant.newThread')}</Button>
+        {settingsLink && <IconButton size="sm" label={t('assistant.openSettings')} onClick={() => nav(routes.admin.assistantSettings)} data-assistant-settings-link><Settings2 /></IconButton>}
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
         {threads.data?.length === 0 && <p className="px-3 py-6 text-center text-[12.5px] text-ink-3">{t('assistant.noThreads')}</p>}
@@ -101,6 +105,7 @@ export default function AssistantPage() {
           <div className="flex items-center gap-2 border-b border-line px-3 py-2 lg:hidden">
             <IconButton size="sm" label={t('assistant.threads')} onClick={() => setListOpen(true)}><PanelLeft /></IconButton>
             <span className="truncate text-[13.5px] font-medium">{threads.data?.find((x) => x.id === active)?.title || t('assistant.title')}</span>
+            {settingsLink && <IconButton size="sm" label={t('assistant.openSettings')} className="ml-auto" onClick={() => nav(routes.admin.assistantSettings)}><Settings2 /></IconButton>}
           </div>
           {status.data && <AssistantChat threadId={active} unit={unit} status={status.data} onFirstSend={onFirstSend} />}
         </div>

@@ -2,7 +2,7 @@ import { lazy, Suspense, type ReactNode } from 'react'
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom'
 import { AppShell } from './layouts/AppShell'
 import { PortalShell } from './layouts/PortalShell'
-import { RequirePatient, RequirePerm, RequireStaff } from './guards'
+import { RequirePatient, RequirePerm, RequireStaff, RequireSuperAdmin } from './guards'
 import { RouteError } from './RouteError'
 import { routes } from '@/shared/config/routes'
 import { PageSpinner } from './PageSpinner'
@@ -138,7 +138,7 @@ export const router = createBrowserRouter([
           ] },
           { element: <RequirePerm perm="admin.role.write" />, children: [{ path: routes.admin.roles, element: page(<RolesPage />) }] },
           { element: <RequirePerm perm="assistant.use" />, children: [{ path: routes.admin.assistant, element: page(<AssistantPage />) }] },
-          { element: <RequirePerm perm="admin.settings.write" />, children: [{ path: routes.admin.assistantSettings, element: page(<AssistantSettingsPage />) }] },
+          { element: <RequireSuperAdmin />, children: [{ path: routes.admin.assistantSettings, element: page(<AssistantSettingsPage />) }] },
           { element: <RequirePerm perm="admin.catalog.read" />, children: [{ path: routes.admin.catalog, element: page(<CatalogPage />) }] },
           { element: <RequirePerm perm="admin.schema.write" />, children: [
             { path: routes.admin.schemas, element: page(<SchemasPage />) },

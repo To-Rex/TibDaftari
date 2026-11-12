@@ -14,7 +14,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import {
   ReceiptText, FileCheck2, LayoutDashboard, ClipboardList, Users, FlaskConical, BadgeCheck, BarChart3, MessageSquare, Building2, UserCog,
   ShieldCheck, FolderTree, ListChecks, LayoutTemplate, Send, PanelLeftClose, PanelLeftOpen, Bell, LogOut, Menu as MenuIcon, X, Globe2, Receipt, ArrowLeftRight,
-  Loader2, Landmark, Sparkles, Bot,
+  Loader2, Landmark, Sparkles,
 } from 'lucide-react'
 import type { OrgUnit, Permission, UnitLevel } from '@/domain'
 import { repos } from '@/data'
@@ -114,7 +114,6 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
         { title: t('common.settings'), items: [
           { to: routes.admin.sms, label: t('nav.smsSettings'), icon: <Send />, perm: 'admin.settings.write', key: 'm' },
           { to: routes.admin.platform, label: t('nav.territory'), icon: <Globe2 />, perm: ['platform.unit.manage', 'reports.operations.read'] as Permission[], key: 'p' },
-          { to: routes.admin.assistantSettings, label: t('nav.assistantSettings'), icon: <Bot />, perm: 'admin.settings.write', key: 'i' },
         ] },
         { items: [{ to: routes.admin.assistant, label: t('nav.assistant'), icon: <Sparkles />, perm: 'assistant.use', key: 'y' }] },
       ]
