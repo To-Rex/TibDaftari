@@ -14,6 +14,7 @@ import { cn } from '@/shared/lib/cn'
 import { errorMessage } from '@/shared/lib/errors'
 import { fmtNumber, fmtPhone } from '@/shared/lib/format'
 import { Badge, Button, Card, CardHeader, Field, Input, Segmented, Skeleton, toast } from '@/shared/ui'
+import { EskizPanel } from './EskizPanel'
 import { useSaveUnitSms, useUnitSms } from './queries'
 import { UnitIcon } from './unitUi'
 
@@ -231,6 +232,9 @@ function SmsAccountEditor({ unit, readOnly }: { unit: OrgUnit; readOnly?: boolea
               </Field>
             </>
           )}
+
+          {/* the Eskiz account in effect (own or inherited): balance, prices, nicks, templates */}
+          {d?.provider === 'eskiz' && mode !== 'off' && <EskizPanel unitId={unit.id} canWrite={!readOnly} onPickNick={mode === 'own' && provider === 'eskiz' ? setSender : undefined} />}
 
           {mode !== 'off' && (
             <Field label={t('admin.sms.testTo')} hint={t('admin.sms.testToHint')} optionalText={t('common.optional')}>

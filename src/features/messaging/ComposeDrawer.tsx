@@ -2,14 +2,18 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
-import { CalendarClock, Send, Users } from 'lucide-react'
+import { CalendarClock, Globe2, Send, Users } from 'lucide-react'
 import { useWorkspace } from '@/app/layouts/AppShell'
 import { cn } from '@/shared/lib/cn'
 import { errorMessage } from '@/shared/lib/errors'
 import { fmtPhone } from '@/shared/lib/format'
 import { Button, Drawer, Field, Input, Select, Switch, Textarea, toast } from '@/shared/ui'
+import { useUnitSms } from '@/features/org/queries'
 import { useSendSms } from './queries'
 import { parseRecipients, smsInfo } from './sms'
+
+/** the countries offered for numbers abroad (ISO-2; the names come from the browser in the UI language) */
+const ABROAD = ['KZ', 'RU', 'KG', 'TJ', 'TM', 'TR', 'AE', 'KR', 'CN', 'IN', 'AF', 'AZ', 'BY', 'UA', 'GE', 'DE', 'GB', 'US', 'SA', 'EG'] as const
 
 export function ComposeDrawer({ open, onClose, scopeId, canBroadcast }: {
   open: boolean
@@ -18,12 +22,15 @@ export function ComposeDrawer({ open, onClose, scopeId, canBroadcast }: {
   scopeId: string
   canBroadcast: boolean
 }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [to, setTo] = useState('')
   const [text, setText] = useState('')
   const [schedule, setSchedule] = useState(false)
   const [when, setWhen] = useState('')
   const [pickedUnitId, setPickedUnitId] = useState('')
+  // numbers abroad: full international numbers, sent through the Eskiz global route
+  const [abroad, setAbroad] = useState(false)
+  const [country, setCountry] = useState<string>('KZ')
   const send = useSendSms(scopeId)
   // a message goes out from a facility: the scope itself, or — when the scope sits above facility level — one picked here
   const { shape } = useWorkspace()
@@ -42,15 +49,21 @@ export function ComposeDrawer({ open, onClose, scopeId, canBroadcast }: {
     { key: 'promo', text: `Shu hafta barcha laboratoriya tahlillariga 15% chegirma!${contact}${sign}` },
   ], [sign, contact])
 
-  const rec = useMemo(() => parseRecipients(to), [to])
+  const rec = useMemo(() => parseRecipients(to, abroad), [to, abroad])
+  // the SMS account the sending facility uses: only Eskiz reaches numbers abroad
+  const account = useUnitSms(unitId ?? scopeId)
+  const abroadBlocked = abroad && !!account.data && account.data.provider !== 'eskiz'
+  const countryName = useMemo(() => {
+    try { return new Intl.DisplayNames([i18n.language], { type: 'region' }) } catch { return null }
+  }, [i18n.language])
   const info = useMemo(() => smsInfo(text), [text])
   const tooMany = !canBroadcast && rec.valid.length > 1
-  const canSend = rec.valid.length > 0 && text.trim().length > 0 && !tooMany && (!schedule || !!when) && (isFacility || !!unitId)
+  const canSend = rec.valid.length > 0 && text.trim().length > 0 && !tooMany && !abroadBlocked && (!schedule || !!when) && (isFacility || !!unitId)
 
-  const reset = () => { setTo(''); setText(''); setSchedule(false); setWhen('') }
+  const reset = () => { setTo(''); setText(''); setSchedule(false); setWhen(''); setAbroad(false) }
   const doSend = async () => {
     try {
-      const out = await send.mutateAsync({ to: rec.valid, text: text.trim(), kind: rec.valid.length > 1 ? 'broadcast' : 'reminder', scheduledAt: schedule && when ? new Date(when).toISOString() : undefined, unitId })
+      const out = await send.mutateAsync({ to: rec.valid, text: text.trim(), kind: rec.valid.length > 1 ? 'broadcast' : 'reminder', scheduledAt: schedule && when ? new Date(when).toISOString() : undefined, unitId, countryCode: abroad ? country : undefined })
       toast.success(t('clinical.messages.sentToast', { n: out.length }))
       reset(); onClose()
     } catch (e) { toast.error(errorMessage(e)) }
@@ -75,12 +88,25 @@ export function ComposeDrawer({ open, onClose, scopeId, canBroadcast }: {
           </Field>
         )}
 
-        <Field label={t('clinical.messages.recipients')} required hint={t('clinical.messages.recipientsHint')} error={tooMany ? t('clinical.messages.noBroadcastPerm') : rec.invalid.length ? t('clinical.messages.invalidPhones', { list: rec.invalid.slice(0, 3).join(', ') }) : undefined}>
+        <div className="flex flex-col gap-3 rounded-[var(--radius)] border border-line bg-surface-2/30 px-3.5 py-3" data-compose-abroad={abroad}>
+          <Switch checked={abroad} onChange={setAbroad} label={t('clinical.messages.abroad')} description={abroad ? t('clinical.messages.abroadOnHint') : t('clinical.messages.abroadHint')} />
+          {abroad && (
+            <Field label={t('clinical.messages.abroadCountry')} hint={abroadBlocked ? undefined : t('clinical.messages.abroadCountryHint')} error={abroadBlocked ? t('clinical.messages.abroadNeedsEskiz') : undefined}>
+              {(id) => (
+                <Select id={id} value={country} onChange={(e) => setCountry(e.target.value)} data-compose-country>
+                  {ABROAD.map((c) => <option key={c} value={c}>{countryName?.of(c) ?? c} · {c}</option>)}
+                </Select>
+              )}
+            </Field>
+          )}
+        </div>
+
+        <Field label={t('clinical.messages.recipients')} required hint={abroad ? t('clinical.messages.recipientsAbroadHint') : t('clinical.messages.recipientsHint')} error={tooMany ? t('clinical.messages.noBroadcastPerm') : rec.invalid.length ? t('clinical.messages.invalidPhones', { list: rec.invalid.slice(0, 3).join(', ') }) : undefined}>
           {(id) => (
             <div className="relative">
-              <Textarea id={id} value={to} onChange={(e) => setTo(e.target.value)} placeholder="+998 90 123-45-67, 998911234567" rows={3} className="min-h-[76px] pr-16 font-mono text-[13px]" />
+              <Textarea id={id} value={to} onChange={(e) => setTo(e.target.value)} placeholder={abroad ? '+7 701 123 45 67, 77011234567' : '+998 90 123-45-67, 998911234567'} rows={3} className="min-h-[76px] pr-16 font-mono text-[13px]" />
               <span className={cn('pointer-events-none absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11.5px] font-medium tabular', rec.valid.length ? 'bg-brand-soft text-brand-ink' : 'bg-surface-2 text-ink-3')}>
-                <Users className="size-3" />{rec.valid.length}
+                {abroad ? <Globe2 className="size-3" /> : <Users className="size-3" />}{rec.valid.length}
               </span>
             </div>
           )}

@@ -57,6 +57,9 @@ import type {
   ResultRow,
   ResultsReport,
   ServicesReport,
+  SmsReport,
+  SmsCheck,
+  EskizInfo,
   OrderListFilters,
   OrderSummary,
   OrgUnit,
@@ -106,6 +109,12 @@ export interface OrgRepository {
   saveSms(unitId: Id, input: UnitSmsInput): Promise<UnitSms>
   /** Sends ONE real SMS with the key the unit's messages use (default recipient: the unit's phone). */
   testSms(unitId: Id, to?: string): Promise<SmsTestResult>
+  /** the Eskiz account in effect: balance, sender names, prices, templates (cached a minute; refresh asks again) */
+  eskizInfo(unitId: Id, refresh?: boolean): Promise<EskizInfo>
+  /** hand a text to Eskiz for template moderation; the panel comes back refreshed */
+  submitEskizTemplate(unitId: Id, text: string): Promise<EskizInfo>
+  /** what a text costs with the account in effect (parts, encoding, Eskiz price, template state) */
+  checkSms(unitId: Id, text: string): Promise<SmsCheck>
   /** The unit's SMS texts (its own, or inherited). */
   getSmsTemplates(unitId: Id): Promise<UnitSmsTemplates>
   /** Save the unit's own texts; `applyToAll` writes them to every unit under it too. */
@@ -257,7 +266,7 @@ export interface MessagingRepository {
   /** Per-status counters for the same outbox filters (one request for all tabs). */
   outboxCounts(scopeId: Id, q: { kind?: string; search?: string; unitId?: Id }): Promise<Record<'all' | MessageStatus | 'sending', number>>
   /** `unitId` = the facility the message goes out from (default: the scope when it is a facility) */
-  send(scopeId: Id, input: { to: string[]; text: string; kind: OutboxMessage['kind']; scheduledAt?: string; unitId?: Id }): Promise<OutboxMessage[]>
+  send(scopeId: Id, input: { to: string[]; text: string; kind: OutboxMessage['kind']; scheduledAt?: string; unitId?: Id; /** ISO-2; another country than UZ = international numbers through Eskiz */ countryCode?: string }): Promise<OutboxMessage[]>
   notifications(): Promise<Notification[]>
   markRead(id?: Id): Promise<void>
 }
@@ -278,6 +287,8 @@ export interface ReportRepository {
   resultList(scopeId: Id, q: ReportRange & { status: ResultListStatus; page: number; pageSize: number; search?: string }): Promise<Page<ResultRow>>
   /** Service usage vs the previous period; active services nobody ordered. */
   services(scopeId: Id, q: ReportRange): Promise<ServicesReport>
+  sms(scopeId: Id, q: ReportRange): Promise<SmsReport>
+  exportSmsXlsx(scopeId: Id, q: ReportRange & { lang?: string }): Promise<Blob>
   /** The period as an Excel workbook: patients × analyses, labs and the other cuts. */
   exportXlsx(scopeId: Id, q: ReportRange & { lang?: string }): Promise<Blob>
 }

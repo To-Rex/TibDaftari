@@ -13,6 +13,7 @@ import { BreakdownTable } from '@/features/reports/BreakdownTable'
 import { PatientsReport } from '@/features/reports/PatientsReport'
 import { ResultsReport } from '@/features/reports/ResultsReport'
 import { ServicesReport } from '@/features/reports/ServicesReport'
+import { SmsReport } from '@/features/reports/SmsReport'
 import { TrendChart } from '@/features/reports/TrendChart'
 import { downloadCsv } from '@/features/reports/csv'
 import { useBreakdown, useDashboard, type BreakdownBy } from '@/features/reports/queries'
@@ -20,7 +21,7 @@ import { fmtMoney, fmtNumber } from '@/shared/lib/format'
 import { Button, Card, CardHeader, Page, PageHeader, Segmented, Select, Skeleton, Stat, Tabs, toast } from '@/shared/ui'
 
 const BYS: BreakdownBy[] = ['category', 'service', 'unit', 'employee']
-const SECTIONS = ['overview', 'patients', 'results', 'services'] as const
+const SECTIONS = ['overview', 'patients', 'results', 'services', 'sms'] as const
 type Section = (typeof SECTIONS)[number]
 
 export default function ReportsPage() {
@@ -121,6 +122,7 @@ export default function ReportsPage() {
       {section === 'patients' && <PatientsReport scopeId={reportScopeId} range={q} finance={financeFull} canExport={can('reports.export')} />}
       {section === 'results' && <ResultsReport scopeId={reportScopeId} range={q} canExport={can('reports.export')} />}
       {section === 'services' && <ServicesReport scopeId={reportScopeId} range={q} finance={financeFull} canExport={can('reports.export')} />}
+      {section === 'sms' && <SmsReport scopeId={reportScopeId} range={q} canExport={can('reports.export')} wide={wide} />}
 
       {section === 'overview' && (<>
 

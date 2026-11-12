@@ -6,6 +6,7 @@ import { buildUnitTree, facilitiesUnder, flattenUnitTree, unitAncestors, unitsUn
 import { repos } from '@/data'
 
 export const orgKeys = {
+  eskiz: (unitId: Id) => ['eskiz', unitId] as const,
   tree: (q: UnitTreeQuery = {}) => ['units', 'tree', q] as const,
   unit: (id: Id) => ['unit', id] as const,
   sms: (unitId: Id) => ['unit-sms', unitId] as const,
@@ -101,3 +102,30 @@ export function useSetUnitTelegram() {
     onSuccess: (u) => { qc.setQueryData(orgKeys.unit(u.id), u); void qc.invalidateQueries({ queryKey: ['unit'] }) },
   })
 }
+
+/** The Eskiz account in effect for a unit (balance, sender names, prices, templates) — the API caches it a minute. */
+export const useEskizInfo = (unitId: Id | null, enabled = true) =>
+  useQuery({ queryKey: orgKeys.eskiz(unitId ?? ''), queryFn: () => repos.org.eskizInfo(unitId!), enabled: enabled && !!unitId, staleTime: 60_000 })
+
+export function useRefreshEskizInfo() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (unitId: Id) => repos.org.eskizInfo(unitId, true),
+    onSuccess: (data, unitId) => qc.setQueryData(orgKeys.eskiz(unitId), data),
+  })
+}
+
+export function useSubmitEskizTemplate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ unitId, text }: { unitId: Id; text: string }) => repos.org.submitEskizTemplate(unitId, text),
+    onSuccess: (data, { unitId }) => {
+      qc.setQueryData(orgKeys.eskiz(unitId), data)
+      void qc.invalidateQueries({ queryKey: ['eskiz'] })
+    },
+  })
+}
+
+/** What a text costs with the unit's SMS account (debounced by the caller). */
+export const useSmsCheck = (unitId: Id | null, text: string, enabled = true) =>
+  useQuery({ queryKey: ['sms-check', unitId, text], queryFn: () => repos.org.checkSms(unitId!, text), enabled: enabled && !!unitId && text.trim().length > 0, staleTime: 60_000, placeholderData: (p) => p })

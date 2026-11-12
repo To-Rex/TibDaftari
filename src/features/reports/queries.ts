@@ -23,3 +23,6 @@ export const useResultList = (scopeId: Id, q: ReportRange & { status: ResultList
 
 export const useServicesReport = (scopeId: Id, q: ReportRange) =>
   useQuery({ queryKey: ['reports', 'services', scopeId, q], queryFn: () => repos.reports.services(scopeId, q), placeholderData: (p) => p })
+
+export const useSmsReport = (scopeId: Id, q: ReportRange) =>
+  useQuery({ queryKey: ['reports', 'sms', scopeId, q], queryFn: () => repos.reports.sms(scopeId, q), placeholderData: (p) => p })

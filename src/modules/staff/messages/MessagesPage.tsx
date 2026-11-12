@@ -11,7 +11,7 @@ import { MESSAGE_STATUSES, MessageStatusBadge } from '@/features/messaging/Messa
 import { useOutbox, useOutboxCounts } from '@/features/messaging/queries'
 import { routes } from '@/shared/config/routes'
 import { useDebounce } from '@/shared/hooks/useDebounce'
-import { fmtDateTime, fmtPhone, fmtRelative } from '@/shared/lib/format'
+import { fmtDateTime, fmtPhone, fmtRelative, fmtNumber } from '@/shared/lib/format'
 import { Badge, Button, Card, DataTable, EmptyState, Page, PageHeader, Pagination, SearchInput, Tabs, Toolbar, type Column } from '@/shared/ui'
 
 type Tab = 'all' | MessageStatus
@@ -51,7 +51,15 @@ export default function MessagesPage() {
     { key: 'kind', header: t('clinical.messages.kind'), hideBelow: 'lg', width: '140px', card: 'meta', cell: (m) => <Badge size="sm">{t(`clinical.messages.kind_${m.kind}`)}</Badge> },
     { key: 'status', header: t('common.status'), width: '150px', card: 'meta', cell: (m) => (
       <div className="flex min-w-0 flex-col gap-0.5">
-        <MessageStatusBadge status={m.status} />
+        <span className="inline-flex flex-wrap items-center gap-1">
+          <MessageStatusBadge status={m.status} />
+          {m.countryCode && m.countryCode !== 'UZ' && <Badge size="sm" tone="info">{m.countryCode}</Badge>}
+        </span>
+        {(m.parts || m.cost != null || m.providerStatus) && (
+          <span className="truncate text-[11.5px] text-ink-3" data-sms-detail title={m.providerStatus ?? undefined}>
+            {[m.parts ? t('clinical.messages.parts', { n: m.parts }) : null, m.cost != null ? `${fmtNumber(Math.round(m.cost))} ${t('common.sum')}` : null, m.providerStatus && m.status !== 'delivered' ? m.providerStatus : null].filter(Boolean).join(' · ')}
+          </span>
+        )}
         {m.error && <span className="truncate text-[11.5px] text-danger" title={m.error}>{m.error}</span>}
       </div>
     ) },

@@ -8,7 +8,7 @@ export const en: DeepPartial<Dictionary> = {
       help: 'Shortcut reference', search: 'Jump to search', close: 'Close the dialog / menu', pages: 'Previous / next page of the list', none: 'No quick actions on this page',
       next: 'Next field; on the last field — save', submit: 'Save / submit from any field', tiles: 'Pick a tile (e.g. gender)', auto: 'Phone, passport, PINFL move the cursor on when complete',
     },
-    appName: 'TibDaftari', loading: 'Loading…', save: 'Save', saving: 'Saving…', cancel: 'Cancel', close: 'Close', delete: 'Delete', edit: 'Edit', open: 'Open', create: 'Create', add: 'Add',
+    appName: 'TibDaftari', loading: 'Loading…', save: 'Save', saving: 'Saving…', cancel: 'Cancel', close: 'Close', delete: 'Delete', edit: 'Edit', open: 'Open', refresh: 'Refresh', create: 'Create', add: 'Add',
     search: 'Search', searchPlaceholder: 'Search…', filter: 'Filter', all: 'All', yes: 'Yes', no: 'No', back: 'Back', next: 'Next', done: 'Done', actions: 'Actions', status: 'Status',
     date: 'Date', today: 'Today', yesterday: 'Yesterday', last7: '7 days', last30: '30 days', thisMonth: 'This month', total: 'Total', sum: 'UZS', empty: 'Nothing found',
     emptyHint: 'Try changing the search or filters', error: 'Something went wrong', retry: 'Retry', required: 'Required', optional: 'optional', confirm: 'Confirm', areYouSure: 'Are you sure?',

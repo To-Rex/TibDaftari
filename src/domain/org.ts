@@ -228,6 +228,39 @@ export interface UnitTreeQuery {
   includeInactive?: boolean
 }
 
+export interface EskizPrice { operator: string; price: number; countryCode?: string | null }
+/** moderation | inproccess | service | reklama | rejected */
+export interface EskizTemplate { id: string; text: string; status: string }
+/** The Eskiz account in effect for a unit, as Eskiz sees it (cached a minute). */
+export interface EskizInfo {
+  configured: boolean
+  accountUnitId?: Id | null
+  accountUnitName?: string | null
+  login?: string | null
+  sender?: string | null
+  balance?: number | null
+  lowBalance: boolean
+  nicks: string[]
+  prices: EskizPrice[]
+  templates: EskizTemplate[]
+  userName?: string | null
+  userStatus?: string | null
+  fetchedAt?: string | null
+  /** Eskiz could not be asked — the rest is empty */
+  error?: string | null
+}
+/** What one text costs with the SMS account in effect. */
+export interface SmsCheck {
+  provider: SmsProvider
+  encoding: 'gsm' | 'ucs2'
+  length: number
+  parts: number
+  priceFrom?: number | null
+  priceTo?: number | null
+  /** Eskiz: the moderation state of a template with exactly this text */
+  templateStatus?: string | null
+}
+
 export interface SmsTestResult {
   ok: boolean
   provider?: SmsProvider

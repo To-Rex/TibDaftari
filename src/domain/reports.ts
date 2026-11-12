@@ -100,3 +100,32 @@ export interface ServicesReport {
   rows: ServiceUsageRow[]
   unused: { serviceTypeId: Id; name: string; category: string; prevCount: number }[]
 }
+
+/** SMS of a slice by what became of them, plus the cost (Eskiz only, once Eskiz said so). */
+export interface SmsCounts {
+  total: number
+  queued: number
+  sent: number
+  delivered: number
+  failed: number
+  cancelled: number
+  cost: number
+}
+export interface SmsDayRow extends SmsCounts { date: IsoDate }
+export interface SmsUnitRow extends SmsCounts {
+  unitId: Id
+  name: string
+  level: string
+  regionName?: string | null
+  districtName?: string | null
+}
+export interface SmsSliceRow extends SmsCounts { key: string }
+/** SMS of the period under the scope: totals, per day, per facility (with region / district), kind, provider, operator. */
+export interface SmsReport {
+  totals: SmsCounts
+  byDay: SmsDayRow[]
+  byUnit: SmsUnitRow[]
+  byKind: SmsSliceRow[]
+  byProvider: SmsSliceRow[]
+  byOperator: SmsSliceRow[]
+}

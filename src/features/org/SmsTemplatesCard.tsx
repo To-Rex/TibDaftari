@@ -10,7 +10,10 @@ import type { OrgUnit, SmsTemplateKind, SmsTemplateOverrides } from '@/domain'
 import { cn } from '@/shared/lib/cn'
 import { errorMessage } from '@/shared/lib/errors'
 import { Badge, Button, Card, CardHeader, ConfirmDialog, Skeleton, Switch, Textarea, toast } from '@/shared/ui'
-import { useSaveUnitSmsTemplates, useUnitSmsTemplates } from './queries'
+import { Send } from 'lucide-react'
+import { fmtNumber } from '@/shared/lib/format'
+import { TemplateStateBadge } from './EskizPanel'
+import { useEskizInfo, useSaveUnitSmsTemplates, useSmsCheck, useSubmitEskizTemplate, useUnitSms, useUnitSmsTemplates } from './queries'
 import { UnitIcon } from './unitUi'
 
 export type { SmsTemplateKind }
@@ -37,6 +40,16 @@ export function smsSegments(text: string): { chars: number; segments: number; un
   const multi = unicode ? 67 : 153
   const segments = chars === 0 ? 0 : chars <= single ? 1 : Math.ceil(chars / multi)
   return { chars, segments, unicode }
+}
+
+/** The text the way Eskiz moderates it: every placeholder becomes its `%w` wildcard. */
+export const toEskizTemplate = (text: string) => text.replace(/\{[a-z]+\}/g, '%w').replace(/\s+/g, ' ').trim()
+
+/** a value that follows `value` after `ms` of quiet */
+function useDebounced<T>(value: T, ms: number): T {
+  const [v, setV] = useState(value)
+  useEffect(() => { const id = window.setTimeout(() => setV(value), ms); return () => window.clearTimeout(id) }, [value, ms])
+  return v
 }
 
 /** The "organisation" of a unit as the backend renders `{org}`: the nearest non-facility unit's name. */
@@ -71,6 +84,21 @@ function TemplatesEditor({ unit, subtreeCount, readOnly }: { unit: OrgUnit; subt
   const preview = (text: string) => text.replace(/\{(patient|order|service|org|unit|company|branch|link|amount|total|remaining)\}/g, (_, k: string) =>
     k === 'org' || k === 'company' ? orgName : k === 'unit' || k === 'branch' ? unit.name : k === 'link' ? sampleLink() : (SAMPLE[k] ?? ''))
   const seg = smsSegments(preview(draft[active]))
+  // the account in effect decides the price: Eskiz prices the parts, Xabarchi does not say
+  const account = useUnitSms(unit.id)
+  const eskiz = account.data?.provider === 'eskiz'
+  const previewText = useDebounced(preview(draft[active]), 500)
+  const check = useSmsCheck(unit.id, previewText, eskiz)
+  const info = useEskizInfo(unit.id, eskiz)
+  const eskizForm = toEskizTemplate(draft[active])
+  const moderation = eskiz ? info.data?.templates.find((tpl) => toEskizTemplate(tpl.text) === eskizForm)?.status ?? null : null
+  const submitTpl = useSubmitEskizTemplate()
+  const sendToEskiz = async () => {
+    try {
+      await submitTpl.mutateAsync({ unitId: unit.id, text: eskizForm })
+      toast.success(t('admin.sms.eskiz.submitted'), t('admin.sms.eskiz.submittedHint'))
+    } catch (e) { toast.error(t('admin.sms.eskiz.submitFailed'), errorMessage(e)) }
+  }
 
   const save = async (toAll = false) => {
     // texts equal to the platform default are stored as empty overrides (backend falls back)
@@ -139,10 +167,24 @@ function TemplatesEditor({ unit, subtreeCount, readOnly }: { unit: OrgUnit; subt
               <div className="rounded-[var(--radius)] border border-line bg-surface-2/50 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-2">
                   <span className="text-[12px] font-medium uppercase tracking-[0.06em] text-ink-3">{t('admin.sms.preview')}</span>
-                  <Badge tone={seg.segments > 2 ? 'warn' : 'neutral'} size="sm">{t('admin.sms.segments', { chars: seg.chars, segments: seg.segments })}{seg.unicode ? ' · UCS-2' : ' · GSM-7'}</Badge>
+                  <span className="flex flex-wrap items-center gap-1.5">
+                    <Badge tone={seg.segments > 2 ? 'warn' : 'neutral'} size="sm">{t('admin.sms.segments', { chars: seg.chars, segments: check.data?.parts ?? seg.segments })}{(check.data?.encoding ?? (seg.unicode ? 'ucs2' : 'gsm')) === 'ucs2' ? ' · UCS-2' : ' · GSM-7'}</Badge>
+                    {eskiz && check.data?.priceFrom != null && (
+                      <Badge tone="brand" size="sm" data-sms-price>{check.data.priceFrom === check.data.priceTo ? fmtNumber(check.data.priceFrom) : `${fmtNumber(check.data.priceFrom)}–${fmtNumber(check.data.priceTo ?? check.data.priceFrom)}`} {t('common.sum')}</Badge>
+                    )}
+                    {eskiz && <TemplateStateBadge status={moderation ?? (info.data?.configured ? 'none' : null)} />}
+                  </span>
                 </div>
                 <div className="max-w-sm rounded-2xl rounded-tl-md bg-surface border border-line px-3.5 py-2.5 text-[14px] leading-relaxed shadow-1 break-words">{preview(draft[active]) || '…'}</div>
               </div>
+              {eskiz && !readOnly && (
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius-sm)] border border-info/30 bg-info-soft/30 px-3.5 py-2.5 text-[12.5px] text-ink-2" data-sms-eskiz-moderation={moderation ?? 'none'}>
+                  <span className="min-w-0">{moderation ? t('admin.sms.eskiz.textState', { state: t(`admin.sms.eskiz.tpl_${{ service: 'approved', reklama: 'approvedAd', moderation: 'moderation', inproccess: 'inProgress', rejected: 'rejected' }[moderation] ?? 'unknown'}`) }) : t('admin.sms.eskiz.textNotSent')}</span>
+                  {moderation !== 'service' && moderation !== 'reklama' && moderation !== 'moderation' && (
+                    <Button size="xs" variant="secondary" leftIcon={<Send className="size-3.5" />} loading={submitTpl.isPending} onClick={() => void sendToEskiz()} data-sms-send-to-eskiz>{t('admin.sms.eskiz.submit')}</Button>
+                  )}
+                </div>
+              )}
               {canApplyAll && (
                 <Switch checked={applyAll} onChange={setApplyAll} label={t('admin.sms.applyToAll')} description={t('admin.sms.applyToAllHint', { count: subtreeCount })} className="mt-1" />
               )}

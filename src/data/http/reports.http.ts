@@ -3,7 +3,7 @@
  * Wire contract: TibDaftari-Backend `app/modules/reports` (router.py / schemas.py).
  * Dates are `YYYY-MM-DD` calendar days (local time), inclusive.
  */
-import type { DashboardSummary, Page, PatientReport, ResultRow, ResultsReport, ServicesReport } from '@/domain'
+import type { DashboardSummary, Page, PatientReport, ResultRow, ResultsReport, ServicesReport, SmsReport } from '@/domain'
 import type { ReportRepository } from '@/data/repositories'
 import { api } from './client'
 
@@ -34,6 +34,10 @@ export const reportsHttp: ReportRepository = {
   services: (scopeId, q) =>
     api.get<ServicesReport>(`/units/${scopeId}/reports/services`, { query: { unitId: q.unitId, dateFrom: q.dateFrom, dateTo: q.dateTo } }),
 
+  sms: (scopeId, q) =>
+    api.get<SmsReport>(`/units/${scopeId}/reports/sms`, { query: { unitId: q.unitId, dateFrom: q.dateFrom, dateTo: q.dateTo } }),
+  exportSmsXlsx: (scopeId, q) =>
+    api.get<Blob>(`/units/${scopeId}/reports/sms/export.xlsx`, { query: { unitId: q.unitId, dateFrom: q.dateFrom, dateTo: q.dateTo, lang: q.lang }, blob: true }),
   exportXlsx: (scopeId, q) =>
     api.get<Blob>(`/units/${scopeId}/reports/export.xlsx`, {
       query: { unitId: q.unitId, dateFrom: q.dateFrom, dateTo: q.dateTo, lang: q.lang },

@@ -1,5 +1,5 @@
 /** HTTP OrgRepository — the organisation tree (`app/modules/units`). */
-import type { OrgUnit, QuickStartPreview, QuickStartResult, ResetPreview, ResetResult, SmsTestResult, UnitSms, UnitSmsTemplates } from '@/domain'
+import type { EskizInfo, OrgUnit, QuickStartPreview, QuickStartResult, ResetPreview, ResetResult, SmsCheck, SmsTestResult, UnitSms, UnitSmsTemplates } from '@/domain'
 import type { OrgRepository } from '../repositories'
 import { api, compact } from './client'
 
@@ -18,6 +18,9 @@ export const orgHttp: OrgRepository = {
   saveSms: (unitId, input) => api.put<UnitSms>(`/units/${unitId}/sms`, compact({ ...input })),
 
   testSms: (unitId, to) => api.post<SmsTestResult>(`/units/${unitId}/sms/test`, to ? { to } : {}),
+  eskizInfo: (unitId, refresh) => api.get<EskizInfo>(`/units/${unitId}/sms/eskiz`, refresh ? { query: { refresh: true } } : undefined),
+  submitEskizTemplate: (unitId, text) => api.post<EskizInfo>(`/units/${unitId}/sms/eskiz/templates`, { text }),
+  checkSms: (unitId, text) => api.post<SmsCheck>(`/units/${unitId}/sms/check`, { text }),
 
   getSmsTemplates: (unitId) => api.get<UnitSmsTemplates>(`/units/${unitId}/sms-templates`),
 

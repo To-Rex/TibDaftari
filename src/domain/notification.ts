@@ -25,6 +25,12 @@ export interface OutboxMessage extends AuditStamp {
   attempts: number
   providerMessageId?: string
   error?: string
+  /** a number abroad: the ISO-2 country it was sent to */
+  countryCode?: string | null
+  /** Eskiz: parts and cost (so‘m) once Eskiz said so; the provider's own state word */
+  parts?: number | null
+  cost?: number | null
+  providerStatus?: string | null
 }
 
 export interface Notification {

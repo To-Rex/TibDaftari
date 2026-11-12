@@ -8,13 +8,20 @@ export function normalizePhone(raw: string): string | null {
   return null
 }
 
-/** Parse a free-text list (comma / newline / space separated) into unique valid + invalid tokens. */
-export function parseRecipients(text: string): { valid: string[]; invalid: string[] } {
+/** A number abroad: the full international number, 10–15 digits (the country code included, no 998 rule). */
+export function normalizeIntlPhone(raw: string): string | null {
+  const d = raw.replace(/\D/g, '')
+  return d.length >= 10 && d.length <= 15 ? d : null
+}
+
+/** Parse a free-text list (comma / newline / space separated) into unique valid + invalid tokens;
+ *  `abroad` takes full international numbers instead of Uzbek ones. */
+export function parseRecipients(text: string, abroad = false): { valid: string[]; invalid: string[] } {
   const tokens = text.split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean)
   const valid = new Set<string>()
   const invalid: string[] = []
   for (const tk of tokens) {
-    const n = normalizePhone(tk)
+    const n = abroad ? normalizeIntlPhone(tk) : normalizePhone(tk)
     if (n) valid.add(n)
     else invalid.push(tk)
   }

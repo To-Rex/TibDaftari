@@ -27,7 +27,7 @@ export function useSendSms(scopeId: Id) {
   const qc = useQueryClient()
   return useMutation({
     // a manual message goes out from the scope facility; above facility level the composer names one (`unitId`)
-    mutationFn: (input: { to: string[]; text: string; kind: OutboxMessage['kind']; scheduledAt?: string; unitId?: Id }) => repos.messaging.send(scopeId, input),
+    mutationFn: (input: { to: string[]; text: string; kind: OutboxMessage['kind']; scheduledAt?: string; unitId?: Id; countryCode?: string }) => repos.messaging.send(scopeId, input),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['outbox'] })
       void qc.invalidateQueries({ queryKey: ['outbox-counts'] })
