@@ -393,7 +393,7 @@ const uz = {
     eskiz: {
       title: 'Eskiz hisobi', fetchedAt: 'yangilandi {{at}}',
       unreachable: 'Eskiz’dan ma’lumot olinmadi', balance: 'Balans', balanceHint: 'Eskiz kabinetidagi qoldiq', lowBalance: 'Balans kam — to‘ldiring, SMS’lar to‘xtab qolishi mumkin', enoughFor: '≈ {{n}} ta SMS’ga yetadi',
-      prices: 'Narxlar', perPart: 'so‘m / SMS qismi', noPrices: 'Eskiz narxlarni bermadi', nicks: 'Yuboruvchi nomlari', noNicks: 'Tasdiqlangan nom yo‘q — 4546 ishlatiladi', nicksHint: 'Nomni bosing — yuboruvchi maydoniga tushadi', nicksCurrent: 'Hozir: {{nick}}',
+      prices: 'Narxlar', perPart: 'so‘m / SMS qismi', noPrices: 'Eskiz narxlarni bermadi', pricesMore: 'Yana {{n}} ta operator', pricesLess: 'Kamroq', pricesAbroad: 'Boshqa davlatlar · {{n}}', templateSearch: 'Shablon matnidan qidirish…', nicks: 'Yuboruvchi nomlari', noNicks: 'Tasdiqlangan nom yo‘q — 4546 ishlatiladi', nicksHint: 'Nomni bosing — yuboruvchi maydoniga tushadi', nicksCurrent: 'Hozir: {{nick}}',
       templates: 'Shablonlar (moderatsiya)', noTemplates: 'Eskiz’ga hali shablon yuborilmagan', templatesHint: 'Jonli hisob faqat tasdiqlangan shablon matnlarini yuboradi. {patient}, {link} kabi maydonlar Eskiz’da %w sifatida yoziladi.',
       newTemplatePh: 'Yangi shablon matni… (o‘zgaruvchan joylar uchun %w)', newTemplateHint: 'Eskiz moderatsiyasi odatda 1 ish kunigacha', submit: 'Moderatsiyaga yuborish', submitted: 'Shablon Eskiz’ga yuborildi', submittedHint: 'Holati tasdiqlangach ro‘yxatda ko‘rinadi', submitFailed: 'Shablon yuborilmadi',
       textState: 'Eskiz’da bu matn: {{state}}', textNotSent: 'Bu matn Eskiz moderatsiyasiga yuborilmagan — jonli hisob uni rad etadi',
@@ -1004,7 +1004,7 @@ const ru: typeof uz = {
     eskiz: {
       title: 'Аккаунт Eskiz', fetchedAt: 'обновлено {{at}}',
       unreachable: 'Не удалось получить данные Eskiz', balance: 'Баланс', balanceHint: 'Остаток в кабинете Eskiz', lowBalance: 'Баланс мал — пополните, SMS могут остановиться', enoughFor: '≈ хватит на {{n}} SMS',
-      prices: 'Цены', perPart: 'сум / часть SMS', noPrices: 'Eskiz не вернул цены', nicks: 'Имена отправителя', noNicks: 'Утверждённого имени нет — используется 4546', nicksHint: 'Нажмите имя — оно попадёт в поле отправителя', nicksCurrent: 'Сейчас: {{nick}}',
+      prices: 'Цены', perPart: 'сум / часть SMS', noPrices: 'Eskiz не вернул цены', pricesMore: 'Ещё {{n}} операторов', pricesLess: 'Свернуть', pricesAbroad: 'Другие страны · {{n}}', templateSearch: 'Поиск по тексту шаблона…', nicks: 'Имена отправителя', noNicks: 'Утверждённого имени нет — используется 4546', nicksHint: 'Нажмите имя — оно попадёт в поле отправителя', nicksCurrent: 'Сейчас: {{nick}}',
       templates: 'Шаблоны (модерация)', noTemplates: 'Шаблоны в Eskiz ещё не отправлялись', templatesHint: 'Живой аккаунт отправляет только утверждённые тексты. Поля вида {patient}, {link} записываются в Eskiz как %w.',
       newTemplatePh: 'Текст нового шаблона… (%w для переменных мест)', newTemplateHint: 'Модерация Eskiz обычно до 1 рабочего дня', submit: 'Отправить на модерацию', submitted: 'Шаблон отправлен в Eskiz', submittedHint: 'После утверждения появится в списке', submitFailed: 'Шаблон не отправлен',
       textState: 'В Eskiz этот текст: {{state}}', textNotSent: 'Этот текст не отправлен на модерацию Eskiz — живой аккаунт его отклонит',
@@ -1600,7 +1600,7 @@ const en: typeof uz = {
     eskiz: {
       title: 'Eskiz account', fetchedAt: 'updated {{at}}',
       unreachable: 'Could not read the Eskiz account', balance: 'Balance', balanceHint: 'What is left in the Eskiz cabinet', lowBalance: 'Low balance — top up, SMS may stop', enoughFor: '≈ enough for {{n}} SMS',
-      prices: 'Prices', perPart: 'UZS / SMS part', noPrices: 'Eskiz returned no prices', nicks: 'Sender names', noNicks: 'No approved name — 4546 is used', nicksHint: 'Click a name to put it in the sender field', nicksCurrent: 'Now: {{nick}}',
+      prices: 'Prices', perPart: 'UZS / SMS part', noPrices: 'Eskiz returned no prices', pricesMore: '{{n}} more operators', pricesLess: 'Less', pricesAbroad: 'Other countries · {{n}}', templateSearch: 'Search template text…', nicks: 'Sender names', noNicks: 'No approved name — 4546 is used', nicksHint: 'Click a name to put it in the sender field', nicksCurrent: 'Now: {{nick}}',
       templates: 'Templates (moderation)', noTemplates: 'No template has been sent to Eskiz yet', templatesHint: 'A live account sends only approved texts. Fields such as {patient}, {link} are written in Eskiz as %w.',
       newTemplatePh: 'New template text… (%w for the variable parts)', newTemplateHint: 'Eskiz moderation usually takes up to one working day', submit: 'Send to moderation', submitted: 'Template sent to Eskiz', submittedHint: 'It shows in the list once approved', submitFailed: 'Template not sent',
       textState: 'In Eskiz this text is: {{state}}', textNotSent: 'This text has not been sent to Eskiz moderation — a live account rejects it',
