@@ -10,6 +10,13 @@ export type Gender = 'male' | 'female'
  * The portal is entered with the phone number + SMS code (every patient of the phone), or with a login + password
  * issued at reception (that patient only — relatives sharing one phone each see their own results).
  */
+/** Who a patient is to the person they share a phone number with (`relatedPatientId`, usually the number's owner). */
+export const RELATIONS = [
+  'child', 'spouse', 'father', 'mother', 'brother_older', 'brother_younger',
+  'sister_older', 'sister_younger', 'grandchild', 'grandparent', 'relative', 'other',
+] as const
+export type Relation = (typeof RELATIONS)[number]
+
 export interface Patient extends AuditStamp {
   id: Id
   countryId: Id
@@ -46,6 +53,33 @@ export interface Patient extends AuditStamp {
     login?: string | null
     loginSetAt?: string | null
   }
+  /** one phone, a whole family: who this patient is to `relatedPatientId` (usually the number's owner) */
+  relation?: Relation | null
+  relatedPatientId?: Id | null
+  relatedPatientName?: string | null
+  /** how many OTHER patients of the country use the same phone number */
+  phoneShared?: number
+}
+
+/** A person on the same phone number (or linked by a relation). */
+export interface FamilyMember {
+  id: Id
+  fullName: string
+  phone: string
+  gender?: Gender | null
+  birthDate?: IsoDate | null
+  relation?: Relation | null
+  relatedPatientId?: Id | null
+  /** the number's owner — the person the others point to */
+  isOwner: boolean
+  registeredUnitName?: string | null
+  lastVisitAt?: string | null
+}
+export interface PatientFamily {
+  patientId: Id
+  phone: string
+  /** everyone on the number (+ relatives linked by a relation), the owner first; the patient itself is not listed */
+  members: FamilyMember[]
 }
 
 /** Issue / renew the portal login: empty login = keep the current one (or a free one is picked), empty password = generated. */
@@ -79,6 +113,10 @@ export interface PatientUpsertInput {
   discountPercent?: number
   contractNumber?: string
   note?: string
+  /** the number already belongs to someone: who this person is to them (required without a passport / PINFL) */
+  relation?: Relation | null
+  /** the person on the number the relation points to (default: the number's owner) */
+  relatedPatientId?: Id | null
 }
 
 /** ISO 3166-1 country; `name` is Uzbek, `nameRu`/`nameEn` the localised names, plus the per-country settings. */

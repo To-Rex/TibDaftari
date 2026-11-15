@@ -5,6 +5,8 @@ import { CalendarDays, FileCheck2, FolderOpen, Wallet } from 'lucide-react'
 import { usePatientSession } from '@/features/session/useSession'
 import { stagger } from '@/features/portal/motion'
 import { placeNames, usePortalOverview } from '@/features/portal/queries'
+import { countsOf, useFamilyView } from '@/features/portal/family'
+import { FamilySwitch } from '@/features/portal/components/FamilySwitch'
 import { firstName, isRecent } from '@/features/portal/status'
 import { SummaryCard } from '@/features/portal/components/SummaryCard'
 import { SectionHeader } from '@/features/portal/components/SectionHeader'
@@ -31,8 +33,10 @@ export default function PortalHomePage() {
 
   const data = q.data
   const orderOf = (orderId: string) => data?.orders.find((o) => o.id === orderId)
-  const docs = data?.documents ?? []
-  const orders = data?.orders ?? []
+  // a family number: everyone's visits, or one member's
+  const view = useFamilyView(data)
+  const docs = view.documents
+  const orders = view.orders
   const freshDocs = docs.filter((d) => isRecent(d.createdAt)).length
   const inProgress = orders.reduce(
     (s, o) => s + o.progress.pending + o.progress.entered + o.progress.submitted,
@@ -64,6 +68,8 @@ export default function PortalHomePage() {
           {t('portal.greeting.subtitle')}
         </motion.p>
       </header>
+
+      {view.many && <FamilySwitch family={view.family} memberId={view.memberId} counts={countsOf(data?.orders ?? [])} />}
 
       {q.isPending ? (
         <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3">
@@ -144,6 +150,7 @@ export default function PortalHomePage() {
               >
                 {docs.slice(0, 5).map((d) => (
                   <ResultRow
+                    who={view.whoOfDocument(d)}
                     key={d.id}
                     doc={d}
                     place={place(d)}
@@ -179,7 +186,7 @@ export default function PortalHomePage() {
                 className="divide-line divide-y"
               >
                 {orders.slice(0, 3).map((o) => (
-                  <VisitRow key={o.id} order={o} compact place={place(o)} />
+                  <VisitRow key={o.id} order={o} compact place={place(o)} who={view.whoOfOrder(o)} />
                 ))}
               </MotionList>
             )}

@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
 import { ArrowLeft, ClipboardList } from 'lucide-react'
 import type { Patient } from '@/domain'
-import { Button, Card, EmptyState, Kbd, Page, PageHeader } from '@/shared/ui'
+import { Button, Card, EmptyState, Kbd, Page, PageHeader, toast } from '@/shared/ui'
+import { repos } from '@/data'
+import { errorMessage } from '@/shared/lib/errors'
 import { cn } from '@/shared/lib/cn'
 import { usePermissions, useStaffScope } from '@/features/auth/store'
 import { PatientDrawer } from '@/features/patients/PatientDrawer'
@@ -43,7 +45,8 @@ export default function ReceptionPage() {
                   <Button variant="ghost" size="sm" leftIcon={<ArrowLeft className="size-4" />} onClick={() => setSelected(null)}>{t('common.back')}</Button>
                 </div>
                 <div className="min-h-0 flex-1">
-                  <PatientSummary scopeId={scopeId} patient={selected} onNewOrder={() => newOrder.start(selected.id)} creating={newOrder.creating} canCreate={canCreateOrder} canEdit={canCreatePatient} onEdit={() => setDrawer({ open: true, patient: selected })} />
+                  <PatientSummary scopeId={scopeId} patient={selected} onNewOrder={() => newOrder.start(selected.id)} creating={newOrder.creating} canCreate={canCreateOrder} canEdit={canCreatePatient} onEdit={() => setDrawer({ open: true, patient: selected })}
+                    onPickFamily={(id) => void repos.patients.get(id, { unitId: scopeId }).then(setSelected).catch((e) => toast.error(errorMessage(e)))} />
                 </div>
               </div>
             ) : (

@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
-import { ArrowUpRight, Cake, Percent, Phone, Plus, Receipt, UserRound, Wallet, Pencil } from 'lucide-react'
+import { ArrowUpRight, Cake, Percent, Phone, Plus, Receipt, UserRound, UsersRound, Wallet, Pencil } from 'lucide-react'
+import { FamilyCard, hasFamily, useRelationLine } from '@/features/patients/FamilyCard'
 import type { Id, Patient } from '@/domain'
 import { Avatar, Badge, Button, Card, EmptyState, IconButton, Skeleton, fadeUp, stagger } from '@/shared/ui'
 import { ageFrom, fmtDate, fmtDateTime, fmtMoney, fmtPhone } from '@/shared/lib/format'
@@ -11,7 +12,7 @@ import { useUnitTree, useUnitTreeShape } from '@/features/org/queries'
 import { orderStatusMeta, paymentStatusMeta } from '@/features/orders/status'
 
 /** `scopeId` = the facility the staff app works in. */
-export function PatientSummary({ scopeId, patient, onNewOrder, creating, canCreate, canEdit, onEdit }: { scopeId: Id; patient: Patient; onNewOrder: () => void; creating: boolean; canCreate: boolean; canEdit: boolean; onEdit: () => void }) {
+export function PatientSummary({ scopeId, patient, onNewOrder, creating, canCreate, canEdit, onEdit, onPickFamily }: { scopeId: Id; patient: Patient; onNewOrder: () => void; creating: boolean; canCreate: boolean; canEdit: boolean; onEdit: () => void; /** pick another family member on the same number */ onPickFamily?: (id: Id) => void }) {
   const { t } = useTranslation()
   // the front desk works in one facility: the recent cheques are that facility's (the patient page shows the history
   // the employee may see)
@@ -20,6 +21,7 @@ export function PatientSummary({ scopeId, patient, onNewOrder, creating, canCrea
   const unit = shape.byId.get(scopeId)
   const orders = useOrdersList(scopeId, { patientId: patient.id, pageSize: 6, sortBy: 'createdAt', sortDir: 'desc' })
   const age = ageFrom(patient.birthDate)
+  const relationLine = useRelationLine()
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }} className="flex h-full min-h-0 flex-col gap-4">
@@ -39,6 +41,7 @@ export function PatientSummary({ scopeId, patient, onNewOrder, creating, canCrea
               <span className="inline-flex items-center gap-1.5"><Phone className="size-3.5 text-ink-3" />{fmtPhone(patient.phone)}</span>
               {patient.birthDate && <span className="inline-flex items-center gap-1.5"><Cake className="size-3.5 text-ink-3" />{fmtDate(patient.birthDate)} · {age} {t('staff.reception.yearsOld')}</span>}
               {patient.gender && <span className="inline-flex items-center gap-1.5"><UserRound className="size-3.5 text-ink-3" />{t(`common.${patient.gender}`)}</span>}
+              {patient.relation && <span className="inline-flex items-center gap-1.5 text-info" data-patient-relation={patient.relation}><UsersRound className="size-3.5" />{relationLine(patient)}</span>}
             </div>
           </div>
           {canEdit && <IconButton label={t('common.edit')} onClick={onEdit}><Pencil /></IconButton>}
@@ -59,6 +62,8 @@ export function PatientSummary({ scopeId, patient, onNewOrder, creating, canCrea
           <Button size="lg" block data-hotkey="c" className="mt-5" leftIcon={<Plus className="size-4" />} loading={creating} onClick={onNewOrder}>{t('staff.reception.newOrder')}</Button>
         )}
       </Card>
+
+      {hasFamily(patient) && <FamilyCard patient={patient} onPick={onPickFamily} compact />}
 
       <Card padded={false} className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3.5 sm:px-5">

@@ -16,6 +16,7 @@ export function ResultRow({
   orderNumber,
   showChannels,
   className,
+  who,
 }: {
   doc: ResultDocument
   /** where it was made — "Tashkilot · Muassasa" (see `placeNames`) */
@@ -23,6 +24,8 @@ export function ResultRow({
   orderNumber?: string
   showChannels?: boolean
   className?: string
+  /** whose it is (a family member's first name) — shown while the whole family is listed */
+  who?: string
 }) {
   const { t } = useTranslation()
   const fresh = isRecent(doc.createdAt)
@@ -44,6 +47,7 @@ export function ResultRow({
         <div className="min-w-0 flex-1">
           <p className="text-ink line-clamp-2 text-[14.5px] font-medium xs:truncate">{documentTitle(doc)}</p>
           <p className="text-ink-3 mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[12.5px]">
+            {who && <span className="bg-info-soft text-info inline-flex items-center rounded-full px-1.5 py-px text-[11.5px] font-medium" data-row-who>{who}</span>}
             {place && <span className="max-w-full truncate">{place}</span>}
             {place && orderNumber && <span aria-hidden>·</span>}
             {orderNumber && <span className="tabular">{orderNumber}</span>}

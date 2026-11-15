@@ -27,6 +27,9 @@ import type {
   PatientPasswordChangeInput,
   PatientPasswordLoginInput,
   PatientSession,
+  Gender,
+  PatientFamily,
+  Relation,
   PatientUpsertInput,
   PortalAccessInput,
   PortalAccessResult,
@@ -174,6 +177,8 @@ export interface PatientRepository {
   create(scopeId: Id, input: PatientUpsertInput): Promise<Patient>
   update(id: Id, input: Partial<PatientUpsertInput>): Promise<Patient>
   findDuplicates(scopeId: Id, input: Partial<PatientUpsertInput>): Promise<Patient[]>
+  /** everyone on the patient's phone number (+ relatives linked by a relation), the number's owner first */
+  family(id: Id): Promise<PatientFamily>
   /** issue / renew the portal login; the answer is the only time the password is shown */
   setPortalAccess(id: Id, input: PortalAccessInput): Promise<PortalAccessResult>
   removePortalAccess(id: Id): Promise<Patient>
@@ -298,6 +303,16 @@ export type ReportRange = { unitId?: Id; dateFrom: string; dateTo: string }
 
 /** Public organisation card shown in the portal (the facility's region / district / country node — letterhead data only). */
 export type PortalOrg = Pick<OrgUnit, 'id' | 'name' | 'logoUrl' | 'phone' | 'address'>
+/** A person whose visits a portal session sees (everyone on the number for an SMS-code session; itself for a login). */
+export interface PortalFamilyMember {
+  id: Id
+  fullName: string
+  gender?: Gender | null
+  birthDate?: string | null
+  relation?: Relation | null
+  relatedPatientId?: Id | null
+  isSelf: boolean
+}
 /** Public facility card shown in the portal. */
 export type PortalUnit = Pick<OrgUnit, 'id' | 'name' | 'address' | 'phone'> & { orgId?: Id | null }
 
@@ -307,7 +322,7 @@ export type PortalUnit = Pick<OrgUnit, 'id' | 'name' | 'address' | 'phone'> & { 
  * pages never call staff-only endpoints.
  */
 export interface PortalRepository {
-  overview(patientId: Id): Promise<{ patient: Patient; orders: Order[]; documents: ResultDocument[]; orgs: PortalOrg[]; units: PortalUnit[] }>
+  overview(patientId: Id): Promise<{ patient: Patient; orders: Order[]; documents: ResultDocument[]; orgs: PortalOrg[]; units: PortalUnit[]; /** everyone this session sees (the family on the number), itself first */ family?: PortalFamilyMember[] }>
   order(patientId: Id, orderId: Id): Promise<{ order: Order; items: OrderItem[]; documents: ResultDocument[]; org: PortalOrg; unit?: PortalUnit | null }>
   document(patientId: Id, documentId: Id): Promise<{ document: ResultDocument; template: ResultTemplate; item?: OrderItem; order: Order; items: OrderItem[]; schemas: AttributeSchema[]; serviceCodes: Record<Id, string>; category?: Category; org: PortalOrg; unit?: PortalUnit | null; assets: TemplateAsset[] }>
 }

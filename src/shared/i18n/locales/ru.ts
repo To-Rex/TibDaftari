@@ -39,6 +39,16 @@ export const ru: DeepPartial<Dictionary> = {
       keys: '↑↓ перемещение · → внутрь · ← назад · Enter выбрать · Esc закрыть',
     },
   },
+  relation: {
+    child: 'Ребёнок', child_male: 'Сын', child_female: 'Дочь',
+    spouse: 'Супруг(а)', spouse_male: 'Муж', spouse_female: 'Жена',
+    father: 'Отец', mother: 'Мать',
+    brother_older: 'Старший брат', brother_younger: 'Младший брат', sister_older: 'Старшая сестра', sister_younger: 'Младшая сестра',
+    grandchild: 'Внук / внучка', grandchild_male: 'Внук', grandchild_female: 'Внучка',
+    grandparent: 'Дедушка / бабушка', grandparent_male: 'Дедушка', grandparent_female: 'Бабушка',
+    relative: 'Родственник', relative_female: 'Родственница', other: 'Другое',
+    of: '{{rel}} · {{name}}', owner: 'Владелец номера',
+  },
   nav: {
     dashboard: 'Главная', reception: 'Регистратура', patients: 'Пациенты', orders: 'Чеки', lab: 'Лаборатория', confirm: 'Подтверждение', results: 'Результаты', reports: 'Отчёты', messages: 'Сообщения',
     admin: 'Управление', organisation: 'Организация', unit: 'Подразделение', units: 'Подразделения', territory: 'Регионы', employees: 'Сотрудники', roles: 'Роли и права', catalog: 'Каталог услуг', schemas: 'Схемы результатов',

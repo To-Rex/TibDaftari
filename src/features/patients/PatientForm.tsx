@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import { Phone, User } from 'lucide-react'
+import { AnimatePresence, motion } from 'motion/react'
 import type { Patient, PatientUpsertInput } from '@/domain'
 import { useStaffScope } from '@/features/auth/store'
 import { useUnitTree, useUnitTreeShape } from '@/features/org/queries'
@@ -67,17 +68,22 @@ const toInput = (v: FormValues): PatientUpsertInput => ({
   note: v.note || undefined,
 })
 
+/** what the drawer watches while the form is typed in */
+export type PatientDraft = Pick<PatientUpsertInput, 'phone' | 'passportNumber' | 'pinfl' | 'fullName' | 'gender' | 'birthDate'>
+
 export interface PatientFormProps {
   formId: string
   patient?: Patient | null
   onSubmit: (input: PatientUpsertInput) => void
-  /** live snapshot for duplicate checks (phone/passport/pinfl) */
-  onDraftChange?: (draft: Pick<PatientUpsertInput, 'phone' | 'passportNumber' | 'pinfl'>) => void
+  /** live snapshot for duplicate checks (phone/passport/pinfl) and the family panel (name, gender, birth date) */
+  onDraftChange?: (draft: PatientDraft) => void
+  /** the "this number already belongs to a family" panel — shown right under the phone */
+  family?: ReactNode
 }
 
 const big = 'h-11 text-[15px]'
 
-export function PatientForm({ formId, patient, onSubmit, onDraftChange }: PatientFormProps) {
+export function PatientForm({ formId, patient, onSubmit, onDraftChange, family }: PatientFormProps) {
   const { t } = useTranslation()
   const schema = useMemo(() => makeSchema(t), [t])
   const { register, control, handleSubmit, watch, getValues, setValue, formState: { errors } } = useForm<FormValues>({
@@ -110,9 +116,12 @@ export function PatientForm({ formId, patient, onSubmit, onDraftChange }: Patien
   const phone = watch('phone')
   const passportNumber = watch('passportNumber')
   const pinfl = watch('pinfl')
+  const fullName = watch('fullName')
+  const gender = watch('gender')
+  const birthDate = watch('birthDate')
   useEffect(() => {
-    onDraftChange?.({ phone: localDigits(phone).length === 9 ? toE164(phone) : '', passportNumber, pinfl })
-  }, [phone, passportNumber, pinfl, onDraftChange])
+    onDraftChange?.({ phone: localDigits(phone).length === 9 ? toE164(phone) : '', passportNumber, pinfl, fullName, gender: gender || undefined, birthDate: birthDate || undefined })
+  }, [phone, passportNumber, pinfl, fullName, gender, birthDate, onDraftChange])
 
   return (
     <form id={formId} onSubmit={handleSubmit((v) => onSubmit(toInput(v)))} onKeyDown={formKeyDown} className="flex flex-col gap-7" autoComplete="off">
@@ -135,6 +144,7 @@ export function PatientForm({ formId, patient, onSubmit, onDraftChange }: Patien
             {(id) => <Input id={id} type="date" {...register('birthDate')} className={big} max={new Date().toISOString().slice(0, 10)} />}
           </Field>
         </div>
+        <AnimatePresence initial={false}>{family && <motion.div key="family" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }} className="overflow-hidden">{family}</motion.div>}</AnimatePresence>
         <Field label={t('common.gender')} hint={t('staff.patients.form.genderHint')}>
           {(id) => (
             <Controller name="gender" control={control} render={({ field }) => (

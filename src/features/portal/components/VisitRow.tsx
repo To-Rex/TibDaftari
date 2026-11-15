@@ -15,11 +15,14 @@ export function VisitRow({
   place,
   className,
   compact,
+  who,
 }: {
   order: Order
   place?: string
   className?: string
   compact?: boolean
+  /** whose it is (a family member's first name) — shown while the whole family is listed */
+  who?: string
 }) {
   const { t } = useTranslation()
   const done = orderReadyCount(order)
@@ -47,6 +50,7 @@ export function VisitRow({
             )}
           </p>
           <p className="text-ink-3 mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[12.5px]">
+            {who && <span className="bg-info-soft text-info inline-flex items-center rounded-full px-1.5 py-px text-[11.5px] font-medium" data-row-who>{who}</span>}
             {place && <span className="max-w-full truncate">{place}</span>}
             {place && <span aria-hidden>·</span>}
             <span className="tabular">{fmtDate(order.createdAt)}</span>

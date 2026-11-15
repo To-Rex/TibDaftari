@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
-import { UserPlus, Search, Sparkles, X } from 'lucide-react'
+import { UserPlus, Search, Sparkles, UsersRound, X } from 'lucide-react'
+import { useRelationLine } from '@/features/patients/FamilyCard'
 import type { Id, Patient } from '@/domain'
 import { Avatar, Badge, Button, EmptyState, Input, Kbd, SkeletonRows } from '@/shared/ui'
 import { cn } from '@/shared/lib/cn'
@@ -18,6 +19,7 @@ export function PatientSearchPanel({ scopeId, selectedId, onSelect, onNew, input
   const [cursor, setCursor] = useState(0)
   const listRef = useRef<HTMLUListElement>(null)
   const results = search.data ?? []
+  const relationLine = useRelationLine()
   useEffect(() => setCursor(0), [dq])
 
   const onKey = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -59,6 +61,8 @@ export function PatientSearchPanel({ scopeId, selectedId, onSelect, onNew, input
                       </span>
                       <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12.5px] text-ink-3 tabular">
                         <span>{fmtPhone(p.phone)}</span>
+                        {relationLine(p) ? <span className="inline-flex items-center gap-1 text-info"><UsersRound className="size-3" />{relationLine(p)}</span>
+                          : (p.phoneShared ?? 0) > 0 && <Badge size="sm" tone="info"><UsersRound className="size-3" />{t('staff.patients.family.sharedBadge', { count: p.phoneShared })}</Badge>}
                         {p.stats.lastVisitAt && <><span className="opacity-40">•</span><span>{t('staff.reception.lastVisit')}: {fmtRelative(p.stats.lastVisitAt)}</span></>}
                         <span className="xs:hidden">· {p.stats.orders} {t('staff.reception.ordersShort')}</span>
                       </span>

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
-import { Cake, FileText, Info, KeyRound, Pencil, Percent, Phone, Plus, Receipt, UserRound } from 'lucide-react'
+import { Cake, FileText, Info, KeyRound, Pencil, Percent, Phone, Plus, Receipt, UserRound, UsersRound } from 'lucide-react'
 import { Avatar, Badge, Button, Card, EmptyState, Page, PageHeader, Skeleton, Tabs } from '@/shared/ui'
 import { ageFrom, fmtDate, fmtMoney, fmtPhone, fmtRelative } from '@/shared/lib/format'
 import { errorMessage } from '@/shared/lib/errors'
@@ -12,6 +12,7 @@ import { usePatient } from '@/features/patients/queries'
 import { PatientDrawer } from '@/features/patients/PatientDrawer'
 import { PatientDetails, PatientDocuments } from '@/features/patients/PatientDetails'
 import { PortalAccessModal } from '@/features/patients/PortalAccessModal'
+import { FamilyCard, useRelationLine } from '@/features/patients/FamilyCard'
 import { useDocuments, useOrdersList } from '@/features/orders/queries'
 import { OrdersTable } from '@/features/orders/OrdersTable'
 import { useNewOrder } from '@/features/reception/useNewOrder'
@@ -35,6 +36,7 @@ export default function PatientPage() {
   const orders = useOrdersList(scopeId, params, !!patientId)
   const docs = useDocuments({ patientId, unitId: scopeId }, tab === 'results')
   const newOrder = useNewOrder()
+  const relationLine = useRelationLine()
   const p = q.data
 
   if (q.isError) return <Page><EmptyState title={t('common.error')} description={errorMessage(q.error)} action={<Link to={routes.app.patients}><Button variant="secondary">{t('common.back')}</Button></Link>} /></Page>
@@ -57,6 +59,11 @@ export default function PatientPage() {
                 <span className="inline-flex items-center gap-1.5"><Phone className="size-3.5 text-ink-3" />{fmtPhone(p.phone)}</span>
                 {p.birthDate && <span className="inline-flex items-center gap-1.5"><Cake className="size-3.5 text-ink-3" />{fmtDate(p.birthDate)} · {ageFrom(p.birthDate)} {t('staff.reception.yearsOld')}</span>}
                 {p.gender && <span className="inline-flex items-center gap-1.5"><UserRound className="size-3.5 text-ink-3" />{t(`common.${p.gender}`)}</span>}
+                {p.relation && p.relatedPatientId && (
+                  <Link to={routes.app.patient(p.relatedPatientId)} className="inline-flex items-center gap-1.5 text-info hover:underline underline-offset-4" data-patient-relation={p.relation}>
+                    <UsersRound className="size-3.5" />{relationLine(p)}
+                  </Link>
+                )}
               </span>
             </span>
           </span>
@@ -87,6 +94,8 @@ export default function PatientPage() {
           ))}
         </motion.div>
       )}
+
+      {p && <div className="mb-6"><FamilyCard patient={p} /></div>}
 
       <Tabs<Tab> value={tab} onChange={setTab} className="mb-4 -mx-3 px-3 xs:-mx-4 xs:px-4 sm:mx-0 sm:px-0" items={[
         { value: 'orders', label: t('staff.patients.tabOrders'), icon: <Receipt />, count: orders.data?.total },

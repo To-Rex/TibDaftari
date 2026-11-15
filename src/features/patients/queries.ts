@@ -11,6 +11,7 @@ export const patientKeys = {
   list: (scopeId: Id, q: PatientListParams) => ['patients', scopeId, q] as const,
   search: (scopeId: Id, q: string) => ['patients', 'search', scopeId, q] as const,
   detail: (id: Id) => ['patient', id] as const,
+  family: (id: Id) => ['patient-family', id] as const,
 }
 
 export const usePatientsList = (scopeId: Id, q: PatientListParams) =>
@@ -46,6 +47,7 @@ export function useCreatePatient(scopeId: Id) {
     mutationFn: (input: PatientUpsertInput) => repos.patients.create(scopeId, input),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: patientKeys.all })
+      void qc.invalidateQueries({ queryKey: ['patient-family'] })
       void qc.invalidateQueries({ queryKey: ['dashboard'] })
     },
   })
@@ -75,7 +77,12 @@ export function useUpdatePatient(id: Id) {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: patientKeys.all })
       void qc.invalidateQueries({ queryKey: patientKeys.detail(id) })
+      void qc.invalidateQueries({ queryKey: ['patient-family'] })
       void qc.invalidateQueries({ queryKey: ['orders'] })
     },
   })
 }
+
+/** Everyone on the patient's phone number (+ relatives linked by a relation), the number's owner first. */
+export const usePatientFamily = (id: Id | undefined, enabled = true) =>
+  useQuery({ queryKey: patientKeys.family(id ?? ''), queryFn: () => repos.patients.family(id!), enabled: enabled && !!id, staleTime: 30_000 })

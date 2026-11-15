@@ -38,6 +38,16 @@ export const en: DeepPartial<Dictionary> = {
       keys: '↑↓ move · → open · ← back · Enter select · Esc close',
     },
   },
+  relation: {
+    child: 'Child', child_male: 'Son', child_female: 'Daughter',
+    spouse: 'Spouse', spouse_male: 'Husband', spouse_female: 'Wife',
+    father: 'Father', mother: 'Mother',
+    brother_older: 'Older brother', brother_younger: 'Younger brother', sister_older: 'Older sister', sister_younger: 'Younger sister',
+    grandchild: 'Grandchild', grandchild_male: 'Grandson', grandchild_female: 'Granddaughter',
+    grandparent: 'Grandparent', grandparent_male: 'Grandfather', grandparent_female: 'Grandmother',
+    relative: 'Relative', other: 'Other',
+    of: '{{rel}} of {{name}}', owner: 'Number owner',
+  },
   nav: {
     dashboard: 'Dashboard', reception: 'Reception', patients: 'Patients', orders: 'Orders', lab: 'Laboratory', confirm: 'Approval', results: 'Results', reports: 'Reports', messages: 'Messages', admin: 'Administration',
     organisation: 'Organisation', unit: 'Unit', units: 'Units', territory: 'Territory', employees: 'Employees', roles: 'Roles & permissions', catalog: 'Service catalog', schemas: 'Result schemas', templates: 'Templates', receipts: 'Receipt templates',

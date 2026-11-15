@@ -5,6 +5,8 @@ import { FolderOpen } from 'lucide-react'
 import { usePatientSession } from '@/features/session/useSession'
 import { stagger } from '@/features/portal/motion'
 import { placeNames, usePortalOverview } from '@/features/portal/queries'
+import { docCountsOf, useFamilyView } from '@/features/portal/family'
+import { FamilySwitch } from '@/features/portal/components/FamilySwitch'
 import { ResultRow } from '@/features/portal/components/ResultRow'
 import { FilterChips } from '@/features/portal/components/FilterChips'
 import { fmtDate } from '@/shared/lib/format'
@@ -25,11 +27,12 @@ export default function PortalResultsPage() {
   }, [q.error, t])
 
   const data = q.data
+  const view = useFamilyView(data)
   const { place } = placeNames(data)
   const orderOf = (id: string) => data?.orders.find((o) => o.id === id)
 
   const groups = useMemo(() => {
-    const docs = data?.documents ?? []
+    const docs = view.documents
     const { orgOf } = placeNames(data)
     const nowKey = new Date().toISOString().slice(0, 7)
     const filtered = docs.filter((d) =>
@@ -51,7 +54,7 @@ export default function PortalResultsPage() {
       label: fmtDate(items[0]!.createdAt, 'LLLL yyyy'),
       items,
     }))
-  }, [data, filter])
+  }, [data, filter, view.documents])
 
   // several organisations → a chip per organisation; one organisation with several facilities → a chip per facility
   const orgs = data?.orgs ?? []
@@ -63,7 +66,7 @@ export default function PortalResultsPage() {
         ? units.map((u) => ({ value: `u:${u.id}` as Filter, label: u.name }))
         : []
   const chips = [
-    { value: 'all' as Filter, label: t('portal.results.all'), count: data?.documents.length },
+    { value: 'all' as Filter, label: t('portal.results.all'), count: view.documents.length },
     { value: 'month' as Filter, label: t('portal.results.thisMonth') },
     ...placeChips,
   ]
@@ -71,6 +74,7 @@ export default function PortalResultsPage() {
   return (
     <Page width="medium" className="2xl:max-w-6xl 3xl:max-w-[1600px]">
       <PageHeader title={t('portal.results.title')} description={t('portal.results.subtitle')} />
+      {view.many && <FamilySwitch family={view.family} memberId={view.memberId} counts={docCountsOf(data?.documents ?? [], data?.orders ?? [])} />}
       {!q.isPending && (data?.documents.length ?? 0) > 0 && (
         <FilterChips items={chips} value={filter} onChange={setFilter} className="mb-5" />
       )}
@@ -122,6 +126,7 @@ export default function PortalResultsPage() {
                         doc={d}
                         place={place(d)}
                         orderNumber={orderOf(d.orderId)?.number}
+                        who={view.whoOfDocument(d)}
                         showChannels
                       />
                     ))}

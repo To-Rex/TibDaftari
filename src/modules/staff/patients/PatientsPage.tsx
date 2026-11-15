@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
-import { UserPlus, Users } from 'lucide-react'
+import { UserPlus, Users, UsersRound } from 'lucide-react'
 import type { Patient } from '@/domain'
 import { Avatar, Badge, Button, Card, DataTable, EmptyState, Page, PageHeader, Pagination, SearchInput, Toolbar, type Column } from '@/shared/ui'
 import { cn } from '@/shared/lib/cn'
@@ -12,6 +12,7 @@ import { useDebounce } from '@/shared/hooks/useDebounce'
 import { usePermissions, useStaffScope } from '@/features/auth/store'
 import { usePatientsList } from '@/features/patients/queries'
 import { PatientDrawer } from '@/features/patients/PatientDrawer'
+import { useRelationLine } from '@/features/patients/FamilyCard'
 
 const TAGS = ['VIP', 'Shartnoma', 'Bola', 'Homilador']
 
@@ -36,11 +37,12 @@ export default function PatientsPage() {
   const params = useMemo(() => ({ page, pageSize, search: dq || undefined, tag, sortBy, sortDir }), [page, pageSize, dq, tag, sortBy, sortDir])
   useEffect(() => setPage(1), [scopeId])
   const q = usePatientsList(scopeId, params)
+  const relationLine = useRelationLine()
   const onSort = (key: string) => { if (key === sortBy) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc')); else { setSortBy(key); setSortDir(key === 'fullName' ? 'asc' : 'desc') }; setPage(1) }
 
   const cols: Column<Patient>[] = [
     { key: 'fullName', header: t('common.fullName'), sortable: true, card: 'title', cell: (p) => (
-      <span className="flex min-w-0 items-center gap-3"><Avatar name={p.fullName} size="sm" /><span className="flex min-w-0 flex-col"><span className="flex flex-wrap items-center gap-x-2 gap-y-0.5 font-medium"><span className="min-w-0 break-words">{p.fullName}</span>{p.tags.map((tg) => <Badge key={tg} size="sm" tone={tg === 'VIP' ? 'accent' : 'brand'}>{tg}</Badge>)}</span><span className="text-[12px] text-ink-3 tabular">{fmtPhone(p.phone)}</span></span></span>
+      <span className="flex min-w-0 items-center gap-3"><Avatar name={p.fullName} size="sm" /><span className="flex min-w-0 flex-col"><span className="flex flex-wrap items-center gap-x-2 gap-y-0.5 font-medium"><span className="min-w-0 break-words">{p.fullName}</span>{p.tags.map((tg) => <Badge key={tg} size="sm" tone={tg === 'VIP' ? 'accent' : 'brand'}>{tg}</Badge>)}</span><span className="flex flex-wrap items-center gap-x-2 text-[12px] text-ink-3 tabular">{fmtPhone(p.phone)}{relationLine(p) ? <span className="inline-flex items-center gap-1 text-info"><UsersRound className="size-3" />{relationLine(p)}</span> : (p.phoneShared ?? 0) > 0 && <span className="inline-flex items-center gap-1 text-info"><UsersRound className="size-3" />{t('staff.patients.family.sharedBadge', { count: p.phoneShared })}</span>}</span></span></span>
     ) },
     { key: 'birthDate', header: t('staff.patients.colAge'), cell: (p) => <span className="tabular text-ink-2">{p.birthDate ? `${ageFrom(p.birthDate)} · ${fmtDate(p.birthDate)}` : '—'}</span>, hideBelow: 'lg' },
     { key: 'stats.lastVisitAt', sortable: true, header: t('staff.patients.colLastVisit'), cell: (p) => <span className="text-ink-2"><span className="md:hidden">{t('staff.patients.colLastVisit')}: </span>{p.stats.lastVisitAt ? fmtRelative(p.stats.lastVisitAt) : '—'}</span>, hideBelow: 'md', card: 'meta' },

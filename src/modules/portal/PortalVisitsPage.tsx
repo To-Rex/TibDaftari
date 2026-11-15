@@ -5,6 +5,8 @@ import { CalendarDays } from 'lucide-react'
 import { usePatientSession } from '@/features/session/useSession'
 import { stagger } from '@/features/portal/motion'
 import { placeNames, usePortalOverview } from '@/features/portal/queries'
+import { countsOf, useFamilyView } from '@/features/portal/family'
+import { FamilySwitch } from '@/features/portal/components/FamilySwitch'
 import { VisitRow } from '@/features/portal/components/VisitRow'
 import { errorMessage } from '@/shared/lib/errors'
 import {
@@ -32,13 +34,16 @@ export default function PortalVisitsPage() {
     if (q.error) toast.error(t('portal.common.loadError'), errorMessage(q.error))
   }, [q.error, t])
 
-  const orders = q.data?.orders ?? []
+  const view = useFamilyView(q.data)
+  const orders = view.orders
+  useEffect(() => setPage(1), [view.memberId])
   const totalPages = Math.max(1, Math.ceil(orders.length / PAGE_SIZE))
   const slice = orders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   return (
     <Page width="medium" className="2xl:max-w-6xl 3xl:max-w-[1600px]">
       <PageHeader title={t('portal.visits.title')} description={t('portal.visits.subtitle')} />
+      {view.many && <FamilySwitch family={view.family} memberId={view.memberId} counts={countsOf(q.data?.orders ?? [])} />}
       <Card padded={false} className="overflow-hidden">
         {q.isPending ? (
           <SkeletonRows rows={6} className="p-4" />
@@ -64,7 +69,7 @@ export default function PortalVisitsPage() {
                 className="divide-line divide-y"
               >
                 {slice.map((o) => (
-                  <VisitRow key={o.id} order={o} place={place(o)} />
+                  <VisitRow key={o.id} order={o} place={place(o)} who={view.whoOfOrder(o)} />
                 ))}
               </MotionList>
             </motion.div>

@@ -114,6 +114,15 @@ export const uz = {
       keys: '↑↓ harakat · → ichiga · ← orqaga · Enter tanlash · Esc yopish',
     },
   },
+  relation: {
+    child: 'Farzandi', child_male: 'O‘g‘li', child_female: 'Qizi',
+    spouse: 'Turmush o‘rtog‘i', spouse_male: 'Eri', spouse_female: 'Xotini',
+    father: 'Otasi', mother: 'Onasi',
+    brother_older: 'Akasi', brother_younger: 'Ukasi', sister_older: 'Opasi', sister_younger: 'Singlisi',
+    grandchild: 'Nevarasi', grandchild_male: 'Nevarasi', grandchild_female: 'Nevarasi', grandparent: 'Bobosi / buvisi', grandparent_male: 'Bobosi', grandparent_female: 'Buvisi',
+    relative: 'Qarindoshi', relative_female: 'Qarindoshi', other: 'Boshqa',
+    of: '{{name}}ning {{rel}}', owner: 'Raqam egasi',
+  },
   nav: {
     dashboard: 'Bosh sahifa',
     reception: 'Qabul',

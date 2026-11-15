@@ -1,5 +1,5 @@
 /** HTTP PatientRepository — patients + public countries/regions/districts (`app/modules/patients`). */
-import type { Country, District, Page, Patient, PortalAccessResult, Region } from '@/domain'
+import type { Country, District, Page, Patient, PortalAccessResult, Region, PatientFamily } from '@/domain'
 import type { PatientRepository } from '../repositories'
 import { api, compact } from './client'
 
@@ -17,6 +17,7 @@ export const patientsHttp: PatientRepository = {
 
   /** Backend only reads the identity keys (phone / passportNumber / pinfl); extras are ignored. */
   findDuplicates: (scopeId, input) => api.post<Patient[]>(`/units/${scopeId}/patients/duplicates`, compact({ ...input })),
+  family: (id) => api.get<PatientFamily>(`/patients/${id}/family`),
 
   setPortalAccess: (id, input) => api.put<PortalAccessResult>(`/patients/${id}/portal-access`, compact({ ...input })),
 

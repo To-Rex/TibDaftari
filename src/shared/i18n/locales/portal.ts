@@ -20,6 +20,7 @@ const uz = {
     resultsCount: '{{count}} ta natija',
     new: 'Yangi',
   },
+  family: { title: 'Oila a’zolari', all: 'Hammasi', allSub: '{{count}} kishi · bitta raqam', you: 'Siz' },
   greeting: {
     morning: 'Xayrli tong, {{name}}',
     day: 'Xayrli kun, {{name}}',
@@ -251,6 +252,7 @@ const ru: typeof uz = {
     resultsCount: 'Результатов: {{count}}',
     new: 'Новое',
   },
+  family: { title: 'Члены семьи', all: 'Все', allSub: '{{count}} чел. · один номер', you: 'Вы' },
   greeting: {
     morning: 'Доброе утро, {{name}}',
     day: 'Добрый день, {{name}}',
@@ -481,6 +483,7 @@ const en: typeof uz = {
     resultsCount: '{{count}} results',
     new: 'New',
   },
+  family: { title: 'Family members', all: 'Everyone', allSub: '{{count}} people · one number', you: 'You' },
   greeting: {
     morning: 'Good morning, {{name}}',
     day: 'Good afternoon, {{name}}',
