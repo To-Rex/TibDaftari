@@ -145,7 +145,8 @@ export interface AssistantRepository {
   deleteThread(id: Id): Promise<void>
   /** the model answers, runs read tools, proposes writes (returned as `pending`) */
   send(threadId: Id, content: string, unitId?: Id): Promise<AssistantSendResult>
-  confirm(actionId: Id): Promise<AssistantSendResult>
+  /** `word` — what an irreversible action asks the employee to type */
+  confirm(actionId: Id, word?: string): Promise<AssistantSendResult>
   cancel(actionId: Id): Promise<AssistantSendResult>
   /** the bytes of a file the assistant built for the caller */
   downloadFile(fileId: Id): Promise<Blob>

@@ -5,7 +5,7 @@
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AlertTriangle, Ban, Check, CheckCircle2, Clock, Download, Eye, FileImage, FileJson, FileSpreadsheet, FileText, FileType2, Loader2, PencilLine, ShieldCheck, Sparkles, X } from 'lucide-react'
-import type { AssistantAction, AssistantFile, AssistantMessage, AssistantToolCall } from '@/domain'
+import type { AssistantAction, AssistantChoices, AssistantFile, AssistantMessage, AssistantToolCall } from '@/domain'
 import { repos } from '@/data'
 import { cn } from '@/shared/lib/cn'
 import { errorMessage } from '@/shared/lib/errors'
@@ -103,33 +103,55 @@ function ToolChip({ c }: { c: AssistantToolCall }) {
   )
 }
 
-export function ActionCard({ action, onResolve, busy }: { action: AssistantAction; onResolve?: (id: string, confirm: boolean) => void; busy?: boolean }) {
+type Resolve = (id: string, confirm: boolean, word?: string) => void
+
+/**
+ * A write the assistant proposed: what it touches (ids already turned into names by the server), and the yes / no.
+ * An irreversible one says so in red and, when the server asks for it, takes the word the employee types.
+ */
+export function ActionCard({ action, onResolve, busy }: { action: AssistantAction; onResolve?: Resolve; busy?: boolean }) {
   const { t } = useTranslation()
+  const [word, setWord] = useState('')
   const pending = action.status === 'pending'
-  const tone = action.status === 'done' ? 'ok' : action.status === 'failed' ? 'danger' : pending ? 'warn' : 'neutral'
-  const args = Object.entries(action.args ?? {}).filter(([, v]) => v !== null && v !== undefined && v !== '')
+  const danger = !!action.danger
+  const tone = action.status === 'done' ? 'ok' : action.status === 'failed' ? 'danger' : pending ? (danger ? 'danger' : 'warn') : 'neutral'
+  const rows = action.details?.length
+    ? action.details.map((d) => ({ label: d.label, value: d.value, raw: false }))
+    : Object.entries(action.args ?? {}).filter(([, v]) => v !== null && v !== undefined && v !== '').map(([k, v]) => ({ label: k, value: typeof v === 'object' ? JSON.stringify(v) : String(v), raw: true }))
+  const needsWord = pending && !!action.confirmWord
+  const wordOk = !needsWord || word.trim().toLowerCase() === (action.confirmWord ?? '').trim().toLowerCase()
   return (
-    <div className={cn('max-w-xl rounded-2xl border p-3.5', pending ? 'border-warn/50 bg-warn-soft/40 shadow-1' : 'border-line bg-surface/60')} data-assistant-action={action.id} data-action-status={action.status}>
+    <div className={cn('max-w-xl rounded-2xl border p-3.5', pending ? (danger ? 'border-danger/50 bg-danger-soft/40 shadow-1' : 'border-warn/50 bg-warn-soft/40 shadow-1') : 'border-line bg-surface/60')}
+      data-assistant-action={action.id} data-action-status={action.status} data-action-danger={danger || undefined}>
       <div className="flex flex-wrap items-center gap-2">
-        <span className={cn('grid size-7 shrink-0 place-items-center rounded-lg', pending ? 'bg-warn/15 text-warn' : 'bg-surface-2 text-ink-2')}>{pending ? <ShieldCheck className="size-4" /> : action.status === 'done' ? <CheckCircle2 className="size-4 text-ok" /> : <Ban className="size-4" />}</span>
+        <span className={cn('grid size-7 shrink-0 place-items-center rounded-lg', pending ? (danger ? 'bg-danger/15 text-danger' : 'bg-warn/15 text-warn') : 'bg-surface-2 text-ink-2')}>
+          {pending ? (danger ? <AlertTriangle className="size-4" /> : <ShieldCheck className="size-4" />) : action.status === 'done' ? <CheckCircle2 className="size-4 text-ok" /> : <Ban className="size-4" />}
+        </span>
         <div className="min-w-0 flex-1">
-          <div className="text-[13.5px] font-semibold">{pending ? t('assistant.action.title') : action.title}</div>
-          {pending && <div className="text-[12px] text-ink-3">{t('assistant.action.hint')}</div>}
+          <div className="text-[13.5px] font-semibold">{pending ? t(danger ? 'assistant.action.dangerTitle' : 'assistant.action.title') : action.title}</div>
+          {pending && <div className="text-[12px] text-ink-3">{t(danger ? 'assistant.action.dangerHint' : 'assistant.action.hint')}</div>}
         </div>
         <Badge tone={tone} size="sm">{t(`assistant.action.${action.status}`)}</Badge>
       </div>
-      {(pending || args.length > 0 || action.error) && <div className="mt-2.5 rounded-xl border border-line/70 bg-bg-elevated px-3 py-2 text-[13px]">
-        {pending && <div className="mb-1 flex items-center gap-2 font-medium"><PencilLine className="size-3.5 text-ink-3" />{action.title}</div>}
-        {args.length > 0 && (
-          <dl className="grid grid-cols-[max-content_minmax(0,1fr)] gap-x-3 gap-y-0.5 text-[12.5px]">
-            {args.map(([k, v]) => <Fragment key={k}><dt className="font-mono text-ink-3">{k}</dt><dd className="truncate">{typeof v === 'object' ? JSON.stringify(v) : String(v)}</dd></Fragment>)}
+      {(pending || rows.length > 0 || action.error) && <div className="mt-2.5 rounded-xl border border-line/70 bg-bg-elevated px-3 py-2 text-[13px]">
+        {pending && <div className="mb-1.5 flex items-center gap-2 font-medium"><PencilLine className="size-3.5 text-ink-3" />{action.title}</div>}
+        {rows.length > 0 && (
+          <dl className="grid grid-cols-[max-content_minmax(0,1fr)] gap-x-3 gap-y-1 text-[12.5px]" data-action-details>
+            {rows.map((r, i) => <Fragment key={i}><dt className={cn('max-w-[11rem] text-ink-3', r.raw && 'font-mono')}>{r.label}</dt><dd className="min-w-0 whitespace-pre-wrap break-words">{r.value}</dd></Fragment>)}
           </dl>
         )}
         {action.error && <p className="mt-1 text-[12.5px] text-danger">{action.error}</p>}
       </div>}
+      {needsWord && onResolve && (
+        <label className="mt-3 block text-[12.5px] text-ink-2">
+          {t('assistant.action.typeWord', { word: action.confirmWord })}
+          <input value={word} onChange={(e) => setWord(e.target.value)} autoComplete="off" spellCheck={false} placeholder={action.confirmWord ?? ''} data-action-word
+            className="mt-1 h-9 w-full rounded-lg border border-danger/40 bg-bg-elevated px-2.5 font-mono text-[13.5px] text-ink outline-none transition-shadow placeholder:text-ink-3/60 focus:border-danger focus:ring-4 focus:ring-danger/12" />
+        </label>
+      )}
       {pending && onResolve && (
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <Button size="sm" leftIcon={busy ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />} disabled={busy} onClick={() => onResolve(action.id, true)} data-action-confirm>{t('assistant.action.confirm')}</Button>
+          <Button size="sm" variant={danger ? 'danger' : 'primary'} leftIcon={busy ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />} disabled={busy || !wordOk} onClick={() => onResolve(action.id, true, needsWord ? word.trim() : undefined)} data-action-confirm>{t('assistant.action.confirm')}</Button>
           <Button size="sm" variant="secondary" leftIcon={<X className="size-4" />} disabled={busy} onClick={() => onResolve(action.id, false)} data-action-cancel>{t('assistant.action.cancel')}</Button>
           <span className="ml-auto text-[11.5px] text-ink-3">{t('assistant.action.expiresIn', { when: fmtRelative(action.expiresAt) })}</span>
         </div>
@@ -137,7 +159,6 @@ export function ActionCard({ action, onResolve, busy }: { action: AssistantActio
     </div>
   )
 }
-
 
 /** `14:05` for today, the full date and time for an older turn. */
 const stamp = (iso: string) => (isoDay(new Date(iso)) === isoDay() ? fmtTime(iso) : fmtDateTime(iso))
@@ -158,8 +179,27 @@ export function UserBubble({ content, pending, at }: { content: string; pending?
   )
 }
 
+/** A question of the assistant with ready answers: tapping one sends it; once answered (or no longer the last word) the buttons rest. */
+export function Choices({ choices, shown, onChoose }: { choices: AssistantChoices; /** the question is already in the message text */ shown?: boolean; onChoose?: (option: string) => void }) {
+  const { t } = useTranslation()
+  return (
+    <div className="max-w-xl" data-chat-choices={onChoose ? 'open' : 'closed'}>
+      {!shown && choices.question && <p className="mb-2 text-[14.5px] leading-[1.7]">{choices.question}</p>}
+      <div className="flex flex-wrap gap-1.5">
+        {choices.options.map((o) => (
+          <button key={o} type="button" disabled={!onChoose} onClick={() => onChoose?.(o)} data-chat-choice
+            className={cn('min-h-9 max-w-full rounded-2xl border px-3 py-1.5 text-left text-[13.5px] leading-snug transition-[background-color,border-color,color,transform]', onChoose ? 'border-brand/40 bg-brand-soft/50 text-brand-ink hover:-translate-y-px hover:border-brand hover:bg-brand-soft' : 'cursor-default border-line bg-surface/60 text-ink-3')}>
+            {o}
+          </button>
+        ))}
+      </div>
+      {onChoose && <p className="mt-1.5 text-[11.5px] text-ink-3">{t('assistant.choices.hint')}</p>}
+    </div>
+  )
+}
+
 /** One stored turn: the employee's bubble, a failed tool as a small red line, or a piece of the assistant's answer. */
-export function ChatMessage({ m, onResolve, busy }: { m: AssistantMessage; onResolve?: (id: string, confirm: boolean) => void; busy?: boolean }) {
+export function ChatMessage({ m, onResolve, busy, onChoose }: { m: AssistantMessage; onResolve?: Resolve; busy?: boolean; onChoose?: (option: string) => void }) {
   const { t } = useTranslation()
   if (m.role === 'user') return <UserBubble content={m.content} at={m.createdAt} />
   if (m.role === 'tool') {
@@ -172,23 +212,24 @@ export function ChatMessage({ m, onResolve, busy }: { m: AssistantMessage; onRes
       {!empty && <Markdown text={m.content} />}
       {(m.files ?? []).map((f) => <FileCard key={f.id} file={f} />)}
       {m.action && <ActionCard action={m.action} onResolve={onResolve} busy={busy} />}
+      {m.choices && <Choices choices={m.choices} shown={!!m.choices.question && m.content.includes(m.choices.question)} onChoose={onChoose} />}
     </div>
   )
 }
 
 /**
  * The assistant's side of an exchange: everything it said and did between two messages of the employee, under
- * one mark, with the time and a "copy" for the text it wrote.
+ * one mark, with the time and a "copy" for the text it wrote. `onChoose` is given while its question still stands.
  */
-export function AssistantTurn({ items, onResolve, busy, last }: { items: AssistantMessage[]; onResolve?: (id: string, confirm: boolean) => void; busy?: boolean; last?: boolean }) {
+export function AssistantTurn({ items, onResolve, busy, last, onChoose }: { items: AssistantMessage[]; onResolve?: Resolve; busy?: boolean; last?: boolean; onChoose?: (option: string) => void }) {
   const { t } = useTranslation()
-  const text = items.filter((m) => m.role === 'assistant' && m.content.trim()).map((m) => m.content.trim()).join('\n\n')
+  const text = items.filter((m) => m.role === 'assistant' && (m.content.trim() || m.choices?.question)).map((m) => [m.content.trim(), m.choices && !m.content.includes(m.choices.question) ? m.choices.question : ''].filter(Boolean).join('\n\n')).join('\n\n')
   const at = items[items.length - 1]?.createdAt
   return (
     <div className="group/msg flex gap-3" data-chat-turn="assistant">
       <AssistantMark className="mt-0.5 max-sm:hidden" />
       <div className="min-w-0 flex-1">
-        <div className="space-y-2.5">{items.map((m) => <ChatMessage key={m.id} m={m} onResolve={onResolve} busy={busy} />)}</div>
+        <div className="space-y-2.5">{items.map((m, i) => <ChatMessage key={m.id} m={m} onResolve={onResolve} busy={busy} onChoose={i === items.length - 1 ? onChoose : undefined} />)}</div>
         <div className={cn('mt-1 flex h-7 items-center gap-1 transition-opacity focus-within:opacity-100 group-hover/msg:opacity-100 [@media(hover:none)]:opacity-100', !last && 'opacity-0')} data-chat-msg-tools>
           {text && <CopyButton text={text} label={t('assistant.copy')} doneLabel={t('assistant.copied')} className="-ml-1.5" />}
           {at && <time dateTime={at} className="px-1 text-[11.5px] text-ink-3">{stamp(at)}</time>}

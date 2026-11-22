@@ -125,10 +125,10 @@ export function useAssistantActions() {
           throw e
         }
       },
-      resolve: async (threadId: Id, actionId: Id, confirm: boolean) => {
+      resolve: async (threadId: Id, actionId: Id, confirm: boolean, word?: string) => {
         setWork(threadId, { mode: 'action' })
         try {
-          const r = await (confirm ? repos.assistant.confirm(actionId) : repos.assistant.cancel(actionId))
+          const r = await (confirm ? repos.assistant.confirm(actionId, word) : repos.assistant.cancel(actionId))
           notifyManager.batch(() => { appendTurns(qc, r.thread.id, r); setWork(threadId, null) })
           if (confirm) for (const key of WRITE_TOUCHES) void qc.invalidateQueries({ queryKey: [key] })
           return r

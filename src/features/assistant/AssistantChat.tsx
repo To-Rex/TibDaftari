@@ -5,7 +5,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowDown, ChartPie, FileSpreadsheet, Lightbulb, Loader2, PencilLine, Sparkles, TrendingUp, Users, type LucideIcon } from 'lucide-react'
+import { ArrowDown, BadgeCheck, ChartPie, CopyPlus, FileSpreadsheet, FlaskConical, Lightbulb, Loader2, MapPin, PencilLine, ReceiptText, Sparkles, TrendingUp, UserPlus, Users, type LucideIcon } from 'lucide-react'
 import type { AssistantMessage, AssistantStatus, AssistantThread, Id, OrgUnit } from '@/domain'
 import { ApiError } from '@/data'
 import { useAuth } from '@/features/auth/store'
@@ -19,6 +19,21 @@ import { NEW_THREAD as NEW, useAssistantActions, useAssistantWorks, useThread } 
 
 const enter = { initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1] as const } }
 type Turn = { kind: 'user'; m: AssistantMessage } | { kind: 'assistant'; id: Id; items: AssistantMessage[] }
+
+/** What to try first — only what this employee's role can really do (`needs` = a tool they must hold); the first six fit are shown. */
+const EXAMPLES: { key: string; icon: LucideIcon; needs?: string }[] = [
+  { key: 'example4', icon: Lightbulb },
+  { key: 'exampleOrder', icon: ReceiptText, needs: 'create_order' },
+  { key: 'examplePatient', icon: UserPlus, needs: 'create_patient' },
+  { key: 'exampleWorklist', icon: FlaskConical, needs: 'save_result_values' },
+  { key: 'exampleApprove', icon: BadgeCheck, needs: 'approve_result' },
+  { key: 'exampleCopy', icon: CopyPlus, needs: 'copy_working_set' },
+  { key: 'example1', icon: TrendingUp, needs: 'breakdown' },
+  { key: 'example5', icon: FileSpreadsheet, needs: 'export_data' },
+  { key: 'example6', icon: ChartPie, needs: 'export_chart' },
+  { key: 'example2', icon: Users, needs: 'list_employees' },
+  { key: 'example3', icon: PencilLine, needs: 'update_unit' },
+]
 
 /** Everything the assistant said and did between two messages of the employee is one turn. */
 function toTurns(messages: AssistantMessage[]): Turn[] {
@@ -207,19 +222,16 @@ export function AssistantChat({ threadId, unit, status, onCreate, onOpen, focusT
       if (pointer) box.current?.focus({ preventScroll: true })
     }
   }
-  const onResolve = async (actionId: string, confirm: boolean) => {
+  const onResolve = async (actionId: string, confirm: boolean, word?: string) => {
     if (!threadId || works[threadId]) return
-    try { await actions.resolve(threadId, actionId, confirm) } catch (e) { toast.error(errorMessage(e)) }
+    try { await actions.resolve(threadId, actionId, confirm, word) } catch (e) { toast.error(errorMessage(e)) }
   }
 
-  const examples: { text: string; icon: LucideIcon }[] = [
-    { text: t('assistant.example4'), icon: Lightbulb },
-    { text: t('assistant.example1'), icon: TrendingUp },
-    { text: t('assistant.example5'), icon: FileSpreadsheet },
-    { text: t('assistant.example6'), icon: ChartPie },
-    { text: t('assistant.example2'), icon: Users },
-    { text: t('assistant.example3'), icon: PencilLine },
-  ]
+  const examples = useMemo(() => {
+    const mine = new Set(status.tools.map((x) => x.name))
+    return EXAMPLES.filter((e) => !e.needs || mine.has(e.needs)).slice(0, 6).map((e) => ({ text: t(`assistant.${e.key}`), icon: e.icon }))
+  }, [status.tools, t])
+  const place = status.context ?? []
   const placeholder = busy ? t('assistant.composerBusy') : hero && roomy ? t('assistant.composerPlaceholder') : t('assistant.composerShort')
   const acting = work?.mode === 'action'
 
@@ -231,12 +243,18 @@ export function AssistantChat({ threadId, unit, status, onCreate, onOpen, focusT
             <span className="mx-auto grid size-14 place-items-center rounded-[20px] bg-gradient-to-br from-brand to-brand-strong text-white shadow-2 dark:text-bg"><Sparkles className="size-7" /></span>
             <h1 className="mt-5 text-[26px] font-semibold tracking-[-0.03em] sm:text-[32px]">{t('assistant.welcomeTitle', { name: me?.fullName.split(' ')[0] ?? '' })}</h1>
             <p className="mx-auto mt-2 max-w-xl text-[14.5px] leading-relaxed text-ink-2">{t('assistant.welcomeBody')}</p>
+            {place.length > 0 && (
+              <p className="mx-auto mt-3 inline-flex max-w-full flex-wrap items-center justify-center gap-x-1.5 gap-y-0.5 rounded-full bg-surface-2/60 px-3 py-1 text-[12.5px] text-ink-3" title={t('assistant.contextHint')} data-chat-context>
+                <MapPin className="size-3.5 shrink-0 text-brand" />
+                {place.map((step, i) => <span key={step.id} className={cn('inline-flex items-center gap-1.5', i === place.length - 1 && 'font-medium text-ink')} title={t(`org.level.${step.level}`)}>{i > 0 && <span aria-hidden className="text-ink-3/60">›</span>}{step.name}</span>)}
+              </p>
+            )}
           </motion.div>
         ) : (
           <div ref={content} className="mx-auto flex max-w-3xl flex-col gap-5">
             {turns.map((turn, i) => (
               <motion.div key={turn.kind === 'user' ? turn.m.id : turn.id} {...enter}>
-                {turn.kind === 'user' ? <UserBubble content={turn.m.content} at={turn.m.createdAt} /> : <AssistantTurn items={turn.items} onResolve={(a, c) => void onResolve(a, c)} busy={acting} last={i === turns.length - 1 && !busy} />}
+                {turn.kind === 'user' ? <UserBubble content={turn.m.content} at={turn.m.createdAt} /> : <AssistantTurn items={turn.items} onResolve={(a, c, w) => void onResolve(a, c, w)} busy={acting} last={i === turns.length - 1 && !busy} onChoose={i === turns.length - 1 && !busy ? (option) => void submit(option) : undefined} />}
               </motion.div>
             ))}
             {outgoing && <motion.div {...enter}><UserBubble content={outgoing} pending /></motion.div>}

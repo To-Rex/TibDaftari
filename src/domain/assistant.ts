@@ -38,7 +38,11 @@ export interface AssistantAccountInput {
 }
 export interface AssistantTestResult { ok: boolean; provider: AssistantProvider; model?: string | null; reply?: string | null; error?: string | null; latencyMs: number }
 
-export interface AssistantTool { name: string; title: string; kind: AssistantToolKind }
+/** where a tool belongs in the "what I can do" list */
+export type AssistantToolGroup = 'general' | 'units' | 'staff' | 'catalog' | 'templates' | 'reception' | 'lab' | 'results' | 'reports' | 'messaging' | 'files'
+export interface AssistantTool { name: string; title: string; kind: AssistantToolKind; group?: AssistantToolGroup; /** a write that cannot be taken back */ danger?: boolean }
+/** one step of the working unit's lineage (company → … → the unit) — what the assistant is told about where the employee works */
+export interface AssistantContextStep { level: 'company' | 'country' | 'region' | 'district' | 'facility'; id: Id; name: string; code?: string | null }
 export interface AssistantStatus {
   enabled: boolean
   configured: boolean
@@ -47,6 +51,8 @@ export interface AssistantStatus {
   effectiveUnitName?: string | null
   effectivePlatform?: boolean
   tools: AssistantTool[]
+  /** the working unit's lineage, company first */
+  context?: AssistantContextStep[]
   rateLimit: number
   rateWindowSeconds: number
 }
@@ -66,7 +72,15 @@ export interface AssistantAction {
   error?: string | null
   expiresAt: string
   createdAt: string
+  /** what the write touches, ids resolved to names */
+  details?: { label: string; value: string }[]
+  /** cannot be taken back */
+  danger?: boolean
+  /** while pending: the word the employee must type to confirm an irreversible write */
+  confirmWord?: string | null
 }
+/** a question the assistant asked with ready answers — tapping one sends it as the next message */
+export interface AssistantChoices { question: string; options: string[] }
 export interface AssistantMessage {
   id: Id
   role: AssistantRole
@@ -77,6 +91,7 @@ export interface AssistantMessage {
   action?: AssistantAction | null
   /** files the tools of this turn produced */
   files?: AssistantFile[]
+  choices?: AssistantChoices | null
   createdAt: string
 }
 export interface AssistantThreadDetail { thread: AssistantThread; messages: AssistantMessage[]; pending: AssistantAction | null }

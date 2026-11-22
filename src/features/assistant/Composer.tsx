@@ -6,27 +6,25 @@ import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useRef, us
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowUp, Cpu, Eye, Loader2, PencilLine, SlidersHorizontal, X } from 'lucide-react'
-import type { AssistantStatus, OrgUnit } from '@/domain'
+import { ArrowUp, Cpu, Eye, Loader2, SlidersHorizontal, X } from 'lucide-react'
+import type { AssistantStatus, AssistantTool, AssistantToolGroup, OrgUnit } from '@/domain'
 import { cn } from '@/shared/lib/cn'
 import { UnitIcon } from '../org/unitUi'
 
 const MAX_HEIGHT = 208
 
 const chip = 'inline-flex h-8 min-w-0 items-center gap-1.5 rounded-full px-2.5 text-[12.5px] text-ink-2 transition-colors'
+/** the order the areas are listed in — the daily work first, the administration after */
+const GROUPS: AssistantToolGroup[] = ['reception', 'lab', 'results', 'reports', 'messaging', 'files', 'units', 'staff', 'catalog', 'templates', 'general']
 
 /** What the assistant may do for this employee here: the tools of their role, the unit, the model, the request limit. */
 function Capabilities({ status, unit, onClose, place, panel }: { status: AssistantStatus; unit: OrgUnit | null; onClose: () => void; place: CSSProperties; panel: RefObject<HTMLDivElement | null> }) {
   const { t } = useTranslation()
-  const read = status.tools.filter((x) => x.kind === 'read')
-  const write = status.tools.filter((x) => x.kind === 'write')
   const source = status.effectivePlatform ? t('assistant.platformAccount') : status.effectiveUnitName
-  const group = (title: string, icon: React.ReactNode, items: typeof read, tone: string) => items.length > 0 && (
-    <section>
-      <h4 className="mb-1.5 flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.06em] text-ink-3">{icon}{title}<span className="tabular font-medium normal-case tracking-normal">· {items.length}</span></h4>
-      <ul className="flex flex-wrap gap-1.5">{items.map((x) => <li key={x.name} className={cn('rounded-full border px-2.5 py-1 text-[12.5px] leading-tight', tone)} data-tool={x.name}>{x.title}</li>)}</ul>
-    </section>
-  )
+  const lineage = status.context ?? []
+  const byGroup = new Map<AssistantToolGroup, AssistantTool[]>()
+  for (const x of status.tools) byGroup.set(x.group ?? 'general', [...(byGroup.get(x.group ?? 'general') ?? []), x])
+  const tone = (x: AssistantTool) => (x.danger ? 'border-danger/30 bg-danger-soft/50 text-ink' : x.kind === 'write' ? 'border-warn/30 bg-warn-soft/50 text-ink' : 'border-line bg-surface text-ink-2')
   return (
     <motion.div ref={panel} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
       role="dialog" aria-label={t('assistant.capabilities')} data-chat-capabilities style={place}
@@ -36,13 +34,29 @@ function Capabilities({ status, unit, onClose, place, panel }: { status: Assista
         <button type="button" onClick={onClose} aria-label={t('common.close')} className="ml-auto grid size-7 place-items-center rounded-full text-ink-3 hover:bg-surface-2 hover:text-ink"><X className="size-4" /></button>
       </div>
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-3.5">
-        {group(t('assistant.readTools'), <Eye className="size-3.5" />, read, 'border-line bg-surface text-ink-2')}
-        {group(t('assistant.writeTools'), <PencilLine className="size-3.5" />, write, 'border-warn/30 bg-warn-soft/50 text-ink')}
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-ink-3" data-tool-legend>
+          <span className="inline-flex items-center gap-1.5"><Eye className="size-3.5" />{t('assistant.readTools')}</span>
+          <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-warn" />{t('assistant.writeTools')}</span>
+          <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-danger" />{t('assistant.dangerTools')}</span>
+        </p>
+        {GROUPS.filter((g) => byGroup.has(g)).map((g) => (
+          <section key={g} data-tool-group={g}>
+            <h4 className="mb-1.5 flex items-center gap-1.5 text-[11.5px] font-semibold uppercase tracking-[0.06em] text-ink-3">{t(`assistant.groups.${g}`)}<span className="font-medium normal-case tracking-normal">· {byGroup.get(g)!.length}</span></h4>
+            <ul className="flex flex-wrap gap-1.5">{byGroup.get(g)!.map((x) => <li key={x.name} className={cn('rounded-full border px-2.5 py-1 text-[12.5px] leading-tight', tone(x))} data-tool={x.name} data-tool-kind={x.danger ? 'danger' : x.kind}>{x.title}</li>)}</ul>
+          </section>
+        ))}
         <dl className="space-y-2 border-t border-line pt-3 text-[12.5px]">
-          {unit && (
+          {(lineage.length > 0 || unit) && (
             <div className="flex gap-2.5">
               <dt className="w-24 shrink-0 text-ink-3">{t('assistant.workingIn')}</dt>
-              <dd className="min-w-0"><span className="inline-flex items-center gap-1.5 font-medium"><UnitIcon unit={unit} className="size-3.5 text-brand" />{unit.name}</span><p className="mt-0.5 text-ink-3">{t('assistant.workingInHint')}</p></dd>
+              <dd className="min-w-0">
+                {lineage.length > 0 ? (
+                  <ul className="space-y-0.5" data-tool-context>
+                    {lineage.map((step, i) => <li key={step.id} className={cn('flex gap-1.5', i === lineage.length - 1 && 'font-medium')}><span className="w-[5.5rem] shrink-0 font-normal text-ink-3">{t(`org.level.${step.level}`)}</span><span className="min-w-0 break-words">{step.name}</span></li>)}
+                  </ul>
+                ) : unit && <span className="inline-flex items-center gap-1.5 font-medium"><UnitIcon unit={unit} className="size-3.5 text-brand" />{unit.name}</span>}
+                <p className="mt-1 text-ink-3">{t('assistant.workingInHint')}</p>
+              </dd>
             </div>
           )}
           {status.model && (
@@ -130,7 +144,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function 
           className={cn('block w-full resize-none bg-transparent px-4 text-[15px] leading-6 text-ink outline-none placeholder:text-ink-3 sm:px-5', hero ? 'min-h-[52px] pb-1 pt-4' : 'pb-1 pt-3.5')} data-chat-input data-search="" />
         <div className="flex items-center gap-1 px-2 pb-2 pt-1 sm:px-2.5 sm:pb-2.5" onMouseDown={(e) => { if (e.target === e.currentTarget) { e.preventDefault(); box.current?.focus() } }}>
           {unit && (
-            <span className={cn(chip, 'max-w-[46%] cursor-default bg-surface-2/70 sm:max-w-[40%]')} title={`${t('assistant.workingIn')}: ${unit.name}\n${t('assistant.workingInHint')}`} data-chat-unit>
+            <span className={cn(chip, 'max-w-[46%] cursor-default bg-surface-2/70 sm:max-w-[40%]')} title={`${t('assistant.workingIn')}: ${(status.context?.length ? status.context.map((x) => x.name).join(' › ') : unit.name)}\n${t('assistant.workingInHint')}`} data-chat-unit>
               <UnitIcon unit={unit} className="size-3.5 shrink-0 text-brand" /><span className="truncate font-medium text-ink">{unit.name}</span>
             </span>
           )}
