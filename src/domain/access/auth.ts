@@ -10,8 +10,11 @@ export interface SessionUnit {
   level: UnitLevel
   name: string
   code?: string | null
-  countryId: Id
-  /** "O‘zbekiston Respublikasi › Xorazm viloyati › Bog‘ot tumani › Bog‘ot tumani SES" */
+  /** the company the unit belongs to (a company node: itself) */
+  companyId?: Id | null
+  /** null for a company node — it spans countries */
+  countryId: Id | null
+  /** "TibDaftari › O‘zbekiston Respublikasi › Xorazm viloyati › Bog‘ot tumani › Bog‘ot tumani SES" */
   path: string
 }
 

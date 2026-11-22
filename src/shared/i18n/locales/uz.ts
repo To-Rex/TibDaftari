@@ -90,7 +90,7 @@ export const uz = {
   },
   /** the organisation tree: Davlat → Viloyat → Tuman / shahar → Muassasa */
   org: {
-    level: { country: 'Davlat', region: 'Viloyat', district: 'Tuman / shahar', facility: 'Muassasa' },
+    level: { company: 'Kompaniya', country: 'Davlat', region: 'Viloyat', district: 'Tuman / shahar', facility: 'Muassasa' },
     kind: { ses: 'SES', clinic: 'Klinika', laboratory: 'Laboratoriya', polyclinic: 'Poliklinika', hospital: 'Shifoxona', pharmacy: 'Dorixona', other: 'Boshqa' },
     inactive: 'Nofaol',
     pickFacility: 'Muassasani tanlang',
@@ -107,7 +107,7 @@ export const uz = {
       recent: 'So‘nggi tanlanganlar', noResults: 'Hech narsa topilmadi',
       more: 'Yana {{count}} ta — qidiruvni aniqlashtiring', facilities: '{{count}} ta muassasa',
       empty: 'Bu yerda hali birlik yo‘q',
-      levelPlural: { country: 'Davlatlar', region: 'Viloyatlar', district: 'Tumanlar / shaharlar', facility: 'Muassasalar' },
+      levelPlural: { company: 'Kompaniyalar', country: 'Davlatlar', region: 'Viloyatlar', district: 'Tumanlar / shaharlar', facility: 'Muassasalar' },
       rowHint: 'Bosish — ochish · ✓ yoki ikki marta bosish — tanlash',
       pickHint: 'Ro‘yxatdan birlikni tanlang', ghostHint: 'Chapdagi ro‘yxatdan tanlang',
       current: 'Joriy', close: 'Yopish',

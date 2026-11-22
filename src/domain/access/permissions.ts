@@ -59,16 +59,17 @@ export const PERMISSIONS = [
   'admin.unit.reset',
   /** the AI assistant («Yordamchi»): chat and its tools — each tool is gated by the keys above */
   'assistant.use',
-  // Platform (superadmin only): the whole tree, every country
+  // Platform (superadmin only): the whole tree, every company and country
   'platform.unit.manage',
 ] as const
 
 export type Permission = (typeof PERMISSIONS)[number]
 
-/** The read-only leaders of a territory — «Davlat / Viloyat / Tuman / Muassasa rahbari»: role key → the level of the
- *  tree the employee is homed at (extra units: more nodes of the same level, same country). They see every report,
+/** The read-only leaders — «Kompaniya / Davlat / Viloyat / Tuman / Muassasa rahbari»: role key → the level of the
+ *  tree the employee is homed at (extra units: more nodes of the same level, same company and country). They see every report,
  *  statistic, list, card and document inside their units and change nothing. */
 export const LEADER_ROLE_LEVELS: Readonly<Record<string, UnitLevel>> = {
+  leader_company: 'company',
   leader_country: 'country',
   leader_region: 'region',
   leader_district: 'district',

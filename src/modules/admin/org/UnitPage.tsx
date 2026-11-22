@@ -7,9 +7,9 @@
 import { useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Clock, Eraser, Hospital, ImagePlus, Landmark, Mail, Map as MapIcon, MapPin, Pencil, Phone, Trash2, UserCog } from 'lucide-react'
+import { Clock, Earth, Eraser, Hospital, ImagePlus, Landmark, Mail, Map as MapIcon, MapPin, Pencil, Phone, Trash2, UserCog } from 'lucide-react'
 import type { Locale, OrgUnit } from '@/domain'
-import { unitsUnder } from '@/domain'
+import { levelAtOrAbove, unitsUnder } from '@/domain'
 import { useAdminScope, usePermissions } from '@/features/auth/store'
 import { useUnit, useUnitTree, useUpdateUnit } from '@/features/org/queries'
 import { UnitBreadcrumb } from '@/features/org/UnitBreadcrumb'
@@ -74,8 +74,9 @@ export default function UnitPage() {
           {/* what is under it */}
           <MotionList variants={stagger} initial="hidden" animate="show" className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,150px),1fr))] gap-3 sm:gap-4">
             {[
-              u.level === 'country' && { key: 'regions', label: t('admin.unit.counts.regions'), value: u.counts.regions, icon: <MapIcon />, tone: 'brand' as const },
-              (u.level === 'country' || u.level === 'region') && { key: 'districts', label: t('admin.unit.counts.districts'), value: u.counts.districts, icon: <MapPin />, tone: 'info' as const },
+              u.level === 'company' && { key: 'countries', label: t('admin.unit.counts.countries'), value: u.counts.countries ?? 0, icon: <Earth />, tone: 'accent' as const },
+              levelAtOrAbove(u.level, 'country') && { key: 'regions', label: t('admin.unit.counts.regions'), value: u.counts.regions, icon: <MapIcon />, tone: 'brand' as const },
+              levelAtOrAbove(u.level, 'region') && { key: 'districts', label: t('admin.unit.counts.districts'), value: u.counts.districts, icon: <MapPin />, tone: 'info' as const },
               u.level !== 'facility' && { key: 'facilities', label: t('admin.unit.counts.facilities'), value: u.counts.facilities, icon: <Hospital />, tone: 'ok' as const },
               { key: 'employees', label: t('admin.unit.counts.employees'), value: u.counts.employees, icon: <UserCog />, tone: 'accent' as const },
             ].filter((x): x is Exclude<typeof x, false> => !!x).map((s) => (

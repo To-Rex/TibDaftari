@@ -20,7 +20,7 @@ export const ru: DeepPartial<Dictionary> = {
     leaveConfirm: 'Несохранённые изменения будут потеряны. Выйти?', more: 'Ещё', less: 'Меньше', select: 'Выберите', notSet: '—',
   },
   org: {
-    level: { country: 'Страна', region: 'Область', district: 'Район / город', facility: 'Учреждение' },
+    level: { company: 'Компания', country: 'Страна', region: 'Область', district: 'Район / город', facility: 'Учреждение' },
     kind: { ses: 'СЭС', clinic: 'Клиника', laboratory: 'Лаборатория', polyclinic: 'Поликлиника', hospital: 'Больница', pharmacy: 'Аптека', other: 'Другое' },
     inactive: 'Неактивно', pickFacility: 'Выберите учреждение', allUnits: 'Все подразделения',
     country: 'Страна', region: 'Область / город', district: 'Район / город', noDistricts: 'Районов нет',
@@ -32,7 +32,7 @@ export const ru: DeepPartial<Dictionary> = {
       recent: 'Недавние', noResults: 'Ничего не найдено',
       more: 'Ещё {{count}} — уточните запрос', facilities: '{{count}} учр.',
       empty: 'Здесь пока нет подразделений',
-      levelPlural: { country: 'Страны', region: 'Области', district: 'Районы / города', facility: 'Учреждения' },
+      levelPlural: { company: 'Компании', country: 'Страны', region: 'Области', district: 'Районы / города', facility: 'Учреждения' },
       rowHint: 'Клик — открыть · ✓ или двойной клик — выбрать',
       pickHint: 'Выберите подразделение из списка', ghostHint: 'Выберите в списке слева',
       current: 'Текущее', close: 'Закрыть',

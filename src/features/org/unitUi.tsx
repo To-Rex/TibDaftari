@@ -1,18 +1,18 @@
 /**
- * Shared visual vocabulary of the organisation tree: one icon per level (Davlat → Viloyat → Tuman → Muassasa),
+ * Shared visual vocabulary of the organisation tree: one icon per level (Kompaniya → Davlat → Viloyat → Tuman → Muassasa),
  * one per facility kind, and the translated level / kind labels. Every unit list, picker and card draws from here
  * so a region looks the same in the switcher, the tree and the breadcrumb.
  */
 import type { ComponentType, SVGProps } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Building2, Earth, FlaskConical, Hospital, Map as MapIcon, MapPin, Pill, ShieldPlus, Stethoscope, BedDouble } from 'lucide-react'
+import { BriefcaseBusiness, Building2, Earth, FlaskConical, Hospital, Map as MapIcon, MapPin, Pill, ShieldPlus, Stethoscope, BedDouble } from 'lucide-react'
 import type { FacilityKind, OrgUnit, UnitLevel } from '@/domain'
 import { cn } from '@/shared/lib/cn'
 import { Badge, type Tone } from '@/shared/ui'
 
 type Icon = ComponentType<SVGProps<SVGSVGElement>>
 
-export const LEVEL_ICONS: Record<UnitLevel, Icon> = { country: Earth, region: MapIcon, district: MapPin, facility: Hospital }
+export const LEVEL_ICONS: Record<UnitLevel, Icon> = { company: BriefcaseBusiness, country: Earth, region: MapIcon, district: MapPin, facility: Hospital }
 export const KIND_ICONS: Record<FacilityKind, Icon> = {
   ses: ShieldPlus,
   clinic: Stethoscope,
@@ -22,7 +22,7 @@ export const KIND_ICONS: Record<FacilityKind, Icon> = {
   pharmacy: Pill,
   other: Building2,
 }
-export const LEVEL_TONES: Record<UnitLevel, Tone> = { country: 'accent', region: 'brand', district: 'info', facility: 'ok' }
+export const LEVEL_TONES: Record<UnitLevel, Tone> = { company: 'warn', country: 'accent', region: 'brand', district: 'info', facility: 'ok' }
 
 /** The icon of a unit: its facility kind when it is one, else its level. */
 export function UnitIcon({ unit, className }: { unit: Pick<OrgUnit, 'level' | 'kind'>; className?: string }) {

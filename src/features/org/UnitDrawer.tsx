@@ -1,7 +1,8 @@
 /**
- * Create a unit under a parent — the level follows from the parent (country → region → district → facility):
- * a region node picks a Region, a district node a District, a facility needs its kind and cheque code. Without a
- * parent a country node is created (platform only). The same drawer edits an existing unit's profile.
+ * Create a unit under a parent — the level follows from the parent (company → country → region → district →
+ * facility): a country node picks a Country, a region node a Region, a district node a District, a facility needs
+ * its kind and cheque code. Without a parent a company is created (platform only). The same drawer edits an existing
+ * unit's profile.
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
@@ -9,7 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useTranslation } from 'react-i18next'
 import type { FacilityKind, Id, OrgUnit, UnitLevel } from '@/domain'
-import { CHILD_LEVEL, FACILITY_KINDS } from '@/domain'
+import { CHILD_LEVEL, FACILITY_KINDS, ROOT_LEVEL } from '@/domain'
 import { ApiError } from '@/data'
 import { useCountries, useDistricts, useRegions } from '@/features/patients/queries'
 import { formKeyDown } from '@/features/patients/formKeys'
@@ -45,7 +46,7 @@ export const orderNumberExample = (code: string) => `${code || 'XX'}-000001`
 export function UnitDrawer({ open, onClose, parent, parents, unit, units, onSaved }: {
   open: boolean
   onClose: () => void
-  /** create mode: the unit the new one goes under (null = a country node, platform only) */
+  /** create mode: the unit the new one goes under (null = a company — the root, platform only) */
   parent?: OrgUnit | null
   /** create mode: when given, the parent can be changed with a picker among these */
   parents?: OrgUnit[]
@@ -63,16 +64,17 @@ export function UnitDrawer({ open, onClose, parent, parents, unit, units, onSave
   const [parentId, setParentId] = useState<Id | null>(parent?.id ?? null)
   useEffect(() => { if (open) setParentId(parent?.id ?? null) }, [open, parent])
   const curParent = useMemo(() => (parents?.find((p) => p.id === parentId) ?? (parent && parent.id === parentId ? parent : null)) ?? null, [parents, parent, parentId])
-  const level: UnitLevel | null = isEdit ? unit.level : curParent ? CHILD_LEVEL[curParent.level] : 'country'
+  const level: UnitLevel | null = isEdit ? unit.level : curParent ? CHILD_LEVEL[curParent.level] : ROOT_LEVEL
   const canPickParent = !isEdit && !!parents && parents.length > 1
+  const newCountry = !isEdit && level === 'country'
 
   const countries = useCountries()
-  const regions = useRegions(curParent?.countryId, { enabled: open && level === 'region' && !!curParent })
+  const regions = useRegions(curParent?.countryId ?? undefined, { enabled: open && level === 'region' && !!curParent?.countryId })
   const districts = useDistricts(curParent?.regionId ?? undefined, { enabled: open && level === 'district' && !!curParent?.regionId })
-  // what the parent already has under it: a region / district node can exist only once per parent
+  // what the parent already has under it: a country / region / district node can exist only once per parent
   const taken = useMemo(() => {
     const kids = (units ?? []).filter((u) => u.parentId === curParent?.id)
-    return { regions: new Set(kids.map((u) => u.regionId)), districts: new Set(kids.map((u) => u.districtId)) }
+    return { countries: new Set(kids.map((u) => u.countryId)), regions: new Set(kids.map((u) => u.regionId)), districts: new Set(kids.map((u) => u.districtId)) }
   }, [units, curParent])
 
   const defaults = useMemo<Values>(() => ({
@@ -97,11 +99,12 @@ export function UnitDrawer({ open, onClose, parent, parents, unit, units, onSave
   const submit = handleSubmit(async (v) => {
     clearErrors()
     if (!level) return
-    if (level === 'country' && !v.countryId) return setError('countryId', { message: 'required' })
+    if (level === 'country' && !isEdit && !v.countryId) return setError('countryId', { message: 'required' })
     if (level === 'region' && !isEdit && !v.regionId) return setError('regionId', { message: 'required' })
     if (level === 'district' && !isEdit && !v.districtId) return setError('districtId', { message: 'required' })
     if (level === 'facility' && !v.code) return setError('code', { message: 'required' })
-    const common = { name: v.name, shortName: v.shortName || undefined, legalName: v.legalName || undefined, phone: v.phone || undefined, email: v.email || undefined, address: v.address || undefined, timezone: v.timezone, isActive: v.isActive }
+    // a new country node takes its country's own timezone (the server fills it) — there is nothing to choose
+    const common = { name: v.name, shortName: v.shortName || undefined, legalName: v.legalName || undefined, phone: v.phone || undefined, email: v.email || undefined, address: v.address || undefined, timezone: newCountry ? undefined : v.timezone, isActive: v.isActive }
     try {
       let saved: OrgUnit
       if (isEdit) {
@@ -125,7 +128,8 @@ export function UnitDrawer({ open, onClose, parent, parents, unit, units, onSave
       onSaved?.(saved)
       onClose()
     } catch (e) {
-      if (e instanceof ApiError && e.status === 409 && level === 'facility') setError('code', { message: 'taken' })
+      if (e instanceof ApiError && e.status === 409 && e.code === 'company_exists') setError('name', { message: 'taken' })
+      else if (e instanceof ApiError && e.status === 409 && level === 'facility') setError('code', { message: 'taken' })
       else toast.error(errorMessage(e))
     }
   })
@@ -142,7 +146,7 @@ export function UnitDrawer({ open, onClose, parent, parents, unit, units, onSave
         {!isEdit && (
           <Field label={t('admin.units.parent')} hint={canPickParent ? t('admin.units.parentHint') : undefined}>
             {() => canPickParent
-              ? <UnitPicker units={parents!} value={parentId} onChange={setParentId} levels={['country', 'region', 'district']} data-testid="unit-parent" />
+              ? <UnitPicker units={parents!} value={parentId} onChange={setParentId} levels={['company', 'country', 'region', 'district']} data-testid="unit-parent" />
               : curParent
                 ? <div className="flex min-h-10 items-center gap-2 rounded-[var(--radius-sm)] border border-dashed border-line bg-surface-2/60 px-3 text-[14px]"><UnitIcon unit={curParent} className="text-brand" /><span className="truncate">{curParent.name}</span><Badge size="sm" className="ml-auto">{labels.level(curParent.level)}</Badge></div>
                 : <div className="flex min-h-10 items-center rounded-[var(--radius-sm)] border border-dashed border-line bg-surface-2/60 px-3 text-[13.5px] text-ink-3">{t('admin.units.rootHint')}</div>}
@@ -152,12 +156,12 @@ export function UnitDrawer({ open, onClose, parent, parents, unit, units, onSave
 
         {/* geo pick for the three upper levels (create only — the geo of a node is fixed) */}
         {!isEdit && level === 'country' && (
-          <Field label={t('org.country')} required error={errors.countryId && t('common.required')}>
+          <Field label={t('org.country')} required error={errors.countryId && t('common.required')} hint={t('admin.units.countryHint')}>
             {(id) => (
               <Controller control={control} name="countryId" render={({ field }) => (
-                <Select id={id} value={field.value} invalid={!!errors.countryId} onChange={(e) => { field.onChange(e.target.value); const c = countries.data?.find((x) => x.id === e.target.value); if (c) propose(countryLabel(c)) }}>
+                <Select id={id} value={field.value} invalid={!!errors.countryId} disabled={countries.isLoading} onChange={(e) => { field.onChange(e.target.value); const c = countries.data?.find((x) => x.id === e.target.value); if (c) propose(countryLabel(c)) }} data-unit-country>
                   <option value="">{t('admin.units.pickCountry')}</option>
-                  {countries.data?.map((c) => <option key={c.id} value={c.id}>{countryLabel(c)}</option>)}
+                  {countries.data?.map((c) => <option key={c.id} value={c.id} disabled={taken.countries.has(c.id)}>{countryLabel(c)}{taken.countries.has(c.id) ? ` — ${t('admin.units.alreadyAdded')}` : ''}</option>)}
                 </Select>
               )} />
             )}
@@ -200,7 +204,7 @@ export function UnitDrawer({ open, onClose, parent, parents, unit, units, onSave
           </Field>
         )}
 
-        <Field label={t('admin.unit.name')} required error={errors.name && t('common.required')}>
+        <Field label={level === 'company' ? t('admin.units.companyName') : t('admin.unit.name')} required error={errors.name && (errors.name.message === 'taken' ? t('admin.units.companyTaken') : t('common.required'))} hint={level === 'company' && !isEdit ? t('admin.units.companyHint') : undefined}>
           {(id) => <Input id={id} autoFocus={isEdit} {...register('name', { onChange: () => { autoName.current = '' } })} invalid={!!errors.name} />}
         </Field>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -238,7 +242,7 @@ export function UnitDrawer({ open, onClose, parent, parents, unit, units, onSave
         <Field label={t('admin.unit.address')} optionalText={t('common.optional')}>
           {(id) => <Textarea id={id} rows={2} {...register('address')} />}
         </Field>
-        <Field label={t('admin.unit.timezone')}>
+        {!newCountry && <Field label={t('admin.unit.timezone')}>
           {(id) => (
             <Controller control={control} name="timezone" render={({ field }) => (
               <Select id={id} value={field.value} onChange={(e) => field.onChange(e.target.value)}>
@@ -246,7 +250,7 @@ export function UnitDrawer({ open, onClose, parent, parents, unit, units, onSave
               </Select>
             )} />
           )}
-        </Field>
+        </Field>}
         <Controller control={control} name="isActive" render={({ field }) => (
           <Switch checked={field.value} onChange={field.onChange} label={t('admin.unit.isActive')} description={t('admin.unit.isActiveHint')} />
         )} />

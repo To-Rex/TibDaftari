@@ -1,15 +1,22 @@
 /**
- * The organisation tree — Davlat → Viloyat → Tuman/Shahar → Muassasa(lar).
- * There is no company and no branch: one `OrgUnit` type for every level. A facility (`level: 'facility'`) is
+ * The organisation tree — Kompaniya → Davlat → Viloyat → Tuman/Shahar → Muassasa(lar).
+ * One `OrgUnit` type for every level. A company (`level: 'company'`) is the root: it has no territory, works in any
+ * number of countries and never shares patients or staff with another company. A facility (`level: 'facility'`) is
  * where cheques are written; the levels above group facilities and carry settings, SMS accounts and texts that
  * are inherited downwards (the nearest level wins). Wire contract: TibDaftari-Backend `app/modules/units`.
  */
 import type { AuditStamp, Id, Locale } from './common'
 import type { PermissionOverrides } from './access/permissions'
 
-export type UnitLevel = 'country' | 'region' | 'district' | 'facility'
-export const UNIT_LEVELS: UnitLevel[] = ['country', 'region', 'district', 'facility']
-export const CHILD_LEVEL: Record<UnitLevel, UnitLevel | null> = { country: 'region', region: 'district', district: 'facility', facility: null }
+export type UnitLevel = 'company' | 'country' | 'region' | 'district' | 'facility'
+export const UNIT_LEVELS: UnitLevel[] = ['company', 'country', 'region', 'district', 'facility']
+/** the root of the tree: a company — countries hang under it */
+export const ROOT_LEVEL: UnitLevel = 'company'
+export const CHILD_LEVEL: Record<UnitLevel, UnitLevel | null> = { company: 'country', country: 'region', region: 'district', district: 'facility', facility: null }
+/** how deep a level sits (0 = the company) — "is A above B" without walking the tree */
+export const LEVEL_DEPTH: Record<UnitLevel, number> = { company: 0, country: 1, region: 2, district: 3, facility: 4 }
+/** `level` is `than` or sits above it (a company is at-or-above everything) */
+export const levelAtOrAbove = (level: UnitLevel, than: UnitLevel): boolean => LEVEL_DEPTH[level] <= LEVEL_DEPTH[than]
 
 export type FacilityKind = 'ses' | 'clinic' | 'laboratory' | 'polyclinic' | 'hospital' | 'pharmacy' | 'other'
 export const FACILITY_KINDS: FacilityKind[] = ['ses', 'clinic', 'laboratory', 'polyclinic', 'hospital', 'pharmacy', 'other']
@@ -25,6 +32,8 @@ export type SmsTemplateKind = 'payment_receipt' | 'result_ready' | 'reminder'
 export type SmsTemplateOverrides = Partial<Record<SmsTemplateKind, string>>
 
 export interface UnitCounts {
+  /** country nodes under the unit (a company's countries) */
+  countries?: number
   regions: number
   districts: number
   facilities: number
@@ -96,7 +105,11 @@ export interface OrgUnit extends AuditStamp {
   /** facilities only */
   kind?: FacilityKind | null
   parentId: Id | null
-  countryId: Id
+  /** the company the unit belongs to (a company node: itself) */
+  companyId?: Id | null
+  companyName?: string | null
+  /** null for a company node — it spans countries */
+  countryId: Id | null
   regionId: Id | null
   districtId: Id | null
   countryName?: string | null
@@ -114,9 +127,9 @@ export interface OrgUnit extends AuditStamp {
   logoUrl?: string | null
   isActive: boolean
   sortOrder: number
-  /** 0 = country node */
+  /** 0 = the company, 1 = a country node … 4 = a facility */
   depth: number
-  /** "O‘zbekiston Respublikasi › Xorazm viloyati › Bog‘ot tumani › Bog‘ot tumani SES" */
+  /** "TibDaftari › O‘zbekiston Respublikasi › Xorazm viloyati › Bog‘ot tumani › Bog‘ot tumani SES" */
   path: string
   settings: UnitSettings
   /** present on the full card (`GET /units/{id}`), absent in the tree */
@@ -185,7 +198,8 @@ export interface QuickStartResult {
   receipt: { id: Id; name: string; status: string } | null
 }
 
-/** A child of `parentId` (its level follows from the parent); without a parent a country node (platform only). */
+/** A child of `parentId` (its level follows from the parent); without a parent a company (platform only). A country
+ *  node hangs under a company and names its country (`countryId`). */
 export interface UnitCreateInput {
   parentId?: Id | null
   countryId?: Id

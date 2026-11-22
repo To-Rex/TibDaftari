@@ -116,7 +116,7 @@ export default function AdminDashboardPage() {
         {[
           u?.level === 'facility'
             ? { label: t('admin.dashboard.facility'), value: u ? (u.isActive ? t('common.active') : t('common.inactive')) : undefined, sub: u?.code ?? undefined, icon: <Hospital />, tone: 'brand' as const }
-            : { label: t('admin.dashboard.facilities'), value: u ? fmtNumber(u.counts.facilities) : undefined, sub: u && u.level !== 'district' ? t('admin.dashboard.districtsCount', { count: u.counts.districts }) : undefined, icon: <Hospital />, tone: 'brand' as const },
+            : { label: t('admin.dashboard.facilities'), value: u ? fmtNumber(u.counts.facilities) : undefined, sub: u && u.level === 'company' && (u.counts.countries ?? 0) > 1 ? t('admin.dashboard.countriesCount', { count: u.counts.countries ?? 0 }) : u && u.level !== 'district' ? t('admin.dashboard.districtsCount', { count: u.counts.districts }) : undefined, icon: <Hospital />, tone: 'brand' as const },
           { label: t('admin.dashboard.employees'), value: u ? fmtNumber(u.counts.employees) : undefined, sub: o && u ? t('admin.dashboard.ofTotal', { active: o.activeEmployees, total: u.counts.employees }) : undefined, icon: <UserCog />, tone: 'info' as const },
           { label: t('admin.dashboard.serviceTypes'), value: o ? fmtNumber(o.serviceTypes.length) : undefined, sub: o && t('admin.dashboard.ofTotal', { active: activeSt, total: o.serviceTypes.length }), icon: <ListChecks />, tone: 'accent' as const },
           { label: t('admin.dashboard.activeTemplates'), value: o ? fmtNumber(activeTpl) : undefined, sub: o && t('admin.dashboard.ofTotal', { active: activeTpl, total: o.templates.length }), icon: <LayoutTemplate />, tone: 'ok' as const },

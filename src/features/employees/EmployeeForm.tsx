@@ -44,7 +44,7 @@ const schema = z
 type Values = z.infer<typeof schema>
 
 /** where an installer may be homed / which extra units they may get (the API enforces the same) */
-const INSTALLER_HOME_LEVELS: UnitLevel[] = ['country', 'region']
+const INSTALLER_HOME_LEVELS: UnitLevel[] = ['company', 'country', 'region']
 const INSTALLER_EXTRA_LEVELS: UnitLevel[] = ['region']
 
 /** Flatten a category tree into depth-annotated rows (parents first). */

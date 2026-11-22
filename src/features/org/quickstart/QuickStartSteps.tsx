@@ -15,7 +15,7 @@ import { UnitPicker } from '../UnitPicker'
 import { UnitIcon, useUnitLabels } from '../unitUi'
 import { QUICK_START_ROLES, proposeCode, type Draft } from './draft'
 
-type ParentLevel = Exclude<UnitLevel, 'facility'>
+type ParentLevel = Exclude<UnitLevel, 'facility' | 'company'>
 type Patch = (fn: (d: Draft) => Draft) => void
 const PARENT_LEVELS: UnitLevel[] = ['country', 'region', 'district']
 
@@ -24,8 +24,8 @@ const PARENT_LEVELS: UnitLevel[] = ['country', 'region', 'district']
 export function LocationStep({ draft, patch, parent, parents, units, problem }: { draft: Draft; patch: Patch; parent: OrgUnit | null; parents: OrgUnit[]; units: OrgUnit[]; problem: string | null }) {
   const { t } = useTranslation()
   const labels = useUnitLabels()
-  const level = (parent?.level ?? null) as ParentLevel | null
-  const regions = useRegions(parent?.countryId, { enabled: level === 'country' })
+  const level = (parent && parent.level !== 'company' ? parent.level : null) as ParentLevel | null
+  const regions = useRegions(parent?.countryId ?? undefined, { enabled: level === 'country' })
   const regionGeoId = level === 'country' ? draft.regionId : parent?.regionId ?? undefined
   const districts = useDistricts(regionGeoId || undefined, { enabled: !!regionGeoId && level !== 'district' })
   // existing nodes for the chosen geo — a region / district node exists at most once per parent
@@ -51,7 +51,7 @@ export function LocationStep({ draft, patch, parent, parents, units, problem }: 
     <div className="flex flex-col gap-4" data-qs-step="location">
       <Field label={t('admin.quickStart.parent')} hint={t('admin.quickStart.parentHint')} error={problem === 'parent' && t('common.required')}>
         {() => parents.length > 1
-          ? <UnitPicker units={parents} value={draft.parentId} onChange={(id) => patch((d) => ({ ...d, parentId: id, regionId: '', districtId: '' }))} levels={PARENT_LEVELS} data-testid="qs-parent" />
+          ? <UnitPicker units={parents} value={draft.parentId} onChange={(id) => patch((d) => ({ ...d, parentId: id, regionId: '', districtId: '' }))} levels={PARENT_LEVELS} placeholder={t('admin.quickStart.pickParent')} data-testid="qs-parent" />
           : parent && <div className="flex min-h-10 items-center gap-2 rounded-[var(--radius-sm)] border border-dashed border-line bg-surface-2/60 px-3 text-[14px]"><UnitIcon unit={parent} className="text-brand" /><span className="truncate">{parent.name}</span><Badge size="sm" className="ml-auto">{labels.level(parent.level)}</Badge></div>}
       </Field>
 

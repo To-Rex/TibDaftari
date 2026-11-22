@@ -19,7 +19,7 @@ export const en: DeepPartial<Dictionary> = {
     days: 'days', seeAll: 'See all', new: 'New', unsaved: 'You have unsaved changes', leaveConfirm: 'Unsaved changes will be lost. Leave?', more: 'More', less: 'Less', select: 'Select', notSet: '—',
   },
   org: {
-    level: { country: 'Country', region: 'Region', district: 'District / city', facility: 'Facility' },
+    level: { company: 'Company', country: 'Country', region: 'Region', district: 'District / city', facility: 'Facility' },
     kind: { ses: 'SES', clinic: 'Clinic', laboratory: 'Laboratory', polyclinic: 'Polyclinic', hospital: 'Hospital', pharmacy: 'Pharmacy', other: 'Other' },
     inactive: 'Inactive', pickFacility: 'Pick a facility', allUnits: 'All units',
     country: 'Country', region: 'Region / city', district: 'District / city', noDistricts: 'No districts',
@@ -31,7 +31,7 @@ export const en: DeepPartial<Dictionary> = {
       recent: 'Recent', noResults: 'Nothing found',
       more: '{{count}} more — refine the search', facilities: '{{count}} facilities',
       empty: 'No units here yet',
-      levelPlural: { country: 'Countries', region: 'Regions', district: 'Districts / cities', facility: 'Facilities' },
+      levelPlural: { company: 'Companies', country: 'Countries', region: 'Regions', district: 'Districts / cities', facility: 'Facilities' },
       rowHint: 'Click — open · ✓ or double-click — select',
       pickHint: 'Pick a unit from the list', ghostHint: 'Pick from the list on the left',
       current: 'Current', close: 'Close',

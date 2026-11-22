@@ -1,14 +1,14 @@
 /**
- * Davlatlar — the roots of the organisation tree: one country node per country where the system is live, with what
- * sits under each (viloyatlar, tumanlar, muassasalar, xodimlar), "Ochish" to administer it, and a new country node.
- * Superadmin only (`platform.unit.manage`).
+ * Davlatlar — the country nodes of every company: one node per country a company works in, with what sits under
+ * each (viloyatlar, tumanlar, muassasalar, xodimlar), "Ochish" to administer it, and a new country node under a
+ * chosen company. Superadmin only (`platform.unit.manage`).
  */
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { FolderOpen, Globe2 } from 'lucide-react'
-import type { Country, Id, OrgUnit } from '@/domain'
-import { useAuth } from '@/features/auth/store'
+import type { Country, OrgUnit } from '@/domain'
+import { useAdminScope, useAuth } from '@/features/auth/store'
 import { countryLabel } from '@/features/org/LocationFields'
 import { useCreateUnit, useUnitTree, useUnitTreeShape } from '@/features/org/queries'
 import { useCountries } from '@/features/patients/queries'
@@ -24,12 +24,17 @@ export function CountriesView({ createOpen, onCreateClose }: { createOpen: boole
   const tree = useUnitTree()
   const shape = useUnitTreeShape(tree.data)
   const countries = useCountries()
-  const roots = useMemo(() => shape.roots.filter((u) => u.level === 'country'), [shape])
+  const { scopeId } = useAdminScope()
+  // every country node of the tree, company by company (tree order)
+  const roots = useMemo(() => shape.flat.filter((u) => u.level === 'country'), [shape])
+  const companies = useMemo(() => shape.roots.filter((u) => u.level === 'company'), [shape])
+  // the company a new node is proposed for: the one being administered
+  const scopeCompanyId = shape.byId.get(scopeId)?.companyId ?? undefined
   const countryOf = (u: OrgUnit) => countries.data?.find((c) => c.id === u.countryId)
   const open = (u: OrgUnit) => { setScopeUnit(u.id); toast.success(t('admin.platform.switched', { name: u.name })); nav(routes.admin.root) }
 
   const count = (k: keyof OrgUnit['counts'], header: string, hideBelow?: 'sm' | 'md' | 'lg'): Column<OrgUnit> =>
-    ({ key: k, header, align: 'right', hideBelow, card: 'field', cell: (u) => <span className="tabular">{fmtNumber(u.counts[k])}</span> })
+    ({ key: k, header, align: 'right', hideBelow, card: 'field', cell: (u) => <span className="tabular">{fmtNumber(u.counts[k] ?? 0)}</span> })
   const columns: Column<OrgUnit>[] = [
     { key: 'name', header: t('admin.platform.countries.colCountry'), card: 'title', cell: (u) => {
       const c = countryOf(u)
@@ -38,7 +43,7 @@ export function CountriesView({ createOpen, onCreateClose }: { createOpen: boole
           <Avatar name={u.name} src={u.logoUrl ?? undefined} size="sm" className="rounded-lg" />
           <div className="min-w-0">
             <p className="truncate font-medium">{u.name}</p>
-            <p className="truncate text-[12px] text-ink-3">{c ? `${countryLabel(c)} · ${c.code}` : u.shortName ?? ''}</p>
+            <p className="truncate text-[12px] text-ink-3">{[companies.length > 1 ? u.companyName : null, c ? `${countryLabel(c)} · ${c.code}` : u.shortName].filter(Boolean).join(' · ')}</p>
           </div>
         </div>
       )
@@ -50,7 +55,7 @@ export function CountriesView({ createOpen, onCreateClose }: { createOpen: boole
     { key: 'isActive', header: t('admin.platform.countries.colStatus'), card: 'meta', cell: (u) => <Badge tone={u.isActive ? 'ok' : 'neutral'} dot>{u.isActive ? t('admin.platform.active') : t('admin.platform.inactive')}</Badge> },
     { key: 'actions', header: '', align: 'right', card: 'actions', cell: (u) => (
       <span onClick={(e) => e.stopPropagation()}>
-        <Button size="xs" variant="soft" leftIcon={<FolderOpen className="size-3.5" />} onClick={() => open(u)} data-country-open={u.countryId}>{t('admin.platform.open')}</Button>
+        <Button size="xs" variant="soft" leftIcon={<FolderOpen className="size-3.5" />} onClick={() => open(u)} data-country-open={u.countryId ?? u.id}>{t('admin.platform.open')}</Button>
       </span>
     ) },
   ]
@@ -67,18 +72,20 @@ export function CountriesView({ createOpen, onCreateClose }: { createOpen: boole
             empty={<EmptyState icon={<Globe2 />} title={t('admin.platform.countries.empty')} description={t('admin.platform.countries.emptyHint')} />} />
         </div>
       </Card>
-      <CountryNodeModal open={createOpen} onClose={onCreateClose} countries={countries.data ?? []} taken={new Set(roots.map((r) => r.countryId))} />
+      <CountryNodeModal open={createOpen} onClose={onCreateClose} countries={countries.data ?? []} companies={companies} nodes={roots} defaultCompanyId={scopeCompanyId} />
     </>
   )
 }
 
-/** A new root: the country (only where the system is live and no root exists yet) and the node's name. */
-function CountryNodeModal({ open, onClose, countries, taken }: { open: boolean; onClose: () => void; countries: Country[]; taken: Set<Id> }) {
+/** A new country node: the company it goes under, the country (one node per country in a company) and its name. */
+function CountryNodeModal({ open, onClose, countries, companies, nodes, defaultCompanyId }: { open: boolean; onClose: () => void; countries: Country[]; companies: OrgUnit[]; nodes: OrgUnit[]; defaultCompanyId?: string }) {
   const { t } = useTranslation()
   const create = useCreateUnit()
-  const enabled = countries.filter((c) => c.isEnabled)
-  // countries where the system is live (every country while none is flagged), never one that already has a root
-  const options = (enabled.length ? enabled : countries).filter((c) => !taken.has(c.id))
+  const [companyPick, setCompanyPick] = useState('')
+  const companyId = companies.some((c) => c.id === companyPick) ? companyPick : companies.some((c) => c.id === defaultCompanyId) ? defaultCompanyId! : (companies[0]?.id ?? '')
+  // every country of the reference, never one the company already has a node for
+  const taken = new Set(nodes.filter((n) => n.parentId === companyId).map((n) => n.countryId))
+  const options = countries.filter((c) => !taken.has(c.id))
   const [countryId, setCountryId] = useState('')
   const [name, setName] = useState('')
   const [shortName, setShortName] = useState('')
@@ -87,15 +94,15 @@ function CountryNodeModal({ open, onClose, countries, taken }: { open: boolean; 
   const country = options.find((c) => c.id === selected)
   // the node is named after the country unless typed otherwise
   const effectiveName = name.trim() || (country ? countryLabel(country) : '')
-  const invalid = !selected || !effectiveName
+  const invalid = !companyId || !selected || !effectiveName
 
-  const reset = () => { setCountryId(''); setName(''); setShortName(''); setTouched(false) }
+  const reset = () => { setCompanyPick(''); setCountryId(''); setName(''); setShortName(''); setTouched(false) }
   const close = () => { reset(); onClose() }
   const submit = async () => {
     setTouched(true)
     if (invalid) return
     try {
-      const u = await create.mutateAsync({ countryId: selected, name: effectiveName, shortName: shortName.trim() || undefined })
+      const u = await create.mutateAsync({ parentId: companyId, countryId: selected, name: effectiveName, shortName: shortName.trim() || undefined, code: country?.code })
       toast.success(t('admin.platform.countries.created', { name: u.name }))
       close()
     } catch (e) {
@@ -109,13 +116,23 @@ function CountryNodeModal({ open, onClose, countries, taken }: { open: boolean; 
         <Button variant="ghost" onClick={close}>{t('common.cancel')}</Button>
         <Button loading={create.isPending} disabled={!options.length || (touched && invalid)} onClick={() => void submit()} data-country-create>{t('common.create')}</Button>
       </>}>
-      {options.length === 0 ? (
-        <p className="text-[13.5px] text-ink-2" data-country-all-taken>{t('admin.platform.countries.allTaken')}</p>
+      {companies.length === 0 ? (
+        <p className="text-[13.5px] text-ink-2" data-country-no-company>{t('admin.platform.countries.noCompany')}</p>
       ) : (
         <form className="flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); void submit() }}>
+          {companies.length > 1 && (
+            <Field label={t('admin.platform.countries.company')} required>
+              {(id) => (
+                <Select id={id} value={companyId} onChange={(e) => { setCompanyPick(e.target.value); setCountryId('') }} data-country-company>
+                  {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </Select>
+              )}
+            </Field>
+          )}
+          {options.length === 0 && <p className="text-[13.5px] text-ink-2" data-country-all-taken>{t('admin.platform.countries.allTaken')}</p>}
           <Field label={t('admin.platform.countries.country')} hint={t('admin.platform.countries.countryHint')} required>
             {(id) => (
-              <Select id={id} value={selected} onChange={(e) => setCountryId(e.target.value)} data-country-select>
+              <Select id={id} value={selected} disabled={!options.length} onChange={(e) => setCountryId(e.target.value)} data-country-select>
                 {options.map((c) => <option key={c.id} value={c.id}>{countryLabel(c)} ({c.code})</option>)}
               </Select>
             )}

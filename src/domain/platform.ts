@@ -1,12 +1,12 @@
 /**
- * Territory statistics: activity of the organisation tree folded by country → region → district → facility.
- * Numbers only, nothing personal. The superadmin sees every country; an administrator sees the subtree of their
+ * Territory statistics: activity of the organisation tree folded by country → region → district → facility — or by
+ * company. Numbers only, nothing personal. The superadmin sees every company; an administrator sees the subtree of their
  * own unit (`unitId`). Wire contract: TibDaftari-Backend `app/modules/platform`.
  */
 import type { Id, Money } from './common'
 
 /** The level the rows are grouped at. */
-export type RegionGroupBy = 'country' | 'region' | 'district' | 'unit'
+export type RegionGroupBy = 'company' | 'country' | 'region' | 'district' | 'unit'
 
 export interface TerritoryScope {
   countryId?: Id
@@ -17,6 +17,8 @@ export interface TerritoryScope {
 export interface RegionStatsQuery extends TerritoryScope {
   dateFrom: string
   dateTo: string
+  /** one company (its node id): the facilities of that company only */
+  companyId?: Id
   /** fold under this unit only (an administrator's own subtree); superadmin may omit it */
   unitId?: Id
   /** omitted = one level below the narrowest filter (nothing / country → region, region → district, district → unit) */
@@ -45,7 +47,8 @@ export interface UnitRow extends UnitMetrics {
   name: string
   /** the level above: a district's region, a region's country, a facility's district */
   parentName?: string | null
-  /** the live organisation node behind this territory (its country / region / district unit), or the facility itself */
+  /** the live organisation node behind this row: the company, the territory's country / region / district unit (when
+   *  one company is looked at), or the facility itself */
   unitId?: Id | null
   /** facilities only */
   code?: string | null

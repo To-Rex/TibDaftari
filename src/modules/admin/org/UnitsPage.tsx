@@ -1,14 +1,14 @@
 /**
- * The units under the administered one — viloyatlar, tumanlar, muassasalar — as a tree. Search, show / hide
- * inactive, add a unit under any node, switch a unit off, open its card. A superadmin with no tree yet creates the
- * first country node here.
+ * The units under the administered one — davlatlar, viloyatlar, tumanlar, muassasalar — as a tree. Search, show /
+ * hide inactive, add a unit under any node, switch a unit off, open its card. A superadmin with no tree yet creates
+ * the first company here (more companies: Platforma › Kompaniyalar).
  */
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Earth, Landmark, Pencil, Plus, Rocket } from 'lucide-react'
+import { BriefcaseBusiness, Landmark, Pencil, Plus, Rocket } from 'lucide-react'
 import type { OrgUnit } from '@/domain'
-import { CHILD_LEVEL, unitsUnder } from '@/domain'
+import { CHILD_LEVEL, levelAtOrAbove, unitsUnder } from '@/domain'
 import { useAdminScope, usePermissions } from '@/features/auth/store'
 import { useUnitTree, useUpdateUnit } from '@/features/org/queries'
 import { UnitDrawer } from '@/features/org/UnitDrawer'
@@ -57,8 +57,9 @@ export default function UnitsPage() {
   }
 
   const summary = scope && [
-    scope.level === 'country' && t('admin.units.nRegions', { count: scope.counts.regions }),
-    (scope.level === 'country' || scope.level === 'region') && t('admin.units.nDistricts', { count: scope.counts.districts }),
+    scope.level === 'company' && t('admin.units.nCountries', { count: scope.counts.countries ?? 0 }),
+    levelAtOrAbove(scope.level, 'country') && t('admin.units.nRegions', { count: scope.counts.regions }),
+    levelAtOrAbove(scope.level, 'region') && t('admin.units.nDistricts', { count: scope.counts.districts }),
     scope.level !== 'facility' && t('admin.units.nFacilities', { count: scope.counts.facilities }),
   ].filter(Boolean).join(' · ')
 
@@ -67,7 +68,7 @@ export default function UnitsPage() {
       <PageHeader title={t('admin.units.title')} description={t('admin.units.subtitle')}
         actions={canManage && scope && scope.level !== 'facility' && (
           <div className="flex flex-wrap items-center gap-2">
-            {canQuickStart && <Button variant="secondary" leftIcon={<Rocket className="size-4 text-brand" />} onClick={() => setQuick({ open: true, parent: scope })} data-quick-start>{t('admin.quickStart.open')}</Button>}
+            {canQuickStart && (scope.level !== 'company' || (scope.counts.countries ?? 0) > 0) && <Button variant="secondary" leftIcon={<Rocket className="size-4 text-brand" />} onClick={() => setQuick({ open: true, parent: scope })} data-quick-start>{t('admin.quickStart.open')}</Button>}
             <Button data-hotkey="n" leftIcon={<Plus className="size-4" />} onClick={() => openAdd(scope)}>{t('admin.units.add')}</Button>
           </div>
         )} />
@@ -76,8 +77,8 @@ export default function UnitsPage() {
         <Card padded={false} className="overflow-hidden"><div className="space-y-3 p-4">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-11" />)}</div></Card>
       ) : emptyTree ? (
         <Card>
-          <EmptyState icon={<Earth />} title={t('admin.units.emptyTree')} description={isSuperAdmin ? t('admin.units.emptyTreeHint') : t('common.emptyHint')}
-            action={isSuperAdmin && <Button leftIcon={<Plus className="size-4" />} onClick={() => openAdd(null)} data-add-country>{t('admin.units.addCountry')}</Button>} />
+          <EmptyState icon={<BriefcaseBusiness />} title={t('admin.units.emptyTree')} description={isSuperAdmin ? t('admin.units.emptyTreeHint') : t('common.emptyHint')}
+            action={isSuperAdmin && <Button leftIcon={<Plus className="size-4" />} onClick={() => openAdd(null)} data-add-company>{t('admin.units.addCompany')}</Button>} />
         </Card>
       ) : !scope ? (
         <Card><EmptyState icon={<Landmark />} title={t('admin.unit.notFound')} /></Card>
@@ -97,7 +98,7 @@ export default function UnitsPage() {
               renderActions={canManage ? (u) => (
                 <>
                   {u.id !== scopeId && <Switch size="sm" checked={u.isActive} onChange={(v) => void toggleActive(u, v)} ariaLabel={t('admin.units.toggleActive')} disabled={update.isPending} className="mr-1 max-sm:hidden" />}
-                  {canQuickStart && u.level !== 'facility' && u.isActive && <IconButton size="sm" label={t('admin.quickStart.open')} onClick={() => setQuick({ open: true, parent: u })} data-quick-start-row={u.id}><Rocket className="text-brand" /></IconButton>}
+                  {canQuickStart && u.level !== 'facility' && u.isActive && (u.level !== 'company' || (u.counts.countries ?? 0) > 0) && <IconButton size="sm" label={t('admin.quickStart.open')} onClick={() => setQuick({ open: true, parent: u })} data-quick-start-row={u.id}><Rocket className="text-brand" /></IconButton>}
                   {CHILD_LEVEL[u.level] && u.isActive && <IconButton size="sm" label={t('admin.units.addLevel', { level: labels.level(CHILD_LEVEL[u.level]!) })} onClick={() => openAdd(u)} data-add-child={u.id}><Plus /></IconButton>}
                   <IconButton size="sm" label={t('common.edit')} onClick={() => openEdit(u)} data-edit-unit={u.id}><Pencil /></IconButton>
                 </>

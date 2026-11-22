@@ -37,7 +37,14 @@ type ParentLevel = 'country' | 'region' | 'district'
 export function QuickStartDialog({ open, onClose, parent = null, parents, units, onDone }: QuickStartDialogProps) {
   const { t } = useTranslation()
   const nav = useNavigate()
-  const [draft, setDraft] = useState<Draft>(() => emptyDraft(parent?.id ?? null))
+  // a facility opens under a country, a region or a district: a company hands over to its country node — the only
+  // one at once, else the user picks one in the first step
+  const startId = useMemo(() => {
+    if (!parent || parent.level !== 'company') return parent?.id ?? null
+    const countries = parents.filter((p) => p.level === 'country' && p.parentId === parent.id)
+    return countries.length === 1 ? countries[0]!.id : null
+  }, [parent, parents])
+  const [draft, setDraft] = useState<Draft>(() => emptyDraft(startId))
   const [step, setStep] = useState<Step>('location')
   const [result, setResult] = useState<QuickStartResult | null>(null)
   const [showPassword, setShowPassword] = useState(false)
@@ -45,19 +52,19 @@ export function QuickStartDialog({ open, onClose, parent = null, parents, units,
   const run = useQuickStart()
 
   const reset = (keepParent = true) => {
-    setDraft(emptyDraft(keepParent ? (parent?.id ?? draft.parentId) : null))
+    setDraft(emptyDraft(keepParent ? (startId ?? draft.parentId) : null))
     setStep('location')
     setResult(null)
     setCodeTaken(false)
   }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { if (open) { setDraft(emptyDraft(parent?.id ?? null)); setStep('location'); setResult(null); setCodeTaken(false) } }, [open, parent?.id])
+  useEffect(() => { if (open) { setDraft(emptyDraft(startId)); setStep('location'); setResult(null); setCodeTaken(false) } }, [open, startId])
 
   const parentUnit = useMemo(() => parents.find((p) => p.id === draft.parentId) ?? (parent && parent.id === draft.parentId ? parent : null), [parents, parent, draft.parentId])
-  const level = (parentUnit?.level ?? null) as ParentLevel | null
+  const level = (parentUnit && parentUnit.level !== 'company' ? parentUnit.level : null) as ParentLevel | null
   const geo = { regionId: level === 'country' ? draft.regionId || undefined : undefined, districtId: level && level !== 'district' ? draft.districtId || undefined : undefined }
   const preview = useQuickStartPreview(draft.parentId, geo, open && !!level)
-  const regions = useRegions(parentUnit?.countryId, { enabled: open && level === 'country' })
+  const regions = useRegions(parentUnit?.countryId ?? undefined, { enabled: open && level === 'country' })
   const regionGeoId = level === 'country' ? draft.regionId : parentUnit?.regionId ?? undefined
   const districts = useDistricts(regionGeoId || undefined, { enabled: open && !!regionGeoId && level !== 'district' })
   const regionName = level === 'country' ? regions.data?.find((r) => r.id === draft.regionId)?.name : parentUnit?.level === 'region' ? parentUnit.name : parentUnit?.regionName ?? undefined

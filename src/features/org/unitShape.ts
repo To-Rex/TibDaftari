@@ -63,13 +63,14 @@ export function useUnitShape(units: OrgUnit[]): UnitShape {
 export function parentName(u: OrgUnit, shape: UnitShape): string | null {
   const p = u.parentId ? shape.byId.get(u.parentId) : undefined
   if (p) return p.name
+  if (u.level === 'country') return u.companyName ?? null
   if (u.level === 'region') return u.countryName ?? null
   if (u.level === 'district') return u.regionName ?? null
   if (u.level === 'facility') return u.districtName ?? u.regionName ?? null
   return null
 }
 
-/** "O‘zbekiston › Xorazm viloyati › Bog‘ot tumani" — where a unit sits, without the unit itself. */
+/** "TibDaftari › O‘zbekiston › Xorazm viloyati › Bog‘ot tumani" — where a unit sits, without the unit itself. */
 export function parentsPath(u: OrgUnit, shape: UnitShape): string {
   const anc = shape.ancestors(u.id)
   if (anc.length) return anc.map((a) => a.name).join(' › ')

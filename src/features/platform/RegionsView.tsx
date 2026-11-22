@@ -2,14 +2,15 @@
  * Hududlar — activity of the organisation tree folded by territory: country → region → district → facility. A row is
  * a territory (click it to go one level down; the breadcrumb and the browser's back button go up) or, at the last
  * level, a facility — "Ochish" scopes the admin panel to it. Numbers only: cheques, money, new patients, approved
- * results, SMS — never a patient. The superadmin sees every country; an administrator sees the subtree of their own
- * unit (`unitId`) with the levels above it fixed.
+ * results, SMS — never a patient. The superadmin sees every company (or one of them — the company filter) and every
+ * country; a company's people see their company across its countries; an administrator below sees the subtree of
+ * their own unit (`unitId`) with the levels above it fixed.
  */
 import { useMemo, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { ChevronRight, Download, FlaskConical, FolderOpen, Hospital, MessageSquare, Receipt, ShieldCheck, UserPlus, Wallet } from 'lucide-react'
-import type { RegionGroupBy, TerritoryScope, UnitLevel, UnitMetrics, UnitRow } from '@/domain'
+import type { Id, RegionGroupBy, TerritoryScope, UnitLevel, UnitMetrics, UnitRow } from '@/domain'
 import { useAdminScope, useAuth, usePermissions } from '@/features/auth/store'
 import { DateRangeFilter, initialRange, type RangeState } from '@/features/lab/DateRangeFilter'
 import { countryLabel } from '@/features/org/LocationFields'
@@ -20,7 +21,7 @@ import { downloadCsv } from '@/features/reports/csv'
 import { routes } from '@/shared/config/routes'
 import { cn } from '@/shared/lib/cn'
 import { fmtMoney, fmtNumber } from '@/shared/lib/format'
-import { Badge, Button, Card, CardHeader, DataTable, EmptyState, Segmented, Skeleton, Stat, toast, type Column, type Tone } from '@/shared/ui'
+import { Badge, Button, Card, CardHeader, DataTable, EmptyState, Segmented, Select, Skeleton, Stat, toast, type Column, type Tone } from '@/shared/ui'
 import { useRegionStats } from './queries'
 import { TerritoryFilter, type TerritoryLevel } from './TerritoryFilter'
 import { useTerritoryParams } from './territory'
@@ -28,7 +29,7 @@ import { useTerritoryParams } from './territory'
 type SortKey = 'name' | keyof UnitMetrics
 const METRIC_KEYS: (keyof UnitMetrics)[] = ['units', 'orders', 'revenue', 'patientsNew', 'resultsReady', 'smsSent']
 /** the selects an administrator still gets: the levels under their own unit */
-const FILTER_LEVELS: Record<UnitLevel, TerritoryLevel[]> = { country: ['region', 'district'], region: ['district'], district: [], facility: [] }
+const FILTER_LEVELS: Record<UnitLevel, TerritoryLevel[]> = { company: ['country', 'region', 'district'], country: ['region', 'district'], region: ['district'], district: [], facility: [] }
 
 export function RegionsView() {
   const { t } = useTranslation()
@@ -40,16 +41,23 @@ export function RegionsView() {
   const tree = useUnitTree()
   const shape = useUnitTreeShape(tree.data)
   const root = isSuperAdmin ? undefined : shape.byId.get(scopeId)
-  const { scope, setScope } = useTerritoryParams()
+  const { scope, setScope, setCompany } = useTerritoryParams()
   const countries = useCountries()
-  // the platform's own country unless another one, or every country, was picked
-  const home = countries.data?.find((c) => c.code === 'UZ')
-  const effective: TerritoryScope = isSuperAdmin
+  // the companies of the tree (superadmin): one of them can be looked at alone
+  const companies = useMemo(() => (isSuperAdmin ? shape.roots.filter((u) => u.level === 'company') : []), [isSuperAdmin, shape])
+  const company = isSuperAdmin ? companies.find((c) => c.id === scope.companyId) : root?.level === 'company' ? root : undefined
+  // a company's own countries (the country nodes under it)
+  const companyCountryIds = useMemo(() => (company ? shape.units.filter((u) => u.level === 'country' && u.parentId === company.id && u.countryId).map((u) => u.countryId as Id) : undefined), [company, shape])
+  // who looks across countries: the superadmin and a company's own people
+  const wide = isSuperAdmin || root?.level === 'company'
+  // the default country: a company's only one; for the whole platform its home country (every country is a pick away)
+  const home = company ? (companyCountryIds?.length === 1 ? companyCountryIds[0] : undefined) : isSuperAdmin ? countries.data?.find((c) => c.code === 'UZ')?.id : undefined
+  const effective: TerritoryScope = wide
     ? scope.countryId || scope.allCountries
       ? { countryId: scope.countryId, regionId: scope.regionId, districtId: scope.districtId }
-      : { countryId: home?.id, regionId: scope.regionId, districtId: scope.districtId }
-    : { countryId: root?.countryId, regionId: scope.regionId ?? root?.regionId ?? undefined, districtId: scope.districtId ?? root?.districtId ?? undefined }
-  const ready = isSuperAdmin ? scope.allCountries || !!effective.countryId : !!root
+      : { countryId: home, regionId: scope.regionId, districtId: scope.districtId }
+    : { countryId: root?.countryId ?? undefined, regionId: scope.regionId ?? root?.regionId ?? undefined, districtId: scope.districtId ?? root?.districtId ?? undefined }
+  const ready = isSuperAdmin ? scope.allCountries || !!effective.countryId || (!!company && tree.isSuccess) : !!root
   // one level below the narrowest territory: nothing / country → regions, region → districts, district → facilities
   const level: RegionGroupBy = effective.districtId ? 'unit' : effective.regionId ? 'district' : effective.countryId ? 'region' : 'country'
   const regions = useRegions(effective.countryId, { enabled: !!effective.countryId })
@@ -58,7 +66,7 @@ export function RegionsView() {
   const [range, setRange] = useState<RangeState>(() => initialRange('last30'))
   const [trendMetric, setTrendMetric] = useState<'revenue' | 'orders'>('revenue')
   const [sort, setSort] = useState<{ by: SortKey; dir: 'asc' | 'desc' }>({ by: 'revenue', dir: 'desc' })
-  const q = useRegionStats({ dateFrom: range.range.from, dateTo: range.range.to, ...effective, unitId: isSuperAdmin ? undefined : scopeId, groupBy: level }, { enabled: ready })
+  const q = useRegionStats({ dateFrom: range.range.from, dateTo: range.range.to, ...effective, companyId: isSuperAdmin ? company?.id : undefined, unitId: isSuperAdmin ? undefined : scopeId, groupBy: level }, { enabled: ready })
   const data = q.data
 
   const rows = useMemo(() => {
@@ -71,16 +79,21 @@ export function RegionsView() {
   const onSort = (key: string) => setSort((s) => ({ by: key as SortKey, dir: s.by === key ? (s.dir === 'asc' ? 'desc' : 'asc') : key === 'name' ? 'asc' : 'desc' }))
 
   // breadcrumb: where we are, each step a way back up; an administrator's root is their own unit
-  const keepCountry: TerritoryScope = { countryId: isSuperAdmin ? effective.countryId : undefined }
+  const keepCountry: TerritoryScope = { countryId: wide ? effective.countryId : undefined }
   const country = countries.data?.find((c) => c.id === effective.countryId)
+  const countryCrumb = effective.countryId ? (country ? countryLabel(country) : '…') : t('admin.platform.regions.allCountries')
+  // going back up to "every country" is offered where there is more than one to look across
+  const manyCountries = !company || (companyCountryIds?.length ?? 0) > 1
   const regionName = regions.data?.find((r) => r.id === effective.regionId)?.name
   const districtName = districts.data?.find((d) => d.id === effective.districtId)?.name
-  const showRegionCrumb = !!effective.regionId && (isSuperAdmin || root?.level === 'country')
-  const showDistrictCrumb = !!effective.districtId && (isSuperAdmin || root?.level === 'country' || root?.level === 'region')
+  const showRegionCrumb = !!effective.regionId && (wide || root?.level === 'country')
+  const showDistrictCrumb = !!effective.districtId && (wide || root?.level === 'country' || root?.level === 'region')
   const crumbs: { label: string; to?: () => void }[] = [
-    isSuperAdmin
-      ? { label: effective.countryId ? (country ? countryLabel(country) : '…') : t('admin.platform.regions.allCountries'), to: effective.regionId ? () => setScope(keepCountry, { allCountries: scope.allCountries }) : undefined }
-      : { label: root?.name ?? '…', to: scope.regionId || scope.districtId ? () => setScope({}) : undefined },
+    // the company looked at (a superadmin's pick, or a company person's own): a step back to all of its countries
+    ...(company ? [{ label: company.name, to: effective.countryId && manyCountries ? () => setScope({}, { allCountries: true }) : undefined }] : []),
+    ...(wide
+      ? (!company || effective.countryId ? [{ label: countryCrumb, to: effective.regionId ? () => setScope(keepCountry, { allCountries: scope.allCountries }) : undefined }] : [])
+      : [{ label: root?.name ?? '…', to: scope.regionId || scope.districtId ? () => setScope({}) : undefined }]),
     ...(showRegionCrumb ? [{ label: regionName ?? '…', to: effective.districtId ? () => setScope({ ...keepCountry, regionId: effective.regionId }) : undefined }] : []),
     ...(showDistrictCrumb ? [{ label: districtName ?? '…' }] : []),
   ]
@@ -93,7 +106,7 @@ export function RegionsView() {
   /** a facility row: the admin panel scoped to it (the shell re-picks the working facility inside) */
   const open = (r: UnitRow) => { setScopeUnit(r.id); toast.success(t('admin.platform.switched', { name: r.name })); nav(routes.admin.root) }
   const filterLevels: TerritoryLevel[] = isSuperAdmin ? ['country', 'region', 'district'] : root ? FILTER_LEVELS[root.level] : []
-  const onFilter = (v: TerritoryScope) => (isSuperAdmin ? setScope(v, { allCountries: !v.countryId }) : setScope({ regionId: v.regionId, districtId: v.districtId }))
+  const onFilter = (v: TerritoryScope) => (wide ? setScope(v, { allCountries: !v.countryId }) : setScope({ regionId: v.regionId, districtId: v.districtId }))
 
   const metricLabel = (k: keyof UnitMetrics) => t(`admin.platform.regions.${k}`)
   const levelLabel = t(`admin.platform.regions.level_${level}`)
@@ -150,7 +163,16 @@ export function RegionsView() {
   return (
     <div className="flex flex-col gap-4" data-regions-view data-level={level}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <TerritoryFilter value={effective} levels={filterLevels} allCountriesLabel={t('admin.platform.regions.allCountries')} onChange={onFilter} />
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
+          {companies.length > 1 && (
+            <Select aria-label={t('admin.platform.filters.company')} value={company?.id ?? ''} className="w-full sm:w-auto sm:min-w-[180px]" data-territory="company"
+              onChange={(e) => setCompany(e.target.value || undefined)}>
+              <option value="">{t('admin.platform.filters.allCompanies')}</option>
+              {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </Select>
+          )}
+          <TerritoryFilter value={effective} levels={filterLevels} countryIds={companyCountryIds} allCountriesLabel={t('admin.platform.regions.allCountries')} onChange={onFilter} />
+        </div>
         <DateRangeFilter value={range} onChange={setRange} presets={['today', 'last7', 'last30', 'thisMonth']} allowCustom size="sm" className={filterLevels.length ? undefined : 'lg:ml-auto'} />
       </div>
 

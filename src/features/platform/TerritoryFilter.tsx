@@ -1,6 +1,6 @@
 /** Country → region → district as compact selects (a toolbar filter; `LocationFields` is the form version). */
 import { useTranslation } from 'react-i18next'
-import type { TerritoryScope } from '@/domain'
+import type { Id, TerritoryScope } from '@/domain'
 import { countryLabel } from '@/features/org/LocationFields'
 import { useCountries, useDistricts, useRegions } from '@/features/patients/queries'
 import { cn } from '@/shared/lib/cn'
@@ -9,9 +9,11 @@ import { Select } from '@/shared/ui'
 export type TerritoryLevel = 'country' | 'region' | 'district'
 const ALL_LEVELS: TerritoryLevel[] = ['country', 'region', 'district']
 
-export function TerritoryFilter({ value, onChange, allCountriesLabel, levels = ALL_LEVELS, className }: {
+export function TerritoryFilter({ value, onChange, allCountriesLabel, levels = ALL_LEVELS, countryIds, className }: {
   value: TerritoryScope
   onChange: (v: TerritoryScope) => void
+  /** the countries on offer (a company's own); default: every country of the reference */
+  countryIds?: Id[]
   /** the empty country option (default: the generic "all") */
   allCountriesLabel?: string
   /** which selects to show — an administrator sees only the levels under their own unit (the ones above are fixed) */
@@ -32,7 +34,7 @@ export function TerritoryFilter({ value, onChange, allCountriesLabel, levels = A
         <Select aria-label={t('admin.platform.filters.country')} value={value.countryId ?? ''} className={select} data-territory="country"
           onChange={(e) => onChange({ countryId: e.target.value || undefined })}>
           <option value="">{allCountriesLabel ?? t('admin.platform.filters.allCountries')}</option>
-          {countries.data?.map((c) => <option key={c.id} value={c.id}>{countryLabel(c)}</option>)}
+          {countries.data?.filter((c) => !countryIds || countryIds.includes(c.id) || c.id === value.countryId).map((c) => <option key={c.id} value={c.id}>{countryLabel(c)}</option>)}
         </Select>
       )}
       {show('region') && (
