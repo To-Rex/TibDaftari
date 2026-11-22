@@ -8,6 +8,7 @@ export const assistantHttp: AssistantRepository = {
   listThreads: () => api.get<AssistantThread[]>('/assistant/threads'),
   createThread: (unitId, title) => api.post<AssistantThread>('/assistant/threads', compact({ title }), { query: { unitId } }),
   getThread: (id) => api.get<AssistantThreadDetail>(`/assistant/threads/${id}`),
+  renameThread: (id, title) => api.patch<AssistantThread>(`/assistant/threads/${id}`, { title }),
   deleteThread: (id) => api.delete<void>(`/assistant/threads/${id}`),
   send: (threadId, content, unitId) => api.post<AssistantSendResult>(`/assistant/threads/${threadId}/messages`, compact({ content, unitId })),
   confirm: (actionId) => api.post<AssistantSendResult>(`/assistant/actions/${actionId}/confirm`, {}),

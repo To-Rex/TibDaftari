@@ -140,6 +140,8 @@ export interface AssistantRepository {
   listThreads(): Promise<AssistantThread[]>
   createThread(unitId?: Id, title?: string): Promise<AssistantThread>
   getThread(id: Id): Promise<AssistantThreadDetail>
+  /** the owner names the conversation (otherwise its title is the start of the first message) */
+  renameThread(id: Id, title: string): Promise<AssistantThread>
   deleteThread(id: Id): Promise<void>
   /** the model answers, runs read tools, proposes writes (returned as `pending`) */
   send(threadId: Id, content: string, unitId?: Id): Promise<AssistantSendResult>

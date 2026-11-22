@@ -1,6 +1,7 @@
 /** Assistant queries: status at the working unit, the caller's threads, one thread, sending, confirming, the account. */
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { AssistantAccountInput, AssistantSendResult, AssistantThreadDetail, Id } from '@/domain'
+import { useMemo } from 'react'
+import { notifyManager, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { AssistantAccountInput, AssistantSendResult, AssistantThread, AssistantThreadDetail, Id } from '@/domain'
 import { repos } from '@/data'
 
 export const assistantKeys = {
@@ -38,33 +39,107 @@ export function useCreateThread() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ unitId, title }: { unitId?: Id; title?: string }) => repos.assistant.createThread(unitId, title),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: assistantKeys.threads() }),
+    // on the list at once (the page opens it before the refetch lands)
+    onSuccess: (th) => {
+      qc.setQueryData<AssistantThread[]>(assistantKeys.threads(), (cur) => [th, ...(cur ?? []).filter((x) => x.id !== th.id)])
+      void qc.invalidateQueries({ queryKey: assistantKeys.threads() })
+    },
+  })
+}
+
+export function useRenameThread() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, title }: { id: Id; title: string }) => repos.assistant.renameThread(id, title),
+    onSuccess: (th) => {
+      qc.setQueryData<AssistantThread[]>(assistantKeys.threads(), (cur) => cur?.map((x) => (x.id === th.id ? { ...x, title: th.title } : x)))
+      qc.setQueryData<AssistantThreadDetail>(assistantKeys.thread(th.id), (cur) => (cur ? { ...cur, thread: { ...cur.thread, title: th.title } } : cur))
+      void qc.invalidateQueries({ queryKey: assistantKeys.threads() })
+    },
   })
 }
 
 export function useDeleteThread() {
   const qc = useQueryClient()
-  return useMutation({ mutationFn: (id: Id) => repos.assistant.deleteThread(id), onSuccess: () => void qc.invalidateQueries({ queryKey: assistantKeys.threads() }) })
-}
-
-export function useSendMessage(threadId: Id) {
-  const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ content, unitId }: { content: string; unitId?: Id }) => repos.assistant.send(threadId, content, unitId),
-    onSuccess: (r) => appendTurns(qc, threadId, r),
-  })
-}
-
-export function useResolveAction(threadId: Id) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: ({ actionId, confirm }: { actionId: Id; confirm: boolean }) => (confirm ? repos.assistant.confirm(actionId) : repos.assistant.cancel(actionId)),
-    onSuccess: (r) => {
-      appendTurns(qc, threadId, r)
-      // a confirmed write changed data somewhere — the pages re-read it
-      for (const key of ['units', 'unit', 'employees', 'categories', 'service-types', 'templates', 'orders', 'patients', 'outbox']) void qc.invalidateQueries({ queryKey: [key] })
+    mutationFn: (id: Id) => repos.assistant.deleteThread(id),
+    onSuccess: (_r, id) => {
+      qc.setQueryData<AssistantThread[]>(assistantKeys.threads(), (cur) => cur?.filter((x) => x.id !== id))
+      qc.removeQueries({ queryKey: assistantKeys.thread(id) })
+      void qc.invalidateQueries({ queryKey: assistantKeys.threads() })
     },
   })
+}
+
+/** What a confirmed write may have changed — the pages re-read it. */
+const WRITE_TOUCHES = ['units', 'unit', 'employees', 'categories', 'service-types', 'templates', 'orders', 'patients', 'outbox']
+
+/** What a conversation is waiting for: the reply to `content`, or a confirmed / declined write being carried out. */
+export type AssistantWork = { mode: 'reply'; content: string } | { mode: 'action' }
+type Works = Record<string, AssistantWork>
+/** the key of the conversation that does not exist yet (its first message is on its way) */
+export const NEW_THREAD = 'new'
+const WORKS_KEY = ['assistant-works'] as const
+const NO_WORKS: Works = {}
+
+/**
+ * The waits, per conversation. They live in the query cache next to the threads on purpose: the reply and the end
+ * of its wait then reach the screen in ONE render (no frame where the sent message is gone and the answer is not
+ * there yet), and a wait survives leaving the page and coming back.
+ */
+export const useAssistantWorks = (): Works =>
+  useQuery({ queryKey: WORKS_KEY, queryFn: () => NO_WORKS, initialData: NO_WORKS, staleTime: Infinity, gcTime: Infinity, enabled: false }).data
+
+/**
+ * Sending a message and answering a proposed write. Plain calls rather than one shared mutation: two
+ * conversations may wait for their replies at the same time, and the turns land in the thread the SERVER names —
+ * never in the one that happens to be on screen when the reply arrives.
+ */
+export function useAssistantActions() {
+  const qc = useQueryClient()
+  return useMemo(() => {
+    const setWork = (key: string, w: AssistantWork | null) =>
+      qc.setQueryData<Works>(WORKS_KEY, (m = NO_WORKS) => {
+        if (!w && !(key in m)) return m
+        const next = { ...m }
+        if (w) next[key] = w
+        else delete next[key]
+        return next
+      })
+    return {
+      /** the conversation `key` starts waiting */
+      begin: (key: string, w: AssistantWork) => { setWork(key, w) },
+      /** the wait of the not-yet-existing conversation belongs to the one just created */
+      adopt: (id: Id) => notifyManager.batch(() => { const w = qc.getQueryData<Works>(WORKS_KEY)?.[NEW_THREAD]; if (w) { setWork(id, w); setWork(NEW_THREAD, null) } }),
+      end: (key: string) => { setWork(key, null) },
+      send: async (threadId: Id, content: string, unitId?: Id) => {
+        try {
+          const r = await repos.assistant.send(threadId, content, unitId)
+          notifyManager.batch(() => { appendTurns(qc, r.thread.id, r); setWork(threadId, null) })
+          return r
+        } catch (e) {
+          setWork(threadId, null)
+          // the server may have kept the message even though the reply failed — show what it really holds
+          void qc.invalidateQueries({ queryKey: assistantKeys.thread(threadId) })
+          void qc.invalidateQueries({ queryKey: assistantKeys.threads() })
+          throw e
+        }
+      },
+      resolve: async (threadId: Id, actionId: Id, confirm: boolean) => {
+        setWork(threadId, { mode: 'action' })
+        try {
+          const r = await (confirm ? repos.assistant.confirm(actionId) : repos.assistant.cancel(actionId))
+          notifyManager.batch(() => { appendTurns(qc, r.thread.id, r); setWork(threadId, null) })
+          if (confirm) for (const key of WRITE_TOUCHES) void qc.invalidateQueries({ queryKey: [key] })
+          return r
+        } catch (e) {
+          setWork(threadId, null)
+          void qc.invalidateQueries({ queryKey: assistantKeys.thread(threadId) })
+          throw e
+        }
+      },
+    }
+  }, [qc])
 }
 
 export const useAssistantAccount = (unitId: Id | null) =>

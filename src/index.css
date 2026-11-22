@@ -925,3 +925,27 @@ img, video, canvas { max-width: 100%; }
 ::view-transition-new(root) {
   z-index: 2;
 }
+
+/* The assistant is working: its hint line shimmers. */
+.ai-shimmer {
+  color: var(--c-ink-3);
+  background: linear-gradient(90deg, var(--c-ink-3) 0%, var(--c-ink-3) 38%, var(--c-ink) 50%, var(--c-ink-3) 62%, var(--c-ink-3) 100%);
+  background-size: 240% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: ai-shimmer 2.4s linear infinite;
+}
+
+@keyframes ai-shimmer {
+  from { background-position: 130% 0; }
+  to { background-position: -110% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-shimmer {
+    animation: none;
+    background: none;
+    -webkit-text-fill-color: currentColor;
+  }
+}
