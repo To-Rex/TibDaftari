@@ -49,14 +49,14 @@ function toTurns(messages: AssistantMessage[]): Turn[] {
 }
 
 /** The assistant is working: its mark pulses, the hint changes the longer the model takes. */
-function Typing({ mode }: { mode: 'reply' | 'action' }) {
+function Typing({ mode, onStop, stopping }: { mode: 'reply' | 'action'; onStop?: () => void; stopping?: boolean }) {
   const { t } = useTranslation()
   const [sec, setSec] = useState(0)
   useEffect(() => {
     const id = window.setInterval(() => setSec((n) => n + 1), 1000)
     return () => window.clearInterval(id)
   }, [])
-  const hint = mode === 'action' ? t('assistant.typingAction') : sec < 5 ? t('assistant.typing1') : sec < 15 ? t('assistant.typing2') : t('assistant.typing3')
+  const hint = stopping ? t('assistant.stopping') : mode === 'action' ? t('assistant.typingAction') : sec < 5 ? t('assistant.typing1') : sec < 15 ? t('assistant.typing2') : t('assistant.typing3')
   return (
     <motion.div {...enter} className="flex items-center gap-3" data-chat-thinking data-chat-thinking-sec={sec}>
       <AssistantMark live className="max-sm:hidden" />
@@ -65,7 +65,8 @@ function Typing({ mode }: { mode: 'reply' | 'action' }) {
           {[0, 1, 2].map((i) => <span key={i} className="size-1.5 animate-bounce rounded-full bg-brand" style={{ animationDelay: `${i * 0.15}s`, animationDuration: '0.9s' }} />)}
         </span>
         <span className="ai-shimmer truncate text-[13.5px]" aria-live="polite">{hint}</span>
-        {sec >= 8 && <span className="tabular shrink-0 text-[11.5px] text-ink-3">{sec} s</span>}
+        {sec >= 8 && <span className="shrink-0 text-[11.5px] text-ink-3">{sec} s</span>}
+        {onStop && !stopping && <button type="button" onClick={onStop} className="shrink-0 rounded-full border border-line px-2.5 py-0.5 text-[12px] text-ink-2 transition-colors hover:border-line-strong hover:bg-surface-2 hover:text-ink" data-chat-stop-inline>{t('assistant.stop')}</button>}
       </div>
     </motion.div>
   )
@@ -222,6 +223,21 @@ export function AssistantChat({ threadId, unit, status, onCreate, onOpen, focusT
       if (pointer) box.current?.focus({ preventScroll: true })
     }
   }
+  // the thread whose wait the employee asked to stop (until that wait ends)
+  const [stoppingIn, setStoppingIn] = useState<Id | null>(null)
+  const stopping = !!threadId && stoppingIn === threadId && busy
+  const busyNow = useRef(busy)
+  busyNow.current = busy
+  useEffect(() => { if (!busy) setStoppingIn(null) }, [busy])
+  const onStop = threadId ? () => {
+    if (stoppingIn === threadId) return
+    setStoppingIn(threadId)
+    void actions.stop(threadId, () => busyNow.current).then((ok) => { if (!ok) setStoppingIn((cur) => (cur === threadId ? null : cur)) })
+  } : undefined
+  const onUndo = async (actionId: string) => {
+    if (!threadId || works[threadId]) return
+    try { await actions.undo(threadId, actionId) } catch (e) { toast.error(errorMessage(e)) }
+  }
   const onResolve = async (actionId: string, confirm: boolean, word?: string) => {
     if (!threadId || works[threadId]) return
     try { await actions.resolve(threadId, actionId, confirm, word) } catch (e) { toast.error(errorMessage(e)) }
@@ -254,11 +270,11 @@ export function AssistantChat({ threadId, unit, status, onCreate, onOpen, focusT
           <div ref={content} className="mx-auto flex max-w-3xl flex-col gap-5">
             {turns.map((turn, i) => (
               <motion.div key={turn.kind === 'user' ? turn.m.id : turn.id} {...enter}>
-                {turn.kind === 'user' ? <UserBubble content={turn.m.content} at={turn.m.createdAt} /> : <AssistantTurn items={turn.items} onResolve={(a, c, w) => void onResolve(a, c, w)} busy={acting} last={i === turns.length - 1 && !busy} onChoose={i === turns.length - 1 && !busy ? (option) => void submit(option) : undefined} />}
+                {turn.kind === 'user' ? <UserBubble content={turn.m.content} at={turn.m.createdAt} /> : <AssistantTurn items={turn.items} onResolve={(a, c, w) => void onResolve(a, c, w)} onUndo={(a) => void onUndo(a)} busy={acting} last={i === turns.length - 1 && !busy} onChoose={i === turns.length - 1 && !busy ? (option) => void submit(option) : undefined} />}
               </motion.div>
             ))}
             {outgoing && <motion.div {...enter}><UserBubble content={outgoing} pending /></motion.div>}
-            {busy && <Typing mode={acting ? 'action' : 'reply'} />}
+            {busy && <Typing mode={acting ? 'action' : 'reply'} onStop={onStop} stopping={stopping} />}
           </div>
         )}
       </div>
@@ -274,7 +290,7 @@ export function AssistantChat({ threadId, unit, status, onCreate, onOpen, focusT
           )}
         </AnimatePresence>
         <div className="mx-auto max-w-3xl">
-          <Composer ref={box} value={draft} onChange={setDraft} onSubmit={() => void submit()} busy={busy} placeholder={placeholder} unit={unit} status={status} hero={hero} />
+          <Composer ref={box} value={draft} onChange={setDraft} onSubmit={() => void submit()} busy={busy} placeholder={placeholder} unit={unit} status={status} hero={hero} onStop={onStop} stopping={stopping} />
           {hero ? (
             <>
               <div className="mt-6">
@@ -291,7 +307,7 @@ export function AssistantChat({ threadId, unit, status, onCreate, onOpen, focusT
               </div>
               <p className="mx-auto mt-6 max-w-2xl text-center text-[11.5px] leading-relaxed text-ink-3">{t('assistant.safety')}</p>
             </>
-          ) : <p className="mt-1.5 text-center text-[11px] text-ink-3 max-sm:hidden">{t('assistant.sendHint')}</p>}
+          ) : <p className="mt-1.5 text-center text-[11px] text-ink-3 max-sm:hidden">{busy && onStop ? t('assistant.stopHint') : t('assistant.sendHint')}</p>}
         </div>
       </div>
     </div>

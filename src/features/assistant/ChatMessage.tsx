@@ -4,7 +4,7 @@
  */
 import { Fragment, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AlertTriangle, Ban, Check, CheckCircle2, Clock, Download, Eye, FileImage, FileJson, FileSpreadsheet, FileText, FileType2, Loader2, PencilLine, ShieldCheck, Sparkles, X } from 'lucide-react'
+import { AlertTriangle, Ban, Check, CheckCircle2, Clock, Download, Eye, FileImage, FileJson, FileSpreadsheet, FileText, FileType2, Loader2, PencilLine, ShieldCheck, Sparkles, Square, Undo2, X } from 'lucide-react'
 import type { AssistantAction, AssistantChoices, AssistantFile, AssistantMessage, AssistantToolCall } from '@/domain'
 import { repos } from '@/data'
 import { cn } from '@/shared/lib/cn'
@@ -109,12 +109,16 @@ type Resolve = (id: string, confirm: boolean, word?: string) => void
  * A write the assistant proposed: what it touches (ids already turned into names by the server), and the yes / no.
  * An irreversible one says so in red and, when the server asks for it, takes the word the employee types.
  */
-export function ActionCard({ action, onResolve, busy }: { action: AssistantAction; onResolve?: Resolve; busy?: boolean }) {
+export function ActionCard({ action, onResolve, onUndo, busy }: { action: AssistantAction; onResolve?: Resolve; /** take the done write back */ onUndo?: (id: string) => void; busy?: boolean }) {
   const { t } = useTranslation()
   const [word, setWord] = useState('')
+  // "undo" asks once more before it runs — it is a write of its own
+  const [asking, setAsking] = useState(false)
   const pending = action.status === 'pending'
   const danger = !!action.danger
-  const tone = action.status === 'done' ? 'ok' : action.status === 'failed' ? 'danger' : pending ? (danger ? 'danger' : 'warn') : 'neutral'
+  const undone = !!action.undo?.undoneAt
+  const canUndo = action.status === 'done' && !!action.undo?.available && !!onUndo
+  const tone = undone ? 'neutral' : action.status === 'done' ? 'ok' : action.status === 'failed' ? 'danger' : pending ? (danger ? 'danger' : 'warn') : 'neutral'
   const rows = action.details?.length
     ? action.details.map((d) => ({ label: d.label, value: d.value, raw: false }))
     : Object.entries(action.args ?? {}).filter(([, v]) => v !== null && v !== undefined && v !== '').map(([k, v]) => ({ label: k, value: typeof v === 'object' ? JSON.stringify(v) : String(v), raw: true }))
@@ -125,13 +129,13 @@ export function ActionCard({ action, onResolve, busy }: { action: AssistantActio
       data-assistant-action={action.id} data-action-status={action.status} data-action-danger={danger || undefined}>
       <div className="flex flex-wrap items-center gap-2">
         <span className={cn('grid size-7 shrink-0 place-items-center rounded-lg', pending ? (danger ? 'bg-danger/15 text-danger' : 'bg-warn/15 text-warn') : 'bg-surface-2 text-ink-2')}>
-          {pending ? (danger ? <AlertTriangle className="size-4" /> : <ShieldCheck className="size-4" />) : action.status === 'done' ? <CheckCircle2 className="size-4 text-ok" /> : <Ban className="size-4" />}
+          {pending ? (danger ? <AlertTriangle className="size-4" /> : <ShieldCheck className="size-4" />) : undone ? <Undo2 className="size-4" /> : action.status === 'done' ? <CheckCircle2 className="size-4 text-ok" /> : <Ban className="size-4" />}
         </span>
         <div className="min-w-0 flex-1">
           <div className="text-[13.5px] font-semibold">{pending ? t(danger ? 'assistant.action.dangerTitle' : 'assistant.action.title') : action.title}</div>
           {pending && <div className="text-[12px] text-ink-3">{t(danger ? 'assistant.action.dangerHint' : 'assistant.action.hint')}</div>}
         </div>
-        <Badge tone={tone} size="sm">{t(`assistant.action.${action.status}`)}</Badge>
+        <Badge tone={tone} size="sm">{undone ? t('assistant.action.undone') : t(`assistant.action.${action.status}`)}</Badge>
       </div>
       {(pending || rows.length > 0 || action.error) && <div className="mt-2.5 rounded-xl border border-line/70 bg-bg-elevated px-3 py-2 text-[13px]">
         {pending && <div className="mb-1.5 flex items-center gap-2 font-medium"><PencilLine className="size-3.5 text-ink-3" />{action.title}</div>}
@@ -156,6 +160,21 @@ export function ActionCard({ action, onResolve, busy }: { action: AssistantActio
           <span className="ml-auto text-[11.5px] text-ink-3">{t('assistant.action.expiresIn', { when: fmtRelative(action.expiresAt) })}</span>
         </div>
       )}
+      {pending && <p className="mt-2 flex items-center gap-1.5 text-[11.5px] text-ink-3" data-action-undoable={action.undoable ? 'yes' : 'no'}><Undo2 className="size-3.5 shrink-0" />{t(action.undoable ? 'assistant.undo.willBePossible' : 'assistant.undo.willNotBePossible')}</p>}
+      {canUndo && (asking ? (
+        <div className="mt-3 rounded-xl border border-line bg-bg-elevated px-3 py-2.5" data-action-undo-ask>
+          <p className="text-[12.5px] text-ink-2">{t('assistant.undo.ask')} {action.undo?.label}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <Button size="sm" leftIcon={busy ? <Loader2 className="size-4 animate-spin" /> : <Undo2 className="size-4" />} disabled={busy} onClick={() => { setAsking(false); onUndo?.(action.id) }} data-action-undo-yes>{t('assistant.undo.yes')}</Button>
+            <Button size="sm" variant="secondary" disabled={busy} onClick={() => setAsking(false)}>{t('assistant.undo.no')}</Button>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <Button size="sm" variant="secondary" leftIcon={<Undo2 className="size-4" />} disabled={busy} onClick={() => setAsking(true)} data-action-undo>{t('assistant.undo.button')}</Button>
+          {action.undo?.until && <span className="text-[11.5px] text-ink-3">{t('assistant.undo.until', { when: fmtRelative(action.undo.until) })}</span>}
+        </div>
+      ))}
     </div>
   )
 }
@@ -199,19 +218,23 @@ export function Choices({ choices, shown, onChoose }: { choices: AssistantChoice
 }
 
 /** One stored turn: the employee's bubble, a failed tool as a small red line, or a piece of the assistant's answer. */
-export function ChatMessage({ m, onResolve, busy, onChoose }: { m: AssistantMessage; onResolve?: Resolve; busy?: boolean; onChoose?: (option: string) => void }) {
+export function ChatMessage({ m, onResolve, onUndo, busy, onChoose }: { m: AssistantMessage; onResolve?: Resolve; onUndo?: (id: string) => void; busy?: boolean; onChoose?: (option: string) => void }) {
   const { t } = useTranslation()
   if (m.role === 'user') return <UserBubble content={m.content} at={m.createdAt} />
   if (m.role === 'tool') {
     return m.isError ? <div className="flex justify-start" data-chat-msg="tool"><div className="inline-flex h-6 items-center gap-1.5 rounded-full border border-danger/30 bg-danger-soft/50 px-2.5 text-[12px] text-danger"><AlertTriangle className="size-3.5" />{t('assistant.toolError')} · {m.toolName}</div></div> : null
   }
+  // the run was stopped here: a quiet mark instead of the note kept for the model
+  if (m.stopped) return <div className="inline-flex h-7 items-center gap-1.5 rounded-full border border-line bg-surface/60 px-2.5 text-[12.5px] text-ink-3" data-chat-msg="stopped"><Square className="size-3 fill-current" />{t('assistant.stopped')}</div>
+  // a write was taken back: said plainly, with the mark of the way back
+  if (m.undoOf) return <div className="flex max-w-xl items-start gap-2 rounded-2xl border border-line bg-surface/60 px-3 py-2 text-[13.5px] leading-relaxed text-ink-2" data-chat-msg="undo"><Undo2 className="mt-0.5 size-4 shrink-0 text-brand" /><span className="min-w-0 break-words">{m.content.replace(/^↩\s*/, '')}</span></div>
   const empty = !m.content.trim()
   return (
     <div className="min-w-0 space-y-2.5" data-chat-msg="assistant">
       {m.toolCalls.length > 0 && <div className="flex flex-wrap gap-1.5">{m.toolCalls.map((c) => <ToolChip key={c.id} c={c} />)}</div>}
       {!empty && <Markdown text={m.content} />}
       {(m.files ?? []).map((f) => <FileCard key={f.id} file={f} />)}
-      {m.action && <ActionCard action={m.action} onResolve={onResolve} busy={busy} />}
+      {m.action && <ActionCard action={m.action} onResolve={onResolve} onUndo={onUndo} busy={busy} />}
       {m.choices && <Choices choices={m.choices} shown={!!m.choices.question && m.content.includes(m.choices.question)} onChoose={onChoose} />}
     </div>
   )
@@ -221,15 +244,15 @@ export function ChatMessage({ m, onResolve, busy, onChoose }: { m: AssistantMess
  * The assistant's side of an exchange: everything it said and did between two messages of the employee, under
  * one mark, with the time and a "copy" for the text it wrote. `onChoose` is given while its question still stands.
  */
-export function AssistantTurn({ items, onResolve, busy, last, onChoose }: { items: AssistantMessage[]; onResolve?: Resolve; busy?: boolean; last?: boolean; onChoose?: (option: string) => void }) {
+export function AssistantTurn({ items, onResolve, onUndo, busy, last, onChoose }: { items: AssistantMessage[]; onResolve?: Resolve; onUndo?: (id: string) => void; busy?: boolean; last?: boolean; onChoose?: (option: string) => void }) {
   const { t } = useTranslation()
-  const text = items.filter((m) => m.role === 'assistant' && (m.content.trim() || m.choices?.question)).map((m) => [m.content.trim(), m.choices && !m.content.includes(m.choices.question) ? m.choices.question : ''].filter(Boolean).join('\n\n')).join('\n\n')
+  const text = items.filter((m) => m.role === 'assistant' && !m.stopped && (m.content.trim() || m.choices?.question)).map((m) => [m.content.trim(), m.choices && !m.content.includes(m.choices.question) ? m.choices.question : ''].filter(Boolean).join('\n\n')).join('\n\n')
   const at = items[items.length - 1]?.createdAt
   return (
     <div className="group/msg flex gap-3" data-chat-turn="assistant">
       <AssistantMark className="mt-0.5 max-sm:hidden" />
       <div className="min-w-0 flex-1">
-        <div className="space-y-2.5">{items.map((m, i) => <ChatMessage key={m.id} m={m} onResolve={onResolve} busy={busy} onChoose={i === items.length - 1 ? onChoose : undefined} />)}</div>
+        <div className="space-y-2.5">{items.map((m, i) => <ChatMessage key={m.id} m={m} onResolve={onResolve} onUndo={onUndo} busy={busy} onChoose={i === items.length - 1 ? onChoose : undefined} />)}</div>
         <div className={cn('mt-1 flex h-7 items-center gap-1 transition-opacity focus-within:opacity-100 group-hover/msg:opacity-100 [@media(hover:none)]:opacity-100', !last && 'opacity-0')} data-chat-msg-tools>
           {text && <CopyButton text={text} label={t('assistant.copy')} doneLabel={t('assistant.copied')} className="-ml-1.5" />}
           {at && <time dateTime={at} className="px-1 text-[11.5px] text-ink-3">{stamp(at)}</time>}

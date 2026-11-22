@@ -112,6 +112,18 @@ export function useAssistantActions() {
       /** the wait of the not-yet-existing conversation belongs to the one just created */
       adopt: (id: Id) => notifyManager.batch(() => { const w = qc.getQueryData<Works>(WORKS_KEY)?.[NEW_THREAD]; if (w) { setWork(id, w); setWork(NEW_THREAD, null) } }),
       end: (key: string) => { setWork(key, null) },
+      /**
+       * Ask the server to stop the run of a thread. The run may not have announced itself yet (the request is
+       * still on its way), so the ask is repeated a few times while `still()` says the wait goes on. The waiting
+       * request itself answers — with what was done before the stop.
+       */
+      stop: async (threadId: Id, still: () => boolean) => {
+        for (let i = 0; i < 8 && still(); i++) {
+          try { if ((await repos.assistant.stop(threadId)).stopping) return true } catch { /* the next try decides */ }
+          await new Promise((r) => window.setTimeout(r, 350))
+        }
+        return false
+      },
       send: async (threadId: Id, content: string, unitId?: Id) => {
         try {
           const r = await repos.assistant.send(threadId, content, unitId)
@@ -131,6 +143,20 @@ export function useAssistantActions() {
           const r = await (confirm ? repos.assistant.confirm(actionId, word) : repos.assistant.cancel(actionId))
           notifyManager.batch(() => { appendTurns(qc, r.thread.id, r); setWork(threadId, null) })
           if (confirm) for (const key of WRITE_TOUCHES) void qc.invalidateQueries({ queryKey: [key] })
+          return r
+        } catch (e) {
+          setWork(threadId, null)
+          void qc.invalidateQueries({ queryKey: assistantKeys.thread(threadId) })
+          throw e
+        }
+      },
+      /** take a confirmed write back; the thread gets the updated card and a note */
+      undo: async (threadId: Id, actionId: Id) => {
+        setWork(threadId, { mode: 'action' })
+        try {
+          const r = await repos.assistant.undo(actionId)
+          notifyManager.batch(() => { appendTurns(qc, r.thread.id, r); setWork(threadId, null) })
+          for (const key of WRITE_TOUCHES) void qc.invalidateQueries({ queryKey: [key] })
           return r
         } catch (e) {
           setWork(threadId, null)

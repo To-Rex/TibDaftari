@@ -148,6 +148,10 @@ export interface AssistantRepository {
   /** `word` — what an irreversible action asks the employee to type */
   confirm(actionId: Id, word?: string): Promise<AssistantSendResult>
   cancel(actionId: Id): Promise<AssistantSendResult>
+  /** take a confirmed write back (only what nobody changed since) */
+  undo(actionId: Id): Promise<AssistantSendResult>
+  /** stop what the assistant is doing in the thread; `stopping: false` = nothing was running */
+  stop(threadId: Id): Promise<{ stopping: boolean }>
   /** the bytes of a file the assistant built for the caller */
   downloadFile(fileId: Id): Promise<Blob>
   /** the unit's model account (its own, inherited, or the platform's); save; one round-trip test */

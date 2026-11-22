@@ -6,7 +6,7 @@ import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useRef, us
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowUp, Cpu, Eye, Loader2, SlidersHorizontal, X } from 'lucide-react'
+import { ArrowUp, Cpu, Eye, Loader2, SlidersHorizontal, Square, X } from 'lucide-react'
 import type { AssistantStatus, AssistantTool, AssistantToolGroup, OrgUnit } from '@/domain'
 import { cn } from '@/shared/lib/cn'
 import { UnitIcon } from '../org/unitUi'
@@ -83,9 +83,13 @@ export interface ComposerProps {
   status: AssistantStatus
   /** the welcome screen: a little taller, with more air */
   hero?: boolean
+  /** given while the wait can be stopped: the send button becomes "stop" (Esc does the same) */
+  onStop?: () => void
+  /** the stop was asked for and is on its way */
+  stopping?: boolean
 }
 
-export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function Composer({ value, onChange, onSubmit, busy, placeholder, unit, status, hero }, ref) {
+export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function Composer({ value, onChange, onSubmit, busy, placeholder, unit, status, hero, onStop, stopping }, ref) {
   const { t } = useTranslation()
   const box = useRef<HTMLTextAreaElement>(null)
   const wrap = useRef<HTMLDivElement>(null)
@@ -132,7 +136,9 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function 
 
   const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); onSubmit() }
+    if (e.key === 'Escape' && busy && onStop && !tools) { e.preventDefault(); onStop() }
   }
+  const canStop = busy && !!onStop
   const ready = !busy && !!value.trim()
 
   return (
@@ -152,10 +158,17 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function 
             <SlidersHorizontal className="size-3.5" /><span className="max-xs:hidden">{t('assistant.tools')}</span>{status.tools.length > 0 && <span className="text-ink-3">{status.tools.length}</span>}
           </button>
           {status.model && <span className={cn(chip, 'cursor-default text-ink-3 max-md:hidden')} title={t('assistant.model')} data-chat-model><Cpu className="size-3.5 shrink-0" /><span className="truncate font-mono text-[11.5px]">{status.model}</span></span>}
-          <button type="button" onClick={onSubmit} disabled={!ready} aria-label={t('assistant.send')} title={t('assistant.send')} data-chat-send
-            className={cn('ml-auto grid size-9 shrink-0 place-items-center rounded-full transition-[background-color,color,transform] duration-200', ready ? 'bg-brand text-white shadow-1 hover:bg-brand-strong active:scale-95' : busy ? 'bg-brand-soft text-brand' : 'bg-surface-2 text-ink-3')}>
-            {busy ? <Loader2 className="size-[18px] animate-spin" /> : <ArrowUp className="size-[18px]" strokeWidth={2.4} />}
-          </button>
+          {canStop ? (
+            <button type="button" onClick={onStop} disabled={stopping} aria-label={t('assistant.stop')} title={`${t('assistant.stop')} (Esc)`} data-chat-stop={stopping ? 'stopping' : 'ready'}
+              className="ml-auto grid size-9 shrink-0 place-items-center rounded-full bg-ink text-bg shadow-1 transition-[background-color,transform,opacity] duration-200 hover:opacity-85 active:scale-95 disabled:opacity-60">
+              {stopping ? <Loader2 className="size-[18px] animate-spin" /> : <Square className="size-3.5 fill-current" />}
+            </button>
+          ) : (
+            <button type="button" onClick={onSubmit} disabled={!ready} aria-label={t('assistant.send')} title={t('assistant.send')} data-chat-send
+              className={cn('ml-auto grid size-9 shrink-0 place-items-center rounded-full transition-[background-color,color,transform] duration-200', ready ? 'bg-brand text-white shadow-1 hover:bg-brand-strong active:scale-95' : busy ? 'bg-brand-soft text-brand' : 'bg-surface-2 text-ink-3')}>
+              {busy ? <Loader2 className="size-[18px] animate-spin" /> : <ArrowUp className="size-[18px]" strokeWidth={2.4} />}
+            </button>
+          )}
         </div>
       </div>
     </div>
