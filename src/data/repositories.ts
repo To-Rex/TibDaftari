@@ -69,6 +69,9 @@ import type {
   UnitCreateInput,
   AssistantAccount,
   AssistantAccountInput,
+  AssistantSchedule,
+  AssistantScheduleInput,
+  AssistantScheduleList,
   AssistantSendResult,
   AssistantStatus,
   AssistantTestResult,
@@ -150,6 +153,16 @@ export interface AssistantRepository {
   cancel(actionId: Id): Promise<AssistantSendResult>
   /** take a confirmed write back (only what nobody changed since) */
   undo(actionId: Id): Promise<AssistantSendResult>
+  /** one answer to a turn that proposed several writes: `confirm` run (each on its own), everything else is declined */
+  resolveBatch(confirm: Id[], cancel: Id[]): Promise<AssistantSendResult>
+  /** take several done writes of one conversation back at once */
+  undoBatch(ids: Id[]): Promise<AssistantSendResult>
+  /** the caller's scheduled tasks; create / change (`isActive` pauses and resumes) / delete; run one right now */
+  listSchedules(): Promise<AssistantScheduleList>
+  createSchedule(input: AssistantScheduleInput, unitId?: Id): Promise<AssistantSchedule>
+  updateSchedule(id: Id, patch: Partial<AssistantScheduleInput>): Promise<AssistantSchedule>
+  deleteSchedule(id: Id): Promise<void>
+  runSchedule(id: Id): Promise<AssistantSchedule>
   /** stop what the assistant is doing in the thread; `stopping: false` = nothing was running */
   stop(threadId: Id): Promise<{ stopping: boolean }>
   /** the bytes of a file the assistant built for the caller */

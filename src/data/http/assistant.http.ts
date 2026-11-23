@@ -1,5 +1,5 @@
 /** HTTP AssistantRepository — the AI assistant (`app/modules/assistant`). */
-import type { AssistantAccount, AssistantSendResult, AssistantStatus, AssistantTestResult, AssistantThread, AssistantThreadDetail } from '@/domain'
+import type { AssistantAccount, AssistantSchedule, AssistantScheduleList, AssistantSendResult, AssistantStatus, AssistantTestResult, AssistantThread, AssistantThreadDetail } from '@/domain'
 import type { AssistantRepository } from '../repositories'
 import { api, compact } from './client'
 
@@ -14,6 +14,14 @@ export const assistantHttp: AssistantRepository = {
   confirm: (actionId, word) => api.post<AssistantSendResult>(`/assistant/actions/${actionId}/confirm`, compact({ confirm: word })),
   cancel: (actionId) => api.post<AssistantSendResult>(`/assistant/actions/${actionId}/cancel`, {}),
   undo: (actionId) => api.post<AssistantSendResult>(`/assistant/actions/${actionId}/undo`, {}),
+  resolveBatch: (confirm, cancel) => api.post<AssistantSendResult>('/assistant/actions/batch', { confirm, cancel }),
+  undoBatch: (ids) => api.post<AssistantSendResult>('/assistant/actions/batch-undo', { ids }),
+  listSchedules: () => api.get<AssistantScheduleList>('/assistant/schedules'),
+  createSchedule: (input, unitId) => api.post<AssistantSchedule>('/assistant/schedules', compact({ ...input }), { query: { unitId } }),
+  // a PATCH carries explicit nulls on purpose (clearing the day of a rule that no longer needs it)
+  updateSchedule: (id, patch) => api.patch<AssistantSchedule>(`/assistant/schedules/${id}`, patch),
+  deleteSchedule: (id) => api.delete<void>(`/assistant/schedules/${id}`),
+  runSchedule: (id) => api.post<AssistantSchedule>(`/assistant/schedules/${id}/run`, {}),
   stop: (threadId) => api.post<{ stopping: boolean }>(`/assistant/threads/${threadId}/stop`, {}),
   downloadFile: (fileId) => api.get<Blob>(`/assistant/files/${fileId}`, { blob: true }),
   getAccount: (unitId) => api.get<AssistantAccount>(`/units/${unitId}/assistant`),

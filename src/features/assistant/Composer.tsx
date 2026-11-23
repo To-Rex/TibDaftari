@@ -15,7 +15,7 @@ const MAX_HEIGHT = 208
 
 const chip = 'inline-flex h-8 min-w-0 items-center gap-1.5 rounded-full px-2.5 text-[12.5px] text-ink-2 transition-colors'
 /** the order the areas are listed in — the daily work first, the administration after */
-const GROUPS: AssistantToolGroup[] = ['reception', 'lab', 'results', 'reports', 'messaging', 'files', 'units', 'staff', 'catalog', 'templates', 'general']
+const GROUPS: AssistantToolGroup[] = ['reception', 'lab', 'results', 'reports', 'messaging', 'files', 'schedule', 'units', 'staff', 'catalog', 'templates', 'general']
 
 /** What the assistant may do for this employee here: the tools of their role, the unit, the model, the request limit. */
 function Capabilities({ status, unit, onClose, place, panel }: { status: AssistantStatus; unit: OrgUnit | null; onClose: () => void; place: CSSProperties; panel: RefObject<HTMLDivElement | null> }) {

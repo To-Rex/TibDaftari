@@ -1,10 +1,14 @@
 /**
  * The history of the caller's conversations: a new chat, a search by title, the threads grouped by when they were
- * last touched, and — per thread — rename and delete. Lives in the panel the page opens with a button.
+ * last touched, and — per thread — rename and delete. A conversation that belongs to a scheduled task wears a
+ * clock, and a dot while its newest answer is unread. Lives in the panel the page opens with a button.
  */
+
+/** the title of a scheduled task's conversation carries a clock sign of its own — the row shows an icon instead */
+export const threadTitle = (th: { title: string; scheduleId?: string | null }, untitled: string) => (th.scheduleId ? th.title.replace(/^⏰\s*/, '') : th.title) || untitled
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Ellipsis, MessagesSquare, PencilLine, Search, SquarePen, Trash2, X } from 'lucide-react'
+import { CalendarClock, Ellipsis, MessagesSquare, PencilLine, Search, SquarePen, Trash2, X } from 'lucide-react'
 import type { AssistantThread, Id } from '@/domain'
 import { cn } from '@/shared/lib/cn'
 import { fmtDateTime } from '@/shared/lib/format'
@@ -68,7 +72,7 @@ export function ThreadHistory({ threads, loading, active, onOpen, onNew, onRenam
     const today = dayStart(new Date())
     const by = new Map<Bucket, AssistantThread[]>()
     for (const th of threads ?? []) {
-      if (q && !(th.title || t('assistant.untitled')).toLocaleLowerCase().includes(q)) continue
+      if (q && !threadTitle(th, t('assistant.untitled')).toLocaleLowerCase().includes(q)) continue
       const b = bucketOf(th.lastMessageAt ?? th.createdAt, today)
       by.set(b, [...(by.get(b) ?? []), th])
     }
@@ -115,7 +119,7 @@ export function ThreadHistory({ threads, loading, active, onOpen, onNew, onRenam
             <ul className="space-y-px">
               {g.items.map((th) => {
                 const on = active === th.id
-                const title = th.title || t('assistant.untitled')
+                const title = threadTitle(th, t('assistant.untitled'))
                 if (editing === th.id) {
                   return <li key={th.id} className="px-0.5 py-0.5"><RenameInput value={th.title} onSave={(v) => { setEditing(null); onRename(th.id, v) }} onCancel={() => setEditing(null)} /></li>
                 }
@@ -125,7 +129,9 @@ export function ThreadHistory({ threads, loading, active, onOpen, onNew, onRenam
                       onClick={() => onOpen(th.id)} onDoubleClick={() => setEditing(th.id)}
                       onKeyDown={(e) => { if (e.target !== e.currentTarget) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(th.id) } if (e.key === 'F2') setEditing(th.id) }}
                       className={cn('group/row relative flex h-9 items-center rounded-lg pl-2.5 pr-1 text-[13.5px] outline-offset-[-2px] transition-colors', on ? 'bg-brand-soft/70 font-medium text-brand-ink' : 'text-ink-2 hover:bg-surface-2 hover:text-ink')} data-thread-row={th.id}>
-                      <span className="min-w-0 flex-1 truncate">{title}</span>
+                      {th.scheduleId && <CalendarClock className={cn('mr-1.5 size-3.5 shrink-0', on ? 'text-brand' : 'text-ink-3')} aria-label={t('assistant.schedule.mark')} data-thread-scheduled />}
+                      <span className={cn('min-w-0 flex-1 truncate', th.unread && !on && 'font-semibold text-ink')}>{title}</span>
+                      {th.unread && !on && <span className="mr-1 size-2 shrink-0 rounded-full bg-accent" title={t('assistant.schedule.unread')} data-thread-unread />}
                       <span className={cn('shrink-0 opacity-0 transition-opacity focus-within:opacity-100 group-hover/row:opacity-100 [@media(hover:none)]:opacity-100', on && 'opacity-100')} onClick={(e) => e.stopPropagation()} onDoubleClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
                         <Menu
                           trigger={(open) => <button type="button" aria-label={t('assistant.threadMenu')} title={t('assistant.threadMenu')} aria-expanded={open} className={cn('grid size-7 place-items-center rounded-md text-ink-3 hover:bg-surface-3 hover:text-ink', open && 'bg-surface-3 text-ink')} data-thread-menu><Ellipsis className="size-4" /></button>}

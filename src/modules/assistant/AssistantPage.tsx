@@ -2,6 +2,7 @@
  * «Yordamchi» — the assistant page shared by the staff app and the admin panel: the open conversation fills the
  * page, the history of the caller's conversations slides in from the left on a button (remembered on a wide
  * screen, an overlay on a narrow one). The open conversation is in the address (`?c=`), so a reload keeps it.
+ * The employee's scheduled tasks open from the bar (and from a notice: `?tasks=1`).
  * Not configured here → a pointer to the settings (for those who may set it up).
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -9,12 +10,13 @@ import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { Bot, ChevronDown, PanelLeftClose, PanelLeftOpen, PencilLine, Settings2, ShieldOff, SquarePen, Trash2 } from 'lucide-react'
+import { Bot, CalendarClock, ChevronDown, PanelLeftClose, PanelLeftOpen, PencilLine, Settings2, ShieldOff, SquarePen, Trash2 } from 'lucide-react'
 import type { AssistantThread, Id } from '@/domain'
 import { useAuth, usePermissions } from '@/features/auth/store'
 import { AssistantChat } from '@/features/assistant/AssistantChat'
-import { assistantKeys, useAssistantStatus, useCreateThread, useDeleteThread, useRenameThread, useThreads } from '@/features/assistant/queries'
-import { RenameInput, ThreadHistory } from '@/features/assistant/ThreadHistory'
+import { assistantKeys, useAssistantStatus, useCreateThread, useDeleteThread, useRenameThread, useSchedules, useThreads } from '@/features/assistant/queries'
+import { SchedulesPanel } from '@/features/assistant/SchedulesPanel'
+import { RenameInput, ThreadHistory, threadTitle } from '@/features/assistant/ThreadHistory'
 import { useUnitTree } from '@/features/org/queries'
 import { routes } from '@/shared/config/routes'
 import { useMediaQuery } from '@/shared/hooks/useMediaQuery'
@@ -26,6 +28,8 @@ import { Button, ConfirmDialog, EmptyState, IconButton, Menu, Page, Skeleton, to
 /** whether the history panel stays open on a wide screen — the viewer's own choice, per browser */
 const HISTORY_KEY = 'clinic.assistant.history'
 const THREAD_PARAM = 'c'
+/** `?tasks=1` — a notice about a scheduled task leads to the list of tasks */
+const TASKS_PARAM = 'tasks'
 const PANEL_WIDTH = 288
 const ease = [0.22, 1, 0.36, 1] as const
 
@@ -58,6 +62,10 @@ export default function AssistantPage() {
   const [renaming, setRenaming] = useState(false)
   const [focusTick, setFocusTick] = useState(0)
   const [doomed, setDoomed] = useState<AssistantThread | null>(null)
+  const [tasksOpen, setTasksOpen] = useState(false)
+  // the count on the bar's button; the list itself is read again when the panel opens
+  const schedules = useSchedules(status.data?.enabled === true && status.data.configured)
+  const liveTasks = schedules.data?.items.filter((x) => x.isActive).length ?? 0
 
   const current = params.get(THREAD_PARAM)
   const known = !!current && !!threads.data?.some((x) => x.id === current)
@@ -76,6 +84,18 @@ export default function AssistantPage() {
   // a link to a conversation that is gone (deleted, somebody else's) → a new chat
   useEffect(() => { if (current && threads.data && !known) show(null, true) }, [current, threads.data, known, show])
   useEffect(() => { setRenaming(false) }, [active])
+  useEffect(() => {
+    if (!params.has(TASKS_PARAM)) return
+    setTasksOpen(true)
+    setParams((prev) => { const next = new URLSearchParams(prev); next.delete(TASKS_PARAM); return next }, { replace: true })
+  }, [params, setParams])
+  // a scheduled run left an answer in the conversation that is open: read it now, and it is no longer "unread"
+  const unreadHere = !!activeThread?.unread
+  useEffect(() => {
+    if (!active || !unreadHere) return
+    qc.setQueryData<AssistantThread[]>(assistantKeys.threads(), (cur) => cur?.map((x) => (x.id === active ? { ...x, unread: false } : x)))
+    void qc.invalidateQueries({ queryKey: assistantKeys.thread(active) })
+  }, [active, unreadHere, qc])
 
   const toggleHistory = () => {
     if (wide) setPinned((v) => { storage.set(HISTORY_KEY, !v); return !v })
@@ -120,7 +140,8 @@ export default function AssistantPage() {
   const history = (
     <ThreadHistory threads={threads.data} loading={threads.isLoading} active={active} onOpen={open} onNew={newChat} onRename={onRename} onDelete={setDoomed} onClose={wide ? undefined : () => setDrawer(false)} />
   )
-  const title = activeThread ? activeThread.title || t('assistant.untitled') : t('assistant.newThread')
+  const title = activeThread ? threadTitle(activeThread, t('assistant.untitled')) : t('assistant.newThread')
+  const openTasks = () => { setDrawer(false); setTasksOpen(true) }
 
   return (
     <Page width="full" className="!p-0">
@@ -157,6 +178,7 @@ export default function AssistantPage() {
                 <Menu align="start" className="min-w-0 max-w-full"
                   trigger={(o) => (
                     <button type="button" aria-expanded={o} title={title} className={cn('flex h-9 min-w-0 max-w-full items-center gap-1 rounded-lg px-2 text-[14px] font-medium transition-colors hover:bg-surface-2', o && 'bg-surface-2')} data-thread-title>
+                      {activeThread.scheduleId && <CalendarClock className="size-3.5 shrink-0 text-brand" aria-label={t('assistant.schedule.mark')} />}
                       <span className="truncate">{title}</span><ChevronDown className={cn('size-3.5 shrink-0 text-ink-3 transition-transform', o && 'rotate-180')} />
                     </button>
                   )}
@@ -166,14 +188,19 @@ export default function AssistantPage() {
                   ]} />
               ) : <span className="truncate px-2 text-[14px] font-medium text-ink-2" data-thread-title>{title}</span>}
             </div>
+            <span className="relative">
+              <IconButton label={t('assistant.schedule.title')} onClick={openTasks} data-schedules-open><CalendarClock /></IconButton>
+              {liveTasks > 0 && <span className="pointer-events-none absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand px-1 text-[10px] font-bold leading-none text-white ring-2 ring-bg" data-schedules-count>{liveTasks}</span>}
+            </span>
             {settingsLink && <IconButton label={t('assistant.openSettings')} onClick={() => nav(routes.admin.assistantSettings)} data-assistant-settings-link><Settings2 /></IconButton>}
           </header>
           {status.data && <AssistantChat threadId={active} unit={unit} status={status.data} onCreate={onCreate} onOpen={(id) => show(id, true)} focusTick={focusTick} />}
         </section>
       </div>
 
+      <SchedulesPanel open={tasksOpen} onClose={() => setTasksOpen(false)} unit={unit} onOpenThread={(id) => { setTasksOpen(false); open(id) }} />
       <ConfirmDialog open={!!doomed} onClose={() => setDoomed(null)} onConfirm={() => void del()} danger loading={remove.isPending}
-        title={t('assistant.deleteConfirmTitle')} description={t('assistant.deleteConfirmBody', { title: doomed?.title || t('assistant.untitled') })} confirmText={t('common.delete')} cancelText={t('common.cancel')} />
+        title={t('assistant.deleteConfirmTitle')} description={t('assistant.deleteConfirmBody', { title: doomed ? threadTitle(doomed, t('assistant.untitled')) : '' })} confirmText={t('common.delete')} cancelText={t('common.cancel')} />
     </Page>
   )
 }

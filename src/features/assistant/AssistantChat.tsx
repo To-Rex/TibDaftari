@@ -5,7 +5,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowDown, BadgeCheck, ChartPie, CopyPlus, FileSpreadsheet, FlaskConical, Lightbulb, Loader2, MapPin, PencilLine, ReceiptText, Sparkles, TrendingUp, UserPlus, Users, type LucideIcon } from 'lucide-react'
+import { ArrowDown, BadgeCheck, CalendarClock, ChartPie, CopyPlus, FileSpreadsheet, FlaskConical, Lightbulb, Loader2, MapPin, PencilLine, ReceiptText, Sparkles, TrendingUp, UserPlus, Users, type LucideIcon } from 'lucide-react'
 import type { AssistantMessage, AssistantStatus, AssistantThread, Id, OrgUnit } from '@/domain'
 import { ApiError } from '@/data'
 import { useAuth } from '@/features/auth/store'
@@ -13,7 +13,7 @@ import { useMediaQuery } from '@/shared/hooks/useMediaQuery'
 import { cn } from '@/shared/lib/cn'
 import { errorMessage } from '@/shared/lib/errors'
 import { toast } from '@/shared/ui'
-import { AssistantMark, AssistantTurn, UserBubble } from './ChatMessage'
+import { AssistantMark, AssistantTurn, ScheduledMark, UserBubble } from './ChatMessage'
 import { Composer } from './Composer'
 import { NEW_THREAD as NEW, useAssistantActions, useAssistantWorks, useThread } from './queries'
 
@@ -29,6 +29,7 @@ const EXAMPLES: { key: string; icon: LucideIcon; needs?: string }[] = [
   { key: 'exampleApprove', icon: BadgeCheck, needs: 'approve_result' },
   { key: 'exampleCopy', icon: CopyPlus, needs: 'copy_working_set' },
   { key: 'example1', icon: TrendingUp, needs: 'breakdown' },
+  { key: 'exampleSchedule', icon: CalendarClock, needs: 'create_schedule' },
   { key: 'example5', icon: FileSpreadsheet, needs: 'export_data' },
   { key: 'example6', icon: ChartPie, needs: 'export_chart' },
   { key: 'example2', icon: Users, needs: 'list_employees' },
@@ -242,6 +243,15 @@ export function AssistantChat({ threadId, unit, status, onCreate, onOpen, focusT
     if (!threadId || works[threadId]) return
     try { await actions.resolve(threadId, actionId, confirm, word) } catch (e) { toast.error(errorMessage(e)) }
   }
+  // several writes of one turn, answered together — and taken back together
+  const onResolveMany = async (confirm: string[], cancel: string[]) => {
+    if (!threadId || works[threadId]) return
+    try { await actions.resolveMany(threadId, confirm, cancel) } catch (e) { toast.error(errorMessage(e)) }
+  }
+  const onUndoMany = async (ids: string[]) => {
+    if (!threadId || works[threadId]) return
+    try { await actions.undoMany(threadId, ids) } catch (e) { toast.error(errorMessage(e)) }
+  }
 
   const examples = useMemo(() => {
     const mine = new Set(status.tools.map((x) => x.name))
@@ -270,7 +280,7 @@ export function AssistantChat({ threadId, unit, status, onCreate, onOpen, focusT
           <div ref={content} className="mx-auto flex max-w-3xl flex-col gap-5">
             {turns.map((turn, i) => (
               <motion.div key={turn.kind === 'user' ? turn.m.id : turn.id} {...enter}>
-                {turn.kind === 'user' ? <UserBubble content={turn.m.content} at={turn.m.createdAt} /> : <AssistantTurn items={turn.items} onResolve={(a, c, w) => void onResolve(a, c, w)} onUndo={(a) => void onUndo(a)} busy={acting} last={i === turns.length - 1 && !busy} onChoose={i === turns.length - 1 && !busy ? (option) => void submit(option) : undefined} />}
+                {turn.kind === 'user' ? (turn.m.scheduled ? <ScheduledMark content={turn.m.content} at={turn.m.createdAt} /> : <UserBubble content={turn.m.content} at={turn.m.createdAt} />) : <AssistantTurn items={turn.items} onResolve={(a, c, w) => void onResolve(a, c, w)} onResolveMany={(c, x) => void onResolveMany(c, x)} onUndo={(a) => void onUndo(a)} onUndoMany={(ids) => void onUndoMany(ids)} busy={acting} last={i === turns.length - 1 && !busy} onChoose={i === turns.length - 1 && !busy ? (option) => void submit(option) : undefined} />}
               </motion.div>
             ))}
             {outgoing && <motion.div {...enter}><UserBubble content={outgoing} pending /></motion.div>}

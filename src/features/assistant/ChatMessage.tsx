@@ -1,16 +1,17 @@
 /**
  * The pieces of the assistant chat: the employee's bubble, the assistant's turn (Markdown reply, the tools it ran
- * as chips, the files it built, and — for a proposed write — the confirmation card the employee answers).
+ * as chips, the files it built, and — for a proposed write — the confirmation card the employee answers; several
+ * writes proposed together share ONE card and one yes).
  */
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AlertTriangle, Ban, Check, CheckCircle2, Clock, Download, Eye, FileImage, FileJson, FileSpreadsheet, FileText, FileType2, Loader2, PencilLine, ShieldCheck, Sparkles, Square, Undo2, X } from 'lucide-react'
+import { AlertTriangle, Ban, CalendarClock, Check, CheckCircle2, ChevronDown, Clock, Download, Eye, FileImage, FileJson, FileSpreadsheet, FileText, FileType2, ListChecks, Loader2, PencilLine, ShieldCheck, Sparkles, Square, Undo2, X } from 'lucide-react'
 import type { AssistantAction, AssistantChoices, AssistantFile, AssistantMessage, AssistantToolCall } from '@/domain'
 import { repos } from '@/data'
 import { cn } from '@/shared/lib/cn'
 import { errorMessage } from '@/shared/lib/errors'
 import { fmtDateTime, fmtRelative, fmtTime, isoDay } from '@/shared/lib/format'
-import { Badge, Button, toast } from '@/shared/ui'
+import { Badge, Button, Checkbox, toast } from '@/shared/ui'
 import { CopyButton } from './CopyButton'
 import { Markdown } from './Markdown'
 
@@ -179,6 +180,168 @@ export function ActionCard({ action, onResolve, onUndo, busy }: { action: Assist
   )
 }
 
+type ResolveMany = (confirm: string[], cancel: string[]) => void
+const STATUS_ORDER = ['done', 'failed', 'cancelled', 'expired'] as const
+const detailKey = (d: { label: string; value: string }) => `${d.label}\u0000${d.value}`
+/**
+ * An action's details in one line: «Nomi: Umumiy qon tahlili · Narx: 45 000 · Birlik: …». What every row of the card
+ * shares (`shared` — the same unit, the same category) goes last, so the eye lands on what tells the rows apart.
+ */
+function brief(a: AssistantAction, shared: Set<string>) {
+  if (!a.details?.length) return a.summary
+  const own = a.details.filter((d) => !shared.has(detailKey(d)))
+  return [...own, ...a.details.filter((d) => shared.has(detailKey(d)))].map((d) => `${d.label}: ${d.value}`).join(' · ')
+}
+
+function BatchItemIcon({ a }: { a: AssistantAction }) {
+  if (a.undo?.undoneAt) return <Undo2 className="size-4 text-brand" />
+  if (a.status === 'done') return <CheckCircle2 className="size-4 text-ok" />
+  if (a.status === 'failed') return <AlertTriangle className="size-4 text-danger" />
+  if (a.status === 'expired') return <Clock className="size-4 text-ink-3" />
+  return <Ban className="size-4 text-ink-3" />
+}
+
+/**
+ * Several writes the assistant proposed in one turn: a list the employee checks (each row opens to what it
+ * touches), unticks what they do not want, and answers with ONE yes — the server runs the chosen ones one by one
+ * and declines the rest. Afterwards every row shows its own outcome, and the done ones go back together.
+ */
+export function BatchCard({ actions, onResolveMany, onUndoMany, onUndo, busy }: { actions: AssistantAction[]; onResolveMany?: ResolveMany; onUndoMany?: (ids: string[]) => void; onUndo?: (id: string) => void; busy?: boolean }) {
+  const { t } = useTranslation()
+  const waiting = actions.filter((a) => a.status === 'pending')
+  const pending = waiting.length > 0
+  const [picked, setPicked] = useState<Set<string>>(() => new Set(actions.map((a) => a.id)))
+  const [open, setOpen] = useState<Set<string>>(() => new Set())
+  // taking writes back asks once more: 'all', or the id of one row
+  const [asking, setAsking] = useState<string | null>(null)
+  const chosen = waiting.filter((a) => picked.has(a.id))
+  const danger = (pending ? chosen : actions).some((a) => a.danger) && pending
+  const back = actions.filter((a) => a.status === 'done' && a.undo?.available)
+  const undone = actions.filter((a) => a.undo?.undoneAt).length
+  const flip = (set: Set<string>, id: string) => { const next = new Set(set); if (next.has(id)) next.delete(id); else next.add(id); return next }
+  const counts = STATUS_ORDER.map((st) => ({ st, n: actions.filter((a) => a.status === st).length })).filter((x) => x.n > 0)
+  const only = counts.length === 1 ? (counts[0]?.st ?? null) : null
+  const tone = pending ? (danger ? 'danger' : 'warn') : only === 'done' ? 'ok' : only === 'failed' ? 'danger' : 'neutral'
+  const later = chosen.filter((a) => a.undoable).length
+  // the details every row repeats — a row's one-line summary starts with what is its own
+  const shared = useMemo(() => {
+    const seen = new Map<string, number>()
+    for (const a of actions) for (const k of new Set((a.details ?? []).map(detailKey))) seen.set(k, (seen.get(k) ?? 0) + 1)
+    return new Set([...seen].filter(([, n]) => n === actions.length).map(([k]) => k))
+  }, [actions])
+  // the first write that can still go back (the only one, when a single row is left)
+  const lone = back[0]
+  return (
+    <div className={cn('max-w-xl rounded-2xl border p-3.5', pending ? (danger ? 'border-danger/50 bg-danger-soft/40 shadow-1' : 'border-warn/50 bg-warn-soft/40 shadow-1') : 'border-line bg-surface/60')}
+      data-assistant-batch data-batch-size={actions.length} data-batch-state={pending ? 'pending' : 'resolved'}>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className={cn('grid size-7 shrink-0 place-items-center rounded-lg', pending ? (danger ? 'bg-danger/15 text-danger' : 'bg-warn/15 text-warn') : 'bg-surface-2 text-ink-2')}><ListChecks className="size-4" /></span>
+        <div className="min-w-0 flex-1">
+          <div className="text-[13.5px] font-semibold">{pending ? t('assistant.batch.title', { n: waiting.length }) : t('assistant.batch.resolved', { n: actions.length })}</div>
+          <div className="text-[12px] text-ink-3" data-batch-counts>
+            {pending ? t(danger ? 'assistant.batch.dangerHint' : 'assistant.batch.hint') : [...counts.map((x) => t(`assistant.batch.counts.${x.st}`, { n: x.n })), ...(undone ? [t('assistant.batch.counts.undone', { n: undone })] : [])].join(' · ')}
+          </div>
+        </div>
+        {/* on a narrow screen the title already says "waiting" — the room goes to the explanation */}
+        <span className={cn('shrink-0', pending && 'max-sm:hidden')}><Badge tone={tone} size="sm">{pending ? t('assistant.action.pending') : only ? t(`assistant.action.${only}`) : `${actions.filter((a) => a.status === 'done').length} / ${actions.length}`}</Badge></span>
+      </div>
+      <ul className="mt-2.5 divide-y divide-line/70 overflow-hidden rounded-xl border border-line/70 bg-bg-elevated" data-batch-list>
+        {actions.map((a) => {
+          const shown = open.has(a.id)
+          const waits = a.status === 'pending'
+          const canBack = a.status === 'done' && !!a.undo?.available && !!onUndo
+          return (
+            <li key={a.id} data-batch-item={a.id} data-action-status={a.status} data-action-danger={a.danger || undefined} className={cn(waits && !picked.has(a.id) && 'opacity-55')}>
+              <div className="flex items-start gap-2.5 px-3 py-2">
+                <span className="mt-0.5 grid size-5 shrink-0 place-items-center">
+                  {waits && onResolveMany ? <Checkbox checked={picked.has(a.id)} disabled={busy} onChange={() => setPicked((cur) => flip(cur, a.id))} aria-label={a.title} data-batch-check /> : <BatchItemIcon a={a} />}
+                </span>
+                <button type="button" aria-expanded={shown} title={t(shown ? 'assistant.batch.hide' : 'assistant.batch.show')} onClick={() => setOpen((cur) => flip(cur, a.id))} className="group/item flex min-w-0 flex-1 items-start gap-2 text-left" data-batch-toggle>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex flex-wrap items-center gap-x-1.5 text-[13.5px] font-medium leading-snug">
+                      <span className="min-w-0 break-words">{a.title}</span>
+                      {a.danger && <span className="shrink-0 rounded-full bg-danger-soft px-1.5 py-px text-[10.5px] font-medium text-danger">{t('assistant.batch.irreversible')}</span>}
+                    </span>
+                    {!shown && <span className="mt-0.5 block truncate text-[12.5px] text-ink-3">{a.error && a.status === 'failed' ? a.error : brief(a, shared)}</span>}
+                  </span>
+                  <ChevronDown className={cn('mt-0.5 size-4 shrink-0 text-ink-3 transition-transform group-hover/item:text-ink', shown && 'rotate-180')} />
+                </button>
+              </div>
+              {shown && (
+                <div className="pb-2.5 pl-[2.625rem] pr-3" data-batch-details>
+                  {!!a.details?.length && (
+                    <dl className="grid grid-cols-[max-content_minmax(0,1fr)] gap-x-3 gap-y-1 text-[12.5px]">
+                      {a.details.map((d, i) => <Fragment key={i}><dt className="max-w-[10rem] text-ink-3">{d.label}</dt><dd className="min-w-0 whitespace-pre-wrap break-words">{d.value}</dd></Fragment>)}
+                    </dl>
+                  )}
+                  {a.error && <p className="mt-1 text-[12.5px] text-danger">{a.error}</p>}
+                  {canBack && (asking === a.id ? (
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-[12.5px] text-ink-2">
+                      <span className="min-w-0">{t('assistant.undo.ask')} {a.undo?.label}</span>
+                      <Button size="sm" disabled={busy} onClick={() => { setAsking(null); onUndo?.(a.id) }} data-action-undo-yes>{t('assistant.undo.yes')}</Button>
+                      <Button size="sm" variant="secondary" disabled={busy} onClick={() => setAsking(null)}>{t('assistant.undo.no')}</Button>
+                    </div>
+                  ) : <button type="button" disabled={busy} onClick={() => setAsking(a.id)} className="mt-2 inline-flex items-center gap-1.5 text-[12.5px] font-medium text-brand hover:underline disabled:opacity-50" data-action-undo><Undo2 className="size-3.5" />{t('assistant.undo.button')}</button>)}
+                </div>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+      {pending && onResolveMany && (
+        <>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Button size="sm" variant={danger ? 'danger' : 'primary'} leftIcon={busy ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />} disabled={busy || chosen.length === 0}
+              onClick={() => onResolveMany(chosen.map((a) => a.id), waiting.filter((a) => !picked.has(a.id)).map((a) => a.id))} data-batch-confirm>
+              {t(chosen.length === waiting.length ? 'assistant.batch.confirmAll' : 'assistant.batch.confirmSome', { n: chosen.length })}
+            </Button>
+            <Button size="sm" variant="secondary" leftIcon={<X className="size-4" />} disabled={busy} onClick={() => onResolveMany([], waiting.map((a) => a.id))} data-batch-cancel>{t('assistant.batch.cancelAll')}</Button>
+            <button type="button" disabled={busy} onClick={() => setPicked(chosen.length === waiting.length ? new Set() : new Set(waiting.map((a) => a.id)))} className="text-[12.5px] font-medium text-ink-2 hover:text-ink hover:underline disabled:opacity-50" data-batch-toggle-all>
+              {t(chosen.length === waiting.length ? 'assistant.batch.selectNone' : 'assistant.batch.selectAll')}
+            </button>
+            <span className="ml-auto text-[11.5px] text-ink-3">{t('assistant.action.expiresIn', { when: fmtRelative(waiting[0]?.expiresAt) })}</span>
+          </div>
+          <p className="mt-2 flex items-start gap-1.5 text-[11.5px] text-ink-3" data-batch-undoable={later}>
+            <Undo2 className="mt-px size-3.5 shrink-0" />
+            <span>{later > 0 ? t('assistant.batch.undoable', { k: later }) : t('assistant.batch.undoableNone')}{chosen.length < waiting.length && <> · {t('assistant.batch.skipHint')}</>}</span>
+          </p>
+        </>
+      )}
+      {!pending && back.length > 1 && onUndoMany && (asking === 'all' ? (
+        <div className="mt-3 rounded-xl border border-line bg-bg-elevated px-3 py-2.5" data-batch-undo-ask>
+          <p className="text-[12.5px] text-ink-2">{t('assistant.batch.undoAsk', { n: back.length })}</p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <Button size="sm" leftIcon={busy ? <Loader2 className="size-4 animate-spin" /> : <Undo2 className="size-4" />} disabled={busy} onClick={() => { setAsking(null); onUndoMany(back.map((a) => a.id)) }} data-batch-undo-yes>{t('assistant.undo.yes')}</Button>
+            <Button size="sm" variant="secondary" disabled={busy} onClick={() => setAsking(null)}>{t('assistant.undo.no')}</Button>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <Button size="sm" variant="secondary" leftIcon={<Undo2 className="size-4" />} disabled={busy} onClick={() => setAsking('all')} data-batch-undo>{t('assistant.batch.undoAll', { n: back.length })}</Button>
+          {lone?.undo?.until && <span className="text-[11.5px] text-ink-3">{t('assistant.undo.until', { when: fmtRelative(lone.undo.until) })}</span>}
+        </div>
+      ))}
+      {!pending && back.length === 1 && lone && onUndo && !open.has(lone.id) && (
+        <div className="mt-3"><Button size="sm" variant="secondary" leftIcon={<Undo2 className="size-4" />} disabled={busy} onClick={() => { setOpen((cur) => new Set(cur).add(lone.id)); setAsking(lone.id) }} data-batch-undo-one>{t('assistant.undo.button')}</Button></div>
+      )}
+    </div>
+  )
+}
+
+/** The turn a scheduled task wrote — its own text, not something the employee typed: a quiet mark with the time. */
+export function ScheduledMark({ content, at }: { content: string; at?: string }) {
+  const { t } = useTranslation()
+  return (
+    <div className="flex items-start gap-2.5 rounded-2xl border border-dashed border-line-strong/70 bg-surface/50 px-3.5 py-2.5" data-chat-msg="scheduled">
+      <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-brand-soft text-brand"><CalendarClock className="size-3.5" /></span>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-x-2 text-[12px] font-medium text-ink-2">{t('assistant.schedule.mark')}{at && <time dateTime={at} className="font-normal text-ink-3">{stamp(at)}</time>}</div>
+        <p className="mt-0.5 line-clamp-3 whitespace-pre-wrap break-words text-[13.5px] leading-relaxed text-ink-2" title={content}>{content}</p>
+      </div>
+    </div>
+  )
+}
+
 /** `14:05` for today, the full date and time for an older turn. */
 const stamp = (iso: string) => (isoDay(new Date(iso)) === isoDay() ? fmtTime(iso) : fmtDateTime(iso))
 
@@ -218,9 +381,9 @@ export function Choices({ choices, shown, onChoose }: { choices: AssistantChoice
 }
 
 /** One stored turn: the employee's bubble, a failed tool as a small red line, or a piece of the assistant's answer. */
-export function ChatMessage({ m, onResolve, onUndo, busy, onChoose }: { m: AssistantMessage; onResolve?: Resolve; onUndo?: (id: string) => void; busy?: boolean; onChoose?: (option: string) => void }) {
+export function ChatMessage({ m, onResolve, onResolveMany, onUndo, onUndoMany, busy, onChoose }: { m: AssistantMessage; onResolve?: Resolve; onResolveMany?: ResolveMany; onUndo?: (id: string) => void; onUndoMany?: (ids: string[]) => void; busy?: boolean; onChoose?: (option: string) => void }) {
   const { t } = useTranslation()
-  if (m.role === 'user') return <UserBubble content={m.content} at={m.createdAt} />
+  if (m.role === 'user') return m.scheduled ? <ScheduledMark content={m.content} at={m.createdAt} /> : <UserBubble content={m.content} at={m.createdAt} />
   if (m.role === 'tool') {
     return m.isError ? <div className="flex justify-start" data-chat-msg="tool"><div className="inline-flex h-6 items-center gap-1.5 rounded-full border border-danger/30 bg-danger-soft/50 px-2.5 text-[12px] text-danger"><AlertTriangle className="size-3.5" />{t('assistant.toolError')} · {m.toolName}</div></div> : null
   }
@@ -229,12 +392,18 @@ export function ChatMessage({ m, onResolve, onUndo, busy, onChoose }: { m: Assis
   // a write was taken back: said plainly, with the mark of the way back
   if (m.undoOf) return <div className="flex max-w-xl items-start gap-2 rounded-2xl border border-line bg-surface/60 px-3 py-2 text-[13.5px] leading-relaxed text-ink-2" data-chat-msg="undo"><Undo2 className="mt-0.5 size-4 shrink-0 text-brand" /><span className="min-w-0 break-words">{m.content.replace(/^↩\s*/, '')}</span></div>
   const empty = !m.content.trim()
+  // the writes this turn proposed: one → its own card; several → one card, one yes
+  const acts = m.actions?.length ? m.actions : m.action ? [m.action] : []
+  const [single] = acts
+  // a card that lists its writes row by row needs no chip per write above it (a refused one keeps its red chip)
+  const chips = acts.length > 1 ? m.toolCalls.filter((c) => c.kind !== 'write' || c.status === 'error') : m.toolCalls
   return (
     <div className="min-w-0 space-y-2.5" data-chat-msg="assistant">
-      {m.toolCalls.length > 0 && <div className="flex flex-wrap gap-1.5">{m.toolCalls.map((c) => <ToolChip key={c.id} c={c} />)}</div>}
+      {chips.length > 0 && <div className="flex flex-wrap gap-1.5">{chips.map((c) => <ToolChip key={c.id} c={c} />)}</div>}
       {!empty && <Markdown text={m.content} />}
       {(m.files ?? []).map((f) => <FileCard key={f.id} file={f} />)}
-      {m.action && <ActionCard action={m.action} onResolve={onResolve} onUndo={onUndo} busy={busy} />}
+      {acts.length === 1 && single && <ActionCard action={single} onResolve={onResolve} onUndo={onUndo} busy={busy} />}
+      {acts.length > 1 && <BatchCard actions={acts} onResolveMany={onResolveMany} onUndoMany={onUndoMany} onUndo={onUndo} busy={busy} />}
       {m.choices && <Choices choices={m.choices} shown={!!m.choices.question && m.content.includes(m.choices.question)} onChoose={onChoose} />}
     </div>
   )
@@ -244,7 +413,7 @@ export function ChatMessage({ m, onResolve, onUndo, busy, onChoose }: { m: Assis
  * The assistant's side of an exchange: everything it said and did between two messages of the employee, under
  * one mark, with the time and a "copy" for the text it wrote. `onChoose` is given while its question still stands.
  */
-export function AssistantTurn({ items, onResolve, onUndo, busy, last, onChoose }: { items: AssistantMessage[]; onResolve?: Resolve; onUndo?: (id: string) => void; busy?: boolean; last?: boolean; onChoose?: (option: string) => void }) {
+export function AssistantTurn({ items, onResolve, onResolveMany, onUndo, onUndoMany, busy, last, onChoose }: { items: AssistantMessage[]; onResolve?: Resolve; onResolveMany?: ResolveMany; onUndo?: (id: string) => void; onUndoMany?: (ids: string[]) => void; busy?: boolean; last?: boolean; onChoose?: (option: string) => void }) {
   const { t } = useTranslation()
   const text = items.filter((m) => m.role === 'assistant' && !m.stopped && (m.content.trim() || m.choices?.question)).map((m) => [m.content.trim(), m.choices && !m.content.includes(m.choices.question) ? m.choices.question : ''].filter(Boolean).join('\n\n')).join('\n\n')
   const at = items[items.length - 1]?.createdAt
@@ -252,7 +421,7 @@ export function AssistantTurn({ items, onResolve, onUndo, busy, last, onChoose }
     <div className="group/msg flex gap-3" data-chat-turn="assistant">
       <AssistantMark className="mt-0.5 max-sm:hidden" />
       <div className="min-w-0 flex-1">
-        <div className="space-y-2.5">{items.map((m, i) => <ChatMessage key={m.id} m={m} onResolve={onResolve} onUndo={onUndo} busy={busy} onChoose={i === items.length - 1 ? onChoose : undefined} />)}</div>
+        <div className="space-y-2.5">{items.map((m, i) => <ChatMessage key={m.id} m={m} onResolve={onResolve} onResolveMany={onResolveMany} onUndo={onUndo} onUndoMany={onUndoMany} busy={busy} onChoose={i === items.length - 1 ? onChoose : undefined} />)}</div>
         <div className={cn('mt-1 flex h-7 items-center gap-1 transition-opacity focus-within:opacity-100 group-hover/msg:opacity-100 [@media(hover:none)]:opacity-100', !last && 'opacity-0')} data-chat-msg-tools>
           {text && <CopyButton text={text} label={t('assistant.copy')} doneLabel={t('assistant.copied')} className="-ml-1.5" />}
           {at && <time dateTime={at} className="px-1 text-[11.5px] text-ink-3">{stamp(at)}</time>}

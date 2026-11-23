@@ -288,7 +288,8 @@ function TopBar({ onMenu, module, onHelp, ws }: { onMenu: () => void; module: 's
                 <span className="text-[12px] text-ink-3 whitespace-normal">{n.body}</span>
               </span>
             ),
-            onSelect: () => { void repos.messaging.markRead(n.id); if (n.link) nav(n.link) },
+            // a notice of the assistant (a scheduled task's answer) names no app: it opens in the one the reader is in
+            onSelect: () => { void repos.messaging.markRead(n.id); if (n.link) nav(n.link.startsWith('/assistant') ? (module === 'admin' ? routes.admin.assistant : routes.app.assistant) + n.link.slice('/assistant'.length) : n.link) },
           }))}
         />
         <Menu
