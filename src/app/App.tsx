@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { RouterProvider } from 'react-router-dom'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import { router } from './router'
@@ -6,7 +6,7 @@ import { QueryProvider } from './providers/QueryProvider'
 import { ThemeProvider } from '@/shared/theme/ThemeProvider'
 import { ToastViewport, BrandMark } from '@/shared/ui'
 import { useAuth } from '@/features/auth/store'
-import '@/shared/i18n'
+import { i18nReady, isI18nReady } from '@/shared/i18n'
 
 function Splash() {
   return (
@@ -22,12 +22,16 @@ export function App() {
   const hydrated = useAuth((s) => s.hydrated)
   const hydrate = useAuth((s) => s.hydrate)
   useEffect(() => void hydrate(), [hydrate])
+  // a language fetched on demand (Kyrgyz, Tajik …) is waited for under the splash, so no screen flashes in another
+  const [langReady, setLangReady] = useState(isI18nReady)
+  useEffect(() => { if (!langReady) void i18nReady.then(() => setLangReady(true)) }, [langReady])
+  const ready = hydrated && langReady
   return (
     <MotionConfig reducedMotion="user">
       <ThemeProvider>
         <QueryProvider>
-          <AnimatePresence>{!hydrated && <Splash />}</AnimatePresence>
-          {hydrated && <RouterProvider router={router} />}
+          <AnimatePresence>{!ready && <Splash />}</AnimatePresence>
+          {ready && <RouterProvider router={router} />}
           <ToastViewport />
         </QueryProvider>
       </ThemeProvider>

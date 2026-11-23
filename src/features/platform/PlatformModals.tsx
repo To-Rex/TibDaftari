@@ -9,6 +9,7 @@ import { BriefcaseBusiness } from 'lucide-react'
 import type { Country, OrgUnit } from '@/domain'
 import { ApiError } from '@/data'
 import { countryLabel } from '@/features/org/LocationFields'
+import { contentLocale } from '@/shared/i18n'
 import { useCreateUnit } from '@/features/org/queries'
 import { errorMessage } from '@/shared/lib/errors'
 import { Button, Field, Input, Modal, Select, toast } from '@/shared/ui'
@@ -37,7 +38,7 @@ export function CompanyModal({ open, onClose, countries, onCreated }: { open: bo
       const company = await create.mutateAsync({ name: clean, shortName: shortName.trim() || undefined })
       if (country) {
         try {
-          await create.mutateAsync({ parentId: company.id, countryId: country.id, name: countryLabel(country), code: country.code })
+          await create.mutateAsync({ parentId: company.id, countryId: country.id, name: countryLabel(country, contentLocale()), code: country.code })
         } catch {
           toast.error(t('admin.platform.companies.countryFailed'))
         }

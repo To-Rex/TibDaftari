@@ -12,6 +12,7 @@ import { errorMessage } from '@/shared/lib/errors'
 import { fmtDateTime, fmtNumber } from '@/shared/lib/format'
 import { Badge, Button, Skeleton, Textarea, toast } from '@/shared/ui'
 import { useEskizInfo, useRefreshEskizInfo, useSubmitEskizTemplate } from './queries'
+import { regionNames } from '@/shared/i18n'
 
 /** moderation state → badge tone and label key */
 export const TEMPLATE_STATE: Record<string, { tone: 'ok' | 'warn' | 'danger' | 'info' | 'neutral'; key: string; icon: typeof BadgeCheck }> = {
@@ -49,7 +50,7 @@ function PricesTile({ prices, lang }: { prices: EskizPrice[]; lang: string }) {
     const pool = ours.length ? ours : prices
     return { home: ours, abroad: byCountry, min: pool.length ? Math.min(...pool.map((p) => p.price)) : null, max: pool.length ? Math.max(...pool.map((p) => p.price)) : null }
   }, [prices])
-  const countryName = useMemo(() => { try { return new Intl.DisplayNames([lang], { type: 'region' }) } catch { return null } }, [lang])
+  const countryName = useMemo(() => regionNames(lang), [lang])
   const shownHome = allHome ? home : home.slice(0, HOME_PREVIEW)
   return (
     <div className="flex flex-col rounded-[var(--radius)] border border-line bg-surface p-3.5" data-eskiz-prices={prices.length}>

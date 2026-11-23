@@ -2,14 +2,29 @@ import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Country } from '@/domain'
 import { useCountries, useDistricts, useRegions } from '@/features/patients/queries'
-import { currentLocale } from '@/shared/i18n'
+import i18n, { langInfo, regionNames } from '@/shared/i18n'
+import { toCyrillic, toNewLatin } from '@/shared/i18n/translit'
 import { cn } from '@/shared/lib/cn'
 import { Field, Select } from '@/shared/ui'
 
 export interface LocationValue { countryId: string; regionId: string; districtId: string }
 
-/** Country name in the UI language (falls back to the Uzbek name). */
-export const countryLabel = (c: Country, locale = currentLocale()): string => (locale === 'ru' ? c.nameRu : locale === 'en' ? c.nameEn : c.name) || c.name
+/**
+ * A country's name in a language — the interface's by default. Uzbek, Russian and English use the names stored with
+ * the country (falling back to the Uzbek one); Uzbek Cyrillic and the new Latin write the Uzbek name in their letters;
+ * the other languages take the browser's own name for the country when it speaks them, else the stored name of their
+ * content language. For a name that is SAVED (a new unit's name), pass the content language (`contentLocale()`).
+ */
+export function countryLabel(c: Country, lang: string = i18n.language): string {
+  const info = langInfo(lang)
+  const stored = (info.content === 'ru' ? c.nameRu : info.content === 'en' ? c.nameEn : c.name) || c.name
+  if (info.code === 'uz' || info.code === 'ru' || info.code === 'en') return stored
+  if (info.code === 'uz-Cyrl') return toCyrillic(c.name)
+  if (info.code === 'uz-x-yangi') return toNewLatin(c.name)
+  const names = c.code ? regionNames(info.code) : null
+  const own = names && names.locale.split('-')[0]!.toLowerCase() === info.code ? names.of(c.code.toUpperCase()) : undefined
+  return own || stored
+}
 
 /**
  * Country → region (viloyat / city) → district cascading selects. Changing a parent clears its children;

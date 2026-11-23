@@ -11,6 +11,7 @@ import { Button, Drawer, Field, Input, Select, Switch, Textarea, toast } from '@
 import { useUnitSms } from '@/features/org/queries'
 import { useSendSms } from './queries'
 import { parseRecipients, smsInfo } from './sms'
+import { regionNames } from '@/shared/i18n'
 
 /** the countries offered for numbers abroad (ISO-2; the names come from the browser in the UI language) */
 const ABROAD = ['KZ', 'RU', 'KG', 'TJ', 'TM', 'TR', 'AE', 'KR', 'CN', 'IN', 'AF', 'AZ', 'BY', 'UA', 'GE', 'DE', 'GB', 'US', 'SA', 'EG'] as const
@@ -53,9 +54,7 @@ export function ComposeDrawer({ open, onClose, scopeId, canBroadcast }: {
   // the SMS account the sending facility uses: only Eskiz reaches numbers abroad
   const account = useUnitSms(unitId ?? scopeId)
   const abroadBlocked = abroad && !!account.data && account.data.provider !== 'eskiz'
-  const countryName = useMemo(() => {
-    try { return new Intl.DisplayNames([i18n.language], { type: 'region' }) } catch { return null }
-  }, [i18n.language])
+  const countryName = useMemo(() => regionNames(i18n.language), [i18n.language])
   const info = useMemo(() => smsInfo(text), [text])
   const tooMany = !canBroadcast && rec.valid.length > 1
   const canSend = rec.valid.length > 0 && text.trim().length > 0 && !tooMany && !abroadBlocked && (!schedule || !!when) && (isFacility || !!unitId)

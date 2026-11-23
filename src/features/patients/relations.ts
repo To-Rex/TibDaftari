@@ -23,8 +23,12 @@ export function useRelationLabels() {
   /** "Aziza Karimovaning o‘g‘li" / "Сын · Азиза Каримова" / "Son of Aziza Karimova" */
   const of = useCallback((rel: Relation, gender: Gender | '' | null | undefined, name: string) => {
     const word = label(rel, gender)
-    const lower = !i18n.language?.startsWith('ru')
-    return t('relation.of', { rel: lower ? word.toLocaleLowerCase(i18n.language) : word, name })
+    // inside a phrase the relation is written in lower case («Aziza Karimovaning o‘g‘li», «son of …»); where it
+    // leads or stands apart as a label («Сын · Азиза Каримова», «Писари Алишер») it keeps its capital
+    const tpl = t('relation.of')
+    const lng = i18n.language ?? 'uz'
+    const lower = lng === 'en' || (!lng.startsWith('ru') && !tpl.trimStart().startsWith('{{rel}}') && !tpl.includes('·'))
+    return t('relation.of', { rel: lower ? word.toLocaleLowerCase(lng) : word, name })
   }, [label, t, i18n.language])
   return { label, of }
 }

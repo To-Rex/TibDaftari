@@ -19,9 +19,10 @@ import { OrdersFilterDrawer } from '@/features/orders/OrdersFilterDrawer'
 import { OrdersFilterChips, OrdersSummaryBar } from '@/features/orders/OrdersFilterChips'
 import { activeExtraCount, extraToQuery, loadView, saveView, SORTS, type ExtraFilters, type OrdersRange } from '@/features/orders/ordersFilters'
 import { ORDER_STATUSES, PAYMENT_STATUSES, orderStatusMeta, paymentMethodLabel, paymentStatusMeta } from '@/features/orders/status'
+import { contentLocale } from '@/shared/i18n'
 
 export default function OrdersPage() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const { scopeId, facilityId, scopeUnitId } = useStaffScope()
   // an administrator with several facilities under the administered unit may widen the list to another facility or
   // to all of them (the list is then read from the administered unit); everyone else sees the scope facility's cheques
@@ -115,7 +116,7 @@ export default function OrdersPage() {
   const exportXlsx = async () => {
     setExporting(true)
     try {
-      const lang = (['uz', 'ru', 'en'] as const).find((l) => i18n.language?.startsWith(l)) ?? 'uz'
+      const lang = contentLocale() // the server writes the file in uz / ru / en
       const blob = await repos.orders.exportXlsx(listScope, { ...filters, sortBy, sortDir, lang, caption: caption() })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')

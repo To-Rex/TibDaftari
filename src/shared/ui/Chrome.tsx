@@ -2,10 +2,11 @@
 import { useTranslation } from 'react-i18next'
 import { Moon, Sun, Languages, Check } from 'lucide-react'
 import { cn } from '@/shared/lib/cn'
-import { LOCALES } from '@/shared/i18n'
+import { LANGS, langInfo, setLanguage, type UiLangInfo } from '@/shared/i18n'
 import { useTheme } from '@/shared/theme/ThemeProvider'
 import { Menu } from './Navigation'
 import { IconButton } from './Button'
+import { toast } from './Toast'
 
 export function BrandMark({ className, size = 28 }: { className?: string; size?: number }) {
   return (
@@ -25,31 +26,49 @@ export function Logo({ className, compact }: { className?: string; compact?: boo
   )
 }
 
+/** A language's name in itself, in the font that has its letters (`lang` on the element), with its script / variant. */
+export function LanguageName({ lang, hint = true }: { lang: UiLangInfo; hint?: boolean }) {
+  return (
+    <span className="min-w-0 truncate">
+      <span lang={lang.code} data-lang-name>{lang.label}</span>
+      {hint && lang.hint && <span lang={lang.code} data-lang-name className="ml-1.5 text-[12px] text-ink-3">{lang.hint}</span>}
+    </span>
+  )
+}
+
+/** Picks the interface language; a language that has to be fetched first switches when it is here. */
+export function pickLanguage(code: UiLangInfo['code'], failed: string) {
+  setLanguage(code).catch(() => toast.error(failed))
+}
+
 export function LanguageSwitcher({ compact }: { compact?: boolean }) {
-  const { i18n } = useTranslation()
-  const cur = i18n.language?.slice(0, 2) ?? 'uz'
+  const { t, i18n } = useTranslation()
+  const cur = langInfo(i18n.language)
   return (
     <Menu
       align="end"
       trigger={() =>
         compact ? (
-          <IconButton label="language"><Languages /></IconButton>
+          <IconButton label={t('common.language')}><Languages /></IconButton>
         ) : (
-          <button type="button" className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium text-ink-2 hover:bg-surface-2 hover:text-ink">
+          <button type="button" aria-label={t('common.language')} title={cur.label}
+            className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium text-ink-2 hover:bg-surface-2 hover:text-ink">
             <Languages className="size-4" />
-            {LOCALES.find((l) => l.code === cur)?.short}
+            <span lang={cur.code} data-lang-name>{cur.short}</span>
           </button>
         )
       }
-      items={LOCALES.map((l) => ({
+      // the three Uzbek alphabets together, then the other languages
+      items={LANGS.map((l, i) => ({
         key: l.code,
+        separatorBefore: i > 0 && l.code === 'kaa',
         label: (
-          <span className="flex flex-1 items-center justify-between gap-6">
-            {l.label}
-            {cur === l.code && <Check className="size-4 text-brand" />}
+          <span className="flex min-w-0 flex-1 items-center justify-between gap-6" aria-current={cur.code === l.code ? 'true' : undefined}>
+            <LanguageName lang={l} />
+            {cur.code === l.code && <Check className="size-4 shrink-0 text-brand" />}
           </span>
         ),
-        onSelect: () => void i18n.changeLanguage(l.code),
+        onSelect: () => pickLanguage(l.code, t('common.languageFailed')),
       }))}
     />
   )

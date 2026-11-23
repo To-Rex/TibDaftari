@@ -13,7 +13,7 @@ export const en: DeepPartial<Dictionary> = {
     date: 'Date', today: 'Today', yesterday: 'Yesterday', last7: '7 days', last30: '30 days', thisMonth: 'This month', total: 'Total', sum: 'UZS', millionShort: '{{n}}M', billionShort: '{{n}}B', trillionShort: '{{n}}T', empty: 'Nothing found',
     emptyHint: 'Try changing the search or filters', error: 'Something went wrong', retry: 'Retry', required: 'Required', optional: 'optional', confirm: 'Confirm', areYouSure: 'Are you sure?',
     perPage: 'Per page', of: 'of', rows: 'rows', page: 'Page', noAccess: 'You don’t have access to this section', logout: 'Sign out', profile: 'Profile', settings: 'Settings',
-    language: 'Language', theme: 'Theme', themeLight: 'Light', themeDark: 'Dark', themeSystem: 'System', copy: 'Copy', copied: 'Copied', print: 'Print', download: 'Download', preview: 'Preview',
+    language: 'Language', languageFailed: 'Couldn’t load the language. Check your internet connection and try again.', theme: 'Theme', themeLight: 'Light', themeDark: 'Dark', themeSystem: 'System', copy: 'Copy', copied: 'Copied', print: 'Print', download: 'Download', preview: 'Preview',
     active: 'Active', inactive: 'Inactive', draft: 'Draft', archived: 'Archived', published: 'Published', version: 'Version', name: 'Name', phone: 'Phone', fullName: 'Full name',
     birthDate: 'Date of birth', gender: 'Gender', male: 'Male', female: 'Female', address: 'Address', price: 'Price',
     days: 'days', seeAll: 'See all', new: 'New', unsaved: 'You have unsaved changes', leaveConfirm: 'Unsaved changes will be lost. Leave?', more: 'More', less: 'Less', select: 'Select', notSet: '—',

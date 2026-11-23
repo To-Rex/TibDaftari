@@ -1,22 +1,23 @@
 import { format, formatDistanceToNowStrict, parseISO, differenceInYears, differenceInMonths } from 'date-fns'
-import { uz, ru, enGB } from 'date-fns/locale'
-import i18n, { currentLocale, INTL_LOCALE } from '@/shared/i18n'
+import i18n, { intlLocale, uiLang } from '@/shared/i18n'
+import { DATE_LOCALES } from '@/shared/i18n/dateLocales'
 
-const dfLocale = () => ({ uz, ru, en: enGB })[currentLocale()]
+/** month / weekday names and relative times in the interface language */
+const dfLocale = () => DATE_LOCALES[uiLang()]
 
 export const fmtMoney = (v: number | undefined | null, withCurrency = true) => {
   if (v == null) return '—'
-  const s = new Intl.NumberFormat(INTL_LOCALE[currentLocale()], { maximumFractionDigits: 0 }).format(v)
+  const s = new Intl.NumberFormat(intlLocale(), { maximumFractionDigits: 0 }).format(v)
   return withCurrency ? `${s} ${i18n.t('common.sum')}` : s
 }
-export const fmtNumber = (v: number) => new Intl.NumberFormat(INTL_LOCALE[currentLocale()]).format(v)
+export const fmtNumber = (v: number) => new Intl.NumberFormat(intlLocale()).format(v)
 /**
  * A sum for a glance where the room is small: up to 999 999 in full, then «48,6 mln», «1,99 mlrd» (three significant
  * digits, the locale's words) — the exact amount belongs in a tooltip next to it.
  */
 export const fmtMoneyShort = (v: number | undefined | null) => {
   if (v == null) return '—'
-  const loc = INTL_LOCALE[currentLocale()]
+  const loc = intlLocale()
   const abs = Math.abs(v)
   if (abs < 1_000_000) return new Intl.NumberFormat(loc, { maximumFractionDigits: 0 }).format(v)
   const [div, key] = abs >= 1e12 ? [1e12, 'trillionShort'] : abs >= 1e9 ? [1e9, 'billionShort'] : [1e6, 'millionShort']

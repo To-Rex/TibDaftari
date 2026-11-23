@@ -38,6 +38,7 @@ import { MotionList, stagger } from '@/shared/ui/Page'
 import { TemplateCoverage } from './TemplateCoverage'
 import { TemplateFilterBar } from './TemplateFilterBar'
 import { TemplateListView } from './TemplateListView'
+import { contentLocale } from '@/shared/i18n'
 
 type StatusFilter = 'all' | ResultTemplate['status']
 type CreateInitial = Partial<Bindings> & { name?: string }
@@ -161,7 +162,7 @@ export function TemplateGallery({ kind }: { kind: TemplateKind }) {
   const unitBinding = useMemo(() => (eff.unitId ? [eff.unitId] : []), [eff.unitId])
   // the standard cheque (labels in the interface language), owned by the scope, opened in the editor
   const addDefault = async (name?: string, unitIds?: string[]) => {
-    const language = (['uz', 'ru', 'en'].includes(i18n.language) ? i18n.language : 'uz') as ResultTemplate['language']
+    const language: ResultTemplate['language'] = contentLocale()
     try {
       const tpl = await mkDefault.mutateAsync({ name, unitIds: unitIds ?? unitBinding, language })
       setCreating(false)

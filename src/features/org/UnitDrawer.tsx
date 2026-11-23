@@ -17,6 +17,7 @@ import { formKeyDown } from '@/features/patients/formKeys'
 import { errorMessage } from '@/shared/lib/errors'
 import { Badge, Button, Drawer, Field, Input, Select, Switch, Textarea, toast } from '@/shared/ui'
 import { countryLabel } from './LocationFields'
+import { contentLocale } from '@/shared/i18n'
 import { useCreateUnit, useUpdateUnit } from './queries'
 import { UnitPicker } from './UnitPicker'
 import { UnitIcon, useUnitLabels } from './unitUi'
@@ -159,7 +160,7 @@ export function UnitDrawer({ open, onClose, parent, parents, unit, units, onSave
           <Field label={t('org.country')} required error={errors.countryId && t('common.required')} hint={t('admin.units.countryHint')}>
             {(id) => (
               <Controller control={control} name="countryId" render={({ field }) => (
-                <Select id={id} value={field.value} invalid={!!errors.countryId} disabled={countries.isLoading} onChange={(e) => { field.onChange(e.target.value); const c = countries.data?.find((x) => x.id === e.target.value); if (c) propose(countryLabel(c)) }} data-unit-country>
+                <Select id={id} value={field.value} invalid={!!errors.countryId} disabled={countries.isLoading} onChange={(e) => { field.onChange(e.target.value); const c = countries.data?.find((x) => x.id === e.target.value); if (c) propose(countryLabel(c, contentLocale())) }} data-unit-country>
                   <option value="">{t('admin.units.pickCountry')}</option>
                   {countries.data?.map((c) => <option key={c.id} value={c.id} disabled={taken.countries.has(c.id)}>{countryLabel(c)}{taken.countries.has(c.id) ? ` — ${t('admin.units.alreadyAdded')}` : ''}</option>)}
                 </Select>

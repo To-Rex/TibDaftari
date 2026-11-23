@@ -18,6 +18,7 @@ import { downloadCsv } from './csv'
 import { useSmsReport } from './queries'
 import { BarList, fold, pct } from './reportKit'
 import { TrendChart } from './TrendChart'
+import { contentLocale } from '@/shared/i18n'
 
 const R = 'clinical.reports.sms'
 type Metric = 'total' | 'delivered' | 'failed' | 'cost'
@@ -138,7 +139,7 @@ export function SmsReport({ scopeId, range, canExport, wide: wideScope }: { scop
   const exportExcel = async () => {
     setExporting(true)
     try {
-      const lang = (['uz', 'ru', 'en'] as const).find((l) => i18n.language?.startsWith(l)) ?? 'uz'
+      const lang = contentLocale() // the server writes the file in uz / ru / en
       const blob = await repos.reports.exportSmsXlsx(scopeId, { ...range, lang })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a'); a.href = url; a.download = `sms-hisobot-${range.dateFrom}${range.dateTo !== range.dateFrom ? `_${range.dateTo}` : ''}.xlsx`

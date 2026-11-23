@@ -13,7 +13,7 @@ export const ru: DeepPartial<Dictionary> = {
     actions: 'Действия', status: 'Статус', date: 'Дата', today: 'Сегодня', yesterday: 'Вчера', last7: '7 дней', last30: '30 дней', thisMonth: 'Этот месяц', total: 'Итого', sum: 'сум', millionShort: '{{n}} млн', billionShort: '{{n}} млрд', trillionShort: '{{n}} трлн',
     empty: 'Ничего не найдено', emptyHint: 'Измените поиск или фильтр', error: 'Произошла ошибка', retry: 'Повторить', required: 'Обязательное поле', optional: 'необязательно',
     confirm: 'Подтвердить', areYouSure: 'Вы уверены?', perPage: 'На странице', of: '/', rows: 'строк', page: 'Страница', noAccess: 'У вас нет доступа к этому разделу', logout: 'Выйти',
-    profile: 'Профиль', settings: 'Настройки', language: 'Язык', theme: 'Тема', themeLight: 'Светлая', themeDark: 'Тёмная', themeSystem: 'Системная', copy: 'Копировать', copied: 'Скопировано',
+    profile: 'Профиль', settings: 'Настройки', language: 'Язык', languageFailed: 'Не удалось загрузить язык. Проверьте подключение к интернету и попробуйте снова.', theme: 'Тема', themeLight: 'Светлая', themeDark: 'Тёмная', themeSystem: 'Системная', copy: 'Копировать', copied: 'Скопировано',
     print: 'Печать', download: 'Скачать', preview: 'Просмотр', active: 'Активен', inactive: 'Неактивен', draft: 'Черновик', archived: 'Архив', published: 'Опубликовано', version: 'Версия',
     name: 'Название', phone: 'Телефон', fullName: 'Ф.И.О.', birthDate: 'Дата рождения', gender: 'Пол', male: 'Мужской', female: 'Женский', address: 'Адрес',
     price: 'Цена', days: 'дн.', seeAll: 'Показать все', new: 'Новый', unsaved: 'Есть несохранённые изменения',

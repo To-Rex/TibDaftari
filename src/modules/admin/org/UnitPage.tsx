@@ -22,7 +22,7 @@ import { ResetDialog } from '@/features/org/ResetDialog'
 import { locationText } from '@/features/org/LocationFields'
 import { UnitLevelBadge, useUnitLabels } from '@/features/org/unitUi'
 import { routes } from '@/shared/config/routes'
-import { LOCALES } from '@/shared/i18n'
+import { CONTENT_LANGS } from '@/shared/i18n'
 import { errorMessage } from '@/shared/lib/errors'
 import { fmtDateTime, fmtNumber } from '@/shared/lib/format'
 import { Avatar, Badge, Button, Card, CardHeader, EmptyState, Field, MotionItem, MotionList, Page, PageHeader, Select, Skeleton, Stat, fadeUp, stagger, toast } from '@/shared/ui'
@@ -221,7 +221,7 @@ function SettingsCard({ unit: u, readOnly }: { unit: OrgUnit; readOnly: boolean 
           {(id) => (
             <Select id={id} value={(u.settings?.locale as string | null) ?? ''} disabled={readOnly || update.isPending} onChange={(e) => void setLocale(e.target.value)} data-unit-locale>
               <option value="">{t('admin.unit.localeInherit')}</option>
-              {LOCALES.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
+              {CONTENT_LANGS.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
             </Select>
           )}
         </Field>

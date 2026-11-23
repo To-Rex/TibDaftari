@@ -6,6 +6,7 @@ import type { Category, Id, PaperSize, ResultTemplate, ServiceType } from '@/dom
 import { serviceAvailableIn } from '@/domain'
 import { descendantIds } from '@/features/catalog/tree'
 import type { TemplateKind } from './kind'
+import { langInfo } from '@/shared/i18n/languages'
 
 export type GallerySort = 'updated' | 'created' | 'name' | 'usage'
 export type SortDir = 'asc' | 'desc'
@@ -32,12 +33,12 @@ export const RESULT_PAPERS: PaperSize[] = ['A4', 'A5', 'Letter']
 export const RECEIPT_PAPERS: PaperSize[] = ['Receipt80', 'Receipt58']
 
 /**
- * Collation for names in the interface language. Browsers without Uzbek collation data silently use the
- * system locale (a Russian Windows sorts Cyrillic first) — such languages fall back to the Latin-first default.
+ * Collation for names in the interface language: the first of the language's tags the browser has collation data for
+ * (Karakalpak sorts as Uzbek, Turkmen as Turkmen …). Browsers without such data would silently use the system locale
+ * (a Russian Windows sorts Cyrillic first) — then the Latin-first default is used.
  */
 export function collationLocale(lang: string | undefined): string {
-  const base = (lang ?? 'en').split('-')[0]!
-  try { return Intl.Collator.supportedLocalesOf([base]).length ? base : 'en' } catch { return 'en' }
+  try { return Intl.Collator.supportedLocalesOf(langInfo(lang).intl)[0] ?? 'en' } catch { return 'en' }
 }
 
 /** Default direction of each sort: names A→Z, everything else newest / most used first. */

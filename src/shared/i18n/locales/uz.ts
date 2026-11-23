@@ -55,6 +55,7 @@ export const uz = {
     profile: 'Profil',
     settings: 'Sozlamalar',
     language: 'Til',
+    languageFailed: 'Tilni yuklab bo‘lmadi. Internet aloqasini tekshirib, qayta urinib ko‘ring.',
     theme: 'Mavzu',
     themeLight: 'Yorug‘',
     themeDark: 'Qorong‘i',

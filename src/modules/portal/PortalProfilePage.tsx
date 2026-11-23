@@ -11,7 +11,7 @@ import { fadeUp, stagger } from '@/features/portal/motion'
 import { usePortalOverview } from '@/features/portal/queries'
 import { ChangePasswordModal } from '@/features/portal/components/ChangePasswordModal'
 import { routes } from '@/shared/config/routes'
-import { LOCALES } from '@/shared/i18n'
+import { LANGS, langInfo, type UiLang } from '@/shared/i18n'
 import { useTheme, type ThemeMode } from '@/shared/theme/ThemeProvider'
 import { fmtDate, fmtPhone } from '@/shared/lib/format'
 import {
@@ -25,7 +25,9 @@ import {
   Page,
   PageHeader,
   Segmented,
+  Select,
   Skeleton,
+  pickLanguage,
 } from '@/shared/ui'
 
 function InfoRow({ label, value }: { label: ReactNode; value?: ReactNode }) {
@@ -58,7 +60,7 @@ export default function PortalProfilePage() {
   })
   const districtName = districtsQ.data?.find((d) => d.id === p?.address?.districtId)?.name
   const address = [districtName, p?.address?.street].filter(Boolean).join(', ')
-  const cur = i18n.language?.slice(0, 2) ?? 'uz'
+  const cur = langInfo(i18n.language)
 
   const logout = async () => {
     setLeaving(true)
@@ -193,13 +195,19 @@ export default function PortalProfilePage() {
                 <span className="inline-flex items-center gap-2 text-[14px] font-medium">
                   <Languages className="text-ink-3 size-4" /> {t('portal.profile.language')}
                 </span>
-                <Segmented
-                  size="sm"
-                  className="max-w-full"
-                  value={cur}
-                  onChange={(v) => void i18n.changeLanguage(v)}
-                  items={LOCALES.map((l) => ({ value: l.code, label: l.short }))}
-                />
+                {/* ten languages: a list, each named in itself (the three Uzbek alphabets with their script) */}
+                <div className="w-full xs:w-60">
+                  <Select
+                    className="h-9 text-[13.5px]"
+                    value={cur.code}
+                    aria-label={t('portal.profile.language')}
+                    onChange={(e) => pickLanguage(e.target.value as UiLang, t('common.languageFailed'))}
+                  >
+                    {LANGS.map((l) => (
+                      <option key={l.code} value={l.code} lang={l.code}>{l.hint ? `${l.label} (${l.hint})` : l.label}</option>
+                    ))}
+                  </Select>
+                </div>
               </div>
               <div className="flex flex-wrap items-center justify-between gap-3 py-3">
                 <span className="inline-flex items-center gap-2 text-[14px] font-medium">
