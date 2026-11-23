@@ -2,7 +2,7 @@
  * The interface languages. Ten of them, in the order the language menu shows them, each named in its own language.
  *
  * `code` is what i18next, the stored choice (`clinic.lang`) and `<html lang>` carry — a valid BCP 47 tag, so every
- * `Intl` API understands it (`uz-x-yangi` = Uzbek in the new Latin alphabet of the 2021 draft: ō ḡ ş ç).
+ * `Intl` API understands it (`uz-x-yangi` = Uzbek in the new Latin alphabet: ö ḡ ş ç).
  * `content` is the language of what the SERVER keeps or writes (unit and template languages, Excel exports, Telegram
  * bots): it knows Uzbek, Russian and English only, so every interface language maps to the one its readers know best.
  * `fallback` is what a text still missing in the dictionary is shown in.
@@ -28,7 +28,7 @@ export interface UiLangInfo {
 }
 
 export const LANGS: UiLangInfo[] = [
-  { code: 'uz-x-yangi', label: 'Ōzbekça', hint: 'yangi lotin', short: 'ŌZ', intl: ['uz-Latn-UZ', 'uz'], content: 'uz', script: 'latn', fallback: ['uz'] },
+  { code: 'uz-x-yangi', label: 'Özbekça', hint: 'yangi lotin', short: 'ÖZ', intl: ['uz-Latn-UZ', 'uz'], content: 'uz', script: 'latn', fallback: ['uz'] },
   { code: 'uz', label: 'O‘zbekcha', hint: 'lotin', short: 'UZ', intl: ['uz-Latn-UZ', 'uz'], content: 'uz', script: 'latn', fallback: [] },
   { code: 'uz-Cyrl', label: 'Ўзбекча', hint: 'кирилл', short: 'ЎЗ', intl: ['uz-Cyrl-UZ', 'uz-Cyrl', 'uz'], content: 'uz', script: 'cyrl', fallback: ['uz'] },
   { code: 'kaa', label: 'Qaraqalpaqsha', short: 'QQ', intl: ['kaa', 'uz-Latn-UZ', 'uz'], content: 'uz', script: 'latn', fallback: ['uz'] },

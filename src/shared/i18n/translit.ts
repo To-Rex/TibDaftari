@@ -4,7 +4,7 @@
  *  - `toCyrillic` — the Cyrillic alphabet (ўзбек кирилл ёзуви): the letter rules of the orthography (o‘→ў, g‘→ғ,
  *    sh→ш, ch→ч, yo→ё, yu→ю, ya→я, ye→е, e→э at the start of a word and after a vowel, the tutuq ’→ъ, q→қ, h→ҳ …)
  *    plus the loanwords whose Cyrillic spelling the letters cannot tell (роль, пароль, функция, объект, октябрь …);
- *  - `toNewLatin` — the new Latin alphabet of the 2021 draft: o‘→ō, g‘→ḡ, sh→ş, ch→ç.
+ *  - `toNewLatin` — the new Latin alphabet: o‘→ö, g‘→ḡ, sh→ş, ch→ç.
  * Never touched: `{{placeholders}}`, the template fields the server reads (`{patient}`, `{values.kalit}`, Eskiz's `%w`),
  * web and e-mail addresses and dotted names (my.eskiz.uz, values.izoh), product names and abbreviations (SMS, PDF,
  * Excel, Telegram, TibDaftari …), keyboard keys.
@@ -146,7 +146,7 @@ function wordToNewLatin(word: string): string {
     const n = word[i + 1] ?? ''
     const up = c !== c.toLowerCase()
     const lc = c.toLowerCase()
-    if ((lc === 'o' || lc === 'g') && isIn(APOS_OG, n)) { out += lc === 'o' ? (up ? 'Ō' : 'ō') : (up ? 'Ḡ' : 'ḡ'); i++; continue }
+    if ((lc === 'o' || lc === 'g') && isIn(APOS_OG, n)) { out += lc === 'o' ? (up ? 'Ö' : 'ö') : (up ? 'Ḡ' : 'ḡ'); i++; continue }
     if ((lc === 's' || lc === 'c') && (n === 'h' || n === 'H')) { out += lc === 's' ? (up ? 'Ş' : 'ş') : (up ? 'Ç' : 'ç'); i++; continue }
     out += c
   }
