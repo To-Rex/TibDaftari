@@ -23,9 +23,10 @@ const KEEP = new Set([
   'excel', 'word', 'telegram', 'eskiz', 'xabarchi', 'claude', 'anthropic', 'openai', 'deepseek', 'deploy', 'tibdaftari', 'markdown', 'google', 'chrome',
   'enter', 'shift', 'esc', 'ctrl', 'alt', 'tab', 'botfather', 'chatgpt', 'gpt', 'fernet', 'base', 'mock', 'webhook', 'email', 'pk', 'sk',
   'tprints', 'windows', 'linux', 'macos', 'android', 'ios', 'items', 'placeholder', 'compatible', 'function', 'calling', 'gateway', 'low', 'medium', 'high', 'max', 'tokens',
+  'apple', 'payments', 'snap', 'px', 'xab', 'live', 'aa', 'xxxxxxxxx',
 ])
 /** the product names (KEEP) that may take an Uzbek ending without a sign: «Excelga», «Telegramda» */
-const BRANDS = new Set(['excel', 'telegram', 'eskiz', 'xabarchi', 'claude', 'anthropic', 'openai', 'deepseek', 'deploy', 'tibdaftari', 'markdown', 'google', 'chrome', 'tprints', 'windows'])
+const BRANDS = new Set(['excel', 'telegram', 'eskiz', 'xabarchi', 'claude', 'anthropic', 'openai', 'deepseek', 'deploy', 'tibdaftari', 'markdown', 'google', 'chrome', 'tprints', 'windows', 'apple'])
 /** the Uzbek ending a product name or an abbreviation may carry («Excelga», «SMS’lar», «PDF’ining») */
 const SUFFIX = /^[‘’ʻʼ'`-]?[a-z]{1,8}$/
 
@@ -33,6 +34,7 @@ const SUFFIX = /^[‘’ʻʼ'`-]?[a-z]{1,8}$/
 const CYR_WORDS: Record<string, string> = {
   rol: 'роль', parol: 'пароль', profil: 'профиль', model: 'модель', stil: 'стиль', kontrol: 'контроль', hotel: 'отель',
   yanvar: 'январь', fevral: 'февраль', aprel: 'апрель', iyun: 'июнь', iyul: 'июль', sentabr: 'сентябрь', oktabr: 'октябрь', noyabr: 'ноябрь', dekabr: 'декабрь',
+  panel: 'панель', landing: 'лендинг', group: 'групп',
   ses: 'СЭС', sesi: 'СЭСи', sesning: 'СЭСнинг', sesga: 'СЭСга', sesda: 'СЭСда', seslar: 'СЭСлар', preview: 'превью', backend: 'бэкенд', frontend: 'фронтенд', nick: 'ник', nicklar: 'никлар', nickni: 'никни',
 }
 
@@ -42,7 +44,8 @@ const CYR_STEMS: [string, string][] = ([
   ['infeksiya', 'инфекция'], ['reaksiya', 'реакция'], ['konstruksiya', 'конструкция'], ['instruksiya', 'инструкция'], ['dezinfeksiya', 'дезинфекция'],
   ['kolleksiya', 'коллекция'], ['proyeksiya', 'проекция'], ['korreksiya', 'коррекция'], ['fraksiya', 'фракция'], ['sanksiya', 'санкция'],
   ['obyekt', 'объект'], ['subyekt', 'субъект'], ['obyom', 'объём'], ['kompyuter', 'компьютер'], ['filtr', 'фильтр'],
-  ['sentabr', 'сентябр'], ['oktabr', 'октябр'], ['aksent', 'акцент'], ['litsenz', 'лиценз'], ['konsultat', 'консультат'], ['matritsa', 'матрица'],
+  ['sentabr', 'сентябр'], ['oktabr', 'октябр'], ['aksent', 'акцент'], ['litsenz', 'лиценз'], ['konsultatsiya', 'консультация'], ['konsultat', 'консультат'], ['matritsa', 'матрица'],
+  ['tranzaksion', 'транзакцион'], ['tranzaksiya', 'транзакция'], ['passport', 'паспорт'], ['biokimyaviy', 'биокимёвий'], ['kimyaviy', 'кимёвий'],
 ] as [string, string][]).sort((a, b) => b[0].length - a[0].length)
 
 /** Letter clusters inside a word that stand for ц (Russian -ция, -цион, -цент, цикл). */
