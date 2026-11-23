@@ -6,7 +6,7 @@
 
 /* ------------------------------------------------------------------
    Inter for the letters Onest does not have: the Cyrillic of Uzbek, Kazakh, Kyrgyz and Tajik (Ғ Қ Ҳ Ң Ө Ү Ұ Ә Һ Ҷ Ӣ Ӯ),
-   the new Uzbek Latin ḡ and the Karakalpak ǵ. Scaled to Onest's x-height and width (size-adjust), so a screen keeps its
+   and the Karakalpak ǵ. Scaled to Onest's x-height and width (size-adjust), so a screen keeps its
    layout whichever of the two draws it. The browser fetches a part only when a page has a letter from its range.
 ------------------------------------------------------------------- */
 @font-face {

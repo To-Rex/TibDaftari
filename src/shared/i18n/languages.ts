@@ -2,7 +2,7 @@
  * The interface languages. Ten of them, in the order the language menu shows them, each named in its own language.
  *
  * `code` is what i18next, the stored choice (`clinic.lang`) and `<html lang>` carry — a valid BCP 47 tag, so every
- * `Intl` API understands it (`uz-x-yangi` = Uzbek in the new Latin alphabet: ö ḡ ş ç).
+ * `Intl` API understands it (`uz-x-yangi` = Uzbek in the new Latin alphabet of the 2026 law: ö ğ ş ç).
  * `content` is the language of what the SERVER keeps or writes (unit and template languages, Excel exports, Telegram
  * bots): it knows Uzbek, Russian and English only, so every interface language maps to the one its readers know best.
  * `fallback` is what a text still missing in the dictionary is shown in.
