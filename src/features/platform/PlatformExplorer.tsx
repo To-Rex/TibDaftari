@@ -152,14 +152,19 @@ export function PlatformExplorer() {
   }
 
   const listTitle = (
-    <div className="flex min-w-0 items-center gap-2">
+    <div className="flex min-w-0 items-start gap-2.5">
       {upLevel && (
-        <Button size="sm" variant="secondary" className="shrink-0" leftIcon={<ArrowLeft className="size-4" />} onClick={() => upTo(upLevel)} title={t('admin.platform.path.backTo', { level: t(`admin.platform.levels.${upLevel}`) })} data-platform-up>
+        <Button size="sm" variant="secondary" className="mt-0.5 shrink-0" leftIcon={<ArrowLeft className="size-4" />} onClick={() => upTo(upLevel)} title={t('admin.platform.path.backTo', { level: t(`admin.platform.levels.${upLevel}`) })} data-platform-up>
           <span className="max-sm:hidden">{t('admin.platform.path.back')}</span>
         </Button>
       )}
-      <h2 className="truncate text-[17px] font-semibold tracking-[-0.01em]">{allCompanies && level === 'country' ? t('admin.platform.allCountries') : t(`admin.platform.levels.${level}`)}</h2>
-      {listReady && <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[12px] font-medium text-ink-2 tabular">{query ? `${shown.length} / ${entries.length}` : entries.length}</span>}
+      <div className="min-w-0">
+        <div className="flex min-w-0 items-center gap-2">
+          <h2 className="truncate text-[17px] font-semibold tracking-[-0.01em]">{allCompanies && level === 'country' ? t('admin.platform.allCountries') : t(`admin.platform.levels.${level}`)}</h2>
+          {listReady && <span className="shrink-0 rounded-full bg-surface-2 px-2 py-0.5 text-[12px] font-medium text-ink-2 tabular">{query ? `${shown.length} / ${entries.length}` : entries.length}</span>}
+        </div>
+        <p className="text-[12.5px] text-ink-3" data-platform-hint>{t(`admin.platform.hint.${allCompanies && level === 'country' ? 'allCountries' : level}`)}</p>
+      </div>
     </div>
   )
 
@@ -168,37 +173,25 @@ export function PlatformExplorer() {
       {header}
       <div className="flex flex-col gap-4" data-platform data-level={level} data-all={allCompanies || undefined}>
         {tip && (
-          <div className="flex items-start gap-3 rounded-[var(--radius-lg)] border border-info/30 bg-info-soft/40 px-4 py-3" data-platform-tip>
-            <Info className="mt-0.5 size-4 shrink-0 text-info" />
-            <div className="min-w-0 flex-1 text-[13px] leading-relaxed">
-              <p className="font-semibold text-ink">{t('admin.platform.tip.title')}</p>
-              <p className="text-ink-2">{t('admin.platform.tip.body')}</p>
-            </div>
+          <div className="flex items-start gap-3 rounded-[var(--radius-lg)] border border-line bg-surface-2/40 px-4 py-3" data-platform-tip>
+            <Info className="mt-0.5 size-4 shrink-0 text-brand" />
+            <p className="min-w-0 flex-1 text-[13px] leading-relaxed text-ink-2"><span className="font-semibold text-ink">{t('admin.platform.tip.title')}</span> {t('admin.platform.tip.body')}</p>
             <Button size="xs" variant="ghost" className="shrink-0" onClick={closeTip} data-platform-tip-ok>{t('admin.platform.tip.ok')}</Button>
           </div>
         )}
 
         <PathStepper steps={steps} />
 
-        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-          <p className="flex items-center gap-2 text-[13.5px] text-ink-2" data-platform-hint>
-            <span className="grid size-6 shrink-0 place-items-center rounded-full bg-brand-soft text-brand"><RowIcon className="size-3.5" /></span>
-            {t(`admin.platform.hint.${allCompanies && level === 'country' ? 'allCountries' : level}`)}
-          </p>
-          <DateRangeFilter value={range} onChange={setRange} presets={['today', 'last7', 'last30', 'thisMonth']} allowCustom size="sm" />
-        </div>
-
         {/* the numbers of the place, for the period */}
-        <PlatformSummary scopeLabel={scopeLabel} period={period} total={total} stale={stale} error={q.isError ? errorMessage(q.error) : null} />
+        <PlatformSummary scopeLabel={scopeLabel} period={period} total={total} stale={stale} error={q.isError ? errorMessage(q.error) : null}
+          filter={<DateRangeFilter value={range} onChange={setRange} presets={['today', 'last7', 'last30', 'thisMonth']} allowCustom size="sm" />} />
 
         {/* what is inside */}
         <section aria-label={t(`admin.platform.levels.${level}`)} className="flex flex-col gap-3" data-platform-list>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            {listTitle}
-            <div className="flex items-center gap-2">
-              {entries.length > 6 && <SearchInput value={query} onChange={setQuery} placeholder={t('admin.platform.search')} aria-label={t('admin.platform.search')} className="w-full sm:w-64" data-platform-search />}
-              <Button size="sm" variant="ghost" className="shrink-0" leftIcon={<Download className="size-4" />} onClick={exportCsv} disabled={!shown.length} data-platform-csv>CSV</Button>
-            </div>
+          <div className="flex flex-wrap items-end gap-2">
+            <div className="min-w-0 flex-1">{listTitle}</div>
+            {entries.length > 6 && <SearchInput value={query} onChange={setQuery} placeholder={t('admin.platform.search')} aria-label={t('admin.platform.search')} className="order-last w-full sm:order-none sm:w-64" data-platform-search />}
+            <Button size="sm" variant="ghost" className="shrink-0" leftIcon={<Download className="size-4" />} onClick={exportCsv} disabled={!shown.length} data-platform-csv>CSV</Button>
           </div>
 
           {cards ? (

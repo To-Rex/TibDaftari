@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowRight, BriefcaseBusiness, Globe2, Layers3, Plus, Settings2 } from 'lucide-react'
 import type { OrgUnit, UnitRow } from '@/domain'
 import { cn } from '@/shared/lib/cn'
-import { fmtMoney, fmtNumber } from '@/shared/lib/format'
+import { fmtMoney, fmtMoneyShort, fmtNumber } from '@/shared/lib/format'
 import { Avatar, Badge, Button, Skeleton } from '@/shared/ui'
 
 /** what is known about the activity numbers right now */
@@ -29,14 +29,14 @@ function CardShell({ onOpen, children, className, ...data }: { onOpen: () => voi
   )
 }
 
-/** Three or four small counters in one band. */
+/** Three or four small counters in a row: a number over its word. */
 function Counters({ items }: { items: { label: string; value: number }[] }) {
   return (
-    <dl className={cn('mt-4 grid gap-1 rounded-xl bg-surface-2/60 px-2 py-2.5 text-center', items.length === 4 ? 'grid-cols-4' : 'grid-cols-3')}>
+    <dl className={cn('mt-4 grid gap-3', items.length === 4 ? 'grid-cols-4' : 'grid-cols-3')}>
       {items.map((x) => (
-        <div key={x.label} className="min-w-0">
-          <dd className="text-[17px] font-semibold leading-tight tabular">{fmtNumber(x.value)}</dd>
-          <dt className="truncate text-[11.5px] text-ink-3">{x.label}</dt>
+        <div key={x.label} className="flex min-w-0 flex-col-reverse">
+          <dt className="truncate text-[12px] text-ink-3">{x.label}</dt>
+          <dd className="truncate text-[17px] font-semibold leading-tight tabular">{fmtNumber(x.value)}</dd>
         </div>
       ))}
     </dl>
@@ -55,12 +55,12 @@ function Activity({ row, share, stats }: { row?: UnitRow; share?: number; stats:
         <span>{t('admin.platform.metrics.revenue')}</span>
         {share !== undefined && <span className="tabular">{t('admin.platform.share', { pct: share })}</span>}
       </div>
-      <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2">
-        <span className="text-[21px] font-semibold leading-tight tracking-tight tabular">{fmtMoney(revenue, false)}</span>
-        <span className="text-[13px] text-ink-3">{t('common.sum')}</span>
-        <span className="ml-auto text-[12.5px] text-ink-3 tabular">{t('admin.platform.ordersCount', { count: row?.orders ?? 0 })}</span>
+      <div className="mt-0.5 flex min-w-0 items-baseline gap-x-1.5">
+        <span className="truncate text-[21px] font-semibold leading-tight tracking-tight tabular" title={fmtMoney(revenue)}>{fmtMoneyShort(revenue)}</span>
+        <span className="shrink-0 text-[13px] text-ink-3">{t('common.sum')}</span>
+        <span className="ml-auto shrink-0 pl-2 text-[12.5px] text-ink-3 tabular">{t('admin.platform.ordersCount', { count: row?.orders ?? 0, n: fmtNumber(row?.orders ?? 0) })}</span>
       </div>
-      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-2">
+      <div className="mt-2.5 h-1 overflow-hidden rounded-full bg-surface-2">
         <div className="h-full rounded-full bg-gradient-to-r from-brand to-brand-strong transition-[width] duration-500" style={{ width: `${Math.max(revenue > 0 ? 3 : 0, share ?? 0)}%` }} />
       </div>
     </div>

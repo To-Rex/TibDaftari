@@ -10,7 +10,7 @@ export const en: DeepPartial<Dictionary> = {
     },
     appName: 'TibDaftari', loading: 'Loading…', save: 'Save', saving: 'Saving…', cancel: 'Cancel', close: 'Close', delete: 'Delete', edit: 'Edit', open: 'Open', refresh: 'Refresh', create: 'Create', add: 'Add',
     search: 'Search', searchPlaceholder: 'Search…', filter: 'Filter', all: 'All', yes: 'Yes', no: 'No', back: 'Back', next: 'Next', done: 'Done', actions: 'Actions', status: 'Status',
-    date: 'Date', today: 'Today', yesterday: 'Yesterday', last7: '7 days', last30: '30 days', thisMonth: 'This month', total: 'Total', sum: 'UZS', empty: 'Nothing found',
+    date: 'Date', today: 'Today', yesterday: 'Yesterday', last7: '7 days', last30: '30 days', thisMonth: 'This month', total: 'Total', sum: 'UZS', millionShort: '{{n}}M', billionShort: '{{n}}B', trillionShort: '{{n}}T', empty: 'Nothing found',
     emptyHint: 'Try changing the search or filters', error: 'Something went wrong', retry: 'Retry', required: 'Required', optional: 'optional', confirm: 'Confirm', areYouSure: 'Are you sure?',
     perPage: 'Per page', of: 'of', rows: 'rows', page: 'Page', noAccess: 'You don’t have access to this section', logout: 'Sign out', profile: 'Profile', settings: 'Settings',
     language: 'Language', theme: 'Theme', themeLight: 'Light', themeDark: 'Dark', themeSystem: 'System', copy: 'Copy', copied: 'Copied', print: 'Print', download: 'Download', preview: 'Preview',

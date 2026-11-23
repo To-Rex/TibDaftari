@@ -18,7 +18,7 @@ export interface Column<T> {
   align?: 'left' | 'right' | 'center'
   sortable?: boolean
   className?: string
-  hideBelow?: 'sm' | 'md' | 'lg'
+  hideBelow?: 'sm' | 'md' | 'lg' | 'xl' | '2xl'
   /** card mode: 'title' (top line), 'meta' (second line, no label), 'actions' (bottom row), 'hidden' */
   card?: 'title' | 'meta' | 'actions' | 'hidden' | 'field'
 }
@@ -42,7 +42,7 @@ export interface DataTableProps<T> {
   cardBelow?: 'sm' | 'md' | 'lg' | 'never'
 }
 
-const hide = { sm: 'max-sm:hidden', md: 'max-md:hidden', lg: 'max-lg:hidden' }
+const hide = { sm: 'max-sm:hidden', md: 'max-md:hidden', lg: 'max-lg:hidden', xl: 'max-xl:hidden', '2xl': 'max-2xl:hidden' }
 const tableAt = { sm: 'max-sm:hidden', md: 'max-md:hidden', lg: 'max-lg:hidden', never: '' }
 const cardsAt = { sm: 'sm:hidden', md: 'md:hidden', lg: 'lg:hidden', never: 'hidden' }
 

@@ -42,11 +42,9 @@ export function PathStepper({ steps }: { steps: PathStep[] }) {
           const Icon = LEVEL_ICON[s.level]
           const body = (
             <>
-              <span className={cn('relative grid size-10 shrink-0 place-items-center rounded-full transition-colors',
+              <span className={cn('grid size-10 shrink-0 place-items-center rounded-full transition-colors',
                 s.state === 'current' ? 'bg-brand text-white ring-4 ring-brand/15 dark:text-bg' : s.state === 'done' ? 'bg-brand-soft text-brand' : 'bg-surface-2 text-ink-3')}>
                 <Icon className="size-[18px]" />
-                <span className={cn('absolute -right-0.5 -top-0.5 grid size-4 place-items-center rounded-full text-[10px] font-bold ring-2 ring-surface',
-                  s.state === 'next' ? 'bg-surface-3 text-ink-3' : 'bg-ink text-bg')}>{i + 1}</span>
               </span>
               <span className="min-w-0 text-left @max-[64rem]:hidden">
                 <span className={cn('block text-[11.5px] font-medium uppercase tracking-[0.06em]', s.state === 'current' ? 'text-brand-ink' : 'text-ink-3')}>{t(`admin.platform.level.${s.level}`)}</span>

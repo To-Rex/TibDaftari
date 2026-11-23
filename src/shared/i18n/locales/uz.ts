@@ -37,6 +37,7 @@ export const uz = {
     thisMonth: 'Shu oy',
     total: 'Jami',
     sum: 'so‘m',
+    millionShort: '{{n}} mln', billionShort: '{{n}} mlrd', trillionShort: '{{n}} trln',
     empty: 'Hech narsa topilmadi',
     emptyHint: 'Qidiruv yoki filtrni o‘zgartirib ko‘ring',
     error: 'Xatolik yuz berdi',

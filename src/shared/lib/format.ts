@@ -10,6 +10,18 @@ export const fmtMoney = (v: number | undefined | null, withCurrency = true) => {
   return withCurrency ? `${s} ${i18n.t('common.sum')}` : s
 }
 export const fmtNumber = (v: number) => new Intl.NumberFormat(INTL_LOCALE[currentLocale()]).format(v)
+/**
+ * A sum for a glance where the room is small: up to 999 999 in full, then «48,6 mln», «1,99 mlrd» (three significant
+ * digits, the locale's words) — the exact amount belongs in a tooltip next to it.
+ */
+export const fmtMoneyShort = (v: number | undefined | null) => {
+  if (v == null) return '—'
+  const loc = INTL_LOCALE[currentLocale()]
+  const abs = Math.abs(v)
+  if (abs < 1_000_000) return new Intl.NumberFormat(loc, { maximumFractionDigits: 0 }).format(v)
+  const [div, key] = abs >= 1e12 ? [1e12, 'trillionShort'] : abs >= 1e9 ? [1e9, 'billionShort'] : [1e6, 'millionShort']
+  return i18n.t(`common.${key}`, { n: new Intl.NumberFormat(loc, { maximumSignificantDigits: 3 }).format(v / div) })
+}
 export const fmtDate = (iso?: string | null, pattern = 'dd.MM.yyyy') => (iso ? format(parseISO(iso), pattern, { locale: dfLocale() }) : '—')
 export const fmtDateTime = (iso?: string | null) => fmtDate(iso, 'dd.MM.yyyy HH:mm')
 export const fmtTime = (iso?: string | null) => fmtDate(iso, 'HH:mm')

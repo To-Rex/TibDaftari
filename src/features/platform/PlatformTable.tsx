@@ -33,7 +33,8 @@ export function PlatformTable({ level, rows, loading, stale, sort, onSort, onOpe
   const RowIcon = LEVEL_ICON[level]
   const num = (k: keyof UnitMetrics): Column<Entry> => ({
     key: k, header: metricLabel(k), align: 'right', sortable: true, card: 'field',
-    hideBelow: k === 'smsSent' || k === 'resultsReady' ? 'lg' : k === 'units' || k === 'patientsNew' ? 'md' : undefined,
+    // the table fits its card: the less needed columns step aside on narrower screens (all of them stay in the numbers above and in CSV)
+    hideBelow: k === 'smsSent' || k === 'resultsReady' ? '2xl' : k === 'patientsNew' ? 'xl' : k === 'units' ? 'md' : undefined,
     cell: (r) => <span className={cn('tabular', r[k] === 0 && 'text-ink-3')}>{fmtNumber(r[k])}</span>,
   })
   const columns: Column<Entry>[] = [
@@ -52,7 +53,7 @@ export function PlatformTable({ level, rows, loading, stale, sort, onSort, onOpe
     ) },
     ...(level === 'facility' ? [] : [num('units')]),
     num('orders'),
-    { key: 'revenue', header: `${metricLabel('revenue')}, ${t('common.sum')}`, align: 'right', sortable: true, card: 'field', width: '200px', cell: (r) => (
+    { key: 'revenue', header: `${metricLabel('revenue')}, ${t('common.sum')}`, align: 'right', sortable: true, card: 'field', width: '176px', cell: (r) => (
       <span className="block min-w-[120px]">
         <span className="block font-semibold tabular">{fmtMoney(r.revenue, false)}</span>
         <span className="mt-1 block h-1 w-full overflow-hidden rounded-full bg-surface-2"><span className="block h-full rounded-full bg-brand" style={{ width: `${(r.revenue / maxRevenue) * 100}%` }} /></span>
@@ -66,7 +67,8 @@ export function PlatformTable({ level, rows, loading, stale, sort, onSort, onOpe
         {canManage(r.unitId) && (
           <Button size="xs" variant={level === 'facility' ? 'soft' : 'ghost'} leftIcon={<Settings2 className="size-3.5" />} title={t('admin.platform.manageHint')}
             onClick={(e) => { e.stopPropagation(); onManage(r.unitId as Id) }} data-platform-manage={r.code ?? r.id}>
-            {t('admin.platform.manage')}
+            {/* between a tablet and a wide screen a region's / district's button is its icon (the words are in the tooltip); a facility keeps them */}
+            <span className={cn(level !== 'facility' && 'md:max-xl:sr-only')}>{t('admin.platform.manage')}</span>
           </Button>
         )}
         {/* the table shows the way in as an arrow; a card on a phone says where it leads */}
