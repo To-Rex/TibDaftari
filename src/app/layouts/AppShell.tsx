@@ -116,7 +116,7 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
         ] },
         { title: t('common.settings'), items: [
           { to: routes.admin.sms, label: t('nav.smsSettings'), icon: <Send />, perm: 'admin.settings.write', key: 'm' },
-          { to: routes.admin.platform, label: t('nav.territory'), icon: <Globe2 />, perm: ['platform.unit.manage', 'reports.operations.read'] as Permission[], key: 'p' },
+          { to: routes.admin.platform, label: isSuperAdmin ? t('nav.platform') : t('nav.territory'), icon: <Globe2 />, perm: ['platform.unit.manage', 'reports.operations.read'] as Permission[], key: 'p' },
         ] },
       ]
     }
@@ -142,7 +142,7 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
         { to: routes.app.messages, label: t('nav.messages'), icon: <MessageSquare />, perm: ['messaging.send', 'messaging.broadcast'], badge: pending.data?.sms, key: 'x' },
       ] },
     ]
-  }, [module, t, pending.data, can])
+  }, [module, t, pending.data, can, isSuperAdmin])
 
   const visible = sections.map((s) => ({ ...s, items: s.items.filter((i) => !i.perm || can(i.perm)) })).filter((s) => s.items.length)
   // keyboard: "G" + letter jumps to a page the user may open; "?" opens the reference

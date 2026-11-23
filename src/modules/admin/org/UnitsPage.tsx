@@ -1,7 +1,7 @@
 /**
  * The units under the administered one — davlatlar, viloyatlar, tumanlar, muassasalar — as a tree. Search, show /
  * hide inactive, add a unit under any node, switch a unit off, open its card. A superadmin with no tree yet creates
- * the first company here (more companies: Platforma › Kompaniyalar).
+ * the first company here (more companies: the top of Platforma).
  */
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'

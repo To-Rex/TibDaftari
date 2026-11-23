@@ -1,47 +1,52 @@
 /**
- * The territory the platform pages look at, kept in the URL (`?company=&country=&region=&district=`) so a
- * drill-down is a link and the browser's back button walks up again. An administrator below the country level never
- * stores the country: it follows from their own unit. `company` (superadmin) narrows everything to one company.
+ * Where the platform page stands in the organisation tree, kept in the address so every step is a link and the
+ * browser's Back walks up again: `?company=<id>|all&country=&region=&district=`. Nothing = the companies (the root);
+ * `company=all` = every company together, folded by territory. An administrator below the top never stores what
+ * their own unit fixes (it follows from the unit).
+ *
+ * Links of the earlier page keep working: `?tab=countries` and a country without a company open the all-companies
+ * view, `country=all` means "every country", `?tab=companies` / `?tab=regions` are the start.
  */
 import { useCallback, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import type { Id, TerritoryScope } from '@/domain'
+import type { Id } from '@/domain'
 
-/** `country=all` = every country (the regions tab otherwise defaults to the platform's own country). */
-export const ALL_COUNTRIES = 'all'
+/** `company=all` — every company together */
+export const ALL = 'all'
 
-export function useTerritoryParams() {
+/** the steps taken down the tree — the ids of what was picked at each level */
+export interface PlatformPath {
+  /** a company node id, or `ALL` */
+  company?: string
+  /** a country of the reference (geo id) */
+  country?: Id
+  region?: Id
+  district?: Id
+}
+
+const KEYS = ['company', 'country', 'region', 'district'] as const
+
+export function usePlatformPath() {
   const [params, setParams] = useSearchParams()
-  const scope = useMemo<TerritoryScope & { allCountries: boolean; companyId?: Id }>(() => {
-    const country = params.get('country') ?? ''
-    return {
-      companyId: params.get('company') || undefined,
-      countryId: country && country !== ALL_COUNTRIES ? country : undefined,
-      regionId: params.get('region') || undefined,
-      districtId: params.get('district') || undefined,
-      allCountries: country === ALL_COUNTRIES,
-    }
+  const path = useMemo<PlatformPath>(() => {
+    const raw = params.get('country') || undefined
+    const country = raw === ALL ? undefined : raw
+    let company = params.get('company') || undefined
+    if (!company && (params.get('tab') === 'countries' || raw)) company = ALL
+    return { company, country, region: params.get('region') || undefined, district: params.get('district') || undefined }
   }, [params])
-  const setScope = useCallback((next: TerritoryScope, opts?: { allCountries?: boolean; extra?: Record<string, string | null> }) => {
+  /** go to another place of the tree; `replace` = correct the address without a new history step */
+  const go = useCallback((next: PlatformPath, opts?: { replace?: boolean }) => {
     setParams((p) => {
       const n = new URLSearchParams(p)
-      const put = (k: string, v: string | null | undefined) => (v ? n.set(k, v) : n.delete(k))
-      put('country', opts?.allCountries ? ALL_COUNTRIES : next.countryId)
-      put('region', next.regionId)
-      put('district', next.districtId)
-      for (const [k, v] of Object.entries(opts?.extra ?? {})) put(k, v)
+      n.delete('tab')
+      for (const k of KEYS) {
+        const v = next[k]
+        if (v) n.set(k, v)
+        else n.delete(k)
+      }
       return n
-    })
+    }, { replace: opts?.replace })
   }, [setParams])
-  /** another company (or all of them): the territory below starts over */
-  const setCompany = useCallback((companyId: Id | undefined) => {
-    setParams((p) => {
-      const n = new URLSearchParams(p)
-      if (companyId) n.set('company', companyId)
-      else n.delete('company')
-      for (const k of ['country', 'region', 'district']) n.delete(k)
-      return n
-    })
-  }, [setParams])
-  return { scope, setScope, setCompany, params, setParams }
+  return { path, go }
 }
