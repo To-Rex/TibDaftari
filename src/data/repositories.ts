@@ -27,6 +27,7 @@ import type {
   PatientPasswordChangeInput,
   PatientPasswordLoginInput,
   PatientSession,
+  TrainingStatus,
   Gender,
   PatientFamily,
   Relation,
@@ -187,6 +188,18 @@ export interface StaffRepository {
   listRoles(scopeId: Id): Promise<Role[]>
   saveRole(input: Partial<Role> & { scopeId: Id; id?: Id }): Promise<Role>
   deleteRole(id: Id): Promise<void>
+  /** let a new employee work with the real data without the training */
+  skipTraining(id: Id): Promise<Employee>
+  /** send an employee (back) to the training: they work in the sandbox until the tasks of their role are done */
+  resetTraining(id: Id): Promise<Employee>
+}
+
+/** The signed-in employee's own training («o‘quv rejimi»). */
+export interface TrainingRepository {
+  /** `unitId` = the facility they are working in: the practice samples are put into its sandbox */
+  status(unitId?: Id | null): Promise<TrainingStatus>
+  /** every task done → from the next request the employee works with the real data */
+  complete(unitId?: Id | null): Promise<TrainingStatus>
 }
 
 export interface PatientRepository {
@@ -360,4 +373,5 @@ export interface Repositories {
   platform: PlatformRepository
   portal: PortalRepository
   assistant: AssistantRepository
+  training: TrainingRepository
 }

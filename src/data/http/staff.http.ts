@@ -24,4 +24,8 @@ export const staffHttp: StaffRepository = {
   },
 
   deleteRole: (id) => api.delete<void>(`/roles/${id}`),
+
+  skipTraining: (id) => api.post<Employee>(`/employees/${id}/training/skip`),
+
+  resetTraining: (id) => api.post<Employee>(`/employees/${id}/training/reset`),
 }

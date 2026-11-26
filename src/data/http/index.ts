@@ -12,6 +12,7 @@ import { reportsHttp } from './reports.http'
 import { platformHttp } from './platform.http'
 import { portalHttp } from './portal.http'
 import { assistantHttp } from './assistant.http'
+import { trainingHttp } from './training.http'
 
 export const httpRepositories: Repositories = {
   auth: authHttp,
@@ -26,6 +27,7 @@ export const httpRepositories: Repositories = {
   platform: platformHttp,
   portal: portalHttp,
   assistant: assistantHttp,
+  training: trainingHttp,
 }
 
 export { ApiError, absoluteUrl, API_BASE } from './client'

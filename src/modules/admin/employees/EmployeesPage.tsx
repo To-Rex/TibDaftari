@@ -15,6 +15,7 @@ import { useRoles } from '@/features/roles/queries'
 import { useEmployees } from '@/features/employees/queries'
 import { EmployeeForm } from '@/features/employees/EmployeeForm'
 import { UnitLevelBadge } from '@/features/employees/UnitLevelBadge'
+import { TrainingBadge } from '@/features/employees/EmployeeTrainingCard'
 import { useDebounce } from '@/shared/hooks/useDebounce'
 import { routes } from '@/shared/config/routes'
 import { fmtRelative } from '@/shared/lib/format'
@@ -85,7 +86,12 @@ export default function EmployeesPage() {
     { key: 'categories', header: t('admin.employees.colCategories'), hideBelow: 'lg', cell: (e) => (
       <span className="text-[13px] text-ink-2 line-clamp-1 max-md:line-clamp-none max-md:break-words">{e.categoryIds.length ? e.categoryIds.map((id) => catById.get(id)?.name ?? id).join(', ') : <span className="text-ink-3">{t('admin.employees.allCategories')}</span>}</span>
     ) },
-    { key: 'status', header: t('admin.employees.colStatus'), card: 'field', cell: (e) => <Badge tone={e.status === 'active' ? 'ok' : 'neutral'} dot>{e.status === 'active' ? t('common.active') : t('common.inactive')}</Badge> },
+    { key: 'status', header: t('admin.employees.colStatus'), card: 'field', cell: (e) => (
+      <span className="flex flex-wrap items-center gap-1.5">
+        <Badge tone={e.status === 'active' ? 'ok' : 'neutral'} dot>{e.status === 'active' ? t('common.active') : t('common.inactive')}</Badge>
+        <TrainingBadge training={e.training} />
+      </span>
+    ) },
     { key: 'lastLoginAt', header: t('admin.employees.colLastLogin'), hideBelow: 'sm', sortable: true, card: 'field', cell: (e) => <span className="text-[13px] text-ink-3 tabular">{e.lastLoginAt ? fmtRelative(e.lastLoginAt) : t('admin.employees.never')}</span> },
   ]
 

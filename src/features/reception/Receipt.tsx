@@ -7,6 +7,7 @@ import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import type { OrgUnit, Order, OrderItem, Payment } from '@/domain'
 import { fmtDateTime, fmtMoney, fmtPhone } from '@/shared/lib/format'
+import { useInTraining } from '@/features/auth/store'
 import { paymentMethodLabel } from '@/features/orders/status'
 
 export interface ReceiptProps {
@@ -35,11 +36,14 @@ const CSS = `
   #receipt-print td.r { text-align: right; white-space: nowrap; }
   #receipt-print .tot td { font-weight: 700; font-size: 13px; }
   #receipt-print .center { text-align: center; }
+  #receipt-print .practice { text-align: center; font-weight: 700; font-size: 14px; letter-spacing: 0.06em; border: 2px solid #000; padding: 3px 4px; margin: 4px 0; }
 }
 `
 
 export function Receipt({ order, items, payments, org, unit, cashier }: ReceiptProps) {
   const { t } = useTranslation()
+  // printed while practising: the cheque says so first and last — it must never pass for a real one
+  const practice = useInTraining()
   const title = org?.name ?? unit?.name ?? ''
   // the facility line under the organisation name (just its address when the facility itself is the title)
   const sub = unit ? (unit.name !== title ? `${unit.name}${unit.address ? `, ${unit.address}` : ''}` : unit.address ?? '') : ''
@@ -50,6 +54,7 @@ export function Receipt({ order, items, payments, org, unit, cashier }: ReceiptP
     <div id="receipt-print" aria-hidden>
       <style>{CSS}</style>
       <div className="sheet">
+        {practice && <div className="practice">{t('training.sample')}<div className="muted" style={{ fontWeight: 400, letterSpacing: 0 }}>{t('training.sampleNote')}</div></div>}
         <div className="center">
           <h1>{title}</h1>
           {sub && <div className="muted">{sub}</div>}
@@ -100,6 +105,7 @@ export function Receipt({ order, items, payments, org, unit, cashier }: ReceiptP
         )}
         <div className="rule" />
         <div className="center muted">{t('staff.reception.receipt.footer')}</div>
+        {practice && <div className="practice">{t('training.sample')}</div>}
       </div>
     </div>,
     document.body,

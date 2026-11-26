@@ -3,7 +3,7 @@ import type { PatientSession, Permission, StaffSession } from '@/domain'
 import { INSTALLER_ROLE_KEY } from '@/domain'
 import { normalizePermission } from '@/domain'
 import { repos } from '@/data'
-import { onUnauthorized } from '@/data/http/client'
+import { onTrainingFlag, onUnauthorized } from '@/data/http/client'
 import { storage } from '@/shared/lib/storage'
 
 const STAFF_KEY = 'clinic.staff.token'
@@ -160,6 +160,33 @@ onUnauthorized((actor) => {
   if (actor === 'staff') { storage.remove(STAFF_SESSION_KEY); useAuth.setState({ staff: null }) }
   else if (actor === 'patient') { storage.remove(PATIENT_SESSION_KEY); useAuth.setState({ patient: null }) }
 })
+
+/**
+ * The data realm changed under a live session: the employee finished the training, or a manager let them through or
+ * sent them back. Everything on screen and in the cache belongs to the OTHER world (sandbox ↔ real), so listeners
+ * (the query cache, the shell) drop it BEFORE the session says the new state.
+ */
+const realmListeners = new Set<(training: boolean) => void>()
+export const onRealmChange = (fn: (training: boolean) => void): (() => void) => {
+  realmListeners.add(fn)
+  return () => { realmListeners.delete(fn) }
+}
+/** when the realm last changed in this tab — a slower answer to a request sent before that is out of date */
+let realmChangedAt = 0
+export const setStaffTraining = (training: boolean, asOf: number = Date.now()) => {
+  const staff = useAuth.getState().staff
+  if (!staff || !!staff.training === training || asOf < realmChangedAt) return
+  realmChangedAt = Date.now()
+  realmListeners.forEach((fn) => fn(training))
+  const next = { ...staff, training }
+  storage.set(STAFF_SESSION_KEY, next)
+  useAuth.setState({ staff: next })
+}
+onTrainingFlag(setStaffTraining)
+
+/** Is the signed-in employee in the mandatory training (their data is the server's sandbox)? */
+export const useInTraining = () => useAuth((s) => !!s.staff?.training)
+export const inTraining = () => !!useAuth.getState().staff?.training
 
 /** Permission helpers — usable in components and plain functions. */
 export const usePermissions = () => {

@@ -37,6 +37,8 @@ export interface StaffSession {
   roleId: Id | null
   fullName: string
   permissions: Permission[]
+  /** in the mandatory training: everything this session reads and writes is the server's sandbox, not the real data */
+  training?: boolean
   accessToken: string
   expiresAt: IsoDateTime
 }

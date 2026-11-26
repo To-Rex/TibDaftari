@@ -71,6 +71,20 @@ export interface RequestOptions {
   blob?: boolean
 }
 
+/** The API tells with every staff answer whether the employee is in the training (`X-Training: 1 | 0`). */
+let trainingHandler: ((training: boolean, asOf: number) => void) | null = null
+/** The auth store registers this to follow a change made elsewhere (a manager let them through / sent them back).
+ *  `asOf` = when the request was sent: an answer older than the last change of state says nothing new. */
+export const onTrainingFlag = (fn: (training: boolean, asOf: number) => void) => {
+  trainingHandler = fn
+}
+const staffWriteListeners = new Set<() => void>()
+/** Called after every successful staff write (anything but GET) — the training checklist re-reads itself on it. */
+export const onStaffWrite = (fn: () => void): (() => void) => {
+  staffWriteListeners.add(fn)
+  return () => { staffWriteListeners.delete(fn) }
+}
+
 let unauthorizedHandler: ((actor: Actor) => void) | null = null
 /** The auth store registers a handler to drop the in-memory session when the API says 401. */
 export const onUnauthorized = (fn: (actor: Actor) => void) => {
@@ -101,6 +115,7 @@ async function request<T>(method: string, path: string, opts: RequestOptions = {
   if (opts.body !== undefined) headers['Content-Type'] = 'application/json'
   if (token) headers.Authorization = `Bearer ${token}`
   let res: Response
+  const sentAt = Date.now()
   try {
     res = await fetch(`${API_BASE}${path}${toQuery(opts.query)}`, {
       method,
@@ -112,6 +127,11 @@ async function request<T>(method: string, path: string, opts: RequestOptions = {
   } catch (e) {
     throw new ApiError(0, 'network_error', 'Server bilan aloqa yo‘q. Internetni tekshiring.', e)
   }
+  // the session's own requests only (an explicit token is a sign-in / sign-out in flight)
+  if (actor === 'staff' && opts.token === undefined) {
+    const flag = res.headers.get('X-Training')
+    if (flag === '1' || flag === '0') trainingHandler?.(flag === '1', sentAt)
+  }
   if (!res.ok) {
     const err = await parseError(res)
     if (res.status === 401 && actor !== 'none' && opts.token === undefined) {
@@ -120,6 +140,7 @@ async function request<T>(method: string, path: string, opts: RequestOptions = {
     }
     throw err
   }
+  if (actor === 'staff' && method !== 'GET' && !path.startsWith('/training/')) staffWriteListeners.forEach((fn) => fn())
   if (res.status === 204) return undefined as T
   if (opts.blob) return (await res.blob()) as T
   const text = await res.text()

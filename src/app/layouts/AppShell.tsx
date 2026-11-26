@@ -18,12 +18,13 @@ import {
 } from 'lucide-react'
 import type { OrgUnit, Permission, UnitLevel } from '@/domain'
 import { repos } from '@/data'
-import { useAuth, usePermissions } from '@/features/auth/store'
+import { useAuth, useInTraining, usePermissions } from '@/features/auth/store'
 import { useUnitTree, useUnitTreeShape } from '@/features/org/queries'
 import { UnitSwitcher } from '@/features/org/UnitSwitcher'
 import { useGlobalHotkeys } from '@/features/hotkeys/useGlobalHotkeys'
 import { HotkeysButton, HotkeysHelp } from '@/features/hotkeys/HotkeysHelp'
 import { TourButton, TourProvider, type TourMenuControl } from '@/features/tour'
+import { TrainingCenter, TrainingChip } from '@/features/training'
 import { preloadRouteChunks, warmWorkspaceData } from '@/features/session/warmup'
 import { routes } from '@/shared/config/routes'
 import { cn } from '@/shared/lib/cn'
@@ -67,6 +68,8 @@ export function useWorkspace() {
 export function AppShell({ module }: { module: 'staff' | 'admin' }) {
   const { t } = useTranslation()
   const { can, isSuperAdmin } = usePermissions()
+  // in the mandatory training everything on screen is the server's sandbox (see features/training)
+  const training = useInTraining()
   const ws = useWorkspace()
   const { scopeUnit, facility, facilities, tree } = ws
   const [collapsed, setCollapsed] = useState(() => storage.get('clinic.sidebar', false))
@@ -145,7 +148,8 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
     ]
   }, [module, t, pending.data, can, isSuperAdmin])
 
-  const visible = sections.map((s) => ({ ...s, items: s.items.filter((i) => !i.perm || can(i.perm)) })).filter((s) => s.items.length)
+  // the assistant acts on the real data, so it is closed to someone who is still practising
+  const visible = sections.map((s) => ({ ...s, items: s.items.filter((i) => (!i.perm || can(i.perm)) && !(training && i.tour === 'nav-assistant')) })).filter((s) => s.items.length)
   // keyboard: "G" + letter jumps to a page the user may open; "?" opens the reference
   const navHotkeys = useMemo(() => visible.flatMap((s) => s.items.filter((i) => i.key).map((i) => ({ key: i.key!, to: i.to, label: i.label }))), [visible])
   const [help, setHelp] = useState(false)
@@ -229,7 +233,9 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
 
       <div className={cn('app-shell-content relative transition-[padding] duration-300 ease-[var(--ease-out)]', collapsed ? 'lg:pl-[72px]' : 'lg:pl-[248px]')}>
         <TopBar onMenu={() => setMobileOpen(true)} module={module} onHelp={openHelp} ws={ws} />
-        {waiting ? <div className="grid min-h-[40vh] place-items-center" data-unit-pending><Loader2 className="size-6 animate-spin text-ink-3" /></div> : <Outlet />}
+        <TrainingCenter module={module} unitId={facility?.id ?? scopeUnit?.id ?? null} ready={!waiting} />
+        {/* keyed by the realm: when it changes, every page starts again on the other side's data */}
+        {waiting ? <div className="grid min-h-[40vh] place-items-center" data-unit-pending><Loader2 className="size-6 animate-spin text-ink-3" /></div> : <Outlet key={training ? 'training' : 'real'} />}
       </div>
     <HotkeysHelp open={help} onClose={() => setHelp(false)} nav={navHotkeys} />
       </div>
@@ -275,6 +281,7 @@ function TopBar({ onMenu, module, onHelp, ws }: { onMenu: () => void; module: 's
           triggerProps={{ 'data-tour': 'top-unit', ...(facilities.length > 1 ? { 'data-facility-switcher': true } : { 'data-facility-fixed': true }) }} />
       )}
       {module === 'admin' && <Badge tone="brand" size="sm" className="max-sm:hidden">{t('nav.admin')}</Badge>}
+      <TrainingChip />
 
       <div className="flex-1 min-w-2" />
 

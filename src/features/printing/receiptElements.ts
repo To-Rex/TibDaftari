@@ -4,6 +4,7 @@
  */
 import type { TFunction } from 'i18next'
 import type { Order, OrderItem, Payment } from '@/domain'
+import { inTraining } from '@/features/auth/store'
 import { paymentMethodLabel } from '@/features/orders/status'
 import { fmtDateTime, fmtMoney, fmtPhone } from '@/shared/lib/format'
 import type { PrintElement } from './tprints'
@@ -37,6 +38,13 @@ export function buildReceiptElements(data: ReceiptPrintData, t: TFunction): Prin
   const remaining = Math.max(0, order.total - order.paidAmount)
   const phone = unit?.phone ?? org?.phone
   const el: PrintElement[] = []
+  // a cheque printed while practising says so first and last — it must never pass for a real one
+  const practice = inTraining() ? `*** ${t('training.sample')} ***` : null
+  if (practice) {
+    el.push({ type: 'title', value: practice, size: 2 })
+    el.push({ type: 'text', value: t('training.sampleNote'), align: 'center' })
+    el.push({ type: 'line', char: '=' })
+  }
   if (org?.name) el.push({ type: 'title', value: org.name, size: 2 })
   if (unit) el.push({ type: 'text', value: `${unit.name}${unit.address ? `, ${unit.address}` : ''}`, align: 'center' })
   if (phone) el.push({ type: 'text', value: fmtPhone(phone), align: 'center' })
@@ -60,6 +68,7 @@ export function buildReceiptElements(data: ReceiptPrintData, t: TFunction): Prin
   }
   el.push({ type: 'line', char: '=' })
   el.push({ type: 'text', value: t('staff.reception.receipt.footer'), align: 'center' })
+  if (practice) el.push({ type: 'title', value: practice, size: 2 })
   el.push({ type: 'feed', lines: 1 })
   return el
 }

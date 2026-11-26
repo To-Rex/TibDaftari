@@ -7,6 +7,7 @@ import type { PermissionOverrides } from '@/domain'
 import { useAdminScope, useAuth, usePermissions } from '@/features/auth/store'
 import { useEmployee, useSaveEmployee, useSetOverrides } from '@/features/employees/queries'
 import { EmployeeForm } from '@/features/employees/EmployeeForm'
+import { EmployeeTrainingCard, TrainingBadge } from '@/features/employees/EmployeeTrainingCard'
 import { UnitLevelBadge } from '@/features/employees/UnitLevelBadge'
 import { useRoles } from '@/features/roles/queries'
 import { useUnitTree, useUnitTreeShape } from '@/features/org/queries'
@@ -88,6 +89,7 @@ export default function EmployeePage() {
                 <Badge tone={e.status === 'active' ? 'ok' : 'neutral'} dot>{e.status === 'active' ? t('common.active') : t('common.inactive')}</Badge>
                 {e.isSuperAdmin && <Badge tone="accent">{t('admin.employees.superAdmin')}</Badge>}
                 {e.id === meId && <Badge tone="brand">{t('admin.employees.self')}</Badge>}
+                <TrainingBadge training={e.training} />
               </span>
               <span className="text-[13.5px] font-normal text-ink-3 tracking-normal mt-0.5 break-words">
                 <span className="font-mono">@{e.login}</span> · {role?.name ?? '—'}{e.unitName ? ` · ${e.unitName}` : ''} · {t('admin.employees.lastLogin')}: {e.lastLoginAt ? fmtRelative(e.lastLoginAt) : t('admin.employees.never')}
@@ -134,6 +136,7 @@ export default function EmployeePage() {
                   </dl>
                 )}
               </Card>
+              {!editing && <EmployeeTrainingCard employee={e} canWrite={canWrite} isSelf={e.id === meId} />}
               {canWrite && e.id !== meId && (
                 <Card className="border-danger/30" data-tour="employee-danger">
                   <CardHeader title={<span className="text-danger">{t('admin.employees.danger')}</span>} />

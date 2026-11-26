@@ -8,9 +8,10 @@
  *  - Longer staleTime keeps navigation instant inside a session; mutations invalidate explicitly.
  */
 import { QueryClient } from '@tanstack/react-query'
+import { onRealmChange } from '@/features/auth/store'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 
 const PERSIST_KEY = 'clinic.query.cache.v1'
 const DAY = 24 * 60 * 60 * 1000
@@ -36,6 +37,9 @@ export function QueryProvider({ children }: { children: ReactNode }) {
         },
       }),
   )
+  // the session moved between the training sandbox and the real data: every cached answer belongs to the other
+  // world — none of it may be shown (or stay in storage) on this side
+  useEffect(() => onRealmChange(() => { void client.cancelQueries(); client.clear() }), [client])
   const [persister] = useState(() =>
     createSyncStoragePersister({
       storage: typeof window !== 'undefined' ? window.localStorage : undefined,

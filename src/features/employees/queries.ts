@@ -38,6 +38,18 @@ export function useSaveEmployee() {
   })
 }
 
+/** A manager's two decisions about a colleague's training: let them through (`skip`) or send them (back) to it (`reset`). */
+export function useEmployeeTraining() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, action }: { id: Id; action: 'skip' | 'reset' }) => (action === 'skip' ? repos.staff.skipTraining(id) : repos.staff.resetTraining(id)),
+    onSuccess: (e) => {
+      qc.setQueryData(employeeKeys.one(e.id), e)
+      void qc.invalidateQueries({ queryKey: employeeKeys.all })
+    },
+  })
+}
+
 export function useSetOverrides() {
   const qc = useQueryClient()
   return useMutation({

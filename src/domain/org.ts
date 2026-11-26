@@ -7,6 +7,7 @@
  */
 import type { AuditStamp, Id, Locale } from './common'
 import type { PermissionOverrides } from './access/permissions'
+import type { EmployeeTraining } from './training'
 
 export type UnitLevel = 'company' | 'country' | 'region' | 'district' | 'facility'
 export const UNIT_LEVELS: UnitLevel[] = ['company', 'country', 'region', 'district', 'facility']
@@ -317,6 +318,8 @@ export interface Employee extends AuditStamp {
   avatarHue: number // 0..360 — deterministic avatar colour
   isSuperAdmin?: boolean
   lastLoginAt?: string
+  /** where they stand in the mandatory training (absent from an older API) */
+  training?: EmployeeTraining | null
 }
 
 /* ---------------------------- tree helpers (pure) ---------------------------- */

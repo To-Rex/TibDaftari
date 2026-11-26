@@ -12,13 +12,14 @@ import { adminLocale } from './locales/admin'
 import { clinicalLocale } from './locales/clinical'
 import { catalogLocale } from './locales/catalog'
 import { assistantLocale } from './locales/assistant'
+import { trainingLocale } from './locales/training'
 import { tourUiLocale } from './locales/tour/ui'
 import type { TourTexts } from './locales/tour'
 import type { DeepPartial } from './types'
 
-export const UZ = { ...uz, portal: portalLocale.uz, staff: staffLocale.uz, admin: adminLocale.uz, clinical: clinicalLocale.uz, catalog: catalogLocale.uz, assistant: assistantLocale.uz, tour: tourUiLocale.uz }
-export const RU = { ...ru, portal: portalLocale.ru, staff: staffLocale.ru, admin: adminLocale.ru, clinical: clinicalLocale.ru, catalog: catalogLocale.ru, assistant: assistantLocale.ru, tour: tourUiLocale.ru }
-export const EN = { ...en, portal: portalLocale.en, staff: staffLocale.en, admin: adminLocale.en, clinical: clinicalLocale.en, catalog: catalogLocale.en, assistant: assistantLocale.en, tour: tourUiLocale.en }
+export const UZ = { ...uz, portal: portalLocale.uz, staff: staffLocale.uz, admin: adminLocale.uz, clinical: clinicalLocale.uz, catalog: catalogLocale.uz, assistant: assistantLocale.uz, training: trainingLocale.uz, tour: tourUiLocale.uz }
+export const RU = { ...ru, portal: portalLocale.ru, staff: staffLocale.ru, admin: adminLocale.ru, clinical: clinicalLocale.ru, catalog: catalogLocale.ru, assistant: assistantLocale.ru, training: trainingLocale.ru, tour: tourUiLocale.ru }
+export const EN = { ...en, portal: portalLocale.en, staff: staffLocale.en, admin: adminLocale.en, clinical: clinicalLocale.en, catalog: catalogLocale.en, assistant: assistantLocale.en, training: trainingLocale.en, tour: tourUiLocale.en }
 
 /**
  * The whole interface vocabulary (its shape is the Uzbek dictionary's). The sentences of the guided tours are part of
