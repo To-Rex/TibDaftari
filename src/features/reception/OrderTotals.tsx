@@ -38,7 +38,7 @@ export function OrderTotals({ order, payments, onPay, onPrint, printActions, onC
 
   return (
     <div className="flex flex-col gap-4">
-      <Card className="relative overflow-hidden">
+      <Card data-tour="order-totals" className="relative overflow-hidden">
         <div className="flex items-center justify-between">
           <h3 className="text-[14px] font-semibold">{t('staff.reception.totals')}</h3>
           <Badge tone={pay.tone} dot>{pay.label}</Badge>
@@ -55,18 +55,18 @@ export function OrderTotals({ order, payments, onPay, onPrint, printActions, onC
           <motion.div className="h-full rounded-full bg-ok" initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ type: 'spring', stiffness: 120, damping: 20 }} />
         </div>
         <div className="mt-5 flex flex-col gap-2">
-          {payable && <Button size="lg" block data-hotkey="t" leftIcon={<Wallet className="size-4" />} onClick={onPay}>{t('staff.reception.pay')}</Button>}
+          {payable && <Button size="lg" block data-hotkey="t" data-tour="order-pay" leftIcon={<Wallet className="size-4" />} onClick={onPay}>{t('staff.reception.pay')}</Button>}
           <div className={cn('grid gap-2', cancellable && 'xs:grid-cols-2')}>
-            <span className="inline-flex items-center gap-1">
+            <span data-tour="order-print" className="inline-flex items-center gap-1">
               <Button variant="secondary" data-hotkey="p" leftIcon={<Printer className="size-4" />} onClick={onPrint} disabled={order.itemCount === 0}>{t('common.print')}</Button>
               {printActions?.length ? <Menu align="start" trigger={() => <Button variant="secondary" className="px-2" aria-label={t('common.print')}><ChevronDown className="size-4" /></Button>} items={printActions} /> : null}
             </span>
-            {cancellable && <Button variant="ghost" className="text-danger hover:bg-danger-soft hover:text-danger" leftIcon={<XCircle className="size-4" />} onClick={onCancel}>{t('staff.reception.cancelOrder')}</Button>}
+            {cancellable && <Button variant="ghost" data-tour="order-cancel" className="text-danger hover:bg-danger-soft hover:text-danger" leftIcon={<XCircle className="size-4" />} onClick={onCancel}>{t('staff.reception.cancelOrder')}</Button>}
           </div>
         </div>
       </Card>
 
-      <Card padded={false}>
+      <Card data-tour="order-payments" padded={false}>
         <div className="px-4 sm:px-5 py-3.5 flex items-center justify-between"><h3 className="text-[14px] font-semibold">{t('staff.reception.payments')}</h3><span className="text-[12px] text-ink-3 tabular">{payments.length}</span></div>
         <div className="border-t border-line">
           {payments.length === 0 ? (

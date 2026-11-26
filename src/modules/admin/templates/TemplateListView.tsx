@@ -53,7 +53,7 @@ export function TemplateListView({ rows, loading, kind, serviceTypes, categories
     {
       key: 'name', header: t(`${C}.name`), sortable: true, card: 'title',
       cell: (r) => (
-        <span className="flex min-w-0 flex-col">
+        <span data-tour="templates-row" className="flex min-w-0 flex-col">
           <span className="break-words font-medium">{r.name}</span>
           <span className="text-[12px] font-normal text-ink-3">{paperLabel(r)} · {r.language.toUpperCase()} · v{r.version}</span>
         </span>

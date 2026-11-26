@@ -116,11 +116,42 @@ export function loadLanguage(code: UiLang): Promise<void> {
   if (!p) {
     p = Promise.resolve()
       .then(() => LOADERS[code]())
-      .then((tree) => { i18n.addResourceBundle(code, NS, tree, true, true) })
+      .then((tree) => {
+        i18n.addResourceBundle(code, NS, tree, true, true)
+        addTourTexts(code)
+      })
       .finally(() => pending.delete(code))
     pending.set(code, p)
   }
   return p
+}
+
+/** The alphabets written from Uzbek by `translit.ts`. */
+const WRITTEN: Partial<Record<UiLang, (s: string) => string>> = { 'uz-Cyrl': toCyrillic, 'uz-x-yangi': toNewLatin }
+type TourTree = (typeof import('./locales/tour'))['tourLocale']
+let tourTexts: TourTree | null = null
+/** Gives `code` the tours' sentences, once they are here: its own for uz / ru / en, Uzbek in its letters for the written alphabets. */
+function addTourTexts(code: UiLang) {
+  if (!tourTexts || !i18n.hasResourceBundle(code, NS)) return
+  const write = WRITTEN[code]
+  const tree = write ? transformTree(tourTexts.uz, write) : code === 'uz' || code === 'ru' || code === 'en' ? tourTexts[code] : null
+  if (tree) i18n.addResourceBundle(code, NS, { tour: tree }, true, true)
+}
+let tourLoading: Promise<void> | null = null
+/**
+ * The sentences of the guided tours (several hundred, needed only on a first visit) — fetched once, before a tour
+ * starts. The translated languages (kaa, ky, tg, kk, tk) carry theirs in their own chunk; they still get the Uzbek
+ * and Russian ones through this, as the fallback for a sentence they lack.
+ */
+export function loadTourTexts(): Promise<void> {
+  tourLoading ??= import('./locales/tour')
+    .then((m) => {
+      if (!m?.tourLocale) throw new Error('tour texts did not load')
+      tourTexts = m.tourLocale
+      for (const l of LANGS) addTourTexts(l.code)
+    })
+    .catch((e: unknown) => { tourLoading = null; throw e })
+  return tourLoading
 }
 
 let wanted: UiLang = initial

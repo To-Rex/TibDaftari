@@ -41,7 +41,7 @@ export function FamilySwitch({ family, memberId, counts, className }: {
     )
   }
   return (
-    <div className={cn('mb-5', className)} data-family-switch={family.length}>
+    <div className={cn('mb-5', className)} data-family-switch={family.length} data-tour="portal-family">
       <div className="mb-2 text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-3">{t('portal.family.title')}</div>
       <div ref={row} className="no-scrollbar -mx-3 flex gap-2 overflow-x-auto px-3 pb-1 xs:-mx-4 xs:px-4 sm:mx-0 sm:flex-wrap sm:px-0" role="radiogroup" aria-label={t('portal.family.title')}>
         {pill('all', t('portal.family.all'), t('portal.family.allSub', { count: family.length }), null, counts ? Object.values(counts).reduce((a, b) => a + b, 0) : undefined)}

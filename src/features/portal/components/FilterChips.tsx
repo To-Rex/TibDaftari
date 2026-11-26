@@ -21,6 +21,7 @@ export function FilterChips<T extends string>({
         className,
       )}
       role="radiogroup"
+      data-tour="portal-filter"
     >
       {items.map((it) => {
         const active = it.value === value

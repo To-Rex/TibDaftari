@@ -1002,3 +1002,24 @@ img, video, canvas { max-width: 100%; }
     -webkit-text-fill-color: currentColor;
   }
 }
+
+/* ------------------------------------------------------------------
+   Guided tours (features/tour): the frame around what a step points at. Everything else is dimmed by the frame's own
+   shadow, so the two always move as one; it glides to a new step and then follows scrolling without a delay.
+------------------------------------------------------------------- */
+.tour-spot {
+  position: fixed;
+  border-radius: 12px;
+  pointer-events: none;
+  box-shadow:
+    0 0 0 2px var(--c-brand),
+    0 0 0 6px color-mix(in srgb, var(--c-brand) 26%, transparent),
+    0 0 0 100vmax rgb(8 14 13 / 0.56);
+}
+.tour-spot.is-gliding {
+  transition: top 0.34s var(--ease-out), left 0.34s var(--ease-out), width 0.34s var(--ease-out), height 0.34s var(--ease-out);
+}
+.tour-spot[data-empty] { box-shadow: 0 0 0 100vmax rgb(8 14 13 / 0.56); }
+.dark .tour-spot { box-shadow: 0 0 0 2px var(--c-brand), 0 0 0 6px color-mix(in srgb, var(--c-brand) 30%, transparent), 0 0 0 100vmax rgb(0 0 0 / 0.5); }
+.dark .tour-spot[data-empty] { box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0.5); }
+@media (prefers-reduced-motion: reduce) { .tour-spot.is-gliding { transition: none; } }

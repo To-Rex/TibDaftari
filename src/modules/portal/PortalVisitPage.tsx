@@ -100,7 +100,7 @@ export default function PortalVisitPage() {
         <ArrowLeft className="size-3.5" /> {t('portal.visit.backToVisits')}
       </Link>
 
-      <div className="mb-6">
+      <div className="mb-6" data-tour="portalVisit-head">
         {order ? (
           <>
             <p className="text-ink-3 text-[12.5px]">
@@ -129,7 +129,7 @@ export default function PortalVisitPage() {
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start 2xl:grid-cols-[minmax(0,1fr)_340px] 2xl:gap-8">
-        <Card padded={false} className="min-w-0 overflow-hidden">
+        <Card padded={false} className="min-w-0 overflow-hidden" data-tour="portalVisit-services">
           <div className="border-line flex flex-wrap items-baseline justify-between gap-x-3 border-b px-3 py-3 xs:px-4 sm:px-5">
             <h2 className="text-[14px] font-semibold">{t('portal.visit.items')}</h2>
             {order && (
@@ -155,7 +155,7 @@ export default function PortalVisitPage() {
         </Card>
 
         <aside className="flex min-w-0 flex-col gap-4 lg:sticky lg:top-20">
-          <Card padded={false} className="px-4 py-3 xs:px-5">
+          <Card padded={false} className="px-4 py-3 xs:px-5" data-tour="portalVisit-payment">
             <h2 className="text-ink-3 py-2 text-[13px] font-semibold tracking-[0.06em] uppercase">
               {t('portal.visit.payment')}
             </h2>

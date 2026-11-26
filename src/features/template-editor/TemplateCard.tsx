@@ -35,7 +35,7 @@ export const TemplateCard = memo(function TemplateCard({ tpl, scopeId, serviceTy
   const inherited = tpl.ownerUnitId !== scopeId
   return (
     <motion.div variants={fadeUp} className="h-full">
-      <Card padded={false} interactive onClick={selecting ? onToggleSelect : onOpen} role={selecting ? 'checkbox' : undefined} aria-checked={selecting ? !!selected : undefined} data-template-id={tpl.id}
+      <Card padded={false} interactive onClick={selecting ? onToggleSelect : onOpen} role={selecting ? 'checkbox' : undefined} aria-checked={selecting ? !!selected : undefined} data-template-id={tpl.id} data-tour="templates-card"
         className={cn('group relative h-full flex flex-col overflow-hidden', selecting && selected && 'ring-2 ring-brand border-brand')}>
         {selecting && (
           <span aria-hidden className={cn('absolute left-3 top-3 z-10 grid size-6 place-items-center rounded-md border-2 shadow-1 transition-colors', selected ? 'border-brand bg-brand text-white' : 'border-line-strong bg-surface/90')}>

@@ -104,7 +104,7 @@ export default function OrderPage() {
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] 3xl:grid-cols-[minmax(0,1fr)_400px]">
         <div className="flex min-w-0 flex-col gap-5">
-          <Card padded={false} className="overflow-hidden">
+          <Card data-tour="order-items" padded={false} className="overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3.5 sm:px-5"><h3 className="text-[14px] font-semibold">{t('staff.reception.items')} <span className="ml-1 text-ink-3 tabular">{items.length || ''}</span></h3></div>
             <div className="border-t border-line">
               <OrderItemsTable order={order} items={items} loading={q.isLoading} onRemove={(id) => void onRemove(id)} removing={removing} canRemove={can('reception.order.create') || lateEdit} lockedIds={lockedIds} />
@@ -113,7 +113,7 @@ export default function OrderPage() {
 
           {editable && (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-              <Card className="flex h-[min(560px,80dvh)] min-w-0 flex-col max-sm:p-4">
+              <Card data-tour="order-add" className="flex h-[min(560px,80dvh)] min-w-0 flex-col max-sm:p-4">
                 <div className="mb-3 flex items-center gap-2"><span className="grid size-8 place-items-center rounded-lg bg-brand-soft text-brand-ink"><Plus className="size-4" /></span><h3 className="text-[15px] font-semibold">{t('staff.reception.addService')}</h3></div>
                 {order && <ServicePicker unitId={order.unitId} inOrder={inOrder} onAdd={(id) => void onAdd(id)} adding={adding} disabled={addItems.isPending} />}
               </Card>

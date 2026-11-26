@@ -20,7 +20,7 @@ export function PreviewAsSelect({ serviceTypes, className, showLabel = true }: {
   const boundSts = meta.serviceTypeIds.map((id) => serviceTypes.find((s) => s.id === id)).filter(Boolean) as ServiceType[]
   const previewOptions = boundSts.length ? boundSts : serviceTypes.filter((s) => s.schemaId)
   return (
-    <div className={cn('flex items-center gap-1.5 min-w-0', className)}>
+    <div data-tour="templateEditor-preview-as" className={cn('flex items-center gap-1.5 min-w-0', className)}>
       {showLabel && <span className="text-[12px] text-ink-3 whitespace-nowrap">{t('catalog.editor.previewAs')}</span>}
       <Select value={previewServiceTypeId ?? ''} onChange={(e) => setPreviewServiceType(e.target.value || null)} className="h-8 text-[12.5px] w-full min-w-0 py-0">
         <option value="">{t('catalog.editor.noSchema')}</option>
@@ -63,7 +63,7 @@ export function EditorTopBar({ serviceTypes, canWrite, canPublish, saving, onBac
   return (
     <div className="h-14 shrink-0 flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 border-b border-line bg-surface">
       <IconButton label={t('common.back')} size="sm" onClick={onBack} className="shrink-0"><ArrowLeft /></IconButton>
-      <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 xl:flex-initial">
+      <div data-tour="templateEditor-head" className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 xl:flex-initial">
         <input value={meta.name} onChange={(e) => setMeta({ name: e.target.value })} readOnly={!canWrite}
           className="bg-transparent text-[14px] sm:text-[15px] font-semibold outline-none rounded-md px-1.5 h-8 min-w-0 flex-1 xl:flex-none xl:w-[min(16vw,320px)] 2xl:w-[min(24vw,320px)] hover:bg-surface-2 focus:bg-surface-2 focus:ring-2 focus:ring-brand/30 transition-colors truncate" />
         <Badge tone={TONE[template.status]} dot size="sm" className="max-xs:hidden shrink-0">{t(`catalog.templates.status.${template.status}`)}</Badge>
@@ -82,7 +82,7 @@ export function EditorTopBar({ serviceTypes, canWrite, canPublish, saving, onBac
             <>
               <ShortcutsHelp />
               <Tooltip label={t('common.print')} side="bottom"><IconButton label={t('common.print')} size="sm" onClick={onPrint}><Printer /></IconButton></Tooltip>
-              <Button size="sm" variant="ghost" leftIcon={<Link2 className="size-4" />} onClick={onBindings}>{t('catalog.editor.bindings')}</Button>
+              <Button data-tour="templateEditor-bindings" size="sm" variant="ghost" leftIcon={<Link2 className="size-4" />} onClick={onBindings}>{t('catalog.editor.bindings')}</Button>
               {canWrite && (
                 <Tooltip label={t('catalog.editor.latinize')} side="bottom">
                   <IconButton label={t('catalog.editor.latinize')} size="sm" onClick={onLatinize}><Languages /></IconButton>
@@ -90,18 +90,18 @@ export function EditorTopBar({ serviceTypes, canWrite, canPublish, saving, onBac
               )}
             </>
           )}
-          <Button size="sm" variant={preview ? 'soft' : 'ghost'} leftIcon={preview ? <Pencil className="size-4" /> : <Eye className="size-4" />} onClick={() => setPreview(!preview)} className={cn(preview && 'ring-1 ring-brand/30')}>{preview ? t('common.edit') : t('common.preview')}</Button>
-          {canWrite && <Button size="sm" variant="secondary" leftIcon={<Save className="size-4" />} loading={saving} disabled={!dirty} onClick={onSave}>{t('common.save')}</Button>}
-          {canActivate && <Button size="sm" leftIcon={<CheckCircle2 className="size-4" />} onClick={onActivate}>{t('catalog.templates.activate')}</Button>}
+          <Button data-tour="templateEditor-preview" size="sm" variant={preview ? 'soft' : 'ghost'} leftIcon={preview ? <Pencil className="size-4" /> : <Eye className="size-4" />} onClick={() => setPreview(!preview)} className={cn(preview && 'ring-1 ring-brand/30')}>{preview ? t('common.edit') : t('common.preview')}</Button>
+          {canWrite && <Button data-tour="templateEditor-save" size="sm" variant="secondary" leftIcon={<Save className="size-4" />} loading={saving} disabled={!dirty} onClick={onSave}>{t('common.save')}</Button>}
+          {canActivate && <Button data-tour="templateEditor-activate" size="sm" leftIcon={<CheckCircle2 className="size-4" />} onClick={onActivate}>{t('catalog.templates.activate')}</Button>}
         </>
       )}
       {!lg && canWrite && (
-        <Button size="sm" variant="secondary" leftIcon={<Save className="size-4" />} loading={saving} disabled={!dirty} onClick={onSave} className="shrink-0 max-sm:px-2.5" aria-label={t('common.save')}>
+        <Button data-tour="templateEditor-save" size="sm" variant="secondary" leftIcon={<Save className="size-4" />} loading={saving} disabled={!dirty} onClick={onSave} className="shrink-0 max-sm:px-2.5" aria-label={t('common.save')}>
           <span className="hidden sm:inline">{t('common.save')}</span>
         </Button>
       )}
       {!xl && (
-        <Menu align="end" trigger={() => <span className="grid size-9 place-items-center rounded-full text-ink-2 hover:bg-surface-2 hover:text-ink" title={t('common.actions')}><MoreHorizontal className="size-[18px]" /></span>} items={overflow} className="shrink-0" />
+        <Menu align="end" trigger={() => <span data-tour="templateEditor-more" className="grid size-9 place-items-center rounded-full text-ink-2 hover:bg-surface-2 hover:text-ink" title={t('common.actions')}><MoreHorizontal className="size-[18px]" /></span>} items={overflow} className="shrink-0" />
       )}
       <ShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
     </div>

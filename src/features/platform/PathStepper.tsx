@@ -36,7 +36,7 @@ export function PathStepper({ steps }: { steps: PathStep[] }) {
     el.scrollTo({ left: Math.max(0, step.offsetLeft - 16), behavior: 'smooth' })
   }, [current, steps.length])
   return (
-    <nav aria-label={t('admin.platform.path.label')} className="app-card @container overflow-hidden rounded-[var(--radius-lg)] border border-line bg-surface shadow-1" data-platform-path>
+    <nav aria-label={t('admin.platform.path.label')} className="app-card @container overflow-hidden rounded-[var(--radius-lg)] border border-line bg-surface shadow-1" data-platform-path data-tour="territory-path">
       <ol ref={box} className="no-scrollbar flex snap-x items-stretch overflow-x-auto p-2 sm:p-2.5">
         {steps.map((s, i) => {
           const Icon = LEVEL_ICON[s.level]

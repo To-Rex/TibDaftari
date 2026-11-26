@@ -106,7 +106,7 @@ export default function ReportsPage() {
           </div>
         )}
       />
-      <Tabs<Section> className="mb-4" value={section} onChange={setSection} items={SECTIONS.map((s) => ({ value: s, label: t(`clinical.reports.sections.${s}`) }))} />
+      <Tabs<Section> tour="reports-sections" className="mb-4" value={section} onChange={setSection} items={SECTIONS.map((s) => ({ value: s, label: t(`clinical.reports.sections.${s}`) }))} />
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <DateRangeFilter value={range} onChange={setRange} allowCustom presets={recentOnly ? ['today', 'last7'] : undefined} min={minDate} />
         {wide && (
@@ -127,7 +127,7 @@ export default function ReportsPage() {
 
       {section === 'overview' && (<>
 
-      <div className="mb-5 grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3 max-xs:grid-cols-1">
+      <div data-tour="reports-kpis" className="mb-5 grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3 max-xs:grid-cols-1">
         {stat(t('clinical.reports.kpiOrders'), d && fmtNumber(totals.orders), <Receipt />, 'brand', t('clinical.reports.inRange'))}
         {finance && stat(t('clinical.reports.kpiRevenue'), d && fmtMoney(totals.revenue, false), <Wallet />, 'ok', t('common.sum'))}
         {stat(t('clinical.reports.kpiToday'), d && fmtNumber(d.todayOrders), <Receipt />, 'neutral', finance && d ? fmtMoney(d.todayRevenue) : undefined)}
@@ -136,7 +136,7 @@ export default function ReportsPage() {
         {stat(t('clinical.reports.kpiPatients'), d && fmtNumber(d.patients), <Users />, 'neutral', d ? t('clinical.reports.smsQueued', { n: d.smsQueued }) : undefined)}
       </div>
 
-      <Card className="mb-5 min-w-0">
+      <Card data-tour="reports-trend" className="mb-5 min-w-0">
         <CardHeader
           className="max-sm:flex-col max-sm:items-stretch max-sm:gap-3"
           title={t('clinical.reports.trend')}
@@ -148,7 +148,7 @@ export default function ReportsPage() {
         )}
       </Card>
 
-      <Card padded={false} className="min-w-0 overflow-hidden">
+      <Card data-tour="reports-breakdown" padded={false} className="min-w-0 overflow-hidden">
         <div className="flex flex-col gap-3 border-b border-line px-3 pt-3 sm:px-5 md:flex-row md:items-center md:justify-between">
           <Tabs<BreakdownBy> size="sm" className="min-w-0 border-b-0" value={byShown} onChange={setBy} items={bys.map((b) => ({ value: b, label: t(`clinical.reports.by_${b}`) }))} />
           {finance && (

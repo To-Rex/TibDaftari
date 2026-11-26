@@ -94,25 +94,25 @@ export default function EmployeesPage() {
   return (
     <Page>
       <PageHeader title={t('admin.employees.title')} description={t('admin.employees.subtitle')}
-        actions={canWrite && <Button data-hotkey="n" leftIcon={<Plus className="size-4" />} onClick={() => setDrawer(true)}>{t('admin.employees.add')}</Button>} />
+        actions={canWrite && <Button data-hotkey="n" data-tour="employees-add" leftIcon={<Plus className="size-4" />} onClick={() => setDrawer(true)}>{t('admin.employees.add')}</Button>} />
 
       <Toolbar>
-        <SearchInput value={search} onChange={reset(setSearch)} placeholder={t('admin.employees.searchPlaceholder')} className="w-full sm:w-72" />
-        <Select value={roleId} onChange={(e) => reset(setRoleId)(e.target.value)} className="w-full sm:w-auto sm:min-w-40">
+        <SearchInput value={search} onChange={reset(setSearch)} placeholder={t('admin.employees.searchPlaceholder')} className="w-full sm:w-72" data-tour="employees-search" />
+        <Select value={roleId} onChange={(e) => reset(setRoleId)(e.target.value)} className="w-full sm:w-auto sm:min-w-40" data-tour="employees-role">
           <option value="">{t('admin.employees.allRoles')}</option>
           {(roles.data ?? []).map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
         </Select>
         {scopedUnits.length > 1 && (
           <UnitPicker units={scopedUnits} value={unitId} onChange={reset(setUnitId)} allowEmpty placeholder={t('admin.employees.allUnits')} className="w-full sm:w-auto sm:min-w-52" />
         )}
-        <Select value={status} onChange={(e) => reset(setStatus)(e.target.value)} className="w-full sm:w-auto sm:min-w-36">
+        <Select value={status} onChange={(e) => reset(setStatus)(e.target.value)} className="w-full sm:w-auto sm:min-w-36" data-tour="employees-status">
           <option value="">{t('admin.employees.allStatuses')}</option>
           <option value="active">{t('common.active')}</option>
           <option value="inactive">{t('common.inactive')}</option>
         </Select>
       </Toolbar>
 
-      <Card padded={false} className="overflow-hidden">
+      <Card padded={false} className="overflow-hidden" data-tour="employees-table">
         <DataTable<Employee>
           columns={columns}
           rows={data?.items ?? []}

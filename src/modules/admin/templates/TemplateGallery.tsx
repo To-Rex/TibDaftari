@@ -267,12 +267,12 @@ export function TemplateGallery({ kind }: { kind: TemplateKind }) {
             </IconButton>
             <Segmented size="sm" value={prefs.view} onChange={(view) => setPrefs((p) => ({ ...p, view }))}
               items={[{ value: 'grid' as const, icon: <LayoutGrid />, label: <span className="max-sm:sr-only">{t(`${F}.viewGrid`)}</span> }, { value: 'list' as const, icon: <List />, label: <span className="max-sm:sr-only">{t(`${F}.viewList`)}</span> }]} />
-            <Button size="sm" variant={selecting ? 'soft' : 'secondary'} leftIcon={<SquareCheck className="size-4" />} onClick={() => (selecting ? stopSelecting() : setSelecting(true))} aria-pressed={selecting} data-gallery-select>
+            <Button size="sm" variant={selecting ? 'soft' : 'secondary'} leftIcon={<SquareCheck className="size-4" />} onClick={() => (selecting ? stopSelecting() : setSelecting(true))} aria-pressed={selecting} data-gallery-select data-tour="templates-select">
               {selecting ? t(`${B}.done`) : t(`${B}.select`)}
             </Button>
           </div>
         }>
-        <SearchInput value={search} onChange={setSearch} placeholder={t(`${K}.searchPh`)} className="w-full sm:w-72" />
+        <SearchInput data-tour="templates-search" value={search} onChange={setSearch} placeholder={t(`${K}.searchPh`)} className="w-full sm:w-72" />
         <Segmented size="sm" className="max-w-full overflow-x-auto no-scrollbar" value={status} onChange={setStatus} items={(['all', 'draft', 'active', 'archived'] as const).map((s) => ({ value: s, label: `${s === 'all' ? t('common.all') : t(`catalog.templates.status.${s}`)} · ${counts[s]}` }))} />
         <Button size="sm" variant="secondary" className="md:hidden" leftIcon={<SlidersHorizontal className="size-4" />} onClick={() => setFiltersOpen((o) => !o)} aria-expanded={filtersOpen}>
           {t(`${F}.filters`)}{nFilters ? ` · ${nFilters}` : ''}

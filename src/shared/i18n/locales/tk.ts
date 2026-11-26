@@ -3151,4 +3151,998 @@ export const tk: Translation = {
       how4: 'Işgär kömekçiniň üsti bilen hem özüne berlen roly, rugsatlary ýa-da sebiti giňeldip bilmeýär.',
     },
   },
+  tour: {
+    ui: {
+      help: 'Gollanma',
+      start: 'Başla',
+      next: 'Indiki',
+      back: 'Yza',
+      done: 'Düşnükli',
+      skip: 'Sowup geç',
+      close: 'Ýap',
+      step: '{{n}} / {{total}}',
+      keys: 'Klawiaturada: ← → — ädimler, Esc — ýapmak',
+      page: 'Şu sahypanyň gollanmasy',
+      pageSub: 'Açyk duran sahypadaky düwmeler',
+      pageNone: 'Bu sahypada gollanma ýok',
+      general: 'Umumy tanyşlyk',
+      generalSub: 'Menýu we ýokarky panel',
+      auto: 'Täze sahypada gollanma özi açylsyn',
+      reopenTitle: 'Gollanma ýapyldy',
+      reopenHint: 'Islän wagtyňyz ýokardaky «?» düwmesi bilen täzeden açyp bilersiňiz.',
+    },
+    shell: {
+      welcome: {
+        title: 'Hoş geldiňiz, {{name}}!',
+        body: 'Geliň, TibDaftari bilen tanyşalyň — bary-ýogy bir minut alar.\nMenýunyň we esasy düwmeleriň näme edýändigini görkezeris. Soňra her sahypa ilkinji gezek gireniňizde, ondaky hereketler hem gysgaça düşündiriler.',
+      },
+      welcomeAdmin: {
+        title: 'Dolandyryş paneli bilen tanyşlyk',
+        body: 'Bu ýerde gurama sazlanýar: bölümler, işgärler, hyzmatlar katalogy, resminama şablonlary.\nBir minudyň içinde nämäniň nirededigini görkezeris.',
+      },
+      welcomePortal: {
+        title: 'Hoş geldiňiz, {{name}}!',
+        body: 'Bu — siziň şahsy kabinetiňiz: derňew netijeleriňiz we klinika saparlaryňyz şu ýerde saklanýar.\nGysga tanyşlyk ýarym minut alar.',
+      },
+      navMain: {
+        title: 'Menýu: iş şu ýerden başlanýar',
+        body: 'Bir sahypadan beýlekisine çepdäki menýu arkaly geçilýär. Ilki iň esasylary:',
+      },
+      navReception: {
+        title: 'Kabul bölegi',
+        body: 'Näsag gelende ulanylýan sahypalar:',
+      },
+      navLab: {
+        title: 'Laboratoriýa we netijeler',
+        body: 'Derňew netijeleri bilen işlemek:',
+      },
+      navMore: {
+        title: 'Hasabatlar we habarlar',
+      },
+      toAdmin: {
+        title: 'Dolandyryş paneli',
+        body: 'Işgärler, hyzmatlar katalogy, şablonlar we sazlamalar aýratyn panelde durýar — oňa şu düwme bilen geçýärsiňiz. Ol ýerden edil şu ýerdäki düwme arkaly yza gaýdarsyňyz.',
+      },
+      navAdminMain: {
+        title: 'Dolandyryş menýusy',
+        body: 'Bir bölekden beýlekisine çepdäki menýu arkaly geçilýär:',
+      },
+      navOrg: {
+        title: 'Gurama',
+        body: 'Gurluş we adamlar:',
+      },
+      navCatalog: {
+        title: 'Hyzmatlar we resminamalar',
+        body: 'Haýsy hyzmatlaryň berilýändigi we netijäniň nähili görnüşde çykýandygy:',
+      },
+      navSettings: {
+        title: 'Sazlamalar',
+      },
+      toStaff: {
+        title: 'Işgärler goşundysy',
+        body: 'Gündelik iş — kabul, laboratoriýa, hasabatlar — işgärler goşundysynda. Oňa şu düwme bilen geçýärsiňiz, ol ýerden bolsa edil şu ýerdäki düwme arkaly yza gaýdarsyňyz.',
+      },
+      workplace: {
+        title: 'Iş ýeriňiz',
+        body: 'Häzir haýsy edarada işleýändigiňiz şu ýerde ýazylan — ähli sanawlar şol edaranyňky.\nBirnäçe edarada işleýän bolsaňyz, şu düwmä basyp, beýlekisine geçersiňiz.',
+      },
+      scope: {
+        title: 'Haýsy bölüm dolandyrylýar',
+        body: 'Sahypalar şu ýerde saýlanan bölüm we onuň aşagyndakylar boýunça işleýär.\nSize birnäçe bölüm berkidilen bolsa, şu düwmä basyp, beýlekisine geçersiňiz.',
+      },
+      tools: {
+        title: 'Amatlyklar',
+        keys: 'işi çaltlandyrýan klawiatura düwmeleriniň sanawy',
+        lang: 'interfeýsiň dilini üýtgetmek',
+        theme: 'ýagty ýa-da garaňky görnüş',
+      },
+      notifications: {
+        title: 'Bildirişler',
+        body: 'Size degişli täzelikler şu ýere gelýär. Okalmadygy bar bolsa, jaňjagazyň üstünde olaryň sany görünýär; basyp, sanawy açarsyňyz.',
+      },
+      me: {
+        title: 'Siz we çykyş',
+        body: 'Adyňyz we roluňyz. Işi gutaranyňyzdan soň, şu ýere basyp, «Çykyş» diýenini saýlaň — aýratyn-da kompýuteri başgalar hem ulanýan bolsa.',
+      },
+      help: {
+        title: 'Gollanma hemişe şu ýerde',
+        body: 'Haýsydyr bir düwmäniň näme edýändigini ýatdan çykarsaňyz, «?» düwmesine basyň: açyk duran sahypanyň gollanmasyny ýa-da şu umumy tanyşlygy täzeden görersiňiz.\nIşiňiz şowly bolsun!',
+      },
+      portalNav: {
+        title: 'Kabinetiň bölekleri',
+        body: 'Bir bölekden beýlekisine şu düwmeler bilen geçýärsiňiz:',
+      },
+      portalTools: {
+        title: 'Dil we görnüş',
+        body: 'Interfeýsiň dilini, şeýle hem ýagty ýa-da garaňky görnüşi şu ýerde saýlaýarsyňyz.',
+      },
+      portalMe: {
+        title: 'Çykyş',
+        body: 'Kabinetden çykmak üçin şu ýere basyň — aýratyn-da telefon ýa-da kompýuter siziňki däl bolsa.',
+      },
+      portalHelp: {
+        title: 'Gollanma hemişe şu ýerde',
+        body: 'Bir zat düşnüksiz bolsa, «?» düwmesine basyň — sahypanyň gollanmasy ýa-da şu tanyşlyk täzeden açylar.',
+      },
+      nav: {
+        dashboard: 'şu günki iş: esasy sanlar we nobatdaky işler',
+        assistant: 'soragyňyzy ýönekeý sözler bilen ýazýarsyňyz — maglumat tapýar, hasabat taýýarlaýar',
+        reception: 'näsagy hasaba almak, hyzmat saýlamak we çek açmak',
+        patients: 'ähli näsaglar, olaryň maglumatlary we saparlary',
+        orders: 'açylan çekler, tölegiň ýagdaýy we bergiler',
+        lab: 'derňew netijelerini girizmek nobaty',
+        confirm: 'girizilen netijäni barlap tassyklamak — şondan soň ol näsaga iberilýär',
+        results: 'taýýar netijeleri görmek, çap etmek we näsaga gaýtadan ibermek',
+        reports: 'girdeji, hyzmatlar we işiň möçberi; Excel görnüşinde ýükläp almak',
+        messages: 'näsaglara SMS ibermek we iberilenleriň taryhy',
+        adminDashboard: 'guramanyň ýagdaýy we sazlamak boýunça ýatlatmalar',
+        unit: 'saýlanan bölümiň sahypasy: rekwizitler we sazlamalar',
+        units: 'aşagyndaky welaýatlar, etraplar we edaralar — goşmak, üýtgetmek',
+        employees: 'işgär goşmak, rol bermek, login we parol',
+        roles: 'her roluň nämeleri edip bilýändigini bellemek',
+        catalog: 'hyzmatlar, bahalar we ugurlar',
+        schemas: 'derňew netijesiniň haýsy meýdanlardan ybaratdygy',
+        templates: 'netije resminamasynyň (blankyň) görnüşi',
+        receipts: 'çap edilýän çekiň görnüşi',
+        sms: 'SMS hasaby we näsaga iberilýän tekstler',
+        territory: 'sebitler we edaralar boýunça görkezijiler',
+        portalHome: 'iň soňky netijeler we saparlar bir bakyşda',
+        portalResults: 'ähli taýýar netijeler — açmak we PDF ýükläp almak',
+        portalVisits: 'klinika saparlaryňyz, hyzmatlar we tölegler',
+        portalProfile: 'şahsy maglumatlar, dil, parol',
+      },
+    },
+    pages: {
+      dashboard: {
+        intro: {
+          title: 'Baş sahypa',
+          body: 'Iş güni şu sahypadan başlanýar: şu günki ýagdaý bir bakyşda görünýär, iň gerekli sahypalara bolsa bir basmak bilen geçýärsiňiz.',
+        },
+        stats: {
+          title: 'Şu günki sanlar',
+          body: '«Şu günki çekler» we «Şu günki girdeji» — şu gün edilen iş. «Laboratoriýada» — laboratoriýada nobatda duran, «Tassyklamada» — tassyklanmagyna garaşýan hyzmatlaryň sany.',
+        },
+        quick: {
+          title: 'Çalt hereketler',
+          body: 'Işiňiz üçin iň gerekli sahypalara şu ýerden bir basmak bilen geçýärsiňiz. Düwmäniň ýanynda san bar bolsa — şonça iş size garaşýar.',
+        },
+        period: {
+          title: 'Döwri saýlamak',
+          body: 'Döwri saýlaň (meselem, «Şu gün» ýa-da «7 gün») — aşakdaky «Dinamika» we «Ugurlar boýunça» bölekleri şol döwür üçin görkezilýär. Ýokardaky şu günki sanlar üýtgemeýär.',
+        },
+        trend: {
+          title: 'Günme-gün dinamika',
+          body: 'Saýlanan döwürde girdejiniň günme-gün nähili üýtgändigi. «Çekler» düwmesine bassaňyz, girdejiniň ýerine çekleriň sany çykar. Syçanjygy çyzygyň üstüne getirseňiz, şol günüň takyk sanyny görersiňiz.',
+        },
+        categories: {
+          title: 'Ugurlar boýunça',
+          body: 'Saýlanan döwürde her ugur boýunça näçe hyzmat berlendigi we näçe girdeji gelendigi. Iň köp girdeji getiren ugur ýokarda durýar.',
+        },
+      },
+      reception: {
+        intro: {
+          title: 'Kabul sahypasy',
+          body: 'Näsag gelende iş şu ýerden başlanýar. Tertibi şeýle:\n1. Näsagy tapyň ýa-da täzesini goşuň.\n2. «Täze çek» düwmesine basyň.\n3. Açylan çekde hyzmatlary saýlaň.\n4. Tölegi kabul ediň.',
+        },
+        search: {
+          title: 'Näsagy gözlemek',
+          body: 'Adyndan, telefonyndan ýa-da pasport belgisinden azyndan 2 nyşan ýazyň — gabat gelýän näsaglar aşakda çykar. Ilki bilen hemişe gözläp görüň: näsag öň hem gelen bolmagy mümkin.',
+        },
+        results: {
+          title: 'Tapylan näsaglar',
+          body: 'Gözlegiň netijesi şu ýerde çykýar. Gerekli näsaga basyň (ýa-da ↑ ↓ bilen saýlap, Enter basyň) — onuň maglumatlary we çekleri açylar.',
+        },
+        newPatient: {
+          title: 'Täze näsag goşmak',
+          body: 'Näsag sanawda tapylmasa, «Täze näsag» düwmesine basyň. Açylan penjirede F.A.A. we telefony ýazyp, «Hasaba al» düwmesine basyň — näsag ýatda saklanar we şol bada saýlanar.',
+        },
+        detail: {
+          title: 'Saýlanan näsag',
+          body: 'Saýlanan näsagyň maglumatlary we soňky çekleri şu ýerde görünýär. Şu ýerdäki «Täze çek» düwmesi çek açýar — soňra oňa hyzmatlary goşup, tölegi kabul edýärsiňiz.',
+        },
+        newOrder: {
+          title: 'Täze çek açmak',
+          body: '«Täze çek» düwmesine basyň — şu näsag üçin boş çek açylar we çekiň sahypasyna geçersiňiz. Ol ýerde hyzmatlary saýlaýarsyňyz, tölegi kabul edýärsiňiz we çeki çap edýärsiňiz.',
+        },
+      },
+      order: {
+        intro: {
+          title: 'Çekiň sahypasy',
+          body: 'Bu — bir çek. Ýokarda onuň belgisi, ýagdaýy, tölegiň ýagdaýy we näsag görkezilen. Işiň tertibi: hyzmatlary goşuň → tölegi kabul ediň → çeki çap ediň.',
+        },
+        items: {
+          title: 'Çekdäki hyzmatlar',
+          body: 'Çeke goşulan hyzmatlar bahasy we ýagdaýy bilen şu ýerde durýar. Ýalňyşlyk bilen goşulan hyzmaty, ýagdaýy entek «Garaşylýar» bolsa, setirindäki sebet nyşanyna basyp pozup bilersiňiz.',
+        },
+        add: {
+          title: 'Hyzmat goş',
+          body: 'Hyzmaty ady ýa-da kody boýunça gözläň ýa-da ýokardan ugry saýlaň, soňra gerekli hyzmata basyň — ol derrew çeke goşular we ýaşyl bellik bilen görkeziler.',
+        },
+        totals: {
+          title: 'Çekiň hasaby',
+          body: 'Hyzmatlaryň jemi, arzanladyş, jemi möçber, tölenen we galyndy şu ýerde öz-özünden hasaplanýar. Çeke hyzmat goşulyp, tölenmedik möçber peýda bolandan soň, «Töleg kabul et» düwmesi hem şu ýerde çykar.',
+        },
+        pay: {
+          title: 'Töleg kabul etmek',
+          body: 'Düwmä bassaňyz, penjire açylar: töleg usulyny (nagt, kart …) saýlaň, möçberi barlaň we tassyklaň. Möçberi azaltsaňyz, bölekleýin töleg bolar — galany galyndy bolup durar.',
+        },
+        print: {
+          title: 'Çeki çap etmek',
+          body: '«Çap et» düwmesi çeki çek printerine iberýär; printer programmasy tapylmasa, brauzeriň çap ediş penjiresi açylar. Ýanyndaky kiçijik düwme bilen çap ediş usulyny saýlaýarsyňyz ýa-da printeri sazlaýarsyňyz.',
+        },
+        cancel: {
+          title: 'Çeki ýatyrmak',
+          body: 'Bu düwme diňe entek töleg edilmedik çekde çykýar. Bassaňyz, sebäbi soralar we çek ýatyrylar — bu hereketi yzyna gaýtaryp bolmaýar.',
+        },
+        payments: {
+          title: 'Tölegleriň taryhy',
+          body: 'Kabul edilen her bir töleg usuly, wagty we möçberi bilen şu ýerde ýazylýar. Usul ýalňyş saýlanan bolsa, galam nyşanyna basyp düzedersiňiz; bir günden soň muny diňe administrator ýa-da ýolbaşçy edip biler.',
+        },
+      },
+      patients: {
+        intro: {
+          title: 'Näsaglaryň sanawy',
+          body: 'Edaraňyzda hasaba alnan ähli näsaglar şu ýerde. Näsagy tapyp, onuň maglumatlaryny, çeklerini we netijelerini görüp bilersiňiz.',
+        },
+        search: {
+          title: 'Näsagy gözlemek',
+          body: 'Adyny, telefonyny ýa-da pasport belgisini ýazyň — sanawda diňe gabat gelýän näsaglar galar. Meýdançany arassalasaňyz, ähli näsaglar ýene görüner.',
+        },
+        tags: {
+          title: 'Bellik boýunça saýlamak',
+          body: 'Bellikleriň birine (meselem, «VIP» ýa-da «Bola») bassaňyz, diňe şol bellikli näsaglar galar. Ýene bir gezek bassaňyz, ähli näsaglar ýene görüner.',
+        },
+        table: {
+          title: 'Näsaglaryň tablisasy',
+          body: 'Her setirde näsagyň telefony, soňky sapary, çekleriniň sany we jemi tölegi görünýär. Setire bassaňyz, näsagyň kartoçkasy açylar.',
+        },
+        new: {
+          title: 'Täze näsag goşmak',
+          body: 'Näsag sanawda ýok bolsa, «Täze näsag» düwmesine basyň. Açylan penjirede F.A.A. we telefony ýazyp, «Hasaba al» düwmesine basyň — näsag ýatda saklanar we onuň kartoçkasy açylar.',
+        },
+      },
+      patient: {
+        intro: {
+          title: 'Näsagyň kartoçkasy',
+          body: 'Bir näsag baradaky ähli zat şu sahypada: ady, telefony, doglan senesi, çekleri we derňew netijeleri.',
+        },
+        newOrder: {
+          title: 'Täze çek açmak',
+          body: '«Täze çek» düwmesine bassaňyz, şu näsag üçin boş çek açylar we çekiň sahypasyna geçersiňiz — ol ýerde hyzmatlary saýlap, tölegi kabul edýärsiňiz.',
+        },
+        edit: {
+          title: 'Maglumaty düzetmek',
+          body: 'Ady, telefony, salgysy ýa-da arzanladyşy nädogry ýazylan bolsa, «Üýtget» düwmesine basyň: forma açylar, gerekli ýerini üýtgedip, «Ýatda sakla» düwmesine basarsyňyz.',
+        },
+        access: {
+          title: 'Kabinetiň logini',
+          body: 'Näsag öz netijelerini şahsy kabinetde özi görüp biler ýaly, oňa login we parol berilýär. «Kabinetiň logini» düwmesine bassaňyz, penjire açylar: login we parol dörediler, isleseňiz näsaga SMS arkaly iberiler.',
+        },
+        stats: {
+          title: 'Gysgaça görkezijiler',
+          body: 'Näsagyň näçe çekiniň bardygy, jemi näçe töländigi we soňky gezek haçan gelendigi. «Kabinet» — näsag şahsy kabinetine girdimi («Birikdirilen») ýa-da entek girmedimi («Birikdirilmedik»).',
+        },
+        family: {
+          title: 'Şu belgidäkiler',
+          body: 'Bir telefon belgisini ulanýan maşgala agzalary şu ýerde görünýär. Olaryň birine bassaňyz, şol adamyň kartoçkasy açylar.',
+        },
+        tabs: {
+          title: 'Çekler, netijeler, maglumat',
+          body: 'Ýokardaky bölekleriň birine bassaňyz, bu ýerde görkezilýän zat üýtgeýär: «Çekler» — näsagyň çekleri (setire bassaňyz, çek açylar), «Netijeler» — taýýar netijeler, «Maglumat» — doly maglumatlary.',
+        },
+      },
+      orders: {
+        intro: {
+          title: 'Çekleriň sanawy',
+          body: 'Edaranyň ähli çekleri şu ýerde: kime we haçan açylan, näçesi tölenen, nirede bergi galan. Gerekli çeki gözleg we süzgüçler arkaly taparsyňyz.',
+        },
+        search: {
+          title: 'Çeki gözlemek',
+          body: 'Çek belgisini, näsagyň adyny ýa-da telefonyny ýazyň — diňe gabat gelýän çekler galar. Gözleg saýlanan döwrüň içinde işleýär: köne çeki tapmak üçin ilki döwri giňeldiň.',
+        },
+        period: {
+          title: 'Döwri saýlamak',
+          body: 'Adatça şu günki çekler görkezilýär. Beýleki günler üçin «Düýn», «7 gün» ýa-da «Şu aý» diýenini saýlaň; «Aralyk» düwmesine bassaňyz, başlanýan we gutarýan güni özüňiz bellärsiňiz.',
+        },
+        payment: {
+          title: 'Töleg we ýagdaý boýunça',
+          body: '«Töleg: ählisi» sanawyndan, meselem, «Tölenmedik» diýenini saýlasaňyz, diňe şeýle çekler galar. «Açyk», «Işlenýär», «Tamamlanan» düwmeleri bolsa çekleri ýagdaýy boýunça bölýär.',
+        },
+        filters: {
+          title: 'Goşmaça süzgüçler',
+          body: '«Süzgüçler» düwmesi gapdal penjiräni açýar: töleg görnüşi, çekiň möçberi, bergi, arzanladyş, ugur, hyzmat ýa-da çeki açan işgär boýunça saýlaýarsyňyz. Saýlananlar derrew ulanylýar.',
+        },
+        summary: {
+          title: 'Umumy jem',
+          body: 'Saýlanan süzgüçlere gabat gelýän ähli çekler boýunça jem: sany, jemi möçber, tölenen we bergi, şeýle hem töleg görnüşleri boýunça. Möçberlere ýatyrylan çekler girmeýär.',
+        },
+        table: {
+          title: 'Çekleriň tablisasy',
+          body: 'Her setir — bir çek: belgisi, näsag, möçberi, ýagdaýy we tölegiň ýagdaýy. Setire bassaňyz, çek açylar — ol ýerde töleg kabul edip ýa-da çeki çap edip bolýar.',
+        },
+        export: {
+          title: 'Excel görnüşinde ýükläp almak',
+          body: '«Excel» düwmesi häzirki süzgüç we tertip boýunça ähli çekleri Excel faýly edip ýükläp berýär — diňe ekrandaky sahypany däl.',
+        },
+      },
+      lab: {
+        intro: {
+          title: 'Laboratoriýanyň nobaty',
+          body: 'Netijesi girizilmeli derňewler şu ýerde durýar: näsag çeki tölän badyna derňew nobata düşýär. Derňewiň üstüne basyp, netijesini girizýärsiňiz.',
+        },
+        categories: {
+          title: 'Ugurlar',
+          body: 'Derňewler ugurlara bölünen. Gerekli ugra basyň — sanawda diňe şonuň derňewleri galar. «Ählisi» düwmesi hemmesini yzyna getirýär.',
+        },
+        search: {
+          title: 'Derňewi gözlemek',
+          body: 'Näsagyň adyny, çek belgisini ýa-da hyzmatyň adyny ýazyň — sanaw ýazdygyňyzça gysgalar.',
+        },
+        status: {
+          title: 'Derňewiň ýagdaýy',
+          body: 'Derňewleri ýagdaýy boýunça bölüň: «Garaşylýar» — netije entek girizilmedik, «Gaýtarylan» — lukman düzetmäge gaýtaran. Ýanyndaky san — şol ýagdaýda näçe derňewiň bardygy.',
+        },
+        period: {
+          title: 'Haýsy günler',
+          body: 'Ilkibaşda diňe şu günki derňewler görünýär. Düýnki ýa-da ondan öňküsi gerek bolsa, «Düýn», «7 gün» ýa-da «Aralyk» diýenini saýlaň.',
+        },
+        list: {
+          title: 'Derňewleriň sanawy',
+          body: 'Her setir — bir derňew: näsag, çek, hyzmat we ýagdaýy. Setire basyň — netije girizmek sahypasy açylar. Sanaw öz-özünden täzelenip durýar.',
+        },
+      },
+      labItem: {
+        intro: {
+          title: 'Netije girizmek',
+          body: 'Bir derňewiň netijesi şu sahypada girizilýär. Ýokarda hyzmat, näsag we çek belgisi ýazylan — ilki dogry derňewiň açylandygyny barlaň. Tertibi: meýdançalary doldurmak → «Ýatda sakla» → «Tassyklamaga iber».',
+        },
+        form: {
+          title: 'Netije meýdançalary',
+          body: 'Her görkezijiniň bahasyny ýazyň. Ýanynda kadasy durýar: baha kadadan çyksa, öýjük gyzarýar we ↑ ýa-da ↓ belgisi çykýar. Ýyldyzjyk (*) goýlan meýdançalar hökmany.',
+        },
+        note: {
+          title: 'Laborantyň belligi',
+          body: 'Lukmanyň bilmeli zady bar bolsa, şu ýere ýazyň — meselem, nusganyň ýagdaýy. Doldurmak hökman däl; bellik netije bilen bile ýatda saklanýar we lukmana görünýär.',
+        },
+        save: {
+          title: 'Netijäni ýatda saklamak',
+          body: '«Ýatda sakla» düwmesi girizenleriňizi ýazyp goýýar, ýöne entek lukmana ibermeýär: derňew «Girizilen» ýagdaýyna geçýär, soňra dowam edip bilersiňiz. Düwme haýsydyr bir meýdança üýtgänden soň işjeň bolýar.',
+        },
+        submit: {
+          title: 'Tassyklamaga ibermek',
+          body: 'Taýýar netijäni şu düwme lukmana iberýär — üýtgeşmeler öz-özünden ýatda saklanýar. Hökmany meýdança boş bolsa, iberilmeýär. Ýalňyşsaňyz, lukman tassyklaýança «Ibermegi ýatyr» düwmesi bilen yzyna alyp bilersiňiz.',
+        },
+        after: {
+          title: 'Ibereniňizden soň',
+          body: 'Netijäni lukman barlaýar. Tassyklasa — resminama taýýar bolýar we näsaga SMS gidýär. Gaýtarsa — sebäbi sahypanyň ýokarsynda gyzyl ýazgy bilen çykýar: düzedip, ýatda saklap, gaýtadan iberýärsiňiz. Tapgyrlar şu ýerde bellenip barýar.',
+        },
+      },
+      confirm: {
+        intro: {
+          title: 'Netijeler bilen işlemek',
+          body: 'Laboratoriýada girizilen netijeler şu sahypada görünýär. Sanawdan näsagy saýlaýarsyňyz — netijesi näsaga berilýän resminama görnüşinde açylýar.',
+        },
+        categories: {
+          title: 'Ugurlar',
+          body: 'Diňe bir ugruň netijelerini görmek üçin onuň adyna basyň. «Ählisi» düwmesi ähli ugurlary bilelikde görkezýär.',
+        },
+        queue: {
+          title: 'Nobat we tassyklananlar',
+          body: '«Nobatda» — laboratoriýanyň iberen, siziň tassyklamagyňyza garaşýan netijeler. Açyp barlaýarsyňyz: dogry bolsa «Tassykla», ýalňyş bolsa «Gaýtar». «Tassyklananlar» — tamamlanan netijeler.',
+        },
+        filters: {
+          title: 'Gözleg we döwür',
+          body: 'Näsagyň ady, çek belgisi ýa-da hyzmatyň ady boýunça gözläň. Döwür hem şu setirde saýlanýar: ilkibaşda soňky 7 gün görünýär — köneräk netije gerek bolsa, «30 gün» ýa-da «Aralyk» düwmesine basyň.',
+        },
+        list: {
+          title: 'Netijeleriň sanawy',
+          body: 'Her setirde näsag, derňewiň ady, çek belgisi we laborant ýazylan. Setire basyň — netije açylar. Täze netije gelse, sanawda özi peýda bolar.',
+        },
+        detail: {
+          title: 'Saýlanan netije',
+          body: 'Netije şu ýerde açylýar: «Resminama» — näsaga berilýän blank, «Bahalar» — girizilen görkezijiler. Tassyklanan netijede «Netijäni çap et» we «SMS-i gaýtadan iber» düwmeleri çykýar.',
+        },
+        approve: {
+          title: 'Tassyklamak ýa-da gaýtarmak',
+          body: '«Tassykla» — netije dogry bolsa: resminama döredilýär, näsaga SMS gidýär we netije onuň kabinetinde görünýär. «Gaýtar» — ýalňyş bolsa: sebäbini ýazýarsyňyz, netije laboranta gaýdyp barýar.',
+        },
+      },
+      reports: {
+        intro: {
+          title: 'Hasabatlar sahypasy',
+          body: 'Edaranyň işi sanlarda: çekler, näsaglar, netijeler. Sözbaşynyň aşagyndaky düwmeler — bölekler: «Umumy», «Näsaglar», «Netijeler», «Hyzmatlar», «SMS». Gereklisine basyň.',
+        },
+        period: {
+          title: 'Hasabat döwri',
+          body: 'Hasabatyň haýsy günler üçindigini şu ýerde saýlaýarsyňyz. «Aralyk» düwmesine bassaňyz, başlanýan we gutarýan senäni özüňiz girizersiňiz. Sahypadaky sanlar şol döwür boýunça täzeden hasaplanýar.',
+        },
+        numbers: {
+          title: 'Esasy sanlar',
+          body: '«Çekler» — saýlanan döwürde açylan çekleriň sany, «Şu gün» — şu günküleri. «Laboratoriýada» we «Tassyklamada» — şu wagt netijesine garaşylýan derňewler.',
+        },
+        trend: {
+          title: 'Gündelik dinamika',
+          body: 'Döwrüň içinde işiň günme-gün nähili üýtgändigi. Syçanjygy çyzygyň üstünde gezdiriň — şol günüň takyk sany çykar.',
+        },
+        breakdown: {
+          title: 'Paýlanyş tablisasy',
+          body: 'Şu döwürdäki işiň nämelerden ybarat bolandygy. «Ugur», «Hyzmat» ýa-da «Işgär» düwmesine basyň — tablisa we tegelek diagramma şonuň boýunça görkezýär; iň köpi ýokarda durýar.',
+        },
+        export: {
+          title: 'Excel görnüşinde ýükläp almak',
+          body: '«Excel» — saýlanan döwür boýunça jikme-jik hasabaty faýl edip ýükläp alýar. «Umumy» bölegindäki «Excel (CSV)» bolsa diňe aşakdaky tablisany ýükleýär.',
+        },
+      },
+      messages: {
+        intro: {
+          title: 'SMS habarlary',
+          body: 'Näsaglara giden ähli SMS-ler şu ýerde ýazylýar: töleg çeki, netijäniň taýýardygy, kodlar we özüňiziň ýazan habarlaryňyz. Habaryň baryp ýetendigini ýa-da ýetmändigini şu ýerden barlaýarsyňyz.',
+        },
+        search: {
+          title: 'Gözleg we ýagdaý düwmeleri',
+          body: 'Telefon belgisini ýa-da habaryň tekstinden bir bölegini ýazyp gözläň. Üstündäki düwmeler habarlary ýagdaýy boýunça bölýär — meselem, «Ýalňyşlyk» diňe iberilmediklerini görkezýär.',
+        },
+        list: {
+          title: 'Habarlar žurnaly',
+          body: 'Her setir — bir SMS: kime gidendigi, teksti, görnüşi we wagty. Iň täzesi ýokarda. Iberilip duran habar bar bolsa, sanaw öz-özünden täzelenip durýar.',
+        },
+        status: {
+          title: 'Habaryň ýagdaýy',
+          body: '«Nobatda» — entek gitmedik, «Iberildi» — operatora tabşyrylan, «Gowşuryldy» — näsagyň telefonyna baryp ýeten. «Ýalňyşlyk» bolsa, sebäbi şu ýerde gyzyl ýazgy bilen durýar.',
+        },
+        newMessage: {
+          title: 'Täze habar ýazmak',
+          body: '«Täze habar» düwmesi gapdal penjiräni açýar: telefon belgisini we teksti ýazyp, «Iber» düwmesine basýarsyňyz. «Soňrak iber» sazlamasyny açsaňyz, habar siziň bellän wagtyňyzda gider.',
+        },
+      },
+      assistant: {
+        intro: {
+          title: 'Kömekçi bilen tanyşyň',
+          body: 'Kömekçä soragyňyzy ýönekeý sözler bilen ýazýarsyňyz — ol gerekli maglumaty tapyp berýär we roluňyzyň rugsat berýän işlerini ýerine ýetirmäge kömek edýär. Menýudan gözläp ýörmek hökman däl.',
+        },
+        composer: {
+          title: 'Soragyňyzy ýazyň',
+          body: 'Soragy ýa-da tabşyrygy şu ýere ýazyp, Enter düwmesine basyň — jogap şu sahypada çykar. Roluňyz boýunça nämeleri sorap bolýandygyny ýazgy meýdançasynyň aşagyndaky «Mümkinçilikler» düwmesi görkezýär.',
+        },
+        examples: {
+          title: 'Taýýar mysallar',
+          body: 'Nämeden başlajagyňyzy bilmeseňiz, mysallaryň birine basyň — ol derrew kömekçä iberiler. Mysallar roluňyza görä saýlanan.',
+        },
+        confirm: {
+          title: 'Ilki sizden soraýar',
+          body: 'Kömekçi maglumaty özi tapýar, ýöne bir zady üýtgetmezden öň näme etjek bolýandygyny görkezýär. Diňe «Tassykla we ýerine ýetir» düwmesine bassaňyz ýerine ýetirýär; «Ýatyr» düwmesine bassaňyz, hiç zat üýtgemeýär.',
+        },
+        history: {
+          title: 'Söhbetleriň taryhy',
+          body: 'Çepdäki düwme öňki söhbetleriňiziň sanawyny açýar — islendigine basyp dowam edersiňiz. Ýanyndaky galamly düwme — «Täze söhbet»: başga temany täze söhbetde soraň.',
+        },
+        tasks: {
+          title: 'Meýilleşdirilen tabşyryklar',
+          body: 'Gaýtalanýan işi bir gezek ýazyp goýýarsyňyz — meselem, her gün irden düýnki hasabat. Kömekçi ony bellenen wagtda özi ýerine ýetirýär (diňe okaýar, hiç zady üýtgetmeýär) we size bildiriş gelýär.',
+        },
+      },
+      adminDashboard: {
+        intro: {
+          title: 'Dolandyryş paneli',
+          body: 'Bu sahypa siziň dolandyrýan bölümiňiziň umumy ýagdaýyny görkezýär: nämesi taýýar, nämesi entek sazlanmadyk. Işi şu ýerden başlaň.',
+        },
+        unit: {
+          title: 'Dolandyrylýan bölüm',
+          body: 'Häzir haýsy bölümi dolandyrýandygyňyz: ady, derejesi we salgysy. Sagdaky salgylanma bölümiň sahypasyny açýar — maglumatlar şol ýerde üýtgedilýär.',
+        },
+        stats: {
+          title: 'Esasy sanlar',
+          body: 'Bölümdäki edaralaryň, işgärleriň, hyzmat görnüşleriniň we işjeň şablonlaryň sany. Aşagyndaky kiçijik ýazgy olaryň näçesiniň işjeňdigini görkezýär.',
+        },
+        health: {
+          title: 'Näme entek sazlanmadyk',
+          body: 'Guramanyň doly işlemegi üçin nämeleriň gerekdiginiň sanawy. Ýerine ýetirilmedik bendiň ýanyndaky «Düzet» düwmesine bassaňyz, gerekli sazlama sahypasy açylar.',
+        },
+        links: {
+          title: 'Böleklere çalt geçmek',
+          body: 'Dolandyryş paneliniň bölekleri: bölümler, işgärler, katalog, şablonlar we beýlekiler. Kartoçka bassaňyz, şol bölek açylar.',
+        },
+        recent: {
+          title: 'Soňky işjeňlik',
+          body: 'Size gelen soňky bildirişler şu ýerde durýar. Okalmadygynyň ýanynda nokat bolýar.',
+        },
+      },
+      unit: {
+        intro: {
+          title: 'Bölümiň sahypasy',
+          body: 'Bir bölüm baradaky ähli zat şu sahypada: ady we salgysy, sazlamalary, SMS we Telegram. Bu ýerde ýatda saklanan sazlama şu bölüme we onuň aşagyndakylara degişli bolýar.',
+        },
+        edit: {
+          title: 'Maglumatlary üýtgetmek',
+          body: 'Ady, salgyny, telefony ýa-da başga maglumaty üýtgetmek üçin «Üýtget» düwmesine basyň — sag tarapda forma açylar. Üýtgedip, «Ýatda sakla» düwmesine basarsyňyz.',
+        },
+        header: {
+          title: 'Bölüm we onuň logotipi',
+          body: 'Bölümiň ady, derejesi, ýagdaýy («Işjeň» ýa-da «Işjeň däl») we aragatnaşyk maglumatlary. «Logotip ýükle» düwmesi bilen logotipiň suratyny goýýarsyňyz ýa-da çalyşýarsyňyz.',
+        },
+        counts: {
+          title: 'Bölümiň aşagynda näme bar',
+          body: 'Şu bölüme degişli aşaky bölümleriň we işgärleriň sany. Sana bassaňyz, olaryň sanawy açylar.',
+        },
+        settings: {
+          title: 'Hereket edýän sazlamalar',
+          body: 'Bölüm üçin häzir hereket edýän sazlamalar. «Esasy dil» — onuň resminamalarynyň we SMS-leriniň dili: sanawdan saýlan badyňyza ýatda saklanýar; «Ýokardan (miras)» saýlansa, ýokarky bölümiň dili alynýar.',
+        },
+        docLink: {
+          title: 'Netije salgylanmasy',
+          body: 'Netije taýýar bolanda näsaga SMS arkaly salgylanma barýar. Bu ýerde onuň näçe gün SMS kodsyz açyljakdygyny saýlaýarsyňyz; «Hemişe kod» — resminamany diňe telefonyň eýesi açýar. Soňra «Ýatda sakla» düwmesine basyň.',
+        },
+        smsAccount: {
+          title: 'SMS hasaby',
+          body: 'Näsaglara SMS-iň haýsy hasapdan gidýändigi: ýokarky bölümiň hasabyndanmy, şu bölümiň öz hasabyndanmy ýa-da asla iberilmeýärmi. Hasap birikdirilmedik bolsa, näsaglar SMS almaýar.',
+        },
+        smsTexts: {
+          title: 'Habar şablonlary',
+          body: 'Näsaga awtomatik gidýän SMS tekstleri: töleg çeki, taýýar netije we ýatlatma. Teksti üýtgedip, «Ýatda sakla» düwmesine bassaňyz, näsaglar täze teksti alar.',
+        },
+      },
+      units: {
+        intro: {
+          title: 'Bölümleriň agajy',
+          body: 'Siziň dolandyrýan bölümiňiziň aşagyndaky ähli zat şu ýerde: welaýatlar, etraplar / şäherler we edaralar. Täze edara hem şu sahypada açylýar.',
+        },
+        search: {
+          title: 'Bölümi gözlemek',
+          body: 'Adynyň ýa-da kodunyň bir bölegini ýazyň — agaçda diňe gabat gelýän bölümler galar. Ýanyndaky «Işjeň dälleri görkez» sazlamasyny öçürseňiz, işjeň däl bölümler gizlener.',
+        },
+        tree: {
+          title: 'Agaç bilen işlemek',
+          body: 'Setiriň başyndaky peýkam bölümiň içini açýar ýa-da ýapýar. Setiriň özüne bassaňyz, şol bölümiň sahypasy açylar.',
+        },
+        rowActions: {
+          title: 'Setirdäki düwmeler',
+          body: 'Setiriň ahyrynda: «+» — şu bölümiň aşagyna täzesini goşýar, galam — maglumatyny üýtgedýär. Aşaky setirlerdäki öçürip-ýakýan düwmejik bölümi işjeň däl edýär: onda täze çek açylmaýar.',
+        },
+        add: {
+          title: 'Bölüm goş',
+          body: 'Bu düwme sag tarapda forma açýar: täze bölümiň haýsy bölümiň aşagynda açyljakdygyny saýlap, adyny girizýärsiňiz. Derejesi öz-özünden kesgitlenýär: welaýatyň aşagynda — etrap, etrabyň aşagynda — edara.',
+        },
+        quickStart: {
+          title: 'Çalt işe girizmek',
+          body: 'Täze edarany bäş gysga ädimde işe taýýar edýär: ýerleşýän ýeri, işgärleriň hasaplary, katalogy we şablonlary bilen. Ahyrynda işgärlere berilmeli login we parol çykýar.',
+        },
+      },
+      employees: {
+        intro: {
+          title: 'Işgärler',
+          body: 'Ulgama girýän her bir işgäriň hasaby şu ýerde: kim, haýsy rolda, haýsy bölümde işleýär. Sanawda siziň dolandyrýan bölümiňiziň we onuň aşagyndakylaryň işgärleri görünýär.',
+        },
+        search: {
+          title: 'Işgäri gözlemek',
+          body: 'Adynyň, logininiň ýa-da telefon belgisiniň bir bölegini ýazyň — sanaw özi gysgalar.',
+        },
+        filters: {
+          title: 'Sanawy daraltmak',
+          body: 'Sanawy rol, bölüm ýa-da ýagdaý boýunça daraldyp bolýar: meselem, diňe hasaby öçürilen işgärleri görmek üçin ýagdaýdan «Işjeň däl» diýenini saýlaň.',
+        },
+        table: {
+          title: 'Işgärleriň sanawy',
+          body: 'Her setirde işgäriň roly, bölümi, ýagdaýy we soňky gezek haçan girendigi görünýär. Setire bassaňyz, onuň sahypasy açylar — rol we parol şol ýerde üýtgedilýär.',
+        },
+        add: {
+          title: 'Işgär goş',
+          body: 'Täze işgäre hasap açmak üçin şu düwmä basyň: adyny, loginini, roluny, bölümini we parolyny girizýärsiňiz. Ýatda saklanandan soň, işgär şol login we parol bilen ulgama girip biler.',
+        },
+      },
+      employee: {
+        intro: {
+          title: 'Işgäriň sahypasy',
+          body: 'Işgäriň ady, ýagdaýy, logini, roly we soňky gezek haçan girendigi. Aşakdaky «Rugsatlar» böleginde oňa rolundan daşary aýratyn rugsat berip ýa-da gadagan edip bolýar.',
+        },
+        info: {
+          title: 'Işgäriň maglumatlary',
+          body: 'Login, telefon, rol, şeýle hem işgäriň nirede işleýändigi: «Esasy bölüm» we, bar bolsa, «Goşmaça bölümler». Işgär şu bölümlerde we olaryň aşagyndakylarda işleýär.',
+        },
+        edit: {
+          title: 'Üýtgetmek we parol',
+          body: '«Üýtget» düwmesine basylsa, edil şu ýerde forma açylýar: ady, roly we bölümleri üýtgedýärsiňiz. Paroly çalyşmak üçin «Täze parol» meýdançasyny dolduryň; boş galdyrsaňyz, parol üýtgemeýär.',
+        },
+        danger: {
+          title: 'Hasaby öçürmek',
+          body: 'Işgär işden gitse, «Hasaby öçür» düwmesine basyň: ol ulgama girip bilmez, ýöne girizen maglumatlary saklanyp galar. Soňra edil şu ýerden gaýtadan işjeňleşdirip bolýar.',
+        },
+      },
+      roles: {
+        intro: {
+          title: 'Rollar we rugsatlar',
+          body: 'Rol — rugsatlaryň toplumy: işgäriň ulgamda nämeleri görüp we edip bilýändigini kesgitleýär. Her bir işgäre bir rol berkidilýär.',
+        },
+        list: {
+          title: 'Rollaryň sanawy',
+          body: 'Rola bassaňyz, onuň rugsatlary açylar. «Ulgam» bellikli rollar taýýar görnüşde gelýär; adynyň aşagynda rugsatlaryň sany we şol rolda näçe işgäriň bardygy ýazylan.',
+        },
+        detail: {
+          title: 'Saýlanan rol',
+          body: 'Roluň ady we düşündirişi. Ulgam roly üýtgedilmeýär — «Nusgasyny döret» düwmesi bilen nusgasyny alyp, şony özüňize laýyklaň. Özüňiziň döreden roluňyzda üýtgeşmeler «Ýatda sakla» düwmesine basylandan soň güýje girýär.',
+        },
+        search: {
+          title: 'Rugsat gözlemek',
+          body: 'Rugsatlar köp — gereklisini tapmak üçin adyndan bir söz ýazyň. Ýanynda rolda näçe rugsadyň bellenendigi görünýär.',
+        },
+        group: {
+          title: 'Rugsatlar bölekler boýunça',
+          body: 'Her setir — bir rugsat: bellik goýlan bolsa, şol roldaky işgär şol işi edip bilýär. Özüňiziň döreden roluňyzda bellikleri üýtgedip bilersiňiz; «Hemmesi» düwmesi bölekdäki ählisini birbada belleýär.',
+        },
+        new: {
+          title: 'Täze rol',
+          body: 'Bu düwme saýlanan roluň nusgasyny alyp, täze rol açýar: adyny ýazyň, gerekli rugsatlary belläň we «Ýatda sakla» düwmesine basyň. Täze rol siziň bölümiňizde we onuň aşagyndakylarda ulanylýar.',
+        },
+      },
+      sms: {
+        intro: {
+          title: 'SMS sazlamalary',
+          body: 'Näsaglara SMS-iň haýsy hasapdan we nähili tekst bilen gidýändigi şu sahypada sazlanýar. Bu ýerde ýatda saklanan sazlama şu bölüme we öz sazlamasy bolmadyk aşaky bölümlere degişli bolýar.',
+        },
+        target: {
+          title: 'Haýsy bölüm üçin',
+          body: 'Sazlamanyň kim üçindigini şu ýerde saýlaýarsyňyz: tutuş gurama ýa-da bir edara. Edara saýlansa, aşakdaky hasap we tekstler diňe şol edara üçin ýatda saklanýar.',
+        },
+        account: {
+          title: 'SMS haýsy hasapdan gidýär',
+          body: 'Üç ýol bar: «Ýokardan (miras)» — ýokarky bölümiň hasabyndan, «Öz hasaby» — özüňiziň girizen Xabarchi ýa-da Eskiz.uz hasabyňyzdan, «SMS iberilmeýär» — asla gitmeýär. Saýlap, aşakdaky «Ýatda sakla» düwmesine basyň.',
+        },
+        test: {
+          title: 'Hasaby synap görmek',
+          body: 'Belgi ýazyp, «Birikmäni barla» düwmesine bassaňyz, şol belgä bir hakyky synag SMS-i gider (boş galsa — bölümiň telefonyna). SMS gelse, hasap dogry işleýär.',
+        },
+        texts: {
+          title: 'Näsagyň alýan tekstleri',
+          body: 'Üç sany awtomatik SMS: «Töleg çegi», «Netije taýýar», «Ýatlatma». Teksti üýtgetseňiz, «Deslapky görnüş» näsagyň näme aljakdygyny görkezýär; {patient} ýaly meýdançalar iberilende öz-özünden doldurylýar. Soňra «Ýatda sakla» düwmesine basyň.',
+        },
+        docLink: {
+          title: 'Netije salgylanmasy',
+          body: 'Netije SMS-indäki salgylanmanyň näçe gün SMS kodsyz açyljakdygyny saýlaýarsyňyz. «Hemişe kod» iň howpsuzy: resminamany diňe telefonyň eýesi açýar. Möhlet goýsaňyz, şol günlerde salgylanmany alan islendik adam görüp biler.',
+        },
+        telegram: {
+          title: 'Telegram boty',
+          body: 'Näsaglar netije we çek habarlaryny Telegram boty arkaly alýar. Öz botuňyzy birikdirmek üçin @BotFather beren tokeni giriziň we «Birikdir» düwmesine basyň; birikdirilmese, ýokarky bölümiň ýa-da platformanyň boty ulanylýar.',
+        },
+      },
+      territory: {
+        intro: {
+          title: 'Sebitler',
+          body: 'Bu sahypada öz sebitiňizdäki işiň möçberini görýärsiňiz: nirede näçe çek açylan, näçe girdeji gelen. Ýokardan aşak — welaýatdan etraba, etrapdan edara — ädimme-ädim girýärsiňiz.',
+        },
+        path: {
+          title: 'Gurluş boýunça ýol',
+          body: 'Gurluşyň ädimleri — siziň bölümiňizden edaralara çenli. Häzir duran ädimiňiz aýratyn bellenip görkezilen; geçilen ädime bassaňyz, şol sanawa gaýdyp bararsyňyz.',
+        },
+        period: {
+          title: 'Döwri saýlamak',
+          body: 'Sahypadaky ähli sanlar şu ýerde saýlanan döwür üçin: «Şu gün», «7 gün», «30 gün», «Şu aý» ýa-da «Aralyk» — özüňiziň bellän seneleriňiz. Çepde häzir haýsy ýeriň görülýändigi ýazylan.',
+        },
+        numbers: {
+          title: 'Döwrüň jemleri',
+          body: 'Saýlanan ýer we döwür boýunça jemi: edaralar, açylan çekler, girdeji, täze näsaglar, taýýar netijeler we iberilen SMS-ler. Bu ýerde diňe sanlar — näsaglaryň şahsy maglumatlary görkezilmeýär.',
+        },
+        cards: {
+          title: 'Döwlet kartoçkalary',
+          body: 'Her kartoçka — bir döwlet: ondaky welaýatlaryň, etraplaryň, edaralaryň we işgärleriň sany, şeýle hem şu döwürdäki girdejisi. Kartoçka bassaňyz, onuň welaýatlary açylar.',
+        },
+        table: {
+          title: 'Sebitleriň sanawy',
+          body: 'Her setir — bir welaýat, etrap ýa-da edara we onuň şu döwürdäki sanlary. Welaýatyň ýa-da etrabyň setirine bassaňyz, içindäkiler açylar; sütüniň sözbaşysyna bassaňyz, sanaw şol sütün boýunça tertiplener.',
+        },
+        csv: {
+          title: 'Faýl edip ýükläp almak',
+          body: '«CSV» düwmesi görnüp duran sanawy sanlary bilen faýl edip ýükläp alýar. Faýly Excel-de açyp, hasabata goşup bilersiňiz.',
+        },
+        trend: {
+          title: 'Günler boýunça',
+          body: 'Saýlanan döwürde işiň günme-gün nähili barandygy. Sag ýokardaky «Girdeji» we «Çekler» düwmeleri bilen grafigiň nämäni görkezýändigini çalyşýarsyňyz.',
+        },
+        add: {
+          title: 'Täze edara',
+          body: 'Şu sebitde täze edara açmak üçin basyň: birnäçe gysga ädimde ol işgärleri, hyzmatlary we şablonlary bilen işe taýýar bolar.',
+        },
+      },
+      catalog: {
+        intro: {
+          title: 'Hyzmatlar katalogy',
+          body: 'Edarada berilýän ähli derňewler we hyzmatlar şu ýerde: bahasy, möhleti, netijäniň nähili girizilýändigi we haýsy blankda çykýandygy. Kabulda diňe şu sanawdaky işjeň hyzmatlar saýlanýar.',
+        },
+        tree: {
+          title: 'Kategoriýalar',
+          body: 'Hyzmatlar kategoriýalara bölünen. Kategoriýany saýlasaňyz, sanawda diňe onuň hyzmatlary galar; «Ähli hyzmatlar» hemmesini yzyna getirýär.',
+        },
+        add: {
+          title: 'Kategoriýa we hyzmat goşmak',
+          body: '«Täze kategoriýa» düwmesi bilen täze bölek döredýärsiňiz, «Hyzmat goş» düwmesi bilen — derňew ýa-da hyzmat: ady, kategoriýasy, bahasy, möhleti. Bar bolan kategoriýany üýtgetmek — syçanjygy adynyň üstüne getireniňizde çykýan «⋯» düwmesinde.',
+        },
+        list: {
+          title: 'Hyzmatlaryň sanawy',
+          body: 'Her setir — bir hyzmat: ady, kody, bahasy, eýesi. Ýokarda — ady ýa-da kody boýunça gözleg. «miras» belligi hyzmatyň ýokarky bölümiň katalogyndan gelendigini aňladýar: bu ýerde ulanylýar, eýesinde üýtgedilýär.',
+        },
+        edit: {
+          title: 'Hyzmatyň sazlamalary',
+          body: 'Setire basyň (ýa-da «⋯» → «Üýtget») — hyzmatyň penjiresi açylar. Onda «Bölümler boýunça bahalar» — belli bir edara üçin aýratyn baha, «Öçürilen bölümler» — hyzmat berilmeýän edaralar.',
+        },
+        docs: {
+          title: 'Shema we şablon',
+          body: 'Netije shemasy — laborantyň şu hyzmatyň netijesini girizende doldurýan meýdanlary. Şablon — näsagyň alýan netije kagyzynyň görnüşi. Adyna bassaňyz, şol shema ýa-da şablon açylar.',
+        },
+        status: {
+          title: 'Işjeň ýa-da işjeň däl',
+          body: 'Işjeň hyzmat kabulda saýlanýar. Işjeň däl edileni katalogda galýar, ýöne kabulda görünmeýär. Hyzmat wagtlaýyn togtasa, ony pozmaň — diňe işjeň däl ediň.',
+        },
+      },
+      schemas: {
+        intro: {
+          title: 'Netije shemalary',
+          body: 'Shema — laborantyň derňew netijesini girizende doldurýan meýdanlarynyň sanawy: görkezijiler, ölçeg birlikleri, normalar. Her derňew görnüşi üçin öz shemasy düzülýär we katalogda hyzmata baglanýar.',
+        },
+        new: {
+          title: 'Täze shema',
+          body: '«Täze shema» düwmesine basylsa, boş shema döredilýär we derrew onuň redaktory açylýar — ol ýerde at berýärsiňiz we meýdanlary ýeke-ýekeden goşýarsyňyz.',
+        },
+        search: {
+          title: 'Gözleg we ýagdaý',
+          body: 'Shemany ady ýa-da beýany boýunça gözläň. Gözlegiň ýanyndaky «Garalama», «Neşir edilen», «Arhiw» düwmeleri sanawda diňe şol ýagdaýdaky shemalary galdyrýar.',
+        },
+        card: {
+          title: 'Shemanyň kartoçkasy',
+          body: 'Kartoçka bassaňyz, redaktor açylar. «Garalama» entek taýýar däl; hyzmata diňe «Neşir edilen» shema baglanýar. Aşakda — näçe hyzmatda ulanylýandygy. Meňzeş shema gerekmi — «⋯» → «Nusgala».',
+        },
+      },
+      schemaEditor: {
+        intro: {
+          title: 'Shema redaktory',
+          body: 'Bu ýerde bir derňewiň netijesiniň meýdanlaryny düzýärsiňiz — laborant hut şulary doldurýar. Shemanyň adyny we gysga beýanyny edil şu ýerde ýazýarsyňyz; ýanynda ýagdaýy we wersiýasy durýar.',
+        },
+        fields: {
+          title: 'Meýdanlaryň sanawy',
+          body: '«Meýdan goş» düwmesine basyp, görnüşini saýlaň: «San», «Tekst», «Saýlaw», «Tablisa» we beýlekiler. Meýdana bassaňyz, sazlamalary açylar; «⋯» arkaly ýerini üýtgedýärsiňiz, nusgalaýarsyňyz ýa-da pozýarsyňyz.',
+        },
+        props: {
+          title: 'Meýdanyň häsiýetleri',
+          body: 'Saýlanan meýdanyň ady, görnüşi, ölçeg birligi, hökmanydygy. «San» görnüşinde normany hem şu ýerde girizýärsiňiz — jynsa we ýaşa görä aýratyn bolup biler; netije şol norma boýunça bahalandyrylýar.',
+        },
+        preview: {
+          title: 'Janly görnüş',
+          body: 'Laborantyň görjek formasy takmynan şeýle bolar: meýdan goşsaňyz ýa-da üýtgetseňiz, derrew täzelenýär. Ýokardaky «Gör» düwmesi bu penjiräni gizleýär we yzyna getirýär.',
+        },
+        save: {
+          title: 'Ýatda saklamak',
+          body: 'Üýtgeşmeler öz-özünden ýatda saklanmaýar — «Ýatda sakla» düwmesine basyň (ýa-da Ctrl+S). Neşir edilen shemany üýtgedip ýatda saklasaňyz, wersiýasy ýokarlanýar; öň girizilen netijeler bolşy ýaly galýar.',
+        },
+        publish: {
+          title: 'Neşir etmek',
+          body: 'Shema taýýar bolanda «Neşir et» düwmesine basyň (azyndan bir meýdan bolmaly). Diňe şondan soň ony «Hyzmatlar katalogy» sahypasynda hyzmata baglap bolýar.',
+        },
+      },
+      templates: {
+        intro: {
+          title: 'Şablonlar',
+          body: 'Şablon — näsagyň alýan netije kagyzynyň (blankyň) görnüşi: sözbaşy, näsagyň maglumatlary, netijeler, gol. Lukman netijäni tassyklanda resminama şol şablon boýunça öz-özünden doldurylýar.',
+        },
+        create: {
+          title: 'Şablon goşmak',
+          body: '«Täze şablon» — boş sahypadan ýa-da bar bolan şablonyň nusgasyndan başlaýarsyňyz. «Import et» — faýldan ýükleýär. «Başga bölümden al» — başga bölümiň taýýar şablonlaryndan nusga alýar.',
+        },
+        coverage: {
+          title: 'Şablonsyz hyzmatlar',
+          body: 'Näçe hyzmatyň öz işjeň şablonynyň bardygy şu ýerde görünýär. Şablony ýok hyzmat tassyklananda resminama döredilmeýär. Ýetmezçilik bar bolsa, «Sanawy görkez» düwmesi şol hyzmatlary açýar — olara şablon gerek.',
+        },
+        find: {
+          title: 'Gözleg we ýagdaý',
+          body: 'Şablony ady boýunça gözläň ýa-da ýagdaýyny saýlaň: «Garalama» entek ulanylmaýar, «Işjeň» resminamalarda ulanylýar, «Arhiw» indi ulanylmaýar. Şu ýerde ýene — tertiplemek, görnüş we birnäçesini bilelikde bellemek üçin «Saýla» düwmesi.',
+        },
+        filters: {
+          title: 'Süzgüçler',
+          body: 'Şablonlar köp bolsa, sanawy daraldyň: resminamanyň görnüşi, kategoriýa, hyzmat, dil, kagyz we beýlekiler. Saýlanan süzgüç reňkli bolup durýar; aşakda çykýan «Süzgüçleri arassala» düwmesi hemmesini yzyna getirýär.',
+        },
+        card: {
+          title: 'Şablony açmak',
+          body: 'Şablona bassaňyz, wizual redaktor açylar. «⋯» menýusynda: «Nusgala», «Eksport et (JSON)», «Işjeňleşdir» ýa-da «Arhiwle», «Poz». Işjeň şablon pozulmaýar — ilki arhiwläň.',
+        },
+      },
+      templateEditor: {
+        intro: {
+          title: 'Şablon redaktory',
+          body: 'Bu ýerde näsagyň aljak netije kagyzyny düzýärsiňiz: tekstleri, meýdanlary we tablisalary sahypa ýerleşdirýärsiňiz. Şu ýerde şablonyň ady (basyp üýtgedýärsiňiz) we ýagdaýy durýar.',
+        },
+        tools: {
+          title: 'Element goşmak',
+          body: 'Sahypa täze zat şu düwmeler bilen goşulýar: «Tekst», «Meýdan», «Tablisa», şekiller, «Surat» (logotip, möhür), «QR kod». Syçanjygy düwmäniň üstüne getirseňiz, ady çykar.',
+        },
+        panel: {
+          title: 'Gatlaklar we meýdanlar',
+          body: '«Gatlaklar» — sahypadaky elementleriň sanawy: saýlamak, gizlemek, gulplamak. «Meýdanlar» — näsagyň ady, sene, netije ýaly taýýar maglumatlar: bassaňyz sahypa düşýär, resminamada bolsa onuň ýerine hakyky baha çykýar.',
+        },
+        canvas: {
+          title: 'Sahypa',
+          body: 'Bu — çap ediljek resminamanyň özi. Elemente basyp saýlaň, süýräp ýerini, gyrasyndaky inedördüljikleri çekip ölçegini üýtgediň. Teksti üýtgetmek üçin üstüne iki gezek basyň.',
+        },
+        props: {
+          title: 'Häsiýetler',
+          body: 'Saýlanan elementiň sazlamalary: şrift, ölçeg, reňk, deňleşdirme we beýlekiler. Hiç zat saýlanmadyk bolsa, sahypanyň özi sazlanýar: kagyzyň ölçegi, ugry, gyra boşlugy.',
+        },
+        previewAs: {
+          title: 'Haýsy hyzmatyň mysalynda',
+          body: 'Şu sanawdan hyzmaty saýlaň: «Meýdanlar» böleginde hut şonuň netije meýdanlary çykýar, «Gör» düwmesi bolsa şol hyzmatyň mysalynda görkezýär. «Shemasyz» dursa, netije meýdanlary sanawda bolmaýar.',
+        },
+        bindings: {
+          title: 'Baglanyşyklar',
+          body: 'Şablonyň haýsy hyzmatlar üçin ulanylýandygy «Baglanyşyklar» düwmesinde bellenýär (dar ekranda ol «⋯» menýusynyň içinde). Hiç bir hyzmat saýlanmasa, şablon umumy bolýar — ähli hyzmatlara laýyk gelýär.',
+        },
+        finish: {
+          title: 'Görmek, ýatda saklamak, işjeňleşdirmek',
+          body: '«Gör» düwmesi sahypany mysal maglumatlar bilen dolduryp görkezýär. «Ýatda sakla» düwmesi üýtgeşmeleri saklaýar (Ctrl+S). Garalama taýýar bolanda «Işjeňleşdir» düwmesine basyň — şondan soň ol resminamalarda ulanylýar.',
+        },
+      },
+      receipts: {
+        intro: {
+          title: 'Çek şablonlary',
+          body: 'Kassada çap edilýän çekiň görnüşi şu ýerde bellenýär. Işjeň şablon bar bolsa, «Çap et» basylanda çek şol görnüşde çykýar; bolmasa — gurnalan standart çek çap edilýär.',
+        },
+        create: {
+          title: 'Çek şablonyny goşmak',
+          body: '«Standart çeki goş» düwmesi taýýar çeki garalama edip goşýar we redaktorda açýar — özüňize laýyklaýarsyňyz. «Täze çek şablony» — boş çekden ýa-da nusgadan başlamak, «Import et» — faýldan ýüklemek.',
+        },
+        find: {
+          title: 'Gözleg we ýagdaý',
+          body: '«Garalama» entek çap edilmeýär, «Işjeň» — kassada şu çek çykýar, «Arhiw» — indi ulanylmaýar. Şu ýerde ýene — ady boýunça gözleg, tertiplemek, görnüş we birnäçesini bilelikde bellemek üçin «Saýla» düwmesi.',
+        },
+        filters: {
+          title: 'Süzgüçler',
+          body: 'Sanawy dil we kagyzyň ölçegi (80 ýa-da 58 mm) boýunça daraldýarsyňyz. Birnäçe bölümi dolandyrýan bolsaňyz, bölüm boýunça hem: diňe şol ýerde ulanylýan çek şablonlary galar.',
+        },
+        card: {
+          title: 'Çek şablonyny açmak',
+          body: 'Şablona bassaňyz, redaktor açylar. Taýýar bolanda «⋯» menýusyndan «Işjeňleşdir» diýenini saýlaň — şondan soň çekler şol görnüşde çap edilýär. Işjeň şablon pozulmaýar — ilki arhiwläň.',
+        },
+      },
+      receiptEditor: {
+        intro: {
+          title: 'Çek şablonynyň redaktory',
+          body: 'Bu ýerde kassa çekiniň görnüşini düzýärsiňiz: guramanyň ady, çekiň belgisi, hyzmatlar tablisasy, jemi möçber. Şu ýerde şablonyň ady (basyp üýtgedýärsiňiz) we ýagdaýy durýar.',
+        },
+        tools: {
+          title: 'Element goşmak',
+          body: 'Çeke täze zat şu düwmeler bilen goşulýar: «Tekst», «Tablisa», «Çyzyk», «Surat» (logotip), «QR kod» we beýlekiler. Syçanjygy düwmäniň üstüne getirseňiz, ady çykar.',
+        },
+        panel: {
+          title: 'Gatlaklar we meýdanlar',
+          body: '«Gatlaklar» — çekdäki elementleriň sanawy: saýlamak, gizlemek, gulplamak. «Meýdanlar» — çekiň belgisi, sene, jemi we tölenen möçber ýaly taýýar maglumatlar: bassaňyz çeke düşýär, çap edilende hakyky baha çykýar.',
+        },
+        canvas: {
+          title: 'Çek kagyzy',
+          body: 'Bu — çap ediljek çekiň özi. Elemente basyp saýlaň, süýräp ýerini, gyrasyndaky inedördüljikleri çekip ölçegini üýtgediň. Teksti üýtgetmek üçin üstüne iki gezek basyň.',
+        },
+        props: {
+          title: 'Häsiýetler',
+          body: 'Saýlanan elementiň sazlamalary: şrift, ölçeg, deňleşdirme we beýlekiler. Hiç zat saýlanmadyk bolsa, kagyz sazlanýar — printeriňize görä «Çek 80 mm» ýa-da «Çek 58 mm» diýenini saýlaň.',
+        },
+        bindings: {
+          title: 'Haýsy bölümler üçin',
+          body: 'Çek şablony hyzmatlara baglanmaýar. «Baglanyşyklar» düwmesinde (dar ekranda — «⋯» menýusynda) ony haýsy bölümleriň ulanjakdygyny saýlaýarsyňyz; saýlanmasa, eýesiniň ähli bölümlerinde hereket edýär.',
+        },
+        finish: {
+          title: 'Görmek, ýatda saklamak, işjeňleşdirmek',
+          body: '«Gör» düwmesi çeki mysal maglumatlar bilen görkezýär. «Ýatda sakla» düwmesi üýtgeşmeleri saklaýar (Ctrl+S). «Işjeňleşdir» düwmesine basylandan soň kassada şu çek çap edilýär.',
+        },
+      },
+      portalHome: {
+        intro: {
+          title: 'Kabinetiň baş sahypasy',
+          body: 'Kabinete gireniňizde ilki bilen şu sahypa açylýar. Iň gereklisi şu ýerde: näçe netijäniň taýýardygy, soňky saparyňyz we iň täze netijeler.',
+        },
+        family: {
+          title: 'Maşgala agzalary',
+          body: 'Telefon belgiňize maşgalaňyzdan birnäçe adam ýazylan. Ada bassaňyz, diňe şol adamyň netijeleri we saparlary galar; «Hemmesi» — hemmesiniňki bilelikde.',
+        },
+        summary: {
+          title: 'Esasy sanlar',
+          body: 'Näçe netijäniň taýýardygy, soňky gezek haçan gelendigiňiz we tölenmedik möçberiň bardygy ýa-da ýokdugy. Kartoçka bassaňyz, jikme-jigi açylar.',
+        },
+        results: {
+          title: 'Soňky netijeler',
+          body: 'Iň täze netijeleriňiz şu ýerde durýar. Setire bassaňyz, resminama açylar — ony okap we ýükläp alyp bolýar. Ähli netijeler «Netijeler» böleginde.',
+        },
+        visits: {
+          title: 'Soňky saparlar',
+          body: 'Klinika soňky saparlaryňyz: çekiň belgisi, sene, möçber we tölegiň ýagdaýy. Setire bassaňyz, şol saparyň hyzmatlary we tölegi açylar.',
+        },
+      },
+      portalResults: {
+        intro: {
+          title: 'Ähli netijeleriňiz',
+          body: 'Lukmanyň tassyklan ähli netijeleriňiz şu sahypada saklanýar. Olar aýma-aý ýerleşdirilen, iň täzesi ýokarda.',
+        },
+        family: {
+          title: 'Maşgala agzalary',
+          body: 'Ada bassaňyz, diňe şol adamyň netijeleri galar; «Hemmesi» — hemmesiniňki bilelikde. Adyň ýanyndaky san — netijeleriniň sany.',
+        },
+        filter: {
+          title: 'Sanawy gysgaltmak',
+          body: '«Şu aý» düwmesine bassaňyz, diňe şu aýdaky netijeler galar; «Ählisi» hemmesini yzyna getirýär. Birnäçe klinikada bolan bolsaňyz, olaryň atlary hem şu setirde durýar.',
+        },
+        open: {
+          title: 'Netijäni açmak',
+          body: 'Her bir taýýar netije şu ýerde bir setir bolýar: derňewiň ady, klinika we sene. Setire bassaňyz, resminama açylar — ony okap we ýükläp alyp bolýar.',
+        },
+      },
+      portalResult: {
+        intro: {
+          title: 'Bir netijäniň sahypasy',
+          body: 'Ýokarda derňewiň ady, klinika we sene ýazylan. «Lukman tarapyndan tassyklanan» belligi netijäni lukmanyň barlap tassyklandygyny aňladýar.',
+        },
+        actions: {
+          title: 'Ýükläp almak we çap etmek',
+          body: '«Ýükläp al (PDF)» düwmesine bassaňyz, çap ediş penjiresi açylar — onda «PDF hökmünde ýatda sakla» punktuny saýlaň, netije faýl bolup ýatda saklanar. «Çap et» — kagyza çykarmak üçin.',
+        },
+        document: {
+          title: 'Resminamanyň özi',
+          body: 'Bu — klinikanyň beren netije kagyzy, kagyzdakysy bilen birmeňzeş. Onda QR kod bar bolsa, telefonyň kamerasyny oňa tutan adam resminamanyň hakykydygyny barlap biler.',
+        },
+        info: {
+          title: 'Netije barada',
+          body: 'Haýsy hyzmat, haýsy klinika, lukman we seneler. Kadadan çykan görkeziji ýüze çyksa, şu ýerde aýratyn sanaw çykar — ondan netijäni lukman çykarýar. «Çeki aç» düwmesi şol sapara alyp barýar.',
+        },
+      },
+      portalVisits: {
+        intro: {
+          title: 'Saparlaryňyz',
+          body: 'Klinika her gezek gelşiňiz şu ýerde aýratyn çek bolup durýar, iň täzesi ýokarda. Hyzmatlary, tölegi we netijeleriň taýýardygyny şu ýerden bilersiňiz.',
+        },
+        family: {
+          title: 'Maşgala agzalary',
+          body: 'Ada bassaňyz, diňe şol adamyň saparlary galar; «Hemmesi» — hemmesiniňki bilelikde. Adyň ýanyndaky san — saparlarynyň sany.',
+        },
+        row: {
+          title: 'Bir sapar — bir setir',
+          body: 'Her bir sapar şu ýerde bir setir bolýar: çekiň belgisi, sene, möçber we tölegiň ýagdaýy; zolajyk näçe netijäniň taýýardygyny görkezýär. Setire bassaňyz, jikme-jiklikleri açylar.',
+        },
+        pages: {
+          title: 'Öňki saparlar',
+          body: 'Bir sahypada 10 sapar görünýär. Öňkülerini görmek üçin şu ýerdäki › düwmesine basyň; ‹ düwmesi yza gaýtarýar.',
+        },
+      },
+      portalVisit: {
+        intro: {
+          title: 'Bir sapar',
+          body: 'Bu — bir saparyňyzyň çeki: klinika, sene we çekiň belgisi. Ýanyndaky bellikler tölegiň we saparyň ýagdaýyny görkezýär — meselem, «Tölenen», «Tamamlanan».',
+        },
+        service: {
+          title: 'Hyzmat we onuň netijesi',
+          body: 'Her hyzmatyň ady, bahasy we netijesiniň haýsy tapgyrdadygy görünýär: «Garaşylýar» ýagdaýyndan «Taýýar» ýagdaýyna çenli. Netije taýýar bolanda, «Netijäni gör» düwmesi çykar — basyp, resminamany açarsyňyz.',
+        },
+        payment: {
+          title: 'Töleg',
+          body: 'Hyzmatlaryň bahasy, arzanladyş (bar bolsa), jemi möçber we näçe tölenendigi. Tölenmedik bölegi bar bolsa, ol «Galyndy» setirinde görünýär. Bu ýerde diňe görýärsiňiz — töleg klinikada edilýär.',
+        },
+        place: {
+          title: 'Kabul ýeri',
+          body: 'Saparyň haýsy klinikada bolandygy. Salgysy we telefony görkezilen bolsa, belgä basyp jaň edip bilersiňiz.',
+        },
+      },
+      portalProfile: {
+        intro: {
+          title: 'Profiliňiz',
+          body: 'Bu ýerde siz baradaky maglumatlar, kabinete nähili girýändigiňiz we sazlamalar durýar.',
+        },
+        info: {
+          title: 'Şahsy maglumatlar',
+          body: 'Klinikada siz barada ýazylan maglumatlar. Olary bu ýerde üýtgedip bolmaýar: ýalňyşlyk görseňiz, klinikanyň kabulhanasyna aýdyň — şol ýerde düzedip bererler.',
+        },
+        loginPhone: {
+          title: 'Telefon arkaly giriş',
+          body: 'Siz kabinete telefon belgiňiz we SMS kody bilen girdiňiz. Şol belgä maşgala agzalaryňyz hem ýazylan bolsa, olaryň netijeleri hem size görünýär.',
+        },
+        loginPassword: {
+          title: 'Login we parol',
+          body: 'Siz login we parol bilen girdiňiz — şeýle girlende diňe öz netijeleriňiz görünýär. Paroly täzelemek üçin «Paroly üýtgetmek» düwmesine basyň: ilki häzirki parol, soňra täzesi iki gezek ýazylýar.',
+        },
+        settings: {
+          title: 'Dil, görnüş we çykyş',
+          body: '«Dil» — kabinetiň haýsy dilde ýazylýandygy, «Tema» — ýagty ýa-da garaňky görnüş. Işiňiz gutarandan soň, «Çykyş» düwmesine basyň — aýratyn-da telefon siziňki däl bolsa.',
+        },
+      },
+    },
+  },
 }

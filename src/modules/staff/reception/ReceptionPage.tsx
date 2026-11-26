@@ -37,7 +37,7 @@ export default function ReceptionPage() {
         <Card className={cn('flex min-h-[420px] min-w-0 flex-col lg:min-h-0', detailOnSmall && 'max-lg:hidden')} padded>
           <PatientSearchPanel scopeId={scopeId} selectedId={selected?.id} onSelect={setSelected} onNew={() => setDrawer({ open: true, patient: null })} inputRef={inputRef} canCreate={canCreatePatient} />
         </Card>
-        <div className={cn('min-h-0 min-w-0', !detailOnSmall && 'max-lg:hidden')}>
+        <div data-tour="reception-detail" className={cn('min-h-0 min-w-0', !detailOnSmall && 'max-lg:hidden')}>
           <AnimatePresence mode="wait" initial={false}>
             {selected ? (
               <div key={selected.id} className="flex h-full min-h-0 flex-col gap-3">

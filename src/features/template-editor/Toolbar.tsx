@@ -37,7 +37,7 @@ export function Toolbar({ onPickImage, onFit, onOpenPanels, onOpenProps }: { onP
   const btn = 'grid size-10 xl:size-9 shrink-0 place-items-center rounded-lg text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink disabled:opacity-35 disabled:pointer-events-none [&>svg]:size-[18px]'
   const sep = 'shrink-0 bg-line max-xl:mx-1 max-xl:h-6 max-xl:w-px xl:my-1 xl:h-px xl:w-6'
   return (
-    <div className="flex items-center gap-1 bg-surface shrink-0 max-xl:h-12 max-xl:w-full max-xl:flex-row max-xl:overflow-x-auto max-xl:no-scrollbar max-xl:border-b max-xl:border-line max-xl:px-1.5 xl:w-12 xl:flex-col xl:p-1.5 xl:border-r xl:border-line">
+    <div data-tour="templateEditor-tools" className="flex items-center gap-1 bg-surface shrink-0 max-xl:h-12 max-xl:w-full max-xl:flex-row max-xl:overflow-x-auto max-xl:no-scrollbar max-xl:border-b max-xl:border-line max-xl:px-1.5 xl:w-12 xl:flex-col xl:p-1.5 xl:border-r xl:border-line">
       {/* < xl: sheet openers */}
       {(onOpenPanels || onOpenProps) && (
         <span className="contents xl:hidden">

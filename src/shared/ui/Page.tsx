@@ -23,7 +23,7 @@ export function Page({ children, className, width = 'wide' }: { children: ReactN
 
 export function PageHeader({ title, description, actions, breadcrumbs, className, eyebrow }: { title: ReactNode; description?: ReactNode; actions?: ReactNode; breadcrumbs?: { label: ReactNode; to?: string }[]; className?: string; eyebrow?: ReactNode }) {
   return (
-    <div className={cn('app-page-header mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between', className)}>
+    <div data-tour="page-head" className={cn('app-page-header mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between', className)}>
       <div className="min-w-0">
         {breadcrumbs && (
           <nav className="mb-2 flex items-center gap-1 text-[12.5px] text-ink-3">
@@ -39,7 +39,7 @@ export function PageHeader({ title, description, actions, breadcrumbs, className
         <h1 className="text-[25px] font-semibold tracking-[-0.035em] sm:text-[28px]">{title}</h1>
         {description && <p className="mt-1.5 max-w-2xl text-[14px] leading-relaxed text-ink-3">{description}</p>}
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2 shrink-0">{actions}</div>}
+      {actions && <div data-tour="page-actions" className="flex flex-wrap items-center gap-2 shrink-0">{actions}</div>}
     </div>
   )
 }

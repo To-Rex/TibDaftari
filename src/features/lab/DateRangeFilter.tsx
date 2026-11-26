@@ -25,7 +25,7 @@ export function DateRangeFilter({ value, onChange, presets = ['today', 'yesterda
   const items: { value: RangePreset; label: string; icon?: React.ReactNode }[] = presets.map((p) => ({ value: p, label: t(`common.${p}`) }))
   if (allowCustom) items.push({ value: 'custom', label: t('clinical.reports.custom'), icon: <CalendarRange /> })
   return (
-    <div className={cn('flex min-w-0 max-w-full flex-wrap items-center gap-2', className)}>
+    <div data-tour="date-range" className={cn('flex min-w-0 max-w-full flex-wrap items-center gap-2', className)}>
       {/* presets scroll horizontally on narrow screens instead of breaking the layout */}
       <div className="min-w-0 max-w-full overflow-x-auto no-scrollbar">
         <Segmented<RangePreset>

@@ -3151,4 +3151,998 @@ export const kaa: Translation = {
       how4: 'Xızmetker óz rolin, ruqsatların yamasa aymaǵın járdemshi arqalı da keńeyte almaydı.',
     },
   },
+  tour: {
+    ui: {
+      help: 'Qollanba',
+      start: 'Baslaw',
+      next: 'Keyingi',
+      back: 'Artqa',
+      done: 'Túsinikli',
+      skip: 'Ótkerip jiberiw',
+      close: 'Jabıw',
+      step: '{{n}} / {{total}}',
+      keys: 'Klaviaturada: ← → — qádemler, Esc — jabıw',
+      page: 'Usı bettiń qollanbası',
+      pageSub: 'Ashıq turǵan bettegi túymeler',
+      pageNone: 'Bul bette qollanba joq',
+      general: 'Ulıwma tanısıw',
+      generalSub: 'Menyu hám joqarǵı panel',
+      auto: 'Jańa bette qollanba ózi ashılsın',
+      reopenTitle: 'Qollanba jabıldı',
+      reopenHint: 'Qálegen waqıtta joqarıdaǵı «?» túymesi arqalı qayta ashasız.',
+    },
+    shell: {
+      welcome: {
+        title: 'Xosh kelipsiz, {{name}}!',
+        body: 'Keliń, TibDaftari menen tanısayıq — bul bir minut waqıt aladı.\nMenyu hám tiykarǵı túymeler ne isleytuǵının kórsetemiz. Keyin hár bir betke birinshi ret kirgenińizde ondaǵı ámeller de qısqasha túsindiriledi.',
+      },
+      welcomeAdmin: {
+        title: 'Basqarıw paneli menen tanısıw',
+        body: 'Bul jerde shólkem sazlanadı: bólimler, xızmetkerler, xızmetler katalogı, hújjet úlgileri.\nBir minutta qay jerde ne bar ekenin kórsetemiz.',
+      },
+      welcomePortal: {
+        title: 'Xosh kelipsiz, {{name}}!',
+        body: 'Bul — sizdiń jeke kabinetińiz: analiz nátiyjelerińiz hám klinikaǵa keliwlerińiz usı jerde saqlanadı.\nQısqa tanısıw yarım minut waqıt aladı.',
+      },
+      navMain: {
+        title: 'Menyu: jumıs usı jerden baslanadı',
+        body: 'Betlerdi shep táreptegi menyu arqalı almastırasız. Dáslep eń tiykarǵıları:',
+      },
+      navReception: {
+        title: 'Qabıllaw bólimi',
+        body: 'Nawqas kelgende kerek bolatuǵın betler:',
+      },
+      navLab: {
+        title: 'Laboratoriya hám nátiyjeler',
+        body: 'Analiz nátiyjeleri menen islew:',
+      },
+      navMore: {
+        title: 'Esabat hám xabarlar',
+      },
+      toAdmin: {
+        title: 'Basqarıw paneli',
+        body: 'Xızmetkerler, xızmetler katalogı, úlgiler hám sazlawlar bólek panelde turadı — oǵan usı túyme arqalı ótesiz. Ol jerden tap usı orındaǵı túyme arqalı qaytasız.',
+      },
+      navAdminMain: {
+        title: 'Basqarıw menyusı',
+        body: 'Betlerdi shep táreptegi menyu arqalı almastırasız:',
+      },
+      navOrg: {
+        title: 'Shólkem',
+        body: 'Dúzilis hám adamlar:',
+      },
+      navCatalog: {
+        title: 'Xızmetler hám hújjetler',
+        body: 'Qanday xızmetler kórsetiletuǵını hám nátiyje qanday kóriniste shıǵatuǵını:',
+      },
+      navSettings: {
+        title: 'Sazlawlar',
+      },
+      toStaff: {
+        title: 'Xızmetkerler qosımshası',
+        body: 'Kúndelikli jumıs — qabıllaw, laboratoriya, esabatlar — xızmetkerler qosımshasında. Oǵan usı túyme arqalı ótesiz hám ol jerden tap usı orındaǵı túyme arqalı qaytasız.',
+      },
+      workplace: {
+        title: 'Jumıs ornıńız',
+        body: 'Házir qaysı mekemede islep atırǵanıńız usı jerde jazılǵan — barlıq dizimler usı mekemeniki.\nBir neshe mekemede isleseńiz, usı túymeni basıp basqasına ótesiz.',
+      },
+      scope: {
+        title: 'Qaysı bólim basqarılıp atır',
+        body: 'Betler usı jerde tańlanǵan bólim hám onıń astındaǵılar boyınsha isleydi.\nSizge bir neshe bólim biriktirilgen bolsa, usı túymeni basıp basqasına ótesiz.',
+      },
+      tools: {
+        title: 'Qolaylıqlar',
+        keys: 'jumıstı tezletetuǵın klaviatura túymeleriniń dizimi',
+        lang: 'interfeys tilin almastırıw',
+        theme: 'jaqtı yamasa qarańǵı kórinis',
+      },
+      notifications: {
+        title: 'Bildiriwler',
+        body: 'Sizge tiyisli jańalıqlar usı jerge keledi. Oqılmaǵanı bolsa, qońırawshanıń ústinde sanı shıǵadı; basıp, dizimdi ashasız.',
+      },
+      me: {
+        title: 'Siz hám shıǵıw',
+        body: 'Atıńız hám rolińiz. Jumıstı pitkergennen keyin usı jerdi basıp, «Shıǵıw»dı tańlań — ásirese kompyuterden basqalar da paydalansa.',
+      },
+      help: {
+        title: 'Qollanba hámiyshe usı jerde',
+        body: 'Qanday da bir túyme ne isleytuǵının umıtsańız, «?» túymesin basıń: ashıq turǵan bettiń qollanbasın yamasa usı ulıwma tanısıwdı qayta kóresiz.\nIske sát!',
+      },
+      portalNav: {
+        title: 'Kabinet bólimleri',
+        body: 'Bólimler arasında usı túymeler arqalı ótesiz:',
+      },
+      portalTools: {
+        title: 'Til hám kórinis',
+        body: 'Interfeys tilin hám jaqtı yamasa qarańǵı kórinisti usı jerde tańlaysız.',
+      },
+      portalMe: {
+        title: 'Shıǵıw',
+        body: 'Kabinetten shıǵıw ushın usı jerdi basıń — ásirese telefon yamasa kompyuter ózińizdiki bolmasa.',
+      },
+      portalHelp: {
+        title: 'Qollanba hámiyshe usı jerde',
+        body: 'Bir nárse túsiniksiz bolsa, «?» túymesin basıń — bettiń qollanbası yamasa usı tanısıw qayta ashıladı.',
+      },
+      nav: {
+        dashboard: 'búgingi jumıs: tiykarǵı sanlar hám gezektegi wazıypalar',
+        assistant: 'sorawıńızdı ápiwayı sózler menen jazasız — maǵlıwmat tabadı, esabat tayarlaydı',
+        reception: 'nawqastı dizimge alıw, xızmet tańlaw hám chek ashıw',
+        patients: 'barlıq nawqaslar, olardıń maǵlıwmatları hám keliwleri',
+        orders: 'ashılǵan chekler, tólem jaǵdayı hám qarızlar',
+        lab: 'analiz nátiyjelerin kiritiw gezegi',
+        confirm: 'kiritilgen nátiyjeni tekserip tastıyıqlaw — sonnan keyin nawqasqa jiberiledi',
+        results: 'tayar nátiyjelerdi kóriw, basıp shıǵarıw hám nawqasqa qayta jiberiw',
+        reports: 'túsim, xızmetler hám jumıs kólemi; Excelge júklep alıw',
+        messages: 'nawqaslarǵa SMS jiberiw hám jiberilgenler tariyxı',
+        adminDashboard: 'shólkemniń jaǵdayı hám sazlaw boyınsha eskertiwler',
+        unit: 'tańlanǵan bólimniń kartası: rekvizitler hám sazlawlar',
+        units: 'astındaǵı wálayat, rayon hám mekemeler — qosıw, ózgertiw',
+        employees: 'xızmetker qosıw, rol beriw, login hám parol',
+        roles: 'hár bir rol nelerdi isley alatuǵının belgilew',
+        catalog: 'xızmetler, bahalar hám baǵdarlar',
+        schemas: 'analiz nátiyjesi qaysı maydanlardan turatuǵını',
+        templates: 'nátiyje hújjetiniń (blankanıń) kórinisi',
+        receipts: 'basıp shıǵarılatuǵın chektiń kórinisi',
+        sms: 'SMS esabı hám nawqasqa jiberiletuǵın tekstler',
+        territory: 'aymaqlar hám mekemeler boyınsha kórsetkishler',
+        portalHome: 'eń sońǵı nátiyje hám keliwler bir qaraǵanda',
+        portalResults: 'barlıq tayar nátiyjeler — ashıw hám PDF júklep alıw',
+        portalVisits: 'klinikaǵa keliwlerińiz, xızmetler hám tólemler',
+        portalProfile: 'jeke maǵlıwmatlar, til, parol',
+      },
+    },
+    pages: {
+      dashboard: {
+        intro: {
+          title: 'Bas bet',
+          body: 'Jumıs kúni usı betten baslanadı: búgingi jaǵday bir qaraǵanda kórinedi, al eń kerekli betlerge bir basıw menen ótesiz.',
+        },
+        stats: {
+          title: 'Búgingi sanlar',
+          body: '«Búgingi chekler» hám «Búgingi túsim» — búgin islengen jumıs. «Laboratoriyada» — laboratoriyada gezekte turǵan, «Tastıyıqlawda» — tastıyıqlanıwın kútip turǵan xızmetler sanı.',
+        },
+        quick: {
+          title: 'Tez ámeller',
+          body: 'Jumısıńız ushın eń kerekli betlerge usı jerden bir basıw menen ótesiz. Túymeniń janında san tursa — sonsha jumıs sizdi kútip tur.',
+        },
+        period: {
+          title: 'Dáwirdi tańlaw',
+          body: 'Dáwirdi tańlań (mısalı, «Búgin» yamasa «7 kún») — tómendegi «Dinamika» hám «Baǵdarlar boyınsha» bólimleri usı dáwir ushın kórsetiledi. Joqarıdaǵı búgingi sanlar ózgermeydi.',
+        },
+        trend: {
+          title: 'Kúnbe-kún dinamika',
+          body: 'Tańlanǵan dáwirde túsim kúnbe-kún qalay ózgergeni. «Chekler»di bassańız, túsimniń ornına chekler sanı shıǵadı. Tıshqanshanı sızıqtıń ústine alıp barsańız, sol kúnniń anıq sanın kóresiz.',
+        },
+        categories: {
+          title: 'Baǵdarlar boyınsha',
+          body: 'Tańlanǵan dáwirde hár bir baǵdar boyınsha neshe xızmet kórsetilgeni hám qansha túsim bolǵanı. Eń kóp túsim ákelgen baǵdar joqarıda turadı.',
+        },
+      },
+      reception: {
+        intro: {
+          title: 'Qabıllaw beti',
+          body: 'Nawqas kelgende jumıs usı jerden baslanadı. Tártibi mınaday:\n1. Nawqastı tabıń yamasa jańasın qosıń.\n2. «Jańa chek» túymesin basıń.\n3. Ashılǵan chekte xızmetlerdi tańlań.\n4. Tólemdi qabıllań.',
+        },
+        search: {
+          title: 'Nawqastı izlew',
+          body: 'Atınan, telefonınan yamasa pasport nomerinen keminde 2 belgi jazıń — sáykes nawqaslar tómende shıǵadı. Aldın hámiyshe izlep kóriń: nawqas burın da kelgen bolıwı múmkin.',
+        },
+        results: {
+          title: 'Tabılǵan nawqaslar',
+          body: 'Izlew nátiyjesi usı jerde shıǵadı. Kerekli nawqastı basıń (yamasa ↑ ↓ menen tańlap, Enter basıń) — onıń maǵlıwmatları hám chekleri ashıladı.',
+        },
+        newPatient: {
+          title: 'Jańa nawqas qosıw',
+          body: 'Nawqas dizimde tabılmasa, «Jańa nawqas» túymesin basıń. Ashılǵan aynada F.A.Á. hám telefonın jazıp, «Dizimge alıw» túymesin basıń — nawqas saqlanadı hám dárhal tańlanadı.',
+        },
+        detail: {
+          title: 'Tańlanǵan nawqas',
+          body: 'Tańlanǵan nawqastıń maǵlıwmatları hám sońǵı chekleri usı jerde kórinedi. Usı jerdegi «Jańa chek» túymesi chek ashadı — keyin oǵan xızmetlerdi qosıp, tólemdi qabıllaysız.',
+        },
+        newOrder: {
+          title: 'Jańa chek ashıw',
+          body: '«Jańa chek» túymesin basıń — usı nawqas ushın bos chek ashıladı hám chek betine ótesiz. Ol jerde xızmetlerdi tańlaysız, tólemdi qabıllaysız hám chekti basıp shıǵarasız.',
+        },
+      },
+      order: {
+        intro: {
+          title: 'Chek beti',
+          body: 'Bul — bir chek. Joqarıda onıń nomeri, jaǵdayı, tólem jaǵdayı hám nawqas kórsetilgen. Jumıs tártibi: xızmetlerdi qosıń → tólemdi qabıllań → chekti basıp shıǵarıń.',
+        },
+        items: {
+          title: 'Chektegi xızmetler',
+          body: 'Chekke qosılǵan xızmetler bahası hám jaǵdayı menen usı jerde turadı. Adasıp qosılǵan xızmetti, jaǵdayı ele «Kútilmekte» bolsa, qatarındaǵı sebetshe belgisin basıp óshiresiz.',
+        },
+        add: {
+          title: 'Xızmet qosıw',
+          body: 'Xızmetti atı yamasa kodı boyınsha izleń yamasa joqarıdan baǵdardı tańlań, sońınan kerekli xızmetti basıń — ol dárhal chekke qosıladı hám jasıl belgi menen kórsetiledi.',
+        },
+        totals: {
+          title: 'Chek esabı',
+          body: 'Xızmetler summası, shegirme, jámi, tólengen hám qaldıq usı jerde ózi esaplanadı. Chekke xızmet qosılıp, tólenbegen summa payda bolǵannan keyin, «Tólem qabıllaw» túymesi de usı jerde shıǵadı.',
+        },
+        pay: {
+          title: 'Tólem qabıllaw',
+          body: 'Túymeni bassańız, ayna ashıladı: tólem usılın (naq pul, karta …) tańlań, summanı tekseriń hám tastıyıqlań. Summanı azaytsańız, qısman tólem boladı — qalǵanı qaldıq bolıp turadı.',
+        },
+        print: {
+          title: 'Chekti basıp shıǵarıw',
+          body: '«Basıp shıǵarıw» chekti chek printerine jiberedi; printer programması tabılmasa, brauzerdiń basıp shıǵarıw aynası ashıladı. Janındaǵı kishi túyme arqalı basıp shıǵarıw usılın tańlaysız yamasa printerdi sazlaysız.',
+        },
+        cancel: {
+          title: 'Chekti biykar etiw',
+          body: 'Bul túyme tek ele tólem islenbegen chekte shıǵadı. Bassańız, sebebi soraladı hám chek biykar etiledi — bul ámeldi keri qaytarıp bolmaydı.',
+        },
+        payments: {
+          title: 'Tólemler tariyxı',
+          body: 'Qabıllanǵan hár bir tólem usılı, waqtı hám summası menen usı jerde jazıladı. Usıl adasıp tańlanǵan bolsa, qálemshe belgisin basıp dúzetesiz; bir kúnnen keyin bunı tek administrator yamasa basshı isley aladı.',
+        },
+      },
+      patients: {
+        intro: {
+          title: 'Nawqaslar dizimi',
+          body: 'Mekemeńizde dizimge alınǵan barlıq nawqaslar usı jerde. Nawqastı tawıp, onıń maǵlıwmatların, cheklerin hám nátiyjelerin kóriwińiz múmkin.',
+        },
+        search: {
+          title: 'Nawqastı izlew',
+          body: 'Atın, telefonın yamasa pasport nomerin jazıń — dizimde tek sáykes nawqaslar qaladı. Maydandı tazalasańız, barlıq nawqaslar qaytadı.',
+        },
+        tags: {
+          title: 'Belgi boyınsha tańlaw',
+          body: 'Belgilerdiń birin (mısalı, «VIP» yamasa «Bola») bassańız, tek usı belgisi bar nawqaslar qaladı. Jáne bir ret bassańız, barlıq nawqaslar qaytadı.',
+        },
+        table: {
+          title: 'Nawqaslar kestesi',
+          body: 'Hár bir qatarda nawqastıń telefonı, sońǵı keliwi, chekleriniń sanı hám jámi tólemi kórinedi. Qatardı bassańız, nawqastıń kartası ashıladı.',
+        },
+        new: {
+          title: 'Jańa nawqas qosıw',
+          body: 'Nawqas dizimde bolmasa, «Jańa nawqas» túymesin basıń. Ashılǵan aynada F.A.Á. hám telefonın jazıp, «Dizimge alıw» túymesin basıń — nawqas saqlanadı hám onıń kartası ashıladı.',
+        },
+      },
+      patient: {
+        intro: {
+          title: 'Nawqas kartası',
+          body: 'Bir nawqas haqqındaǵı hámme nárse usı bette: atı, telefonı, tuwılǵan sánesi, chekleri hám analiz nátiyjeleri.',
+        },
+        newOrder: {
+          title: 'Jańa chek ashıw',
+          body: '«Jańa chek» túymesin bassańız, usı nawqas ushın bos chek ashıladı hám chek betine ótesiz — ol jerde xızmetlerdi tańlap, tólemdi qabıllaysız.',
+        },
+        edit: {
+          title: 'Maǵlıwmattı dúzetiw',
+          body: 'Atı, telefonı, mánzili yamasa shegirmesi nadurıs jazılǵan bolsa, «Ózgertiw» túymesin basıń: forma ashıladı, kerekli jerin ózgertip, «Saqlaw» túymesin basasız.',
+        },
+        access: {
+          title: 'Kabinet logini',
+          body: 'Nawqas nátiyjelerin jeke kabinette ózi kóriwi ushın oǵan login hám parol beriledi. «Kabinet logini» túymesin bassańız, ayna ashıladı: login hám parol jaratıladı, qáleseńiz nawqasqa SMS arqalı jiberiledi.',
+        },
+        stats: {
+          title: 'Qısqasha kórsetkishler',
+          body: 'Nawqastıń neshe cheki bar ekeni, jámi qansha tólegeni hám sońǵı ret qashan kelgeni. «Kabinet» — nawqas jeke kabinetine kirgen be («Jalǵanǵan») yamasa ele kirmegen be («Jalǵanbaǵan»).',
+        },
+        family: {
+          title: 'Usı nomerdegiler',
+          body: 'Bir telefon nomerinen paydalanatuǵın shańaraq aǵzaları usı jerde kórinedi. Birewin bassańız, sol adamnıń kartası ashıladı.',
+        },
+        tabs: {
+          title: 'Chekler, nátiyjeler, maǵlıwmat',
+          body: 'Joqarıdaǵı bólimler bul jerde ne kórsetiletuǵının almastıradı: «Chekler» — nawqastıń chekleri (qatardı bassańız, chek ashıladı), «Nátiyjeler» — tayar nátiyjeler, «Maǵlıwmat» — tolıq maǵlıwmatları.',
+        },
+      },
+      orders: {
+        intro: {
+          title: 'Chekler dizimi',
+          body: 'Mekemeniń barlıq chekleri usı jerde: kimge hám qashan ashılǵan, qanshası tólengen, qay jerde qarız qalǵan. Kerekli chekti izlew hám filtrler járdeminde tabasız.',
+        },
+        search: {
+          title: 'Chekti izlew',
+          body: 'Chek nomerin, nawqastıń atın yamasa telefonın jazıń — tek sáykes chekler qaladı. Izlew tańlanǵan dáwir ishinde isleydi: eski chekti tabıw ushın aldın dáwirdi keńeytiń.',
+        },
+        period: {
+          title: 'Dáwirdi tańlaw',
+          body: 'Ádette búgingi chekler kórsetiledi. Basqa kúnler ushın «Keshe», «7 kún» yamasa «Usı ay»dı tańlań; «Aralıq»tı bassańız, baslanıw hám tamamlanıw kúnin ózińiz belgileysiz.',
+        },
+        payment: {
+          title: 'Tólem hám jaǵday boyınsha',
+          body: '«Tólem: barlıǵı» diziminen, mısalı, «Tólenbegen»di tańlasańız, tek sonday chekler qaladı. Al «Ashıq», «Orınlanbaqta», «Juwmaqlanǵan» túymeleri cheklerdi jaǵdayı boyınsha ajıratadı.',
+        },
+        filters: {
+          title: 'Qosımsha filtrler',
+          body: '«Filtrler» túymesi qaptal aynanı ashadı: tólem túri, chek summası, qarız, shegirme, baǵdar, xızmet yamasa chekti ashqan xızmetker boyınsha tańlaysız. Tańlanǵanlar dárhal qollanıladı.',
+        },
+        summary: {
+          title: 'Jámi esap',
+          body: 'Tańlanǵan filtrlerge sáykes barlıq chekler boyınsha jıyındı: sanı, jámi summa, tólengeni hám qarız, sonday-aq tólem túrleri boyınsha. Summalarǵa biykar etilgen chekler kirmeydi.',
+        },
+        table: {
+          title: 'Chekler kestesi',
+          body: 'Hár bir qatar — bir chek: nomeri, nawqas, summası, jaǵdayı hám tólem jaǵdayı. Qatardı bassańız, chek ashıladı — ol jerde tólem qabıllawǵa yamasa chekti basıp shıǵarıwǵa boladı.',
+        },
+        export: {
+          title: 'Excelge júklep alıw',
+          body: '«Excel» túymesi házirgi filtr hám saralaw boyınsha barlıq cheklerdi Excel faylı etip júklep beredi — tek ekrandaǵı betti ǵana emes.',
+        },
+      },
+      lab: {
+        intro: {
+          title: 'Laboratoriya gezegi',
+          body: 'Nátiyjesi kiritiliwi kerek bolǵan analizler usı jerde turadı: nawqas chekti tólewi menen analiz gezekke túsedi. Analizdiń ústine basıp, nátiyjesin kiritesiz.',
+        },
+        categories: {
+          title: 'Baǵdarlar',
+          body: 'Analizler baǵdarlarǵa bólingen. Kerekli baǵdardı basıń — dizimde tek sonıń analizleri qaladı. «Barlıǵı» hámmesin qaytaradı.',
+        },
+        search: {
+          title: 'Analizdi izlew',
+          body: 'Nawqastıń atın, chek nomerin yamasa xızmet atın jazıń — jazǵanıńız sayın dizim qısqaradı.',
+        },
+        status: {
+          title: 'Analiz jaǵdayı',
+          body: 'Analizlerdi jaǵdayı boyınsha ajıratıń: «Kútilmekte» — nátiyje ele kiritilmegen, «Qaytarılǵan» — shıpaker dúzetiwge qaytarǵan. Janındaǵı san — usı jaǵdayda neshe analiz bar ekeni.',
+        },
+        period: {
+          title: 'Qaysı kúnler',
+          body: 'Dáslep tek búgingi analizler kórinedi. Keshegi yamasa onnan aldıńǵıları kerek bolsa, «Keshe», «7 kún» yamasa «Aralıq»tı tańlań.',
+        },
+        list: {
+          title: 'Analizler dizimi',
+          body: 'Hár bir qatar — bir analiz: nawqas, chek, xızmet hám jaǵdayı. Qatardı basıń — nátiyje kiritiw beti ashıladı. Dizim ózi jańalanıp turadı.',
+        },
+      },
+      labItem: {
+        intro: {
+          title: 'Nátiyje kiritiw',
+          body: 'Bir analizdiń nátiyjesi usı bette kiritiledi. Joqarıda xızmet, nawqas hám chek nomeri jazılǵan — aldın durıs analiz ashılǵanın tekseriń. Tártibi: maydanlardı toltırıw → «Saqlaw» → «Tastıyıqlawǵa jiberiw».',
+        },
+        form: {
+          title: 'Nátiyje maydanları',
+          body: 'Hár bir kórsetkishtiń mánisin jazıń. Janında norması turadı: mánis normadan shıqsa, uyashıq qızaradı hám ↑ yamasa ↓ belgisi shıǵadı. Juldızsha (*) qoyılǵan maydanlar májbúriy.',
+        },
+        note: {
+          title: 'Laborant túsindirmesi',
+          body: 'Shıpaker biliwi kerek bolǵan nárse bolsa, usı jerge jazıń — mısalı, biomaterialdıń jaǵdayı. Toltırıw shárt emes; túsindirme nátiyje menen birge saqlanadı hám shıpakerge kórinedi.',
+        },
+        save: {
+          title: 'Nátiyjeni saqlaw',
+          body: '«Saqlaw» kiritkenlerińizdi jazıp qoyadı, biraq shıpakerge ele jibermeydi: analiz «Kiritilgen» jaǵdayına ótedi, keyin dawam ettiriwińiz múmkin. Túyme qanday da bir maydan ózgergennen keyin ǵana aktivlesedi.',
+        },
+        submit: {
+          title: 'Tastıyıqlawǵa jiberiw',
+          body: 'Tayar nátiyjeni usı túyme shıpakerge jiberedi — ózgerisler ózi saqlanadı. Májbúriy maydan bos bolsa, jiberilmeydi. Adassańız, shıpaker tastıyıqlaǵansha «Jiberiwdi biykar etiw» túymesi menen qaytarıp alasız.',
+        },
+        after: {
+          title: 'Jibergennen keyin',
+          body: 'Nátiyjeni shıpaker tekseredi. Tastıyıqlasa — hújjet tayar boladı hám nawqasqa SMS ketedi. Qaytarsa — sebebi bettiń joqarısında qızıl jazıw menen shıǵadı: dúzetip, saqlap, qayta jiberesiz. Basqıshlar usı jerde belgilenip baradı.',
+        },
+      },
+      confirm: {
+        intro: {
+          title: 'Nátiyjeler menen islew',
+          body: 'Laboratoriyada kiritilgen nátiyjeler usı bette kórinedi. Dizimnen nawqastı tańlaysız — nátiyjesi nawqasqa beriletuǵın hújjet kórinisinde ashıladı.',
+        },
+        categories: {
+          title: 'Baǵdarlar',
+          body: 'Tek bir baǵdardıń nátiyjelerin kóriw ushın onıń atın basıń. «Barlıǵı» barlıq baǵdarlardı birge kórsetedi.',
+        },
+        queue: {
+          title: 'Gezek hám tastıyıqlanǵanlar',
+          body: '«Gezekte» — laboratoriya jibergen, sizdiń tastıyıqlawıńızdı kútip turǵan nátiyjeler. Ashıp tekseresiz: durıs bolsa «Tastıyıqlaw», qáte bolsa «Qaytarıw». «Tastıyıqlanǵan» — juwmaqlanǵan nátiyjeler.',
+        },
+        filters: {
+          title: 'Izlew hám dáwir',
+          body: 'Nawqastıń atı, chek nomeri yamasa xızmet atı boyınsha izleń. Dáwir de usı qatarda tańlanadı: dáslep sońǵı 7 kún kórinedi — eskirek nátiyje kerek bolsa, «30 kún» yamasa «Aralıq»tı basıń.',
+        },
+        list: {
+          title: 'Nátiyjeler dizimi',
+          body: 'Hár bir qatarda nawqas, analiz atı, chek nomeri hám laborant jazılǵan. Qatardı basıń — nátiyje ashıladı. Jańa nátiyje kelse, dizimde ózi payda boladı.',
+        },
+        detail: {
+          title: 'Tańlanǵan nátiyje',
+          body: 'Nátiyje usı jerde ashıladı: «Hújjet» — nawqasqa beriletuǵın blanka, «Mánisler» — kiritilgen kórsetkishler. Tastıyıqlanǵan nátiyjede «Nátiyjeni basıp shıǵarıw» hám «SMS qayta jiberiw» túymeleri shıǵadı.',
+        },
+        approve: {
+          title: 'Tastıyıqlaw yamasa qaytarıw',
+          body: '«Tastıyıqlaw» — nátiyje durıs bolsa: hújjet jaratıladı, nawqasqa SMS ketedi hám nátiyje onıń kabinetinde kórinedi. «Qaytarıw» — qáte bolsa: sebebin jazasız, nátiyje laborantqa qaytadı.',
+        },
+      },
+      reports: {
+        intro: {
+          title: 'Esabatlar beti',
+          body: 'Mekemeniń jumısı sanlarda: chekler, nawqaslar, nátiyjeler. Sarlawhanıń astındaǵı túymeler — bólimler: «Ulıwma», «Nawqaslar», «Nátiyjeler», «Xızmetler», «SMS». Kereklisin basıń.',
+        },
+        period: {
+          title: 'Esabat dáwiri',
+          body: 'Esabat qaysı kúnler ushın ekenin usı jerde tańlaysız. «Aralıq»tı bassańız, baslanıw hám tamamlanıw sánesin ózińiz kiritesiz. Bettegi sanlar usı dáwir boyınsha qayta esaplanadı.',
+        },
+        numbers: {
+          title: 'Tiykarǵı sanlar',
+          body: '«Chekler» — tańlanǵan dáwirde ashılǵan chekler sanı, «Búgin» — búgingileri. «Laboratoriyada» hám «Tastıyıqlawda» — házir nátiyjesi kútilip atırǵan analizler.',
+        },
+        trend: {
+          title: 'Kúnlik dinamika',
+          body: 'Dáwir ishinde jumıs kúnbe-kún qalay ózgergeni. Tıshqanshanı sızıqtıń ústinen júrgiziń — sol kúnniń anıq sanı shıǵadı.',
+        },
+        breakdown: {
+          title: 'Bóliniw kestesi',
+          body: 'Usı dáwirdegi jumıs nelerden ibarat bolǵanı. «Baǵdar», «Xızmet» yamasa «Xızmetker» túymesin basıń — keste hám dóńgelek diagramma sol boyınsha kórsetedi; eń kóbi joqarıda turadı.',
+        },
+        export: {
+          title: 'Excelge júklep alıw',
+          body: '«Excel» — tańlanǵan dáwir boyınsha tolıq esabattı fayl etip júklep aladı. Al «Ulıwma» bólimindegi «Excel (CSV)» tek tómendegi kesteni júkleydi.',
+        },
+      },
+      messages: {
+        intro: {
+          title: 'SMS xabarlar',
+          body: 'Nawqaslarǵa ketken barlıq SMS xabarlar usı jerde jazıladı: tólem cheki, nátiyjeniń tayar bolǵanı, kodlar hám ózińiz jazǵan xabarlar. Xabardıń jetip barǵan-barmaǵanın usı jerden tekseresiz.',
+        },
+        search: {
+          title: 'Izlew hám jaǵday túymeleri',
+          body: 'Telefon nomerin yamasa xabar tekstiniń bir bólegin jazıp izleń. Ústindegi túymeler xabarlardı jaǵdayı boyınsha ajıratadı — mısalı, «Qáte» tek jiberilmegenlerin kórsetedi.',
+        },
+        list: {
+          title: 'Xabarlar jurnalı',
+          body: 'Hár bir qatar — bir SMS: kimge ketkeni, teksti, túri hám waqtı. Eń jańası joqarıda. Jiberilip atırǵan xabar bolsa, dizim ózi jańalanıp turadı.',
+        },
+        status: {
+          title: 'Xabar jaǵdayı',
+          body: '«Gezekte» — ele ketpegen, «Jiberildi» — operatorǵa tapsırılǵan, «Jetkerildi» — nawqastıń telefonına jetken. «Qáte» bolsa, sebebi usı jerde qızıl jazıw menen turadı.',
+        },
+        newMessage: {
+          title: 'Jańa xabar jazıw',
+          body: '«Jańa xabar» túymesi qaptal aynanı ashadı: telefon nomerin hám tekstti jazıp, «Jiberiw» túymesin basasız. «Keyinirek jiberiw»di qossańız, xabar siz belgilegen waqıtta ketedi.',
+        },
+      },
+      assistant: {
+        intro: {
+          title: 'Járdemshi menen tanısıń',
+          body: 'Járdemshige sorawıńızdı ápiwayı sózler menen jazasız — ol kerekli maǵlıwmattı tawıp beredi hám rolińiz ruqsat bergen jumıslardı orınlawǵa járdem beredi. Menyudan izlep júriwdiń keregi joq.',
+        },
+        composer: {
+          title: 'Sorawıńızdı jazıń',
+          body: 'Sorawdı yamasa tapsırmanı usı jerge jazıp, Enter túymesin basıń — juwap usı bette shıǵadı. Rolińiz boyınsha nelerdi sorawǵa bolatuǵının jazıw maydanınıń astındaǵı «Múmkinshilikler» túymesi kórsetedi.',
+        },
+        examples: {
+          title: 'Tayar mısallar',
+          body: 'Neden baslawdı bilmeseńiz, mısallardıń birin basıń — ol dárhal járdemshige jiberiledi. Mısallar rolińizge qarap tańlanǵan.',
+        },
+        confirm: {
+          title: 'Aldın sizden soraydı',
+          body: 'Járdemshi maǵlıwmattı ózi tabadı, biraq bir nárseni ózgertiwden aldın ne islemekshi ekenin kórsetedi. «Tastıyıqlaw hám orınlaw» túymesin bassańız ǵana orınlaydı; «Biykar etiw»di bassańız, hesh nárse ózgermeydi.',
+        },
+        history: {
+          title: 'Sáwbetler tariyxı',
+          body: 'Shep táreptegi túyme aldıńǵı sáwbetlerińizdiń dizimin ashadı — qálegenin basıp dawam ettiresiz. Janındaǵı qálemli túyme — «Jańa sáwbet»: basqa temanı jańa sáwbette sorań.',
+        },
+        tasks: {
+          title: 'Rejeli tapsırmalar',
+          body: 'Qaytalanatuǵın jumıstı bir ret jazıp qoyasız — mısalı, hár kúni azanda keshegi esabat. Járdemshi onı belgilengen waqıtta ózi orınlaydı (tek oqıydı, hesh nárseni ózgertpeydi) hám sizge bildiriw keledi.',
+        },
+      },
+      adminDashboard: {
+        intro: {
+          title: 'Basqarıw paneli',
+          body: 'Bul bet siz basqarıp atırǵan bólimniń ulıwma jaǵdayın kórsetedi: nesi tayar, nesi ele sazlanbaǵan. Jumıstı usı jerden baslań.',
+        },
+        unit: {
+          title: 'Basqarılıp atırǵan bólim',
+          body: 'Házir qaysı bólimdi basqarıp atırǵanıńız: atı, dárejesi hám mánzili. Oń táreptegi silteme bólim kartasın ashadı — maǵlıwmatlar sol jerde ózgertiledi.',
+        },
+        stats: {
+          title: 'Tiykarǵı sanlar',
+          body: 'Bólimdegi mekemeler, xızmetkerler, xızmet túrleri hám aktiv úlgiler sanı. Astındaǵı kishi jazıw olardıń neshewi aktiv ekenin kórsetedi.',
+        },
+        health: {
+          title: 'Ne ele sazlanbaǵan',
+          body: 'Shólkem tolıq islewi ushın neler kerek ekeniniń dizimi. Orınlanbaǵan bánttiń janındaǵı «Dúzetiw» túymesin bassańız, kerekli sazlaw beti ashıladı.',
+        },
+        links: {
+          title: 'Betlerge tez ótiw',
+          body: 'Basqarıw paneliniń betleri: bólimler, xızmetkerler, katalog, úlgiler hám basqalar. Kartanı bassańız, sol bet ashıladı.',
+        },
+        recent: {
+          title: 'Sońǵı háreketler',
+          body: 'Sizge kelgen sońǵı bildiriwler usı jerde turadı. Oqılmaǵanınıń janında noqat boladı.',
+        },
+      },
+      unit: {
+        intro: {
+          title: 'Bólim kartası',
+          body: 'Bir bólim haqqındaǵı hámme nárse usı bette: atı hám mánzili, sazlawları, SMS hám Telegram. Bul jerde saqlanǵan sazlaw usı bólim hám onıń astındaǵılar ushın ámel etedi.',
+        },
+        edit: {
+          title: 'Maǵlıwmatlardı ózgertiw',
+          body: 'Atın, mánzilin, telefonın yamasa basqa maǵlıwmattı ózgertiw ushın «Ózgertiw» túymesin basıń — oń tárepte forma ashıladı. Ózgertip, «Saqlaw» túymesin basasız.',
+        },
+        header: {
+          title: 'Bólim hám onıń logotipi',
+          body: 'Bólimniń atı, dárejesi, jaǵdayı («Aktiv» yamasa «Aktiv emes») hám baylanıs maǵlıwmatları. «Logotip júklew» túymesi arqalı logotip súwretin qoyasız yamasa almastırasız.',
+        },
+        counts: {
+          title: 'Bólim astında ne bar',
+          body: 'Usı bólimge qaraslı tómengi bólimler hám xızmetkerler sanı. Sandı bassańız, olardıń dizimi ashıladı.',
+        },
+        settings: {
+          title: 'Ámeldegi sazlawlar',
+          body: 'Bólim ushın házir ámel etip turǵan sazlawlar. «Tiykarǵı til» — onıń hújjet hám SMS tili: dizimnen tańlasańız, dárhal saqlanadı; «Joqarıdan (miyras)» tańlansa, joqarǵı bólimniń tili alınadı.',
+        },
+        docLink: {
+          title: 'Nátiyje siltemesi',
+          body: 'Nátiyje tayar bolǵannan keyin nawqasqa SMS arqalı silteme baradı. Bul jerde onıń neshe kún SMS kodsız ashılatuǵının tańlaysız; «Hár dayım kod» — hújjetti tek telefon iyesi ashadı. Keyin «Saqlaw» túymesin basıń.',
+        },
+        smsAccount: {
+          title: 'SMS esabı',
+          body: 'Nawqaslarǵa SMS qaysı esaptan ketetuǵını: joqarǵı bólimniń esabınan ba, usı bólimniń óz esabınan ba yamasa ulıwma jiberilmeydi me. Esap jalǵanbaǵan bolsa, nawqaslar SMS almaydı.',
+        },
+        smsTexts: {
+          title: 'Xabar shablonları',
+          body: 'Nawqasqa avtomat túrde ketetuǵın SMS tekstleri: tólem cheki, tayar nátiyje hám eske salıw. Tekstti ózgertip, «Saqlaw» túymesin bassańız, nawqaslar jańa tekstti aladı.',
+        },
+      },
+      units: {
+        intro: {
+          title: 'Bólimler aǵashı',
+          body: 'Siz basqarıp atırǵan bólimniń astındaǵı hámme nárse usı jerde: wálayatlar, rayonlar / qalalar hám mekemeler. Jańa mekeme de usı bette ashıladı.',
+        },
+        search: {
+          title: 'Bólimdi izlew',
+          body: 'Atınıń yamasa kodınıń bir bólegin jazıń — aǵashta tek sáykes bólimler qaladı. Janındaǵı «Aktiv emeslerdi kórsetiw»di óshirseńiz, aktiv emes bólimler jasırıladı.',
+        },
+        tree: {
+          title: 'Aǵash penen islew',
+          body: 'Qatardıń basındaǵı strelka bólimniń ishin ashadı yamasa jabadı. Qatardıń ózin bassańız, sol bólimniń kartası ashıladı.',
+        },
+        rowActions: {
+          title: 'Qatardaǵı túymeler',
+          body: 'Qatardıń aqırında: «+» — usı bólimniń astına jańasın qosadı, qálem — maǵlıwmatın ózgertedi. Tómengi qatarlardaǵı qosıp-óshirgish bólimdi aktiv emes etedi: onda jańa chek ashılmaydı.',
+        },
+        add: {
+          title: 'Bólim qosıw',
+          body: 'Bul túyme oń tárepte forma ashadı: jańa bólim qaysı bólimniń astında ashılatuǵının tańlap, atın kiritesiz. Dárejesi ózi anıqlanadı: wálayat astında — rayon, rayon astında — mekeme.',
+        },
+        quickStart: {
+          title: 'Tez iske túsiriw',
+          body: 'Jańa mekemeni bes qısqa qádemde jumısqa tayar etedi: jaylasıwı, xızmetkerlerdiń esapları, katalogı hám úlgileri menen. Aqırında xızmetkerlerge beriletuǵın login hám parol shıǵadı.',
+        },
+      },
+      employees: {
+        intro: {
+          title: 'Xızmetkerler',
+          body: 'Sistemaǵa kiretuǵın hár bir xızmetkerdiń esabı usı jerde: kim, qaysı rolde, qaysı bólimde isleydi. Dizimde siz basqarıp atırǵan bólimniń hám onıń astındaǵılardıń xızmetkerleri kórinedi.',
+        },
+        search: {
+          title: 'Xızmetkerdi izlew',
+          body: 'Atınıń, logininiń yamasa telefon nomeriniń bir bólegin jazıń — dizim ózi qısqaradı.',
+        },
+        filters: {
+          title: 'Dizimdi qısqartıw',
+          body: 'Dizimdi rol, bólim yamasa jaǵday boyınsha qısqartıwǵa boladı: mısalı, tek esabı toqtatılǵan xızmetkerlerdi kóriw ushın jaǵdaydan «Aktiv emes»ti tańlań.',
+        },
+        table: {
+          title: 'Xızmetkerler dizimi',
+          body: 'Hár bir qatarda xızmetkerdiń roli, bólimi, jaǵdayı hám sońǵı ret qashan kirgeni kórinedi. Qatardı bassańız, onıń beti ashıladı — rol hám parol sol jerde ózgertiledi.',
+        },
+        add: {
+          title: 'Xızmetker qosıw',
+          body: 'Jańa xızmetkerge esap ashıw ushın usı túymeni basıń: atın, loginin, rolin, bólimin hám parolın kiritesiz. Saqlaǵannan keyin xızmetker usı login hám parol menen sistemaǵa kire aladı.',
+        },
+      },
+      employee: {
+        intro: {
+          title: 'Xızmetker beti',
+          body: 'Xızmetkerdiń atı, jaǵdayı, logini, roli hám sońǵı ret qashan kirgeni. Tómendegi «Ruqsatlar» bóleginde oǵan rolinen tısqarı bólek ruqsat beriwge yamasa qadaǵan etiwge boladı.',
+        },
+        info: {
+          title: 'Xızmetker maǵlıwmatları',
+          body: 'Login, telefon, rol hám xızmetker qay jerde isleytuǵını: «Tiykarǵı bólim» hám, bar bolsa, «Qosımsha bólimler». Xızmetker usı bólimlerde hám olardıń astındaǵılarda isleydi.',
+        },
+        edit: {
+          title: 'Ózgertiw hám parol',
+          body: '«Ózgertiw» basılsa, usı jerdiń ózinde forma ashıladı: atın, rolin hám bólimlerin ózgertesiz. Paroldı almastırıw ushın «Jańa parol» maydanın toltırıń; bos qaldırsańız, parol ózgermeydi.',
+        },
+        danger: {
+          title: 'Esaptı toqtatıw',
+          body: 'Xızmetker jumıstan ketse, «Esaptı toqtatıw» túymesin basıń: ol sistemaǵa kire almaydı, biraq kiritken maǵlıwmatları saqlanıp qaladı. Keyin usı jerdiń ózinen qayta aktivlestiriwge boladı.',
+        },
+      },
+      roles: {
+        intro: {
+          title: 'Roller hám ruqsatlar',
+          body: 'Rol — ruqsatlar toplamı: xızmetker sistemada nelerdi kóre alatuǵının hám isley alatuǵının belgileydi. Hár bir xızmetkerge bir rol biriktiriledi.',
+        },
+        list: {
+          title: 'Roller dizimi',
+          body: 'Roldi bassańız, onıń ruqsatları ashıladı. «Sistemalıq» belgisi bar roller tayar túrinde keledi; atınıń astında ruqsatlar sanı hám usı rolde neshe xızmetker bar ekeni jazılǵan.',
+        },
+        detail: {
+          title: 'Tańlanǵan rol',
+          body: 'Roldiń atı hám sıpatlaması. Sistemalıq rol ózgertilmeydi — «Nusqalaw» túymesi menen nusqasın alıp, sonı ózińizge ılayıqlastırıń. Ózińiz jaratqan rolde ózgerisler «Saqlaw» basılǵannan keyin kúshke kiredi.',
+        },
+        search: {
+          title: 'Ruqsattı izlew',
+          body: 'Ruqsatlar kóp — kereklisin tabıw ushın atınan bir sóz jazıń. Janında rolde neshe ruqsat belgilengeni kórinedi.',
+        },
+        group: {
+          title: 'Ruqsatlar toparlar boyınsha',
+          body: 'Hár bir qatar — bir ruqsat: belgi qoyılǵan bolsa, usı roldegi xızmetker sol jumıstı isley aladı. Ózińiz jaratqan rolde belgilerdi ózgertesiz; «Hámmesi» topardaǵı barlıǵın birden belgileydi.',
+        },
+        new: {
+          title: 'Jańa rol',
+          body: 'Bul túyme tańlanǵan rolden nusqa alıp, jańa rol ashadı: atın jazıń, kerekli ruqsatlardı belgileń hám «Saqlaw» túymesin basıń. Jańa rol sizdiń bólimińizde hám onıń astındaǵılarda qollanıladı.',
+        },
+      },
+      sms: {
+        intro: {
+          title: 'SMS sazlawları',
+          body: 'Nawqaslarǵa SMS qaysı esaptan hám qanday tekst penen ketetuǵını usı bette sazlanadı. Bul jerde saqlanǵan sazlaw usı bólim hám óz sazlawı joq tómengi bólimler ushın ámel etedi.',
+        },
+        target: {
+          title: 'Qaysı bólim ushın',
+          body: 'Sazlaw kim ushın ekenin usı jerde tańlaysız: pútkil shólkem yamasa bir mekeme. Mekeme tańlansa, tómendegi esap hám tekstler tek sol mekeme ushın saqlanadı.',
+        },
+        account: {
+          title: 'SMS qaysı esaptan ketedi',
+          body: 'Úsh jol bar: «Joqarıdan (miyras)» — joqarǵı bólimniń esabınan, «Óz esabı» — ózińiz kiritken Xabarchi yamasa Eskiz.uz esabınan, «SMS jiberilmeydi» — ulıwma ketpeydi. Tańlap, tómendegi «Saqlaw» túymesin basıń.',
+        },
+        test: {
+          title: 'Esaptı sınap kóriw',
+          body: 'Nomer jazıp, «Baylanıstı tekseriw» túymesin bassańız, usı nomerge bir haqıyqıy sınaq SMS ketedi (bos qalsa — bólimniń telefonına). SMS kelse, esap durıs islep tur.',
+        },
+        texts: {
+          title: 'Nawqas alatuǵın tekstler',
+          body: 'Úsh avtomat SMS: «Tólem cheki», «Nátiyje tayar», «Eske salıw». Tekstti ózgertseńiz, «Kórinisi» nawqas ne alatuǵının kórsetedi; {patient} sıyaqlı maydanlar jiberiw waqtında ózi toltırıladı. Sońınan «Saqlaw» túymesin basıń.',
+        },
+        docLink: {
+          title: 'Nátiyje siltemesi',
+          body: 'Nátiyje SMS xabarındaǵı silteme neshe kún SMS kodsız ashılatuǵının tańlaysız. «Hár dayım kod» eń qáwipsizi: hújjetti tek telefon iyesi ashadı. Múddet qoysańız, usı kúnleri siltemeni alǵan hár kim kóre aladı.',
+        },
+        telegram: {
+          title: 'Telegram bot',
+          body: 'Nawqaslar nátiyje hám chek xabarların Telegram bot arqalı aladı. Óz botıńızdı jalǵaw ushın @BotFather bergen tokendi kiritiń hám «Jalǵaw» túymesin basıń; jalǵanbasa, joqarǵı bólimniń yamasa platformanıń botı paydalanıladı.',
+        },
+      },
+      territory: {
+        intro: {
+          title: 'Aymaqlar',
+          body: 'Bul bette óz aymaǵıńızdaǵı jumıs kólemin kóresiz: qay jerde neshe chek ashılǵan, qansha túsim bolǵan. Joqarıdan tómenge — wálayattan rayonǵa, rayonnan mekemege — basqıshpa-basqısh kiresiz.',
+        },
+        path: {
+          title: 'Dúzilis boyınsha jol',
+          body: 'Dúzilis basqıshları — sizdiń bólimińizden mekemelerge shekem. Házir turǵan basqıshıńız ajıratıp kórsetilgen; ótip bolǵan basqıshtı bassańız, sol dizimge qaytasız.',
+        },
+        period: {
+          title: 'Dáwirdi tańlaw',
+          body: 'Bettegi barlıq sanlar usı jerde tańlanǵan dáwir ushın: «Búgin», «7 kún», «30 kún», «Usı ay» yamasa «Aralıq» — ózińiz belgilegen sáneler. Shep tárepte házir qaysı orın kórilip atırǵanı jazılǵan.',
+        },
+        numbers: {
+          title: 'Dáwir juwmaqları',
+          body: 'Tańlanǵan orın hám dáwir boyınsha jámi: mekemeler, ashılǵan chekler, túsim, jańa nawqaslar, tayar nátiyjeler hám jiberilgen SMS. Bul jerde tek sanlar — nawqaslardıń jeke maǵlıwmatları kórsetilmeydi.',
+        },
+        cards: {
+          title: 'Mámleket kartaları',
+          body: 'Hár bir karta — bir mámleket: ondaǵı wálayat, rayon, mekeme hám xızmetkerler sanı, sonday-aq usı dáwirdegi túsimi. Kartanı bassańız, onıń wálayatları ashıladı.',
+        },
+        table: {
+          title: 'Aymaqlar dizimi',
+          body: 'Hár bir qatar — bir wálayat, rayon yamasa mekeme hám onıń usı dáwirdegi sanları. Wálayat yamasa rayon qatarın bassańız, ishindegileri ashıladı; baǵananıń taqırıbın bassańız, dizim usı baǵana boyınsha saralanadı.',
+        },
+        csv: {
+          title: 'Faylǵa júklep alıw',
+          body: '«CSV» túymesi kórinip turǵan dizimdi sanları menen birge fayl etip júklep aladı. Fayldı Excelde ashıp, esabatqa qosıwıńız múmkin.',
+        },
+        trend: {
+          title: 'Kúnler boyınsha',
+          body: 'Tańlanǵan dáwirde jumıs kúnbe-kún qalay barǵanı. Joqarıda oń táreptegi «Túsim» hám «Chekler» túymeleri arqalı grafik neni kórsetetuǵının almastırasız.',
+        },
+        add: {
+          title: 'Jańa mekeme',
+          body: 'Usı aymaqta jańa mekeme ashıw ushın basıń: bir neshe qısqa qádemde ol xızmetkerleri, xızmetleri hám úlgileri menen jumısqa tayar boladı.',
+        },
+      },
+      catalog: {
+        intro: {
+          title: 'Xızmetler katalogı',
+          body: 'Mekemede kórsetiletuǵın barlıq analiz hám xızmetler usı jerde: bahası, múddeti, nátiyje qalay kiritiletuǵını hám qaysı blankada shıǵatuǵını. Qabıllawda tek usı dizimdegi aktiv xızmetler tańlanadı.',
+        },
+        tree: {
+          title: 'Kategoriyalar',
+          body: 'Xızmetler kategoriyalarǵa bólingen. Kategoriyanı tańlasańız, dizimde tek onıń xızmetleri qaladı; «Barlıq xızmetler» hámmesin qaytaradı.',
+        },
+        add: {
+          title: 'Kategoriya hám xızmet qosıw',
+          body: '«Jańa kategoriya» arqalı jańa topar jaratasız, «Xızmet qosıw» arqalı — analiz yamasa xızmet: atı, kategoriyası, bahası, múddeti. Bar kategoriyanı ózgertiw — atınıń ústine barǵanda shıǵatuǵın «⋯» túymesinde.',
+        },
+        list: {
+          title: 'Xızmetler dizimi',
+          body: 'Hár bir qatar — bir xızmet: atı, kodı, bahası, iyesi. Joqarıda — atı yamasa kodı boyınsha izlew. «miyras» belgisi xızmet joqarǵı bólimniń katalogınan kelgenin bildiredi: bul jerde paydalanıladı, al iyesinde ózgertiledi.',
+        },
+        edit: {
+          title: 'Xızmet sazlawları',
+          body: 'Qatardı basıń (yamasa «⋯» → «Ózgertiw») — xızmet aynası ashıladı. Onda «Bólimler boyınsha bahalar» — ayırım mekeme ushın bólek baha, «Óshirilgen bólimler» — xızmet kórsetilmeytuǵın mekemeler.',
+        },
+        docs: {
+          title: 'Sxema hám úlgi',
+          body: 'Nátiyje sxeması — laborant usı xızmettiń nátiyjesin kiritkende toltıratuǵın maydanlar. Úlgi — nawqas alatuǵın nátiyje qaǵazınıń kórinisi. Atın bassańız, sol sxema yamasa úlgi ashıladı.',
+        },
+        status: {
+          title: 'Aktiv yamasa aktiv emes',
+          body: 'Aktiv xızmet qabıllawda tańlanadı. Aktiv emes etilgeni katalogta qaladı, biraq qabıllawda kórinbeydi. Xızmet waqıtsha toqtasa, onı óshirip jibermeń — tek aktiv emes etip qoyıń.',
+        },
+      },
+      schemas: {
+        intro: {
+          title: 'Nátiyje sxemaları',
+          body: 'Sxema — laborant analiz nátiyjesin kiritkende toltıratuǵın maydanlar dizimi: kórsetkishler, ólshem birlikleri, normalar. Hár bir analiz túrine óz sxeması dúziledi hám katalogta xızmetke baylanadı.',
+        },
+        new: {
+          title: 'Jańa sxema',
+          body: '«Jańa sxema» basılsa, bos sxema jaratıladı hám dárhal redaktorı ashıladı — ol jerde at beresiz hám maydanlardı birme-bir qosasız.',
+        },
+        search: {
+          title: 'Izlew hám jaǵday',
+          body: 'Sxemanı atı yamasa táriypi boyınsha izleń. Izlew maydanınıń janındaǵı «Qaralama», «Járiyalanǵan», «Arxiv» túymeleri dizimde tek usı jaǵdaydaǵı sxemalardı qaldıradı.',
+        },
+        card: {
+          title: 'Sxema kartası',
+          body: 'Kartanı bassańız, redaktor ashıladı. «Qaralama» ele tayar emes; xızmetke tek «Járiyalanǵan» sxema baylanadı. Tómende — neshe xızmette paydalanılıp atırǵanı. Uqsas sxema kerek pe — «⋯» → «Nusqalaw».',
+        },
+      },
+      schemaEditor: {
+        intro: {
+          title: 'Sxema redaktorı',
+          body: 'Bul jerde bir analiz nátiyjesiniń maydanların dúzesiz — laborant dál usılardı toltıradı. Sxemanıń atın hám qısqa táriypin usı jerdiń ózinde jazasız; janında jaǵdayı hám versiyası turadı.',
+        },
+        fields: {
+          title: 'Maydanlar dizimi',
+          body: '«Maydan qosıw» túymesin basıp, túrin tańlań: «San», «Tekst», «Tańlaw», «Keste» hám basqalar. Maydandı bassańız, sazlawları ashıladı; «⋯» arqalı ornın ózgertesiz, nusqalaysız yamasa óshiresiz.',
+        },
+        props: {
+          title: 'Maydan qásiyetleri',
+          body: 'Tańlanǵan maydannıń atı, túri, ólshem birligi, májbúriyligi. «San» túrinde normanı da usı jerde kiritesiz — jınısına hám jasına qarap bólek bolıwı múmkin; nátiyje usı norma boyınsha bahalanadı.',
+        },
+        preview: {
+          title: 'Janlı kórinis',
+          body: 'Laborant kóretuǵın forma shama menen usınday boladı: maydan qossańız yamasa ózgertseńiz, dárhal jańalanadı. Joqarıdaǵı «Kóriw» túymesi bul aynanı jasıradı hám qayta kórsetedi.',
+        },
+        save: {
+          title: 'Saqlaw',
+          body: 'Ózgerisler ózi saqlanbaydı — «Saqlaw» túymesin basıń (yamasa Ctrl+S). Járiyalanǵan sxemanı ózgertip saqlasańız, versiyası artadı; burın kiritilgen nátiyjeler sol qálpinde qaladı.',
+        },
+        publish: {
+          title: 'Járiyalaw',
+          body: 'Sxema tayar bolǵannan keyin «Járiyalaw» túymesin basıń (keminde bir maydan bolıwı kerek). Tek sonnan keyin ǵana onı «Xızmetler katalogı»nda xızmetke baylawǵa boladı.',
+        },
+      },
+      templates: {
+        intro: {
+          title: 'Úlgiler',
+          body: 'Úlgi — nawqas alatuǵın nátiyje qaǵazınıń (blankanıń) kórinisi: sarlawha, nawqas maǵlıwmatları, nátiyjeler, qoltańba. Shıpaker nátiyjeni tastıyıqlaǵanda hújjet usı úlgi boyınsha ózi toltırıladı.',
+        },
+        create: {
+          title: 'Úlgi qosıw',
+          body: '«Jańa úlgi» — bos paraqtan yamasa bar úlginiń nusqasınan baslaysız. «Import» — fayldan júkleydi. «Basqa bólimnen alıw» — basqa bólimniń tayar úlgilerinen nusqa aladı.',
+        },
+        coverage: {
+          title: 'Úlgisiz xızmetler',
+          body: 'Neshe xızmettiń óz aktiv úlgisi bar ekeni usı jerde kórinedi. Úlgisi joq xızmet tastıyıqlanǵanda hújjet jaratılmaydı. Jetispegeni bolsa, «Dizimdi kórsetiw» sol xızmetlerdi ashadı — olarǵa úlgi kerek.',
+        },
+        find: {
+          title: 'Izlew hám jaǵday',
+          body: 'Úlgini atı boyınsha izleń yamasa jaǵdayın tańlań: «Qaralama» ele paydalanılmaydı, «Aktiv» hújjetlerde paydalanıladı, «Arxiv» endi paydalanılmaydı. Usı jerde jáne — saralaw, kórinis hám bir neshewin birge «Tańlaw».',
+        },
+        filters: {
+          title: 'Filtrler',
+          body: 'Úlgiler kóp bolsa, dizimdi qısqartıń: hújjet túri, kategoriya, xızmet, til, qaǵaz hám basqalar. Tańlanǵan filtr reńli bolıp turadı; tómende shıǵatuǵın «Filtrlerdi tazalaw» hámmesin qaytaradı.',
+        },
+        card: {
+          title: 'Úlgini ashıw',
+          body: 'Úlgini bassańız, vizual redaktor ashıladı. «⋯» menyusında: «Nusqalaw», «Eksport (JSON)», «Aktivlestiriw» yamasa «Arxivlew», «Óshiriw». Aktiv úlgi óshirilmeydi — aldın arxivleń.',
+        },
+      },
+      templateEditor: {
+        intro: {
+          title: 'Úlgi redaktorı',
+          body: 'Bul jerde nawqas alatuǵın nátiyje qaǵazın dúzesiz: tekst, maydan hám kestelerdi paraqqa jaylastırasız. Usı jerde úlginiń atı (basıp ózgertesiz) hám jaǵdayı turadı.',
+        },
+        tools: {
+          title: 'Element qosıw',
+          body: 'Paraqqa jańa nárse usı túymeler arqalı qosıladı: «Tekst», «Maydan», «Keste», figuralar, «Súwret» (logotip, mór), «QR kod». Túymeniń ústine tıshqanshanı alıp barsańız, atı shıǵadı.',
+        },
+        panel: {
+          title: 'Qatlamlar hám maydanlar',
+          body: '«Qatlamlar» — paraqtaǵı elementler dizimi: tańlaw, jasırıw, qulıplaw. «Maydanlar» — nawqastıń atı, sáne, nátiyje sıyaqlı tayar maǵlıwmatlar: bassańız paraqqa túsedi, al hújjette onıń ornına haqıyqıy mánis shıǵadı.',
+        },
+        canvas: {
+          title: 'Paraq',
+          body: 'Bul — basıp shıǵarılatuǵın hújjettiń ózi. Elementti basıp tańlań, súyrep ornın, shetindegi kvadratshalardı tartıp ólshemin ózgertiń. Tekstti ózgertiw ushın ústine eki ret basıń.',
+        },
+        props: {
+          title: 'Qásiyetler',
+          body: 'Tańlanǵan elementtiń sazlawları: shrift, ólshem, reń, tegislew hám basqalar. Hesh nárse tańlanbaǵan bolsa, paraqtıń ózi sazlanadı: qaǵaz ólshemi, baǵdarı, shetki boslıǵı.',
+        },
+        previewAs: {
+          title: 'Qaysı xızmet mısalında',
+          body: 'Usı dizimnen xızmetti tańlań: «Maydanlar»da dál sonıń nátiyje maydanları shıǵadı, al «Kóriw» usı xızmettiń mısalında kórsetedi. «Sxemasız» tursa, nátiyje maydanları dizimde bolmaydı.',
+        },
+        bindings: {
+          title: 'Baylanıslar',
+          body: 'Úlgi qaysı xızmetler ushın paydalanılatuǵını «Baylanıslar»da belgilenedi (tar ekranda ol «⋯» menyusınıń ishinde). Hesh bir xızmet tańlanbasa, úlgi ulıwma boladı — barlıq xızmetlerge sáykes keledi.',
+        },
+        finish: {
+          title: 'Kóriw, saqlaw, aktivlestiriw',
+          body: '«Kóriw» paraqtı mısal maǵlıwmatlar menen toltırıp kórsetedi. «Saqlaw» ózgerislerdi saqlaydı (Ctrl+S). Qaralama tayar bolǵannan keyin «Aktivlestiriw» túymesin basıń — sonnan keyin ol hújjetlerde paydalanıladı.',
+        },
+      },
+      receipts: {
+        intro: {
+          title: 'Chek úlgileri',
+          body: 'Kassada basıp shıǵarılatuǵın chektiń kórinisi usı jerde belgilenedi. Aktiv úlgi bolsa, «Basıp shıǵarıw» basılǵanda chek usı kóriniste shıǵadı; bolmasa — ornatılǵan standart chek basıp shıǵarıladı.',
+        },
+        create: {
+          title: 'Chek úlgisin qosıw',
+          body: '«Standart chekti qosıw» tayar chekti qaralama etip qosadı hám redaktorda ashadı — ózińizge ılayıqlastırasız. «Jańa chek úlgisi» — bos chekten yamasa nusqadan baslaw, «Import» — fayldan júklew.',
+        },
+        find: {
+          title: 'Izlew hám jaǵday',
+          body: '«Qaralama» ele basıp shıǵarılmaydı, «Aktiv» — kassada usı chek shıǵadı, «Arxiv» — endi paydalanılmaydı. Usı jerde jáne — atı boyınsha izlew, saralaw, kórinis hám bir neshewin birge «Tańlaw».',
+        },
+        filters: {
+          title: 'Filtrler',
+          body: 'Dizimdi til hám qaǵaz ólshemi (80 yamasa 58 mm) boyınsha qısqartasız. Bir neshe bólimdi basqarsańız, bólim boyınsha da: tek sol jerde paydalanılatuǵın chek úlgileri qaladı.',
+        },
+        card: {
+          title: 'Chek úlgisin ashıw',
+          body: 'Úlgini bassańız, redaktor ashıladı. Tayar bolǵannan keyin «⋯» menyusınan «Aktivlestiriw»di tańlań — sonnan keyin chekler usı kóriniste basıp shıǵarıladı. Aktiv úlgi óshirilmeydi — aldın arxivleń.',
+        },
+      },
+      receiptEditor: {
+        intro: {
+          title: 'Chek úlgisi redaktorı',
+          body: 'Bul jerde kassa chekiniń kórinisin dúzesiz: shólkem atı, chek nomeri, xızmetler kestesi, jámi summa. Usı jerde úlginiń atı (basıp ózgertesiz) hám jaǵdayı turadı.',
+        },
+        tools: {
+          title: 'Element qosıw',
+          body: 'Chekke jańa nárse usı túymeler arqalı qosıladı: «Tekst», «Keste», «Sızıq», «Súwret» (logotip), «QR kod» hám basqalar. Túymeniń ústine tıshqanshanı alıp barsańız, atı shıǵadı.',
+        },
+        panel: {
+          title: 'Qatlamlar hám maydanlar',
+          body: '«Qatlamlar» — chektegi elementler dizimi: tańlaw, jasırıw, qulıplaw. «Maydanlar» — chek nomeri, sáne, jámi hám tólengen summa sıyaqlı tayar maǵlıwmatlar: bassańız chekke túsedi, basıp shıǵarǵanda haqıyqıy mánis shıǵadı.',
+        },
+        canvas: {
+          title: 'Chek paraǵı',
+          body: 'Bul — basıp shıǵarılatuǵın chektiń ózi. Elementti basıp tańlań, súyrep ornın, shetindegi kvadratshalardı tartıp ólshemin ózgertiń. Tekstti ózgertiw ushın ústine eki ret basıń.',
+        },
+        props: {
+          title: 'Qásiyetler',
+          body: 'Tańlanǵan elementtiń sazlawları: shrift, ólshem, tegislew hám basqalar. Hesh nárse tańlanbaǵan bolsa, qaǵaz sazlanadı — printerińizge qarap «Chek 80 mm» yamasa «Chek 58 mm»di tańlań.',
+        },
+        bindings: {
+          title: 'Qaysı bólimler ushın',
+          body: 'Chek úlgisi xızmetlerge baylanbaydı. «Baylanıslar»da (tar ekranda — «⋯» menyusında) onı qaysı bólimler paydalanatuǵının tańlaysız; tańlanbasa, iyesiniń barlıq bólimlerinde ámel etedi.',
+        },
+        finish: {
+          title: 'Kóriw, saqlaw, aktivlestiriw',
+          body: '«Kóriw» chekti mısal maǵlıwmatlar menen kórsetedi. «Saqlaw» ózgerislerdi saqlaydı (Ctrl+S). «Aktivlestiriw»den keyin kassada usı chek basıp shıǵarıladı.',
+        },
+      },
+      portalHome: {
+        intro: {
+          title: 'Kabinettiń bas beti',
+          body: 'Kabinetke kirgenińizde birinshi bolıp usı bet ashıladı. Eń kereklisi usı jerde: neshe nátiyje tayar ekeni, sońǵı keliwińiz hám eń jańa nátiyjeler.',
+        },
+        family: {
+          title: 'Shańaraq aǵzaları',
+          body: 'Telefon nomerińizge shańaraǵıńızdan bir neshe adam jazılǵan. Attı bassańız, tek sol adamnıń nátiyjeleri hám keliwleri qaladı; «Barlıǵı» — hámmesiniki birge.',
+        },
+        summary: {
+          title: 'Tiykarǵı sanlar',
+          body: 'Neshe nátiyje tayar ekeni, sońǵı ret qashan kelgenińiz hám tólenbegen summa bar-joqlıǵı. Kartanı bassańız, tolıq maǵlıwmat ashıladı.',
+        },
+        results: {
+          title: 'Sońǵı nátiyjeler',
+          body: 'Eń jańa nátiyjelerińiz usı jerde turadı. Qatardı bassańız, hújjet ashıladı — onı oqıwǵa hám júklep alıwǵa boladı. Barlıq nátiyjeler «Nátiyjeler» bóliminde.',
+        },
+        visits: {
+          title: 'Sońǵı keliwler',
+          body: 'Klinikaǵa sońǵı kelgenlerińiz: chek nomeri, sáne, summa hám tólem jaǵdayı. Qatardı bassańız, sol keliwdiń xızmetleri hám tólemi ashıladı.',
+        },
+      },
+      portalResults: {
+        intro: {
+          title: 'Barlıq nátiyjelerińiz',
+          body: 'Shıpaker tastıyıqlaǵan barlıq nátiyjelerińiz usı bette saqlanadı. Olar aylar boyınsha jaylasqan, eń jańası joqarıda.',
+        },
+        family: {
+          title: 'Shańaraq aǵzaları',
+          body: 'Attı bassańız, tek sol adamnıń nátiyjeleri qaladı; «Barlıǵı» — hámmesiniki birge. Attıń janındaǵı san — nátiyjeleriniń sanı.',
+        },
+        filter: {
+          title: 'Dizimdi qısqartıw',
+          body: '«Usı ay»dı bassańız, tek usı aydaǵı nátiyjeler qaladı; «Barlıǵı» hámmesin qaytaradı. Bir neshe klinikada bolǵan bolsańız, olardıń atları da usı qatarda turadı.',
+        },
+        open: {
+          title: 'Nátiyjeni ashıw',
+          body: 'Hár bir tayar nátiyje usı jerde bir qatar boladı: analiz atı, klinika hám sáne. Qatardı bassańız, hújjet ashıladı — onı oqıwǵa hám júklep alıwǵa boladı.',
+        },
+      },
+      portalResult: {
+        intro: {
+          title: 'Bir nátiyjeniń beti',
+          body: 'Joqarıda analiz atı, klinika hám sáne jazılǵan. «Shıpaker tastıyıqlaǵan» belgisi nátiyjeni shıpaker tekserip tastıyıqlaǵanın bildiredi.',
+        },
+        actions: {
+          title: 'Júklep alıw hám basıp shıǵarıw',
+          body: '«Júklep alıw (PDF)» túymesin bassańız, basıp shıǵarıw aynası ashıladı — onda «PDF sıpatında saqlaw»dı tańlań, nátiyje fayl bolıp saqlanadı. «Basıp shıǵarıw» — qaǵazǵa shıǵarıw ushın.',
+        },
+        document: {
+          title: 'Hújjettiń ózi',
+          body: 'Bul — klinika bergen nátiyje paraǵı, qaǵazdaǵısı menen birdey. Onda QR kod bolsa, telefon kamerasın oǵan qaratqan adam hújjettiń haqıyqıy ekenin teksere aladı.',
+        },
+        info: {
+          title: 'Nátiyje haqqında',
+          body: 'Qaysı xızmet, qaysı klinika, shıpaker hám sáneler. Normadan shetke shıqqan kórsetkish anıqlansa, usı jerde bólek dizim shıǵadı — juwmaqtı shıpaker beredi. «Chekti ashıw» usı keliwge alıp baradı.',
+        },
+      },
+      portalVisits: {
+        intro: {
+          title: 'Keliwlerińiz',
+          body: 'Klinikaǵa hár bir kelgenińiz usı jerde bólek chek bolıp turadı, eń jańası joqarıda. Xızmetler, tólem hám nátiyjelerdiń tayar ekenin usı jerden bilesiz.',
+        },
+        family: {
+          title: 'Shańaraq aǵzaları',
+          body: 'Attı bassańız, tek sol adamnıń keliwleri qaladı; «Barlıǵı» — hámmesiniki birge. Attıń janındaǵı san — keliwleriniń sanı.',
+        },
+        row: {
+          title: 'Bir keliw — bir qatar',
+          body: 'Hár bir keliw usı jerde bir qatar boladı: chek nomeri, sáne, summa hám tólem jaǵdayı; sızıqsha neshe nátiyje tayar ekenin kórsetedi. Qatardı bassańız, tolıq maǵlıwmatları ashıladı.',
+        },
+        pages: {
+          title: 'Aldıńǵı keliwler',
+          body: 'Bir bette 10 keliw kórinedi. Aldıńǵıların kóriw ushın usı jerdegi › túymesin basıń; ‹ túymesi artqa qaytaradı.',
+        },
+      },
+      portalVisit: {
+        intro: {
+          title: 'Bir keliw',
+          body: 'Bul — bir keliwińizdiń cheki: klinika, sáne hám chek nomeri. Janındaǵı belgiler tólem hám keliw jaǵdayın kórsetedi — mısalı, «Tólengen», «Juwmaqlanǵan».',
+        },
+        service: {
+          title: 'Xızmet hám onıń nátiyjesi',
+          body: 'Hár bir xızmettiń atı, bahası hám nátiyjesi qaysı basqıshta ekeni kórinedi: «Kútilmekte»den «Tayar»ǵa shekem. Nátiyje tayar bolǵannan keyin «Nátiyjeni kóriw» túymesi shıǵadı — basıp hújjetti ashasız.',
+        },
+        payment: {
+          title: 'Tólem',
+          body: 'Xızmetler bahası, shegirme (bar bolsa), jámi summa hám qansha tólengeni. Tólenbegen bólegi bolsa, ol «Qaldıq» qatarında kórinedi. Bul jerde tek kóresiz — tólem klinikada islenedi.',
+        },
+        place: {
+          title: 'Qabıllaw ornı',
+          body: 'Keliw qaysı klinikada bolǵanı. Mánzili hám telefonı kórsetilgen bolsa, nomerdi basıp qońıraw etiwińiz múmkin.',
+        },
+      },
+      portalProfile: {
+        intro: {
+          title: 'Profilińiz',
+          body: 'Bul jerde siz haqqıńızdaǵı maǵlıwmatlar, kabinetke qalay kiretuǵınıńız hám sazlawlar turadı.',
+        },
+        info: {
+          title: 'Jeke maǵlıwmatlar',
+          body: 'Klinikada siz haqqıńızda jazılǵan maǵlıwmatlar. Olardı bul jerde ózgertip bolmaydı: qáte kórseńiz, klinika registraturasına aytıń — sol jerde dúzetip beredi.',
+        },
+        loginPhone: {
+          title: 'Telefon arqalı kiriw',
+          body: 'Siz kabinetke telefon nomerińiz hám SMS kod arqalı kirgensiz. Usı nomerge shańaraq aǵzalarıńız da jazılǵan bolsa, olardıń nátiyjeleri de sizge kórinedi.',
+        },
+        loginPassword: {
+          title: 'Login hám parol',
+          body: 'Siz login hám parol menen kirgensiz — bunda tek ózińizdiń nátiyjelerińiz kórinedi. Paroldı jańalaw ushın «Paroldı ózgertiw» túymesin basıń: aldın házirgi parol, keyin jańası eki ret jazıladı.',
+        },
+        settings: {
+          title: 'Til, kórinis hám shıǵıw',
+          body: '«Til» — kabinet qaysı tilde jazılatuǵını, «Tema» — jaqtı yamasa qarańǵı kórinis. Jumısıńız pitkennen keyin «Shıǵıw» túymesin basıń — ásirese telefon ózińizdiki bolmasa.',
+        },
+      },
+    },
+  },
 }

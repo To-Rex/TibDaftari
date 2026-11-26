@@ -117,7 +117,7 @@ function TemplatesEditor({ unit, subtreeCount, readOnly }: { unit: OrgUnit; subt
   const insert = (ph: string) => edit((d) => ({ ...d, [active]: `${d[active]}${d[active].endsWith(' ') || !d[active] ? '' : ' '}${ph}` }))
 
   return (
-    <Card data-unit-sms-templates>
+    <Card data-unit-sms-templates data-tour="sms-texts">
       <CardHeader className="max-sm:flex-col max-sm:items-start" title={t('admin.sms.templatesTitle')} description={t('admin.sms.templatesSub')}
         actions={!readOnly && (
           <div className="flex flex-wrap items-center gap-2 max-w-full">

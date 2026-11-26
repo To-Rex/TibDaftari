@@ -12,7 +12,7 @@ export function PlaceCard({ org, unit, className }: { org?: PortalOrg | null; un
   // a facility right under a region node carries the organisation's own name — one card then, not two
   const sameName = !!org && !!unit && org.name === unit.name
   return (
-    <Card padded={false} className={cn('px-4 py-3 xs:px-5', className)} data-portal-place>
+    <Card padded={false} className={cn('px-4 py-3 xs:px-5', className)} data-portal-place data-tour="portal-place">
       <h2 className="text-ink-3 py-2 text-[13px] font-semibold tracking-[0.06em] uppercase">{t('portal.common.place')}</h2>
       <div className="divide-line divide-y">
         {org && !sameName && (

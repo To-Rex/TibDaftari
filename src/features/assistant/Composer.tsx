@@ -142,7 +142,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function 
   const ready = !busy && !!value.trim()
 
   return (
-    <div ref={wrap} className="relative" data-chat-composer>
+    <div ref={wrap} className="relative" data-chat-composer data-tour="assistant-composer">
       {createPortal(<AnimatePresence>{tools && <Capabilities status={status} unit={unit} onClose={() => setTools(null)} place={tools} panel={panel} />}</AnimatePresence>, document.body)}
       <div onMouseDown={(e) => { if (e.target === e.currentTarget) { e.preventDefault(); box.current?.focus() } }}
         className="cursor-text rounded-[26px] border border-line-strong/70 bg-bg-elevated shadow-2 transition-[border-color,box-shadow] duration-200 focus-within:border-brand/70 focus-within:shadow-[var(--shadow-2),0_0_0_4px_color-mix(in_oklab,var(--c-brand)_12%,transparent)]">

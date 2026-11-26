@@ -70,15 +70,15 @@ export default function PatientPage() {
         ) : <span className="flex items-center gap-4"><Skeleton className="size-16 rounded-full" /><span className="space-y-2"><Skeleton className="h-6 w-56" /><Skeleton className="h-4 w-40" /></span></span>}
         actions={p && (
           <>
-            {can('reception.patient.write') && <Button variant="secondary" leftIcon={<KeyRound className="size-4" />} onClick={() => setAccess(true)} data-portal-access-open>{t('staff.patients.access.button')}</Button>}
-            {can('reception.patient.write') && <Button variant="secondary" data-hotkey="e" leftIcon={<Pencil className="size-4" />} onClick={() => setEdit(true)}>{t('common.edit')}</Button>}
-            {can('reception.order.create') && <Button data-hotkey="c" leftIcon={<Plus className="size-4" />} loading={newOrder.creating} onClick={() => newOrder.start(p.id)}>{t('staff.reception.newOrder')}</Button>}
+            {can('reception.patient.write') && <Button variant="secondary" leftIcon={<KeyRound className="size-4" />} onClick={() => setAccess(true)} data-portal-access-open data-tour="patient-access">{t('staff.patients.access.button')}</Button>}
+            {can('reception.patient.write') && <Button variant="secondary" data-hotkey="e" data-tour="patient-edit" leftIcon={<Pencil className="size-4" />} onClick={() => setEdit(true)}>{t('common.edit')}</Button>}
+            {can('reception.order.create') && <Button data-hotkey="c" data-tour="patient-new-order" leftIcon={<Plus className="size-4" />} loading={newOrder.creating} onClick={() => newOrder.start(p.id)}>{t('staff.reception.newOrder')}</Button>}
           </>
         )}
       />
 
       {p && (
-        <motion.div variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }} initial="hidden" animate="show" className="mb-6 grid gap-3 grid-cols-[repeat(auto-fit,minmax(min(100%,150px),1fr))]">
+        <motion.div data-tour="patient-stats" variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05 } } }} initial="hidden" animate="show" className="mb-6 grid gap-3 grid-cols-[repeat(auto-fit,minmax(min(100%,150px),1fr))]">
           {[
             { label: t('staff.reception.statOrders'), value: p.stats.orders },
             { label: t('staff.reception.statSpent'), value: fmtMoney(p.stats.totalSpent, false), sub: t('common.sum') },
@@ -97,13 +97,13 @@ export default function PatientPage() {
 
       {p && <div className="mb-6"><FamilyCard patient={p} /></div>}
 
-      <Tabs<Tab> value={tab} onChange={setTab} className="mb-4 -mx-3 px-3 xs:-mx-4 xs:px-4 sm:mx-0 sm:px-0" items={[
+      <Tabs<Tab> tour="patient-tabs" value={tab} onChange={setTab} className="mb-4 -mx-3 px-3 xs:-mx-4 xs:px-4 sm:mx-0 sm:px-0" items={[
         { value: 'orders', label: t('staff.patients.tabOrders'), icon: <Receipt />, count: orders.data?.total },
         { value: 'results', label: t('staff.patients.tabResults'), icon: <FileText />, count: docs.data?.length },
         { value: 'info', label: t('staff.patients.tabInfo'), icon: <Info /> },
       ]} />
       <AnimatePresence mode="wait" initial={false}>
-        <motion.div key={tab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.2 }}>
+        <motion.div key={tab} data-tour="patient-tab" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.2 }}>
           {tab === 'orders' && (
             <Card padded={false} className="overflow-hidden">
               <OrdersTable page={orders.data} loading={orders.isFetching} sortBy={sortBy} sortDir={sortDir} onSort={onSort} onPage={setPage} showPatient={false} />

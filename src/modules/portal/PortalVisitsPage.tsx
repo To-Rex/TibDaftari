@@ -44,7 +44,7 @@ export default function PortalVisitsPage() {
     <Page width="medium" className="2xl:max-w-6xl 3xl:max-w-[1600px]">
       <PageHeader title={t('portal.visits.title')} description={t('portal.visits.subtitle')} />
       {view.many && <FamilySwitch family={view.family} memberId={view.memberId} counts={countsOf(q.data?.orders ?? [])} />}
-      <Card padded={false} className="overflow-hidden">
+      <Card padded={false} className="overflow-hidden" data-tour="portalVisits-list">
         {q.isPending ? (
           <SkeletonRows rows={6} className="p-4" />
         ) : orders.length === 0 ? (
@@ -77,7 +77,7 @@ export default function PortalVisitsPage() {
         )}
       </Card>
       {orders.length > PAGE_SIZE && (
-        <div className="mt-4">
+        <div className="mt-4" data-tour="portalVisits-pages">
           <Pagination
             page={page}
             totalPages={totalPages}

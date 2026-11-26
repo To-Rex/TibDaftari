@@ -39,7 +39,7 @@ export function PermissionMatrix(props: PermissionMatrixProps) {
   return (
     <MotionList variants={stagger} initial="hidden" animate="show" className={cn('grid gap-4 items-start 2xl:grid-cols-2 4xl:grid-cols-3', className)}>
       {modules.map(({ mod, perms }) => (
-        <MotionItem key={mod} variants={fadeUp} className="rounded-[var(--radius)] border border-line bg-surface overflow-clip">
+        <MotionItem key={mod} variants={fadeUp} data-tour="roles-group" className="rounded-[var(--radius)] border border-line bg-surface overflow-clip">
           {props.mode === 'role' ? (
             <RoleGroup mod={mod} perms={perms} value={props.value} onChange={props.onChange} readOnly={readOnly} />
           ) : (

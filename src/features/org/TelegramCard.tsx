@@ -48,7 +48,7 @@ export function TelegramCard({ unit, readOnly }: { unit: OrgUnit; readOnly?: boo
   const hint = !tg || !tg.connected ? t(`${K}.hintNone`) : tg.own ? t(`${K}.hintOwn`) : tg.effectiveUnitId ? t(`${K}.hintInherited`) : t(`${K}.hintPlatform`)
 
   return (
-    <Card data-unit-telegram>
+    <Card data-unit-telegram data-tour="sms-telegram">
       <CardHeader className="max-xs:flex-col max-xs:items-start" title={t(`${K}.title`)} description={t(`${K}.subtitle`)} actions={status} />
       <div className="flex flex-col gap-4">
         <div className="flex items-start gap-3 rounded-[var(--radius)] border border-line bg-surface-2/40 p-3.5 text-[13px] text-ink-2">

@@ -12,13 +12,18 @@ import { adminLocale } from './locales/admin'
 import { clinicalLocale } from './locales/clinical'
 import { catalogLocale } from './locales/catalog'
 import { assistantLocale } from './locales/assistant'
+import { tourUiLocale } from './locales/tour/ui'
+import type { TourTexts } from './locales/tour'
 import type { DeepPartial } from './types'
 
-export const UZ = { ...uz, portal: portalLocale.uz, staff: staffLocale.uz, admin: adminLocale.uz, clinical: clinicalLocale.uz, catalog: catalogLocale.uz, assistant: assistantLocale.uz }
-export const RU = { ...ru, portal: portalLocale.ru, staff: staffLocale.ru, admin: adminLocale.ru, clinical: clinicalLocale.ru, catalog: catalogLocale.ru, assistant: assistantLocale.ru }
-export const EN = { ...en, portal: portalLocale.en, staff: staffLocale.en, admin: adminLocale.en, clinical: clinicalLocale.en, catalog: catalogLocale.en, assistant: assistantLocale.en }
+export const UZ = { ...uz, portal: portalLocale.uz, staff: staffLocale.uz, admin: adminLocale.uz, clinical: clinicalLocale.uz, catalog: catalogLocale.uz, assistant: assistantLocale.uz, tour: tourUiLocale.uz }
+export const RU = { ...ru, portal: portalLocale.ru, staff: staffLocale.ru, admin: adminLocale.ru, clinical: clinicalLocale.ru, catalog: catalogLocale.ru, assistant: assistantLocale.ru, tour: tourUiLocale.ru }
+export const EN = { ...en, portal: portalLocale.en, staff: staffLocale.en, admin: adminLocale.en, clinical: clinicalLocale.en, catalog: catalogLocale.en, assistant: assistantLocale.en, tour: tourUiLocale.en }
 
-/** The whole interface vocabulary (its shape is the Uzbek dictionary's). */
-export type Resources = typeof UZ
+/**
+ * The whole interface vocabulary (its shape is the Uzbek dictionary's). The sentences of the guided tours are part of
+ * it although the three dictionaries here carry only the tours' buttons — the rest is fetched when first needed.
+ */
+export type Resources = typeof UZ & { tour: TourTexts }
 /** A translated dictionary: any text it lacks is shown in its fallback language. */
 export type Translation = DeepPartial<Resources>

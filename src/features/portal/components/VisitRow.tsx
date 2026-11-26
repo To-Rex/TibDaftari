@@ -29,7 +29,7 @@ export function VisitRow({
   const total = orderActiveCount(order)
   const pct = total ? Math.round((done / total) * 100) : 0
   return (
-    <motion.div variants={fadeUp}>
+    <motion.div variants={fadeUp} data-tour="portal-visit-row">
       <Link
         to={routes.portal.visit(order.id)}
         className={cn(

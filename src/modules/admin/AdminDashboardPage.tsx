@@ -83,7 +83,7 @@ export default function AdminDashboardPage() {
       <PageHeader title={t('admin.dashboard.title')} description={t('admin.dashboard.subtitle')} />
 
       {/* Unit card */}
-      <Card className="mb-6 relative overflow-hidden" data-dashboard-unit>
+      <Card className="mb-6 relative overflow-hidden" data-dashboard-unit data-tour="adminDashboard-unit">
         <div aria-hidden className="pointer-events-none absolute -right-20 -top-24 size-72 rounded-full bg-brand/8 blur-3xl" />
         {u ? (
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5">
@@ -112,7 +112,7 @@ export default function AdminDashboardPage() {
       </Card>
 
       {/* Stats */}
-      <MotionList variants={stagger} initial="hidden" animate="show" className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,150px),1fr))] gap-3 sm:gap-4 mb-6">
+      <MotionList variants={stagger} initial="hidden" animate="show" className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,150px),1fr))] gap-3 sm:gap-4 mb-6" data-tour="adminDashboard-stats">
         {[
           u?.level === 'facility'
             ? { label: t('admin.dashboard.facility'), value: u ? (u.isActive ? t('common.active') : t('common.inactive')) : undefined, sub: u?.code ?? undefined, icon: <Hospital />, tone: 'brand' as const }
@@ -130,7 +130,7 @@ export default function AdminDashboardPage() {
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] 3xl:grid-cols-[1.2fr_0.8fr]">
         <div className="flex flex-col gap-6">
           {/* Health */}
-          {canSetup && <Card>
+          {canSetup && <Card data-tour="adminDashboard-health">
             <CardHeader className="max-xs:flex-col max-xs:items-start" title={t('admin.dashboard.health')} description={t('admin.dashboard.healthSub')}
               actions={checks.length ? <Badge tone={done === checks.length ? 'ok' : 'warn'}>{t('admin.dashboard.healthScore', { done, total: checks.length })}</Badge> : null} />
             {checks.length ? (
@@ -157,7 +157,7 @@ export default function AdminDashboardPage() {
           </Card>}
 
           {/* Quick links */}
-          <div>
+          <div data-tour="adminDashboard-links">
             <h3 className="mb-3 text-[12.5px] font-semibold uppercase tracking-[0.06em] text-ink-3">{t('admin.dashboard.quickLinks')}</h3>
             <MotionList variants={stagger} initial="hidden" animate="show" className="grid gap-3 grid-cols-[repeat(auto-fit,minmax(min(100%,240px),1fr))]">
               {links.map((l) => (
@@ -177,7 +177,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Recent activity */}
-        <Card className="self-start">
+        <Card className="self-start" data-tour="adminDashboard-recent">
           <CardHeader title={t('admin.dashboard.recent')} />
           {notifications.isLoading ? (
             <div className="space-y-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-12" />)}</div>

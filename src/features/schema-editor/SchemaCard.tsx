@@ -15,7 +15,7 @@ export const SchemaCard = memo(function SchemaCard({ schema, onOpen, onDuplicate
   const types = [...new Set(schema.fields.map((f) => f.type))].slice(0, 6)
   return (
     <motion.div variants={fadeUp}>
-      <Card interactive onClick={onOpen} className="h-full flex flex-col gap-3 group">
+      <Card data-tour="schemas-card" interactive onClick={onOpen} className="h-full flex flex-col gap-3 group">
         <div className="flex items-start gap-3">
           <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-ink"><Layers className="size-5" /></span>
           <div className="min-w-0 flex-1">

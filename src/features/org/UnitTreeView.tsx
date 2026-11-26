@@ -100,7 +100,7 @@ export function UnitTreeView({ units, rootId, selectedId, onSelect, search, show
               {n.counts.employees > 0 && <span className="inline-flex items-center gap-1 tabular"><Users className="size-3.5" />{fmtNumber(n.counts.employees)}</span>}
             </p>
           </div>
-          {renderActions && <div className="flex shrink-0 items-center gap-1" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>{renderActions(n)}</div>}
+          {renderActions && <div data-tour="units-row-actions" className="flex shrink-0 items-center gap-1" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>{renderActions(n)}</div>}
         </div>
         {hasKids && open && <ul>{n.children.map(row)}</ul>}
       </li>

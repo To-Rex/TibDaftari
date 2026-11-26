@@ -19,6 +19,7 @@ export function VisitItemCard({ item }: { item: OrderItem }) {
     <motion.article
       variants={fadeUp}
       className={cn('px-3 py-4 xs:px-4 sm:px-5', cancelled && 'opacity-60')}
+      data-tour="portal-visit-item"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1 basis-[180px]">

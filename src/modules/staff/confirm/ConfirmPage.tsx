@@ -127,14 +127,14 @@ export default function ConfirmPage() {
       <PageHeader title={approvedOnly ? t('clinical.confirm.viewTitle') : t('clinical.confirm.title')} description={approvedOnly ? t('clinical.confirm.viewSubtitle') : t('clinical.confirm.subtitle')} className={cn(selectedId && 'max-lg:hidden')} />
       {/* < lg: master OR detail (detail opens full-width with a back button) */}
       <div className={cn(selectedId && 'max-lg:hidden')}>
-        <div className="mb-4"><CategoryTabs roots={cats.data?.roots} loading={cats.isLoading} value={cat} onChange={setCat} /></div>
+        <div className="mb-4" data-tour="confirm-categories"><CategoryTabs roots={cats.data?.roots} loading={cats.isLoading} value={cat} onChange={setCat} /></div>
         <Toolbar
           className="md:flex-wrap"
           actions={<DateRangeFilter value={range} onChange={setRange} size="sm" allowCustom />}
         >
-          <SearchInput value={search} onChange={setSearch} placeholder={t('clinical.lab.searchPlaceholder')} className="h-9 w-full sm:w-64" />
+          <SearchInput data-tour="confirm-search" value={search} onChange={setSearch} placeholder={t('clinical.lab.searchPlaceholder')} className="h-9 w-full sm:w-64" />
           {!approvedOnly && (
-            <div className="min-w-0 max-w-full overflow-x-auto no-scrollbar">
+            <div data-tour="confirm-queue" className="min-w-0 max-w-full overflow-x-auto no-scrollbar">
               <Segmented<Queue> size="sm" value={queue} onChange={setQueue} className="shrink-0" items={[
                 { value: 'submitted', label: t('clinical.confirm.queueSubmitted') },
                 { value: 'approved', label: t('clinical.confirm.queueApproved') },
@@ -145,7 +145,7 @@ export default function ConfirmPage() {
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[340px_minmax(0,1fr)] xl:grid-cols-[360px_minmax(0,1fr)]">
-        <Card padded={false} className={cn('min-w-0 overflow-hidden lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:self-start lg:overflow-y-auto', selectedId && 'max-lg:hidden')}>
+        <Card data-tour="confirm-list" padded={false} className={cn('min-w-0 overflow-hidden lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:self-start lg:overflow-y-auto', selectedId && 'max-lg:hidden')}>
           <ConfirmList rows={rows} loading={list.isLoading || cats.isLoading} selectedId={selectedId} onSelect={select} categoryColor={(id) => cats.data?.colors[id]} />
           {data && data.totalPages > 1 && (
             <div className="overflow-x-auto no-scrollbar border-t border-line px-3 py-2.5">
@@ -153,7 +153,7 @@ export default function ConfirmPage() {
             </div>
           )}
         </Card>
-        <div className={cn('min-w-0', !selectedId && 'max-lg:hidden')}>
+        <div data-tour="confirm-detail" className={cn('min-w-0', !selectedId && 'max-lg:hidden')}>
           <ConfirmDetail scopeId={scopeId} itemId={selectedId} approvedOnly={approvedOnly} onBack={() => select(null)} onApprove={(tid) => setApproveOpen({ templateId: tid })} onReject={() => setRejectOpen(true)} onRevoke={() => setRevokeOpen(true)} approving={approve.isPending} justApproved={justApproved}
             onOrderApproved={(ids) => { if (selectedId) { setJustApproved(selectedId); setTimeout(() => { setJustApproved(null); const next = rows.find((r) => !ids.includes(r.id)); select(next?.id ?? null) }, 900) } }} />
         </div>

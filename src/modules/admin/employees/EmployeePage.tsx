@@ -95,15 +95,15 @@ export default function EmployeePage() {
             </span>
           </span>
         ) : <Skeleton className="h-8 w-64" />}
-        actions={canWrite && e && tab === 'info' && !editing && <Button variant="secondary" leftIcon={<Pencil className="size-4" />} onClick={() => setEditing(true)}>{t('common.edit')}</Button>} />
+        actions={canWrite && e && tab === 'info' && !editing && <Button variant="secondary" data-tour="employee-edit" leftIcon={<Pencil className="size-4" />} onClick={() => setEditing(true)}>{t('common.edit')}</Button>} />
 
-      <Tabs items={tabs} value={tab} onChange={setTab} className="mb-5" />
+      <Tabs tour="employee-tabs" items={tabs} value={tab} onChange={setTab} className="mb-5" />
 
       <AnimatePresence mode="wait" initial={false}>
         <motion.div key={tab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.2 }}>
           {!e ? <Skeleton className="h-64" /> : tab === 'info' ? (
             <div className="flex flex-col gap-5">
-              <Card>
+              <Card data-tour="employee-info">
                 {editing ? (
                   <EmployeeForm scopeId={scopeId} employee={e} onCancel={() => setEditing(false)} onSaved={() => setEditing(false)} />
                 ) : (
@@ -135,7 +135,7 @@ export default function EmployeePage() {
                 )}
               </Card>
               {canWrite && e.id !== meId && (
-                <Card className="border-danger/30">
+                <Card className="border-danger/30" data-tour="employee-danger">
                   <CardHeader title={<span className="text-danger">{t('admin.employees.danger')}</span>} />
                   <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
                     <div className="min-w-0">

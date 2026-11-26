@@ -94,7 +94,7 @@ export default function PortalResultPage() {
       </Link>
 
       <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div className="min-w-0">
+        <div className="min-w-0" data-tour="portalResult-head">
           {doc ? (
             <>
               <p className="text-ink-3 text-[12.5px]">
@@ -124,7 +124,7 @@ export default function PortalResultPage() {
             </div>
           )}
         </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-2 max-xs:[&>button]:flex-1">
+        <div className="flex shrink-0 flex-wrap items-center gap-2 max-xs:[&>button]:flex-1" data-tour="portalResult-actions">
           <Button
             variant="secondary"
             size="sm"
@@ -146,7 +146,7 @@ export default function PortalResultPage() {
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start 2xl:grid-cols-[minmax(0,1fr)_360px] 2xl:gap-8">
-        <div className="min-w-0">
+        <div className="min-w-0" data-tour="portalResult-document">
           {ready && ctx && q.data ? (
             <motion.div
               initial={{ opacity: 0, y: 12 }}
@@ -159,7 +159,7 @@ export default function PortalResultPage() {
             <Skeleton className="mx-auto aspect-[794/1123] w-full max-w-[794px] rounded-[10px]" />
           )}
         </div>
-        <aside className="min-w-0 lg:sticky lg:top-20">
+        <aside className="min-w-0 lg:sticky lg:top-20" data-tour="portalResult-info">
           {ready && ctx && q.data ? (
             <ResultInfoPanel
               item={q.data.item}

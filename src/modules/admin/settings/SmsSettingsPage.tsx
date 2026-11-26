@@ -51,7 +51,7 @@ export default function SmsSettingsPage() {
       <PageHeader title={t('admin.sms.title')} description={t('admin.sms.subtitle')} />
 
       {facilities.length > 0 && scopeUnit && (
-        <Card className="mb-5" data-sms-target>
+        <Card className="mb-5" data-sms-target data-tour="sms-target">
           <CardHeader className="max-xs:flex-col max-xs:items-start" title={t('admin.sms.targetTitle')} description={t('admin.sms.targetHint')} />
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <UnitPicker units={units} rootId={scopeId} levels={['facility']} value={facilityId} onChange={setFacilityId} allowEmpty

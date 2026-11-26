@@ -265,7 +265,7 @@ export function AssistantChat({ threadId, unit, status, onCreate, onOpen, focusT
     <div className={cn('relative flex min-h-0 flex-1 flex-col', hero && 'overflow-y-auto')} data-assistant-chat data-chat-state={hero ? 'welcome' : 'thread'}>
       <div ref={scroller} onScroll={onScroll} className={cn('px-4 sm:px-6', hero ? 'mt-auto pt-6' : 'min-h-0 flex-1 overflow-y-auto pb-8 pt-2')} data-chat-scroll>
         {loading ? <div className="flex justify-center py-16"><Loader2 className="size-5 animate-spin text-ink-3" /></div> : hero ? (
-          <motion.div {...enter} className="mx-auto max-w-2xl text-center" data-chat-welcome>
+          <motion.div {...enter} className="mx-auto max-w-2xl text-center" data-chat-welcome data-tour="assistant-welcome">
             <span className="mx-auto grid size-14 place-items-center rounded-[20px] bg-gradient-to-br from-brand to-brand-strong text-white shadow-2 dark:text-bg"><Sparkles className="size-7" /></span>
             <h1 className="mt-5 text-[26px] font-semibold tracking-[-0.03em] sm:text-[32px]">{t('assistant.welcomeTitle', { name: me?.fullName.split(' ')[0] ?? '' })}</h1>
             <p className="mx-auto mt-2 max-w-xl text-[14.5px] leading-relaxed text-ink-2">{t('assistant.welcomeBody')}</p>
@@ -303,7 +303,7 @@ export function AssistantChat({ threadId, unit, status, onCreate, onOpen, focusT
           <Composer ref={box} value={draft} onChange={setDraft} onSubmit={() => void submit()} busy={busy} placeholder={placeholder} unit={unit} status={status} hero={hero} onStop={onStop} stopping={stopping} />
           {hero ? (
             <>
-              <div className="mt-6">
+              <div className="mt-6" data-tour="assistant-examples">
                 <div className="mb-2 px-1 text-[11.5px] font-semibold uppercase tracking-[0.08em] text-ink-3">{t('assistant.examples')}</div>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   {examples.map(({ text, icon: Icon }) => (
@@ -315,7 +315,7 @@ export function AssistantChat({ threadId, unit, status, onCreate, onOpen, focusT
                   ))}
                 </div>
               </div>
-              <p className="mx-auto mt-6 max-w-2xl text-center text-[11.5px] leading-relaxed text-ink-3">{t('assistant.safety')}</p>
+              <p data-tour="assistant-safety" className="mx-auto mt-6 max-w-2xl text-center text-[11.5px] leading-relaxed text-ink-3">{t('assistant.safety')}</p>
             </>
           ) : <p className="mt-1.5 text-center text-[11px] text-ink-3 max-sm:hidden">{busy && onStop ? t('assistant.stopHint') : t('assistant.sendHint')}</p>}
         </div>

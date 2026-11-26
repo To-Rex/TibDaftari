@@ -122,8 +122,8 @@ export function ConfirmDetail({ scopeId, itemId, approvedOnly, onBack, onApprove
               <div className={cn('flex max-w-full flex-wrap items-center gap-2', canApprove && 'max-lg:hidden')} data-confirm-actions>
                 {canApprove ? (
                   <>
-                    <Button variant="secondary" leftIcon={<Undo2 className="size-4" />} onClick={onReject}>{t('clinical.confirm.reject')}</Button>
-                    <Button leftIcon={<BadgeCheck className="size-4" />} loading={approving} onClick={() => onApprove(templateId)}>{t('clinical.confirm.approve')}</Button>
+                    <Button data-tour="confirm-reject" variant="secondary" leftIcon={<Undo2 className="size-4" />} onClick={onReject}>{t('clinical.confirm.reject')}</Button>
+                    <Button data-tour="confirm-approve" leftIcon={<BadgeCheck className="size-4" />} loading={approving} onClick={() => onApprove(templateId)}>{t('clinical.confirm.approve')}</Button>
                   </>
                 ) : it.status === 'approved' ? (
                   <>
@@ -147,8 +147,8 @@ export function ConfirmDetail({ scopeId, itemId, approvedOnly, onBack, onApprove
       {/* < lg: approve / reject live in a sticky bottom bar */}
       {it && canApprove && (
         <div className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-2 border-t border-line bg-bg-elevated/95 px-3 pb-[max(env(safe-area-inset-bottom),0.625rem)] pt-2.5 backdrop-blur lg:hidden">
-          <Button variant="secondary" leftIcon={<Undo2 className="size-4" />} onClick={onReject} className="min-w-0 flex-1 max-xs:px-2"><span className="truncate">{t('clinical.confirm.reject')}</span></Button>
-          <Button leftIcon={<BadgeCheck className="size-4" />} loading={approving} onClick={() => onApprove(templateId)} className="min-w-0 flex-1 max-xs:px-2"><span className="truncate">{t('clinical.confirm.approve')}</span></Button>
+          <Button data-tour="confirm-reject" variant="secondary" leftIcon={<Undo2 className="size-4" />} onClick={onReject} className="min-w-0 flex-1 max-xs:px-2"><span className="truncate">{t('clinical.confirm.reject')}</span></Button>
+          <Button data-tour="confirm-approve" leftIcon={<BadgeCheck className="size-4" />} loading={approving} onClick={() => onApprove(templateId)} className="min-w-0 flex-1 max-xs:px-2"><span className="truncate">{t('clinical.confirm.approve')}</span></Button>
         </div>
       )}
 

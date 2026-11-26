@@ -60,7 +60,7 @@ export function OrdersSummaryBar({ summary }: { summary?: OrderSummary }) {
     </span>
   )
   return (
-    <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 rounded-[var(--radius)] border border-line bg-surface px-4 py-2.5 text-[13px]" title={t(`${O}.sumNote`)} data-orders-summary>
+    <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 rounded-[var(--radius)] border border-line bg-surface px-4 py-2.5 text-[13px]" title={t(`${O}.sumNote`)} data-orders-summary data-tour="orders-summary">
       {item(t(`${O}.sumCount`), fmtNumber(summary.count), undefined, 'count')}
       {item(t(`${O}.sumTotal`), fmtMoney(summary.total, false), undefined, 'total')}
       {item(t(`${O}.sumPaid`), fmtMoney(summary.paid, false), 'text-ok', 'paid')}

@@ -32,14 +32,14 @@ export function PatientSearchPanel({ scopeId, selectedId, onSelect, onNew, input
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-center gap-2">
-        <div className="relative flex-1">
+        <div data-tour="reception-search" className="relative flex-1">
           <Input ref={inputRef} data-search="" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onKey} placeholder={t('staff.reception.searchPh')} className="h-11 text-[15px]" autoFocus leftIcon={<Search />}
             rightSlot={q ? <button type="button" onClick={() => { setQ(''); inputRef.current?.focus() }} className="size-6 grid place-items-center rounded-full text-ink-3 hover:bg-surface-2 hover:text-ink" aria-label="clear"><X className="size-3.5" /></button> : <Kbd>/</Kbd>} />
         </div>
-        {canCreate && <Button variant="secondary" data-hotkey="n" className="h-11 shrink-0 max-[359px]:w-11 max-[359px]:px-0" leftIcon={<UserPlus className="size-4" />} onClick={onNew} aria-label={t('staff.reception.newPatient')} title={t('staff.reception.newPatient')}><span className="max-[359px]:hidden">{t('staff.reception.newPatient')}</span></Button>}
+        {canCreate && <Button variant="secondary" data-hotkey="n" data-tour="reception-new" className="h-11 shrink-0 max-[359px]:w-11 max-[359px]:px-0" leftIcon={<UserPlus className="size-4" />} onClick={onNew} aria-label={t('staff.reception.newPatient')} title={t('staff.reception.newPatient')}><span className="max-[359px]:hidden">{t('staff.reception.newPatient')}</span></Button>}
       </div>
 
-      <div className="mt-3 min-h-0 flex-1 overflow-y-auto -mx-1 px-1">
+      <div data-tour="reception-results" className="mt-3 min-h-0 flex-1 overflow-y-auto -mx-1 px-1">
         {dq.length < 2 ? (
           <EmptyState icon={<Search />} title={t('staff.reception.searchHintTitle')} description={t('staff.reception.searchHint')} className="py-16" />
         ) : search.isLoading ? (

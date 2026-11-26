@@ -49,9 +49,9 @@ export function LanguageSwitcher({ compact }: { compact?: boolean }) {
       align="end"
       trigger={() =>
         compact ? (
-          <IconButton label={t('common.language')}><Languages /></IconButton>
+          <IconButton label={t('common.language')} data-tour="top-lang"><Languages /></IconButton>
         ) : (
-          <button type="button" aria-label={t('common.language')} title={cur.label}
+          <button type="button" aria-label={t('common.language')} title={cur.label} data-tour="top-lang"
             className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium text-ink-2 hover:bg-surface-2 hover:text-ink">
             <Languages className="size-4" />
             <span lang={cur.code} data-lang-name>{cur.short}</span>
@@ -78,7 +78,7 @@ export function ThemeToggle() {
   const { resolved, toggle } = useTheme()
   const { t } = useTranslation()
   return (
-    <IconButton label={t('common.theme')} onClick={(e) => toggle({ x: e.clientX, y: e.clientY })}>
+    <IconButton label={t('common.theme')} data-tour="top-theme" onClick={(e) => toggle({ x: e.clientX, y: e.clientY })}>
       {resolved === 'dark' ? <Sun /> : <Moon />}
     </IconButton>
   )

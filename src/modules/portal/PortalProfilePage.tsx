@@ -111,7 +111,7 @@ export default function PortalProfilePage() {
         </MotionItem>
 
         <MotionItem variants={fadeUp}>
-          <Card padded={false} className="px-4 py-3 xs:px-5">
+          <Card padded={false} className="px-4 py-3 xs:px-5" data-tour="portalProfile-info">
             <h2 className="text-ink-3 py-2 text-[13px] font-semibold tracking-[0.06em] uppercase">
               {t('portal.profile.info')}
             </h2>
@@ -153,7 +153,7 @@ export default function PortalProfilePage() {
               {t('portal.profile.login')}
             </h2>
             {session.via === 'login' ? (
-              <div className="py-2" data-portal-login-card>
+              <div className="py-2" data-portal-login-card data-tour="portalProfile-password">
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="bg-brand-soft text-brand-ink grid size-10 place-items-center rounded-xl">
                     <KeyRound className="size-[18px]" />
@@ -169,7 +169,7 @@ export default function PortalProfilePage() {
                 <p className="text-ink-3 mt-2 text-[12.5px]">{t('portal.profile.loginOwnOnly')}</p>
               </div>
             ) : (
-              <div className="flex flex-wrap items-center gap-3 py-2">
+              <div className="flex flex-wrap items-center gap-3 py-2" data-tour="portalProfile-phone">
                 <span className="bg-brand-soft text-brand-ink grid size-10 place-items-center rounded-xl">
                   <Smartphone className="size-[18px]" />
                 </span>
@@ -186,7 +186,7 @@ export default function PortalProfilePage() {
         </MotionItem>
 
         <MotionItem variants={fadeUp}>
-          <Card padded={false} className="px-4 py-3 xs:px-5">
+          <Card padded={false} className="px-4 py-3 xs:px-5" data-tour="portalProfile-prefs">
             <h2 className="text-ink-3 py-2 text-[13px] font-semibold tracking-[0.06em] uppercase">
               {t('portal.profile.preferences')}
             </h2>
@@ -229,7 +229,7 @@ export default function PortalProfilePage() {
           </Card>
         </MotionItem>
 
-        <motion.div variants={fadeUp} className="pt-2">
+        <motion.div variants={fadeUp} className="pt-2" data-tour="portalProfile-logout">
           <Button
             variant="secondary"
             block

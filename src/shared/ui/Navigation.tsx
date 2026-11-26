@@ -6,9 +6,9 @@ import { cn } from '@/shared/lib/cn'
 
 /* ---------- Tabs (underline) ---------- */
 export interface TabItem<T extends string = string> { value: T; label: ReactNode; count?: number; icon?: ReactNode }
-export function Tabs<T extends string>({ items, value, onChange, className, size = 'md' }: { items: TabItem<T>[]; value: T; onChange: (v: T) => void; className?: string; size?: 'sm' | 'md' }) {
+export function Tabs<T extends string>({ items, value, onChange, className, size = 'md', tour }: { items: TabItem<T>[]; value: T; onChange: (v: T) => void; className?: string; size?: 'sm' | 'md'; /** names the strip for a guided tour (`data-tour`) */ tour?: string }) {
   return (
-    <div className={cn('app-tabs relative flex gap-1 overflow-x-auto border-b border-line no-scrollbar', className)} role="tablist">
+    <div data-tour={tour} className={cn('app-tabs relative flex gap-1 overflow-x-auto border-b border-line no-scrollbar', className)} role="tablist">
       {items.map((it) => {
         const active = it.value === value
         return (
@@ -26,10 +26,10 @@ export function Tabs<T extends string>({ items, value, onChange, className, size
 }
 
 /* ---------- Segmented control ---------- */
-export function Segmented<T extends string>({ items, value, onChange, className, size = 'md', wrap, block }: { items: { value: T; label: ReactNode; icon?: ReactNode }[]; value: T; onChange: (v: T) => void; className?: string; size?: 'sm' | 'md'; /** allow items to wrap onto several lines (small screens) */ wrap?: boolean; /** stretch to container width, equal buttons */ block?: boolean }) {
+export function Segmented<T extends string>({ items, value, onChange, className, size = 'md', wrap, block, tour }: { items: { value: T; label: ReactNode; icon?: ReactNode }[]; value: T; onChange: (v: T) => void; className?: string; size?: 'sm' | 'md'; /** allow items to wrap onto several lines (small screens) */ wrap?: boolean; /** stretch to container width, equal buttons */ block?: boolean; /** names the control for a guided tour (`data-tour`) */ tour?: string }) {
   const id = useRef(`seg-${Math.random().toString(36).slice(2)}`).current
   return (
-    <div className={cn('app-segmented inline-flex max-w-full items-center gap-0.5 rounded-[10px] bg-surface-2 p-1', wrap && 'flex-wrap', block && 'flex w-full', className)} role="radiogroup">
+    <div data-tour={tour} className={cn('app-segmented inline-flex max-w-full items-center gap-0.5 rounded-[10px] bg-surface-2 p-1', wrap && 'flex-wrap', block && 'flex w-full', className)} role="radiogroup">
       {items.map((it) => {
         const active = it.value === value
         return (

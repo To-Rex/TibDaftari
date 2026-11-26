@@ -61,7 +61,7 @@ export default function UnitPage() {
         actions={u && (
           <>
             {canReset && <Button variant="ghost" className="text-danger hover:bg-danger-soft" leftIcon={<Eraser className="size-4" />} onClick={() => setReset(true)} data-unit-reset>{t(u.level === 'facility' ? 'admin.reset.facilityAction' : 'admin.reset.unitAction')}</Button>}
-            {canEdit && <Button leftIcon={<Pencil className="size-4" />} onClick={() => setEdit(true)} data-unit-edit>{t('common.edit')}</Button>}
+            {canEdit && <Button leftIcon={<Pencil className="size-4" />} onClick={() => setEdit(true)} data-unit-edit data-tour="unit-edit">{t('common.edit')}</Button>}
           </>
         )} />
 
@@ -72,7 +72,7 @@ export default function UnitPage() {
           <HeaderCard unit={u} canEdit={canEdit} />
 
           {/* what is under it */}
-          <MotionList variants={stagger} initial="hidden" animate="show" className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,150px),1fr))] gap-3 sm:gap-4">
+          <MotionList variants={stagger} initial="hidden" animate="show" className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,150px),1fr))] gap-3 sm:gap-4" data-tour="unit-counts">
             {[
               u.level === 'company' && { key: 'countries', label: t('admin.unit.counts.countries'), value: u.counts.countries ?? 0, icon: <Earth />, tone: 'accent' as const },
               levelAtOrAbove(u.level, 'country') && { key: 'regions', label: t('admin.unit.counts.regions'), value: u.counts.regions, icon: <MapIcon />, tone: 'brand' as const },
@@ -133,7 +133,7 @@ function HeaderCard({ unit: u, canEdit }: { unit: OrgUnit; canEdit: boolean }) {
     reader.readAsDataURL(f)
   }
   return (
-    <Card className="relative overflow-hidden" data-unit-header>
+    <Card className="relative overflow-hidden" data-unit-header data-tour="unit-header">
       <div aria-hidden className="pointer-events-none absolute -left-16 -top-24 size-64 rounded-full bg-brand/8 blur-3xl" />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
         <div className="relative shrink-0 self-start">
@@ -214,7 +214,7 @@ function SettingsCard({ unit: u, readOnly }: { unit: OrgUnit; readOnly: boolean 
   }
   const days = u.settings?.documentFreeViewDays ?? 0
   return (
-    <Card data-unit-settings>
+    <Card data-unit-settings data-tour="unit-settings">
       <CardHeader title={t('admin.unit.settings')} description={t('admin.unit.settingsSub')} />
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label={t('admin.unit.locale')} hint={ownLocale ? t('admin.unit.ownValue') : t('admin.unit.inheritedValue')}>

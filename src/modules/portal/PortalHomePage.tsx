@@ -48,7 +48,7 @@ export default function PortalHomePage() {
 
   return (
     <Page width="medium" className="3xl:max-w-[1600px] 2xl:max-w-6xl">
-      <header className="mb-6">
+      <header className="mb-6" data-tour="portalHome-head">
         <motion.h1
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
@@ -72,7 +72,7 @@ export default function PortalHomePage() {
       {view.many && <FamilySwitch family={view.family} memberId={view.memberId} counts={countsOf(data?.orders ?? [])} />}
 
       {q.isPending ? (
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3" data-tour="portalHome-summary">
           {[0, 1, 2].map((i) => (
             <Skeleton key={i} className="h-[92px] rounded-[var(--radius-lg)]" />
           ))}
@@ -83,6 +83,7 @@ export default function PortalHomePage() {
           initial="hidden"
           animate="show"
           className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3 2xl:gap-4"
+          data-tour="portalHome-summary"
         >
           <SummaryCard
             icon={<FileCheck2 />}
@@ -125,7 +126,7 @@ export default function PortalHomePage() {
 
       {/* Two side-by-side sections on very large monitors so the page fills the width */}
       <div className="3xl:grid 3xl:grid-cols-2 3xl:gap-6 3xl:items-start">
-        <section className="mt-8">
+        <section className="mt-8" data-tour="portalHome-results">
           <SectionHeader
             title={t('portal.home.latestResults')}
             to={docs.length > 5 ? routes.portal.results : undefined}
@@ -162,7 +163,7 @@ export default function PortalHomePage() {
           </Card>
         </section>
 
-        <section className="mt-8">
+        <section className="mt-8" data-tour="portalHome-visits">
           <SectionHeader
             title={t('portal.home.latestVisits')}
             to={orders.length > 3 ? routes.portal.visits : undefined}

@@ -68,8 +68,8 @@ export default function UnitsPage() {
       <PageHeader title={t('admin.units.title')} description={t('admin.units.subtitle')}
         actions={canManage && scope && scope.level !== 'facility' && (
           <div className="flex flex-wrap items-center gap-2">
-            {canQuickStart && (scope.level !== 'company' || (scope.counts.countries ?? 0) > 0) && <Button variant="secondary" leftIcon={<Rocket className="size-4 text-brand" />} onClick={() => setQuick({ open: true, parent: scope })} data-quick-start>{t('admin.quickStart.open')}</Button>}
-            <Button data-hotkey="n" leftIcon={<Plus className="size-4" />} onClick={() => openAdd(scope)}>{t('admin.units.add')}</Button>
+            {canQuickStart && (scope.level !== 'company' || (scope.counts.countries ?? 0) > 0) && <Button variant="secondary" leftIcon={<Rocket className="size-4 text-brand" />} onClick={() => setQuick({ open: true, parent: scope })} data-quick-start data-tour="units-quick">{t('admin.quickStart.open')}</Button>}
+            <Button data-hotkey="n" data-tour="units-add" leftIcon={<Plus className="size-4" />} onClick={() => openAdd(scope)}>{t('admin.units.add')}</Button>
           </div>
         )} />
 
@@ -85,10 +85,10 @@ export default function UnitsPage() {
       ) : (
         <>
           <Toolbar actions={summary ? <span className="text-[13px] text-ink-3 tabular" data-units-summary>{summary}</span> : undefined}>
-            <SearchInput value={search} onChange={setSearch} placeholder={t('admin.units.searchPlaceholder')} className="w-full sm:w-72" />
+            <SearchInput value={search} onChange={setSearch} placeholder={t('admin.units.searchPlaceholder')} className="w-full sm:w-72" data-tour="units-search" />
             <Switch size="sm" checked={showInactive} onChange={setShowInactive} label={<span className="text-[13px] font-normal text-ink-2">{t('admin.units.showInactive')}</span>} className="items-center" />
           </Toolbar>
-          <Card padded={false} className="overflow-hidden">
+          <Card padded={false} className="overflow-hidden" data-tour="units-tree">
             <UnitTreeView
               units={all}
               rootId={scopeId}

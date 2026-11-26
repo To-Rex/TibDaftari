@@ -100,11 +100,11 @@ export default function RolesPage() {
   return (
     <Page>
       <PageHeader title={t('admin.roles.title')} description={t('admin.roles.subtitle')}
-        actions={canWrite && <Button data-hotkey="n" leftIcon={<Plus className="size-4" />} onClick={() => startNew(selected)}>{t('admin.roles.newRole')}</Button>} />
+        actions={canWrite && <Button data-hotkey="n" data-tour="roles-new" leftIcon={<Plus className="size-4" />} onClick={() => startNew(selected)}>{t('admin.roles.newRole')}</Button>} />
 
       <div className="grid gap-5 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)] 3xl:grid-cols-[340px_minmax(0,1fr)] items-start">
         {/* Roles list */}
-        <Card padded={false} className={cn('overflow-hidden lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto', view === 'detail' && 'max-lg:hidden')}>
+        <Card padded={false} data-tour="roles-list" className={cn('overflow-hidden lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto', view === 'detail' && 'max-lg:hidden')}>
           {roles.isLoading ? (
             <div className="p-3 space-y-2">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-14" />)}</div>
           ) : (
@@ -140,7 +140,7 @@ export default function RolesPage() {
           <Card className={cn(view === 'list' && 'max-lg:hidden')}><EmptyState icon={<ShieldCheck />} title={t('admin.roles.empty')} description={t('admin.roles.emptyHint')} /></Card>
         ) : (
           <div className={cn('flex flex-col gap-4 min-w-0', view === 'list' && 'max-lg:hidden')}>
-            <Card>
+            <Card data-tour="roles-detail">
               <button type="button" onClick={() => setView('list')} className="lg:hidden mb-3 inline-flex h-10 items-center gap-1.5 -ml-1 px-1 text-[13.5px] font-medium text-brand-ink hover:underline underline-offset-4">
                 <ArrowLeft className="size-4" />{t('admin.roles.title')}
               </button>
@@ -179,7 +179,7 @@ export default function RolesPage() {
               {ownRole && <p className="mt-3 flex items-center gap-2 text-[13px] text-ink-3" data-own-role-locked><Lock className="size-3.5" />{t('admin.roles.readonlyOwn')}</p>}
               {systemLocked && !ownRole && <p className="mt-3 flex items-center gap-2 text-[13px] text-ink-3"><Lock className="size-3.5" />{t('admin.roles.readonlySystem')}</p>}
             </Card>
-            <div className="sticky top-16 z-20 -mx-1 px-1 py-2 bg-bg/90 backdrop-blur-md flex items-center gap-3 justify-between">
+            <div data-tour="roles-search" className="sticky top-16 z-20 -mx-1 px-1 py-2 bg-bg/90 backdrop-blur-md flex items-center gap-3 justify-between">
               <SearchInput value={search} onChange={setSearch} placeholder={t('admin.roles.search')} className="flex-1 min-w-0 sm:max-w-sm" />
               <div className="max-sm:hidden flex flex-wrap items-center gap-2 text-[13px] text-ink-3 tabular">
                 <Users className="size-4" />{t('admin.roles.selected', { count: draft.permissions.length, total: PERMISSIONS.length })}

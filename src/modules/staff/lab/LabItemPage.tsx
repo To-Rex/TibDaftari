@@ -97,7 +97,7 @@ export default function LabItemPage() {
   return (
     <Page width="full" className={cn(!approved && (canWrite || canSubmit) && 'max-lg:pb-28')}>
       {/* Header */}
-      <div className="mb-5 flex flex-col gap-3">
+      <div data-tour="labItem-head" className="mb-5 flex flex-col gap-3">
         <Link to={routes.app.lab} className="inline-flex w-fit items-center gap-1.5 text-[13px] text-ink-3 transition-colors hover:text-ink"><ArrowLeft className="size-3.5" />{t('clinical.lab.backToList')}</Link>
         {it ? (
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -141,7 +141,7 @@ export default function LabItemPage() {
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_340px]">
         {/* Form */}
-        <Card className={cn('min-w-0 p-4 sm:p-6', readOnly && 'bg-surface/70')}>
+        <Card data-tour="labItem-form" className={cn('min-w-0 p-4 sm:p-6', readOnly && 'bg-surface/70')}>
           {loading || !it ? (
             <div className="space-y-5">{Array.from({ length: 6 }).map((_, i) => <div key={i} className="grid gap-2 sm:grid-cols-[220px_1fr]"><Skeleton className="h-4 w-40" /><Skeleton className="h-10 w-full max-w-md" /></div>)}</div>
           ) : !schema.data ? (
@@ -156,7 +156,7 @@ export default function LabItemPage() {
           <Card className="flex flex-col gap-5">
             <PatientCard patient={patient.data} loading={patient.isLoading || order.isLoading} />
             <Field label={t('clinical.lab.labNote')} optionalText={t('common.optional')}>
-              {(id) => <Textarea id={id} value={note} onChange={(e) => setNote(e.target.value)} readOnly={readOnly} placeholder={t('clinical.lab.labNotePlaceholder')} rows={3} className="min-h-[72px]" />}
+              {(id) => <Textarea id={id} data-tour="labItem-note" value={note} onChange={(e) => setNote(e.target.value)} readOnly={readOnly} placeholder={t('clinical.lab.labNotePlaceholder')} rows={3} className="min-h-[72px]" />}
             </Field>
             {it && (it.technicianName || it.enteredAt) && (
               <div className="text-[12.5px] text-ink-3">{t('clinical.lab.enteredBy', { name: it.technicianName ?? '—' })}</div>
@@ -165,13 +165,13 @@ export default function LabItemPage() {
             {!approved && (
               <div className="flex flex-col gap-2 border-t border-line pt-4 max-lg:hidden">
                 {canWrite && (
-                  <Button onClick={() => void doSave()} loading={save.isPending} disabled={!dirty} leftIcon={<Save className="size-4" />} block>
+                  <Button data-tour="labItem-save" onClick={() => void doSave()} loading={save.isPending} disabled={!dirty} leftIcon={<Save className="size-4" />} block>
                     <span className="flex-1 text-left">{t('common.save')}</span>
                     <span className="rounded border border-white/25 px-1.5 text-[10.5px] font-normal tabular opacity-80">Ctrl+S</span>
                   </Button>
                 )}
                 {canSubmit && (
-                  <Button variant={submitted ? 'secondary' : 'soft'} onClick={() => void doSubmit()} loading={submit.isPending} disabled={!it || (it.status === 'pending' && !dirty)} leftIcon={submitted ? <Undo2 className="size-4" /> : <Send className="size-4" />} block>
+                  <Button data-tour="labItem-submit" variant={submitted ? 'secondary' : 'soft'} onClick={() => void doSubmit()} loading={submit.isPending} disabled={!it || (it.status === 'pending' && !dirty)} leftIcon={submitted ? <Undo2 className="size-4" /> : <Send className="size-4" />} block>
                     {submitted ? t('clinical.lab.unsubmit') : t('clinical.lab.submit')}
                   </Button>
                 )}
@@ -194,12 +194,12 @@ export default function LabItemPage() {
         <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg-elevated/95 px-3 pb-[max(env(safe-area-inset-bottom),0.625rem)] pt-2.5 backdrop-blur lg:hidden">
           <div className="flex items-center gap-2">
             {canWrite && (
-              <Button onClick={() => void doSave()} loading={save.isPending} disabled={!dirty} leftIcon={<Save className="size-4" />} className="min-w-0 flex-1 max-xs:px-2">
+              <Button data-tour="labItem-save" onClick={() => void doSave()} loading={save.isPending} disabled={!dirty} leftIcon={<Save className="size-4" />} className="min-w-0 flex-1 max-xs:px-2">
                 <span className="truncate">{t('common.save')}</span>
               </Button>
             )}
             {canSubmit && (
-              <Button variant={submitted ? 'secondary' : 'soft'} onClick={() => void doSubmit()} loading={submit.isPending} disabled={!it || (it.status === 'pending' && !dirty)} leftIcon={submitted ? <Undo2 className="size-4" /> : <Send className="size-4" />} className="min-w-0 flex-1 max-xs:px-2">
+              <Button data-tour="labItem-submit" variant={submitted ? 'secondary' : 'soft'} onClick={() => void doSubmit()} loading={submit.isPending} disabled={!it || (it.status === 'pending' && !dirty)} leftIcon={submitted ? <Undo2 className="size-4" /> : <Send className="size-4" />} className="min-w-0 flex-1 max-xs:px-2">
                 <span className="truncate">{submitted ? t('clinical.lab.unsubmit') : t('clinical.lab.submit')}</span>
               </Button>
             )}

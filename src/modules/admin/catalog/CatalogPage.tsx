@@ -176,7 +176,7 @@ export default function CatalogPage() {
             transition={{ duration: reduce ? 0.01 : 0.38, ease: [0.22, 1, 0.36, 1] }}
             className="catalog-tree-panel xl:sticky xl:top-20"
           >
-          <Card padded={false} className="catalog-tree-card max-h-[calc(100dvh-7rem)] overflow-y-auto">
+          <Card data-tour="catalog-tree" padded={false} className="catalog-tree-card max-h-[calc(100dvh-7rem)] overflow-y-auto">
             <div className="catalog-tree-heading px-4 pt-4 pb-2 flex items-center justify-between">
               <h2 className="text-[13px] font-semibold uppercase tracking-[0.06em] text-ink-3">{t('catalog.tree.heading')}</h2>
               <span className="text-[12px] tabular text-ink-3">{cats.length}</span>
@@ -185,7 +185,7 @@ export default function CatalogPage() {
           </Card>
           </motion.aside>
         ) : (
-          <button type="button" onClick={() => setTreeOpen(true)}
+          <button type="button" data-tour="catalog-tree-trigger" onClick={() => setTreeOpen(true)}
             className="catalog-category-trigger flex w-full min-w-0 items-center gap-2 rounded-[var(--radius)] border border-line bg-surface px-3 h-11 text-left shadow-1 hover:bg-surface-2 transition-colors">
             <span className="text-[11.5px] font-semibold uppercase tracking-[0.06em] text-ink-3 shrink-0">{t('catalog.tree.heading')}</span>
             <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium">{selectedCat?.name ?? t('catalog.tree.all')}</span>
@@ -200,7 +200,7 @@ export default function CatalogPage() {
           transition={{ duration: reduce ? 0.01 : 0.42, delay: reduce ? 0 : 0.06, ease: [0.22, 1, 0.36, 1] }}
           className="catalog-services-panel min-w-0"
         >
-          <Card padded={false} className="catalog-services-card overflow-hidden">
+          <Card data-tour="catalog-services" padded={false} className="catalog-services-card overflow-hidden">
             <div className="catalog-services-header p-3 sm:p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-line">
               <div className="min-w-0">
                 <div className="catalog-breadcrumb flex items-center gap-1 text-[12.5px] text-ink-3 mb-0.5 flex-wrap">

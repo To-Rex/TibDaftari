@@ -33,7 +33,7 @@ export function PlatformSummary({ scopeLabel, period, total, stale, error, filte
   return (
     <section aria-labelledby="platform-summary" data-platform-summary
       className="app-card overflow-hidden rounded-[var(--radius-lg)] border border-line bg-surface shadow-1">
-      <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5 px-4 py-3.5 sm:px-5">
+      <header data-tour="territory-period" className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5 px-4 py-3.5 sm:px-5">
         <div className="min-w-0">
           <h2 id="platform-summary" className="truncate text-[15px] font-semibold leading-6" title={scopeLabel}>{scopeLabel}</h2>
           <p className="text-[12.5px] text-ink-3">{t('admin.platform.periodLabel', { period })}</p>
@@ -47,7 +47,7 @@ export function PlatformSummary({ scopeLabel, period, total, stale, error, filte
         </p>
       ) : (
         // the hairlines are the grid's own gaps over the line colour, so they hold for two, three or six in a row
-        <div className="@container border-t border-line">
+        <div data-tour="territory-numbers" className="@container border-t border-line">
           <dl className={cn('grid grid-cols-2 gap-px bg-line transition-opacity @xl:grid-cols-3 @5xl:grid-cols-6', stale && 'opacity-60')}>
             {METRICS.map(({ k, icon: Icon }) => {
               const money = k === 'revenue'
@@ -81,7 +81,7 @@ export function PlatformTrend({ data, scopeLabel, period, stale, failed }: { dat
   const [metric, setMetric] = useState<'revenue' | 'orders'>('revenue')
   const label = t(`admin.platform.metrics.${metric}`)
   return (
-    <Card className={cn('transition-opacity', stale && 'opacity-60')} data-platform-trend>
+    <Card className={cn('transition-opacity', stale && 'opacity-60')} data-platform-trend data-tour="territory-trend">
       <CardHeader title={t('admin.platform.trend')} description={`${scopeLabel} · ${period}`}
         actions={<Segmented<'revenue' | 'orders'> size="sm" value={metric} onChange={setMetric} items={[{ value: 'revenue', label: t('admin.platform.metrics.revenue') }, { value: 'orders', label: t('admin.platform.metrics.orders') }]} />} />
       {data ? (

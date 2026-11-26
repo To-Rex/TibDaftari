@@ -178,7 +178,7 @@ export default function TemplateEditorPage() {
             <AnimatePresence initial={false}>
               {leftOpen && !preview && (
                 <motion.aside initial={{ width: 0, opacity: 0 }} animate={{ width: 260, opacity: 1 }} exit={{ width: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="shrink-0 border-r border-line bg-surface overflow-hidden flex flex-col">
-                  <div className="w-[260px] flex flex-col h-full min-h-0">
+                  <div data-tour="templateEditor-panel" className="w-[260px] flex flex-col h-full min-h-0">
                     {panelTabs}
                     <div className="flex-1 min-h-0">{panelBody}</div>
                   </div>
@@ -194,7 +194,7 @@ export default function TemplateEditorPage() {
             {canvas}
 
             {!preview && (
-              <aside className="w-[300px] xl:w-[320px] shrink-0 border-l border-line bg-surface min-h-0 flex flex-col">
+              <aside data-tour="templateEditor-props" className="w-[300px] xl:w-[320px] shrink-0 border-l border-line bg-surface min-h-0 flex flex-col">
                 {propsPanel}
               </aside>
             )}

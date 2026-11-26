@@ -63,7 +63,7 @@ export function FamilyCard({ patient, onPick, compact }: { patient: Patient; /**
   }
 
   return (
-    <Card className={cn('min-w-0', compact && 'p-4')} data-family-card={members.length}>
+    <Card className={cn('min-w-0', compact && 'p-4')} data-family-card={members.length} data-tour="patient-family">
       <div className="mb-2 flex items-start gap-3">
         <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-info-soft text-info"><UsersRound className="size-[18px]" /></span>
         <div className="min-w-0 flex-1">

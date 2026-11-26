@@ -14,7 +14,7 @@ export function ItemTimeline({ item, className }: { item: OrderItem; className?:
     { key: 'approved', at: item.approvedAt },
   ]
   return (
-    <ol className={cn('flex flex-wrap items-center gap-1', className)}>
+    <ol data-tour="item-timeline" className={cn('flex flex-wrap items-center gap-1', className)}>
       {steps.map((s, i) => {
         const done = !!s.at
         return (

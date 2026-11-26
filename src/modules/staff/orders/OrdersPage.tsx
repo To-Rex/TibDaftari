@@ -148,10 +148,10 @@ export default function OrdersPage() {
   return (
     <Page>
       <PageHeader title={t('staff.orders.title')} description={q.data ? t('staff.orders.count', { n: fmtNumber(q.data.total) }) : t('staff.orders.subtitle')}
-        actions={<Button variant="secondary" leftIcon={<FileSpreadsheet className="size-4" />} loading={exporting} onClick={() => void exportXlsx()} title={t('staff.orders.exportTitle')} data-orders-export>{exporting ? t('staff.orders.exporting') : t('staff.orders.export')}</Button>} />
+        actions={<Button variant="secondary" leftIcon={<FileSpreadsheet className="size-4" />} loading={exporting} onClick={() => void exportXlsx()} title={t('staff.orders.exportTitle')} data-orders-export data-tour="orders-export">{exporting ? t('staff.orders.exporting') : t('staff.orders.export')}</Button>} />
       <Toolbar className="min-w-0 [&>div]:min-w-0 [&>div]:max-w-full"
         actions={
-          <div className="flex min-w-0 max-w-full flex-col items-start gap-2 md:items-end">
+          <div data-tour="orders-period" className="flex min-w-0 max-w-full flex-col items-start gap-2 md:items-end">
             <Segmented<OrdersRange> size="sm" value={range} onChange={pickRange} className="max-w-full flex-wrap" items={[{ value: 'today', label: t('common.today') }, { value: 'yesterday', label: t('common.yesterday') }, { value: 'last7', label: t('common.last7') }, { value: 'last30', label: t('common.last30') }, { value: 'thisMonth', label: t('common.thisMonth') }, { value: 'custom', label: t('clinical.reports.custom'), icon: <CalendarRange /> }]} />
             <AnimatePresence initial={false}>
               {range === 'custom' && (
@@ -164,13 +164,13 @@ export default function OrdersPage() {
             </AnimatePresence>
           </div>
         }>
-        <SearchInput value={search} onChange={reset(setSearch)} placeholder={t('staff.orders.searchPh')} className="w-full sm:w-72 3xl:w-96" />
-        <Segmented<'all' | OrderStatus> size="sm" value={status} onChange={reset(setStatus)} className="max-w-full flex-wrap" items={[{ value: 'all', label: t('common.all') }, ...ORDER_STATUSES.filter((s) => s !== 'draft').map((s) => ({ value: s, label: orderStatusMeta(s).label }))]} />
-        <Select value={payment} onChange={(e) => reset(setPayment)(e.target.value as 'all' | PaymentStatus)} className="h-8 w-auto text-[13px]">
+        <SearchInput data-tour="orders-search" value={search} onChange={reset(setSearch)} placeholder={t('staff.orders.searchPh')} className="w-full sm:w-72 3xl:w-96" />
+        <Segmented<'all' | OrderStatus> tour="orders-status" size="sm" value={status} onChange={reset(setStatus)} className="max-w-full flex-wrap" items={[{ value: 'all', label: t('common.all') }, ...ORDER_STATUSES.filter((s) => s !== 'draft').map((s) => ({ value: s, label: orderStatusMeta(s).label }))]} />
+        <Select data-tour="orders-payment" value={payment} onChange={(e) => reset(setPayment)(e.target.value as 'all' | PaymentStatus)} className="h-8 w-auto text-[13px]">
           <option value="all">{t('staff.orders.allPayments')}</option>
           {PAYMENT_STATUSES.map((p) => <option key={p} value={p}>{paymentStatusMeta(p).label}</option>)}
         </Select>
-        <Button size="sm" variant={nExtra ? 'soft' : 'secondary'} leftIcon={<SlidersHorizontal className="size-4" />} onClick={() => setFiltersOpen(true)} data-orders-filters-open>
+        <Button size="sm" variant={nExtra ? 'soft' : 'secondary'} leftIcon={<SlidersHorizontal className="size-4" />} onClick={() => setFiltersOpen(true)} data-orders-filters-open data-tour="orders-filters">
           {t('staff.orders.filters')}{nExtra > 0 && <span className="ml-1 grid min-w-5 place-items-center rounded-full bg-brand px-1.5 text-[11px] font-semibold text-white tabular" data-filters-count>{nExtra}</span>}
         </Button>
         <label className="inline-flex min-w-0 max-w-full items-center gap-1.5" title={t('staff.orders.sort')}>
@@ -184,7 +184,7 @@ export default function OrdersPage() {
       <OrdersFilterChips value={extra} onChange={changeExtra} categories={categories.data} services={services.data} summary={summary.data} facilities={multi ? facilities : undefined} />
       <OrdersSummaryBar summary={summary.data} />
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-        <Card padded={false} className="overflow-hidden">
+        <Card data-tour="orders-table" padded={false} className="overflow-hidden">
           <OrdersTable page={q.data} loading={q.isFetching} sortBy={sortBy} sortDir={sortDir} onSort={onSort} onPage={setPage} onPageSize={(s) => { setPageSize(s); setPage(1) }} footer
             showUnit={showUnit}
             canDelete={canDelete} lockOldPayments={!lateEdit} onDelete={setDeleting} />

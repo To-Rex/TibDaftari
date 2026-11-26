@@ -54,7 +54,7 @@ export function DocumentLinkCard({ unit, readOnly }: { unit: OrgUnit; readOnly?:
   )
 
   return (
-    <Card data-doc-link-card>
+    <Card data-doc-link-card data-tour="sms-doclink">
       <CardHeader className="max-xs:flex-col max-xs:items-start" title={t('admin.docLink.title')} description={t('admin.docLink.subtitle')}
         actions={saved > 0
           ? <Badge tone="warn" dot>{t('admin.docLink.badgeOn', { n: saved })}</Badge>

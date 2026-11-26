@@ -55,17 +55,17 @@ export default function PatientsPage() {
   return (
     <Page>
       <PageHeader title={t('staff.patients.title')} description={q.data ? t('staff.patients.count', { n: fmtNumber(q.data.total) }) : t('staff.patients.subtitle')}
-        actions={can('reception.patient.write') && <Button data-hotkey="n" leftIcon={<UserPlus className="size-4" />} onClick={() => setDrawer(true)}>{t('staff.patients.new')}</Button>} />
+        actions={can('reception.patient.write') && <Button data-hotkey="n" data-tour="patients-new" leftIcon={<UserPlus className="size-4" />} onClick={() => setDrawer(true)}>{t('staff.patients.new')}</Button>} />
       <Toolbar>
-        <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1) }} placeholder={t('staff.patients.searchPh')} className="w-full sm:w-80 3xl:w-96" />
-        <div className="flex flex-wrap items-center gap-1.5">
+        <SearchInput data-tour="patients-search" value={search} onChange={(v) => { setSearch(v); setPage(1) }} placeholder={t('staff.patients.searchPh')} className="w-full sm:w-80 3xl:w-96" />
+        <div data-tour="patients-tags" className="flex flex-wrap items-center gap-1.5">
           {TAGS.map((tg) => (
             <button type="button" key={tg} onClick={() => { setTag(tag === tg ? undefined : tg); setPage(1) }} className={cn('h-9 rounded-full border px-3 text-[12.5px] font-medium transition-colors md:h-8', tag === tg ? 'border-brand bg-brand-soft text-brand-ink' : 'border-line text-ink-2 hover:bg-surface-2')}>{tg}</button>
           ))}
         </div>
       </Toolbar>
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-        <Card padded={false} className="overflow-hidden">
+        <Card data-tour="patients-table" padded={false} className="overflow-hidden">
           <DataTable columns={cols} rows={q.data?.items ?? []} rowKey={(p) => p.id} loading={q.isFetching} sortBy={sortBy} sortDir={sortDir} onSort={onSort} onRowClick={(p) => nav(routes.app.patient(p.id))}
             empty={<EmptyState icon={<Users />} title={t('common.empty')} description={t('common.emptyHint')} />} />
           {q.data && q.data.total > 0 && (

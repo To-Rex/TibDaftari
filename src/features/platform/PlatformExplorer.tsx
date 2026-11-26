@@ -144,7 +144,7 @@ export function PlatformExplorer() {
       eyebrow={isSuperAdmin ? 'Superadmin' : root?.name}
       title={isSuperAdmin ? t('admin.platform.title') : t('admin.platform.scopedTitle')}
       description={isSuperAdmin ? t('admin.platform.subtitle') : t('admin.platform.scopedSubtitle', { name: root?.name ?? '' })}
-      actions={add && <Button data-hotkey="n" leftIcon={add === 'facility' ? <Rocket className="size-4" /> : <Plus className="size-4" />} onClick={openAdd} data-platform-add={add}>{addLabel}</Button>} />
+      actions={add && <Button data-hotkey="n" leftIcon={add === 'facility' ? <Rocket className="size-4" /> : <Plus className="size-4" />} onClick={openAdd} data-platform-add={add} data-tour="territory-add">{addLabel}</Button>} />
   )
   if (!isSuperAdmin && !root) {
     // the administered unit is not in the tree yet (loading) or not at all (the shell corrects the scope on its next pass)
@@ -191,7 +191,7 @@ export function PlatformExplorer() {
           <div className="flex flex-wrap items-end gap-2">
             <div className="min-w-0 flex-1">{listTitle}</div>
             {entries.length > 6 && <SearchInput value={query} onChange={setQuery} placeholder={t('admin.platform.search')} aria-label={t('admin.platform.search')} className="order-last w-full sm:order-none sm:w-64" data-platform-search />}
-            <Button size="sm" variant="ghost" className="shrink-0" leftIcon={<Download className="size-4" />} onClick={exportCsv} disabled={!shown.length} data-platform-csv>CSV</Button>
+            <Button size="sm" variant="ghost" className="shrink-0" leftIcon={<Download className="size-4" />} onClick={exportCsv} disabled={!shown.length} data-platform-csv data-tour="territory-csv">CSV</Button>
           </div>
 
           {cards ? (
@@ -202,7 +202,7 @@ export function PlatformExplorer() {
             ) : shown.length === 0 && query ? (
               <Card><EmptyState title={t('admin.platform.noMatches')} /></Card>
             ) : (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3" data-platform-cards>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3" data-platform-cards data-tour="territory-cards">
                 {level === 'company' && shown.map((e) => (
                   <CompanyCard key={e.id} unit={e.node!} countries={countryNodes.filter((n) => n.parentId === e.id)} row={stats === 'ready' ? rowsById.get(e.id) : undefined} share={stats === 'ready' ? share(rowsById.get(e.id)) : undefined} stats={stats}
                     onOpen={() => down(e.id)} onManage={canManage(e.unitId) ? () => manage(e.unitId!) : undefined} />

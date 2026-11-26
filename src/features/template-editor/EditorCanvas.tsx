@@ -71,7 +71,7 @@ export function EditorCanvas({ ctx, assets, fitSignal, className }: { ctx: Rende
   const hideIds = useMemo(() => (editingId ? [editingId] : undefined), [editingId])
 
   return (
-    <div ref={scrollRef} className={cn('relative flex-1 min-w-0 overflow-auto bg-surface-2/60 dark:bg-bg [background-image:radial-gradient(rgb(0_0_0/0.06)_1px,transparent_1px)] [background-size:16px_16px] dark:[background-image:radial-gradient(rgb(255_255_255/0.05)_1px,transparent_1px)]', className)}>
+    <div ref={scrollRef} data-tour="templateEditor-canvas" className={cn('relative flex-1 min-w-0 overflow-auto bg-surface-2/60 dark:bg-bg [background-image:radial-gradient(rgb(0_0_0/0.06)_1px,transparent_1px)] [background-size:16px_16px] dark:[background-image:radial-gradient(rgb(255_255_255/0.05)_1px,transparent_1px)]', className)}>
       <div className="min-w-full min-h-full grid place-items-center p-3 xl:p-8" style={{ width: size.w * zoom + pad, height: size.h * zoom + pad }}>
         <div
           ref={pageRef}

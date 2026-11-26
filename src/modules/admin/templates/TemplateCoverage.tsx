@@ -43,7 +43,7 @@ export function TemplateCoverage({ coverage, categories, canWrite, onCreate, onF
   )
 
   return (
-    <section data-template-coverage={tone} className={cn('mb-4 rounded-[var(--radius-lg)] border px-4 py-3', tone === 'warn' ? 'border-warn/40 bg-warn-soft/40' : tone === 'info' ? 'border-info/30 bg-info-soft/40' : 'border-line bg-surface')}>
+    <section data-tour="templates-coverage" data-template-coverage={tone} className={cn('mb-4 rounded-[var(--radius-lg)] border px-4 py-3', tone === 'warn' ? 'border-warn/40 bg-warn-soft/40' : tone === 'info' ? 'border-info/30 bg-info-soft/40' : 'border-line bg-surface')}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <span className={cn('grid size-8 shrink-0 place-items-center rounded-full', tone === 'warn' ? 'bg-warn-soft text-warn' : tone === 'info' ? 'bg-info-soft text-info' : 'bg-ok-soft text-ok')}>
           {tone === 'ok' ? <ShieldCheck className="size-4" /> : <TriangleAlert className="size-4" />}

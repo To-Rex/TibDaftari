@@ -75,7 +75,7 @@ export function ServiceTypeTable({ rows, loading, schemas, templates, categories
     { key: 'tat', header: t('catalog.services.turnaroundShort'), align: 'center', hideBelow: 'md', className: 'max-2xl:hidden', cell: (s) => <span className="tabular text-ink-2">{s.turnaroundDays} {t('common.days')}</span> },
     // schema + default template share one column in the table (stacked); separate rows in card mode
     { key: 'schema', header: <span className="md:whitespace-normal md:leading-tight md:inline-block md:max-w-[150px]">{t('catalog.services.schema')}<span className="hidden md:inline text-ink-3"> / {t('catalog.services.defaultTemplateShort')}</span></span>, hideBelow: 'md', cell: (s) => (
-      <div className="flex flex-col gap-0.5 min-w-0">
+      <div data-tour="catalog-row-docs" className="flex flex-col gap-0.5 min-w-0">
         {schemaLink(s)}
         <span className="hidden md:block leading-tight">{tplLink(s)}</span>
       </div>
@@ -83,7 +83,7 @@ export function ServiceTypeTable({ rows, loading, schemas, templates, categories
     { key: 'tpl', header: t('catalog.services.defaultTemplateShort'), className: 'hidden', cell: (s) => tplLink(s) },
     { key: 'ordered', header: t('catalog.services.ordered30d'), align: 'right', hideBelow: 'md', className: 'max-2xl:hidden', cell: (s) => <span className="tabular text-ink-2">{s.stats?.ordered30d ?? 0}</span> },
     { key: 'active', header: t('common.status'), align: 'center', cell: (s) => (
-      <span onClick={(e) => e.stopPropagation()} className="catalog-status-cell inline-flex">
+      <span data-tour="catalog-row-status" onClick={(e) => e.stopPropagation()} className="catalog-status-cell inline-flex">
         {canWrite ? (
           <Switch
             size="sm"
@@ -97,7 +97,7 @@ export function ServiceTypeTable({ rows, loading, schemas, templates, categories
     ) },
     ...(canWrite ? [{ key: 'menu', header: '', width: '48px', card: 'actions' as const, cell: (s: ServiceType) => (
       <span onClick={(e) => e.stopPropagation()} className="inline-flex">
-        <Menu trigger={() => <span className="catalog-service-menu-trigger grid size-10 place-items-center rounded-lg border border-line text-ink-3 hover:bg-surface-2 hover:text-ink md:size-8 md:rounded-full md:border-0"><MoreHorizontal className="size-4" /></span>}
+        <Menu trigger={() => <span data-tour="catalog-row-menu" className="catalog-service-menu-trigger grid size-10 place-items-center rounded-lg border border-line text-ink-3 hover:bg-surface-2 hover:text-ink md:size-8 md:rounded-full md:border-0"><MoreHorizontal className="size-4" /></span>}
           items={[
             { key: 'edit', label: t('common.edit'), icon: <Pencil />, onSelect: () => onEdit(s) },
             { key: 'del', label: t('common.delete'), icon: <Trash2 />, danger: true, onSelect: () => onDelete(s), separatorBefore: true },

@@ -78,7 +78,7 @@ export function PlatformTable({ level, rows, loading, stale, sort, onSort, onOpe
     ) },
   ]
   return (
-    <Card padded={false} className={cn('overflow-hidden transition-opacity', stale && 'opacity-60')} data-platform-table>
+    <Card padded={false} className={cn('overflow-hidden transition-opacity', stale && 'opacity-60')} data-platform-table data-tour="territory-table">
       <DataTable<Entry> columns={columns} rows={rows} rowKey={(r) => r.id} loading={loading} sortBy={sort.by} sortDir={sort.dir} onSort={onSort} cardBelow="md" onRowClick={onOpen} empty={empty} />
     </Card>
   )

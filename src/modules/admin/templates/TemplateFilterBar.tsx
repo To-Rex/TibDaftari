@@ -53,7 +53,7 @@ export function TemplateFilterBar({ kind, value, onChange, services, categories,
   }
 
   return (
-    <div className={cn('grid grid-cols-1 gap-2 xs:grid-cols-2 sm:flex sm:flex-wrap sm:items-center', className)} data-template-filters>
+    <div className={cn('grid grid-cols-1 gap-2 xs:grid-cols-2 sm:flex sm:flex-wrap sm:items-center', className)} data-template-filters data-tour="templates-filters">
       {kind === 'result' && (
         <>
           <Select {...pick('scope', t(`${F}.scopeLabel`))} value={value.scope} onChange={(e) => set('scope', e.target.value as GalleryFilters['scope'])}>

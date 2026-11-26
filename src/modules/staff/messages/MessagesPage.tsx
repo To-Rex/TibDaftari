@@ -50,7 +50,7 @@ export default function MessagesPage() {
     ...(showUnit ? [{ key: 'unit', header: t('clinical.messages.unit'), hideBelow: 'lg', width: '160px', card: 'meta', cell: (m) => <span className="truncate text-ink-2" title={m.unitName ?? ''}>{m.unitName ?? '—'}</span> } as Column<OutboxMessage>] : []),
     { key: 'kind', header: t('clinical.messages.kind'), hideBelow: 'lg', width: '140px', card: 'meta', cell: (m) => <Badge size="sm">{t(`clinical.messages.kind_${m.kind}`)}</Badge> },
     { key: 'status', header: t('common.status'), width: '150px', card: 'meta', cell: (m) => (
-      <div className="flex min-w-0 flex-col gap-0.5">
+      <div data-tour="messages-status" className="flex min-w-0 flex-col gap-0.5">
         <span className="inline-flex flex-wrap items-center gap-1">
           <MessageStatusBadge status={m.status} />
           {m.countryCode && m.countryCode !== 'UZ' && <Badge size="sm" tone="info">{m.countryCode}</Badge>}
@@ -77,7 +77,7 @@ export default function MessagesPage() {
       <PageHeader
         title={t('clinical.messages.title')}
         description={t('clinical.messages.subtitle')}
-        actions={can(['messaging.send', 'messaging.broadcast']) && <Button data-hotkey="n" leftIcon={<Plus className="size-4" />} onClick={() => setCompose(true)}>{t('clinical.messages.newMessage')}</Button>}
+        actions={can(['messaging.send', 'messaging.broadcast']) && <Button data-hotkey="n" data-tour="messages-new" leftIcon={<Plus className="size-4" />} onClick={() => setCompose(true)}>{t('clinical.messages.newMessage')}</Button>}
       />
 
       <div className="mb-4 flex flex-wrap items-start gap-x-3 gap-y-2 rounded-[var(--radius)] border border-info/25 bg-info-soft/60 px-4 py-3 text-[13px] text-ink-2">
@@ -87,6 +87,7 @@ export default function MessagesPage() {
       </div>
 
       <Tabs<Tab>
+        tour="messages-tabs"
         className="mb-4"
         value={tab}
         onChange={setTab}
@@ -96,10 +97,10 @@ export default function MessagesPage() {
         ]}
       />
       <Toolbar actions={live && <span className="inline-flex items-center gap-2 text-[12.5px] text-ink-3"><span className="relative flex size-2"><span className="absolute inline-flex size-full animate-ping rounded-full bg-brand opacity-60" /><span className="relative inline-flex size-2 rounded-full bg-brand" /></span>{t('clinical.messages.live')}</span>}>
-        <SearchInput value={search} onChange={setSearch} placeholder={t('clinical.messages.searchPlaceholder')} className="h-9 w-full sm:w-80" />
+        <SearchInput data-tour="messages-search" value={search} onChange={setSearch} placeholder={t('clinical.messages.searchPlaceholder')} className="h-9 w-full sm:w-80" />
       </Toolbar>
 
-      <Card padded={false} className="overflow-hidden">
+      <Card data-tour="messages-list" padded={false} className="overflow-hidden">
         <DataTable columns={columns} rows={rows} rowKey={(m) => m.id} loading={list.isLoading}
           empty={<EmptyState icon={<MessageSquare />} title={t('clinical.messages.empty')} description={t('common.emptyHint')} />} />
         {data && data.total > 0 && (

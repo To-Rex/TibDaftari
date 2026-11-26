@@ -167,10 +167,10 @@ export default function AssistantPage() {
 
         <section className="flex min-w-0 flex-1 flex-col">
           <header className="flex h-12 shrink-0 items-center gap-0.5 px-2 sm:px-3" data-assistant-bar>
-            <IconButton label={historyOpen ? t('assistant.hideHistory') : t('assistant.showHistory')} aria-expanded={historyOpen} onClick={toggleHistory} data-history-toggle data-hotkey="h">
+            <IconButton label={historyOpen ? t('assistant.hideHistory') : t('assistant.showHistory')} aria-expanded={historyOpen} onClick={toggleHistory} data-history-toggle data-hotkey="h" data-tour="assistant-history">
               {historyOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
             </IconButton>
-            <IconButton label={t('assistant.newThread')} onClick={newChat} data-thread-new data-hotkey="n"><SquarePen /></IconButton>
+            <IconButton label={t('assistant.newThread')} onClick={newChat} data-thread-new data-hotkey="n" data-tour="assistant-new"><SquarePen /></IconButton>
             <div className="ml-1 flex min-w-0 flex-1 items-center">
               {activeThread && renaming ? (
                 <RenameInput value={activeThread.title} onSave={(v) => { setRenaming(false); onRename(activeThread.id, v) }} onCancel={() => setRenaming(false)} className="max-w-md" />
@@ -189,7 +189,7 @@ export default function AssistantPage() {
               ) : <span className="truncate px-2 text-[14px] font-medium text-ink-2" data-thread-title>{title}</span>}
             </div>
             <span className="relative">
-              <IconButton label={t('assistant.schedule.title')} onClick={openTasks} data-schedules-open><CalendarClock /></IconButton>
+              <IconButton label={t('assistant.schedule.title')} onClick={openTasks} data-schedules-open data-tour="assistant-tasks"><CalendarClock /></IconButton>
               {liveTasks > 0 && <span className="pointer-events-none absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand px-1 text-[10px] font-bold leading-none text-white ring-2 ring-bg" data-schedules-count>{liveTasks}</span>}
             </span>
             {settingsLink && <IconButton label={t('assistant.openSettings')} onClick={() => nav(routes.admin.assistantSettings)} data-assistant-settings-link><Settings2 /></IconButton>}

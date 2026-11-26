@@ -30,7 +30,7 @@ export function ResultRow({
   const { t } = useTranslation()
   const fresh = isRecent(doc.createdAt)
   return (
-    <motion.div variants={fadeUp}>
+    <motion.div variants={fadeUp} data-tour="portal-result-row">
       <Link
         to={routes.portal.result(doc.id)}
         className={cn(

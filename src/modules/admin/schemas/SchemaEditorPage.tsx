@@ -73,7 +73,7 @@ export default function SchemaEditorPage() {
     <Page width="full" className="pb-10">
       {/* header */}
       <div className="mb-5 flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-        <div className="flex items-start gap-2 sm:gap-3 min-w-0">
+        <div data-tour="schemaEditor-head" className="flex items-start gap-2 sm:gap-3 min-w-0">
           <IconButton label={t('common.back')} onClick={() => nav(routes.admin.schemas)} className="mt-0.5"><ArrowLeft /></IconButton>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
@@ -95,8 +95,8 @@ export default function SchemaEditorPage() {
         <div className="flex items-center gap-2 shrink-0 flex-wrap max-xl:pl-10 max-sm:pl-0">
           <span className="hidden xl:inline-flex items-center gap-1 text-[12px] text-ink-3 mr-1"><Kbd>Ctrl</Kbd>+<Kbd>S</Kbd></span>
           <Button variant="ghost" size="sm" leftIcon={isDesktop && preview ? <EyeOff className="size-4" /> : <Eye className="size-4" />} onClick={() => (isDesktop ? setPreview((p) => !p) : setPreviewSheet(true))}>{t('common.preview')}</Button>
-          {canWrite && <Button variant="secondary" leftIcon={<Save className="size-4" />} loading={save.isPending} disabled={!ed.dirty} onClick={() => void doSave()}>{t('common.save')}</Button>}
-          {canWrite && schema.status !== 'published' && <Button leftIcon={<Rocket className="size-4" />} onClick={() => setPublishAsk(true)} disabled={st.fields.length === 0}>{t('catalog.schemas.publish')}</Button>}
+          {canWrite && <Button data-tour="schemaEditor-save" variant="secondary" leftIcon={<Save className="size-4" />} loading={save.isPending} disabled={!ed.dirty} onClick={() => void doSave()}>{t('common.save')}</Button>}
+          {canWrite && schema.status !== 'published' && <Button data-tour="schemaEditor-publish" leftIcon={<Rocket className="size-4" />} onClick={() => setPublishAsk(true)} disabled={st.fields.length === 0}>{t('catalog.schemas.publish')}</Button>}
         </div>
       </div>
 
@@ -123,7 +123,7 @@ export default function SchemaEditorPage() {
           // phones / tablets: field list full width; property editor in a drawer; preview in a modal
           return (
             <>
-              <Card padded={false} className="overflow-hidden flex flex-col">
+              <Card data-tour="schemaEditor-fields" padded={false} className="overflow-hidden flex flex-col">
                 <FieldList fields={st.fields} selectedKey={ed.selectedKey} onSelect={(k) => { ed.setSelectedKey(k); setFieldSheet(true) }} onAdd={(ft) => { ed.addField(ft); setFieldSheet(true) }} onMove={ed.moveField} onDuplicate={(k) => { ed.duplicateField(k); setFieldSheet(true) }} onRemove={ed.removeField} readOnly={!canWrite} />
               </Card>
               <Drawer open={fieldSheet && !!ed.selected} onClose={() => setFieldSheet(false)} width="max-w-full sm:max-w-xl" title={t('catalog.schemas.fieldProps')} description={ed.selected ? <span className="font-mono">values.{ed.selected.key}</span> : undefined}
@@ -139,11 +139,11 @@ export default function SchemaEditorPage() {
         }
         return (
           <div className={cn('grid gap-4 items-start', preview ? 'xl:grid-cols-[260px_minmax(0,1fr)_300px] 2xl:grid-cols-[300px_minmax(0,1fr)_360px] 3xl:grid-cols-[340px_minmax(0,1fr)_440px]' : 'xl:grid-cols-[300px_minmax(0,1fr)] 3xl:grid-cols-[340px_minmax(0,1fr)]')}>
-            <Card padded={false} className="xl:sticky xl:top-20 xl:max-h-[calc(100dvh-6.5rem)] overflow-hidden flex flex-col">
+            <Card data-tour="schemaEditor-fields" padded={false} className="xl:sticky xl:top-20 xl:max-h-[calc(100dvh-6.5rem)] overflow-hidden flex flex-col">
               <FieldList fields={st.fields} selectedKey={ed.selectedKey} onSelect={ed.setSelectedKey} onAdd={ed.addField} onMove={ed.moveField} onDuplicate={ed.duplicateField} onRemove={ed.removeField} readOnly={!canWrite} />
             </Card>
 
-            <Card className="min-w-0">
+            <Card data-tour="schemaEditor-props" className="min-w-0">
               <AnimatePresence mode="wait">
                 {propsEditor ?? (
                   <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -156,7 +156,7 @@ export default function SchemaEditorPage() {
             <AnimatePresence>
               {preview && (
                 <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }} transition={{ duration: 0.2 }} className="xl:sticky xl:top-20 xl:max-h-[calc(100dvh-6.5rem)] overflow-y-auto min-w-0">
-                  <Card>{previewCard}</Card>
+                  <Card data-tour="schemaEditor-preview">{previewCard}</Card>
                 </motion.div>
               )}
             </AnimatePresence>

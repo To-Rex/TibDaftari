@@ -80,11 +80,11 @@ export default function PortalResultsPage() {
       )}
 
       {q.isPending ? (
-        <Card padded={false}>
+        <Card padded={false} data-tour="portalResults-list">
           <SkeletonRows rows={6} className="p-4" />
         </Card>
       ) : groups.length === 0 ? (
-        <Card padded={false}>
+        <Card padded={false} data-tour="portalResults-list">
           <EmptyState
             icon={<FolderOpen />}
             title={t('portal.results.emptyTitle')}

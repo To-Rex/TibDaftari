@@ -55,5 +55,5 @@ export function HotkeysHelp({ open, onClose, nav }: { open: boolean; onClose: ()
 
 export function HotkeysButton({ onClick }: { onClick: () => void }) {
   const { t } = useTranslation()
-  return <IconButton label={t(`${K}.button`)} onClick={onClick} className="max-sm:hidden"><Keyboard /></IconButton>
+  return <IconButton label={t(`${K}.button`)} onClick={onClick} className="max-sm:hidden" data-tour="top-keys"><Keyboard /></IconButton>
 }

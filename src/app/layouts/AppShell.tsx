@@ -23,14 +23,15 @@ import { useUnitTree, useUnitTreeShape } from '@/features/org/queries'
 import { UnitSwitcher } from '@/features/org/UnitSwitcher'
 import { useGlobalHotkeys } from '@/features/hotkeys/useGlobalHotkeys'
 import { HotkeysButton, HotkeysHelp } from '@/features/hotkeys/HotkeysHelp'
+import { TourButton, TourProvider, type TourMenuControl } from '@/features/tour'
 import { preloadRouteChunks, warmWorkspaceData } from '@/features/session/warmup'
 import { routes } from '@/shared/config/routes'
 import { cn } from '@/shared/lib/cn'
 import { Avatar, Badge, LanguageSwitcher, Logo, BrandMark, Menu, ThemeToggle, IconButton, Tooltip } from '@/shared/ui'
 import { storage } from '@/shared/lib/storage'
 
-interface NavItem { to: string; label: string; icon: ReactNode; perm?: Permission | Permission[]; end?: boolean; badge?: number; /** "G" + this letter jumps to the page */ key?: string }
-interface NavSection { title?: string; items: NavItem[] }
+interface NavItem { to: string; label: string; icon: ReactNode; perm?: Permission | Permission[]; end?: boolean; badge?: number; /** "G" + this letter jumps to the page */ key?: string; /** its name for the guided tour (`data-tour`) */ tour: string }
+interface NavSection { /** names the group for the guided tour */ id: string; title?: string; items: NavItem[] }
 
 const FACILITY_ONLY: UnitLevel[] = ['facility']
 
@@ -98,48 +99,48 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
   const sections: NavSection[] = useMemo(() => {
     if (module === 'admin') {
       return [
-        { items: [
-          { to: routes.admin.root, label: t('nav.dashboard'), icon: <LayoutDashboard />, end: true, key: 'd' },
-          { to: routes.admin.assistant, label: t('nav.assistant'), icon: <Sparkles />, perm: 'assistant.use', key: 'y' },
+        { id: 'main', items: [
+          { to: routes.admin.root, label: t('nav.dashboard'), icon: <LayoutDashboard />, end: true, key: 'd', tour: 'nav-dashboard' },
+          { to: routes.admin.assistant, label: t('nav.assistant'), icon: <Sparkles />, perm: 'assistant.use', key: 'y', tour: 'nav-assistant' },
         ] },
-        { title: t('nav.organisation'), items: [
-          { to: routes.admin.unit, label: t('nav.unit'), icon: <Building2 />, perm: 'admin.unit.read', key: 'k' },
-          { to: routes.admin.units, label: t('nav.units'), icon: <Landmark />, perm: ['admin.unit.manage', 'admin.unit.read'], key: 'f' },
-          { to: routes.admin.employees, label: t('nav.employees'), icon: <UserCog />, perm: 'admin.employee.read', key: 'x' },
-          { to: routes.admin.roles, label: t('nav.roles'), icon: <ShieldCheck />, perm: 'admin.role.write', key: 'r' },
+        { id: 'org', title: t('nav.organisation'), items: [
+          { to: routes.admin.unit, label: t('nav.unit'), icon: <Building2 />, perm: 'admin.unit.read', key: 'k', tour: 'nav-unit' },
+          { to: routes.admin.units, label: t('nav.units'), icon: <Landmark />, perm: ['admin.unit.manage', 'admin.unit.read'], key: 'f', tour: 'nav-units' },
+          { to: routes.admin.employees, label: t('nav.employees'), icon: <UserCog />, perm: 'admin.employee.read', key: 'x', tour: 'nav-employees' },
+          { to: routes.admin.roles, label: t('nav.roles'), icon: <ShieldCheck />, perm: 'admin.role.write', key: 'r', tour: 'nav-roles' },
         ] },
-        { title: t('nav.catalog'), items: [
-          { to: routes.admin.catalog, label: t('nav.catalog'), icon: <FolderTree />, perm: 'admin.catalog.read', key: 'z' },
-          { to: routes.admin.schemas, label: t('nav.schemas'), icon: <ListChecks />, perm: 'admin.schema.write', key: 's' },
-          { to: routes.admin.templates, label: t('nav.templates'), icon: <LayoutTemplate />, perm: 'admin.template.read', key: 'a' },
-          { to: routes.admin.receipts, label: t('nav.receipts'), icon: <ReceiptText />, perm: 'admin.template.read', key: 'c' },
+        { id: 'catalog', title: t('nav.catalog'), items: [
+          { to: routes.admin.catalog, label: t('nav.catalog'), icon: <FolderTree />, perm: 'admin.catalog.read', key: 'z', tour: 'nav-catalog' },
+          { to: routes.admin.schemas, label: t('nav.schemas'), icon: <ListChecks />, perm: 'admin.schema.write', key: 's', tour: 'nav-schemas' },
+          { to: routes.admin.templates, label: t('nav.templates'), icon: <LayoutTemplate />, perm: 'admin.template.read', key: 'a', tour: 'nav-templates' },
+          { to: routes.admin.receipts, label: t('nav.receipts'), icon: <ReceiptText />, perm: 'admin.template.read', key: 'c', tour: 'nav-receipts' },
         ] },
-        { title: t('common.settings'), items: [
-          { to: routes.admin.sms, label: t('nav.smsSettings'), icon: <Send />, perm: 'admin.settings.write', key: 'm' },
-          { to: routes.admin.platform, label: isSuperAdmin ? t('nav.platform') : t('nav.territory'), icon: <Globe2 />, perm: ['platform.unit.manage', 'reports.operations.read'] as Permission[], key: 'p' },
+        { id: 'settings', title: t('common.settings'), items: [
+          { to: routes.admin.sms, label: t('nav.smsSettings'), icon: <Send />, perm: 'admin.settings.write', key: 'm', tour: 'nav-sms' },
+          { to: routes.admin.platform, label: isSuperAdmin ? t('nav.platform') : t('nav.territory'), icon: <Globe2 />, perm: ['platform.unit.manage', 'reports.operations.read'] as Permission[], key: 'p', tour: 'nav-territory' },
         ] },
       ]
     }
     return [
-      { items: [
-        { to: routes.app.root, label: t('nav.dashboard'), icon: <LayoutDashboard />, end: true, key: 'd' },
-        { to: routes.app.assistant, label: t('nav.assistant'), icon: <Sparkles />, perm: 'assistant.use', key: 'y' },
+      { id: 'main', items: [
+        { to: routes.app.root, label: t('nav.dashboard'), icon: <LayoutDashboard />, end: true, key: 'd', tour: 'nav-dashboard' },
+        { to: routes.app.assistant, label: t('nav.assistant'), icon: <Sparkles />, perm: 'assistant.use', key: 'y', tour: 'nav-assistant' },
       ] },
-      { title: t('nav.reception'), items: [
-        { to: routes.app.reception, label: t('nav.reception'), icon: <ClipboardList />, perm: 'reception.order.create', key: 'q' },
-        { to: routes.app.patients, label: t('nav.patients'), icon: <Users />, perm: 'reception.patient.read', key: 'b' },
-        { to: routes.app.orders, label: t('nav.orders'), icon: <Receipt />, perm: ['reception.order.create', 'reports.operations.read'], key: 'c' },
+      { id: 'reception', title: t('nav.reception'), items: [
+        { to: routes.app.reception, label: t('nav.reception'), icon: <ClipboardList />, perm: 'reception.order.create', key: 'q', tour: 'nav-reception' },
+        { to: routes.app.patients, label: t('nav.patients'), icon: <Users />, perm: 'reception.patient.read', key: 'b', tour: 'nav-patients' },
+        { to: routes.app.orders, label: t('nav.orders'), icon: <Receipt />, perm: ['reception.order.create', 'reports.operations.read'], key: 'c', tour: 'nav-orders' },
       ] },
-      { title: t('nav.lab'), items: [
-        { to: routes.app.lab, label: t('nav.lab'), icon: <FlaskConical />, perm: 'lab.worklist.read', badge: pending.data?.lab, key: 'l' },
+      { id: 'lab', title: t('nav.lab'), items: [
+        { to: routes.app.lab, label: t('nav.lab'), icon: <FlaskConical />, perm: 'lab.worklist.read', badge: pending.data?.lab, key: 'l', tour: 'nav-lab' },
         // the registrar desk (approved results only) reaches the same page as "Natijalar"
         can('confirm.result.read')
-          ? { to: routes.app.confirm, label: t('nav.confirm'), icon: <BadgeCheck />, perm: 'confirm.result.read', badge: pending.data?.confirm, key: 't' }
-          : { to: routes.app.confirm, label: t('nav.results'), icon: <FileCheck2 />, perm: 'confirm.result.view', key: 't' },
+          ? { to: routes.app.confirm, label: t('nav.confirm'), icon: <BadgeCheck />, perm: 'confirm.result.read', badge: pending.data?.confirm, key: 't', tour: 'nav-confirm' }
+          : { to: routes.app.confirm, label: t('nav.results'), icon: <FileCheck2 />, perm: 'confirm.result.view', key: 't', tour: 'nav-results' },
       ] },
-      { items: [
-        { to: routes.app.reports, label: t('nav.reports'), icon: <BarChart3 />, perm: ['reports.finance.read', 'reports.operations.read'], key: 'h' },
-        { to: routes.app.messages, label: t('nav.messages'), icon: <MessageSquare />, perm: ['messaging.send', 'messaging.broadcast'], badge: pending.data?.sms, key: 'x' },
+      { id: 'more', items: [
+        { to: routes.app.reports, label: t('nav.reports'), icon: <BarChart3 />, perm: ['reports.finance.read', 'reports.operations.read'], key: 'h', tour: 'nav-reports' },
+        { to: routes.app.messages, label: t('nav.messages'), icon: <MessageSquare />, perm: ['messaging.send', 'messaging.broadcast'], badge: pending.data?.sms, key: 'x', tour: 'nav-messages' },
       ] },
     ]
   }, [module, t, pending.data, can, isSuperAdmin])
@@ -152,6 +153,12 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
   useGlobalHotkeys({ nav: navHotkeys, onHelp: openHelp })
   const canAdmin = can(['admin.unit.read', 'admin.employee.read', 'admin.catalog.read', 'admin.template.read']) || isSuperAdmin
 
+  // the guided tour: it opens the menu drawer on a phone for the steps about the menu, and is told which entries
+  // this reader has (a closed drawer does not render them). A superadmin gets no tours.
+  const tourMenu = useMemo<TourMenuControl>(() => ({ isDrawer: () => !window.matchMedia('(min-width: 1024px)').matches, open: () => setMobileOpen(true), close: () => setMobileOpen(false) }), [])
+  const tourIds = useMemo(() => new Set([...visible.flatMap((s) => [`nav-sec-${s.id}`, ...s.items.map((i) => i.tour)]), ...(module === 'admin' || canAdmin ? ['nav-switch'] : [])]), [visible, module, canAdmin])
+  const tourKnown = useCallback((id: string) => (id.startsWith('nav-') ? tourIds.has(id) : undefined), [tourIds])
+
   const sidebar = (
     <div className="flex h-full flex-col">
       <div className={cn('flex h-16 items-center border-b border-line px-4', collapsed ? 'justify-center' : 'justify-between')}>
@@ -162,12 +169,12 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
       </div>
       <nav className="app-sidebar-nav flex-1 space-y-5 overflow-y-auto px-3 py-4">
         {visible.map((s, i) => (
-          <div key={i}>
+          <div key={i} data-tour={`nav-sec-${s.id}`}>
             {s.title && !collapsed && <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-3">{s.title}</p>}
             <ul className="space-y-0.5">
               {s.items.map((it) => (
                 <li key={it.to}>
-                  <NavLink to={it.to} end={it.end} title={it.key ? `${it.label} · G ${it.key.toUpperCase()}` : it.label} className={({ isActive }) => cn('app-sidebar-link group relative flex h-10 items-center gap-3 rounded-[10px] px-3 text-[14px] font-medium transition-colors', collapsed && 'justify-center px-0', isActive ? 'bg-brand-soft text-brand-ink' : 'text-ink-2 hover:bg-surface-2 hover:text-ink')}>
+                  <NavLink to={it.to} end={it.end} data-tour={it.tour} title={it.key ? `${it.label} · G ${it.key.toUpperCase()}` : it.label} className={({ isActive }) => cn('app-sidebar-link group relative flex h-10 items-center gap-3 rounded-[10px] px-3 text-[14px] font-medium transition-colors', collapsed && 'justify-center px-0', isActive ? 'bg-brand-soft text-brand-ink' : 'text-ink-2 hover:bg-surface-2 hover:text-ink')}>
                     {({ isActive }) => (
                       <>
                         {isActive && <motion.span layoutId={`nav-${module}`} className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full bg-brand" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
@@ -188,12 +195,12 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
       </nav>
       <div className="border-t border-line p-3">
         {module === 'staff' && canAdmin && (
-          <NavLink to={routes.admin.root} className={cn('app-sidebar-link flex h-10 items-center gap-3 rounded-[10px] px-3 text-[13.5px] font-medium text-ink-2 hover:bg-surface-2 hover:text-ink', collapsed && 'justify-center px-0')}>
+          <NavLink to={routes.admin.root} data-tour="nav-switch" className={cn('app-sidebar-link flex h-10 items-center gap-3 rounded-[10px] px-3 text-[13.5px] font-medium text-ink-2 hover:bg-surface-2 hover:text-ink', collapsed && 'justify-center px-0')}>
             <ArrowLeftRight className="size-[18px] text-ink-3" />{!collapsed && t('nav.admin')}
           </NavLink>
         )}
         {module === 'admin' && (
-          <NavLink to={routes.app.root} className={cn('app-sidebar-link flex h-10 items-center gap-3 rounded-[10px] px-3 text-[13.5px] font-medium text-ink-2 hover:bg-surface-2 hover:text-ink', collapsed && 'justify-center px-0')}>
+          <NavLink to={routes.app.root} data-tour="nav-switch" className={cn('app-sidebar-link flex h-10 items-center gap-3 rounded-[10px] px-3 text-[13.5px] font-medium text-ink-2 hover:bg-surface-2 hover:text-ink', collapsed && 'justify-center px-0')}>
             <ArrowLeftRight className="size-[18px] text-ink-3" />{!collapsed && t('nav.staffApp')}
           </NavLink>
         )}
@@ -203,6 +210,7 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
   )
 
   return (
+    <TourProvider audience={module} user={isSuperAdmin ? null : `staff:${ws.staff.employeeId}`} name={ws.staff.fullName.split(/\s+/)[0] ?? ws.staff.fullName} menu={tourMenu} known={tourKnown}>
     <div className="app-shell relative min-h-dvh overflow-x-clip bg-bg">
       {/* Desktop sidebar */}
       <aside className={cn('app-shell-sidebar fixed inset-y-0 left-0 z-40 hidden border-r border-line bg-bg-elevated/95 transition-[width] duration-300 ease-[var(--ease-out)] lg:block', collapsed ? 'w-[72px]' : 'w-[248px]')}>{sidebar}</aside>
@@ -225,6 +233,7 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
       </div>
     <HotkeysHelp open={help} onClose={() => setHelp(false)} nav={navHotkeys} />
       </div>
+    </TourProvider>
   )
 }
 
@@ -256,26 +265,27 @@ function TopBar({ onMenu, module, onHelp, ws }: { onMenu: () => void; module: 's
       {(module === 'admin' || s.isSuperAdmin) && scopeUnit && (
         <UnitSwitcher units={scopeChoices} value={scopeUnit.id} hint={t('org.switcher.scope')} recentKey="clinic.recent.scope" disabled={scopeChoices.length < 2}
           onChange={(id) => { setScopeUnit(id); if (module === 'admin') nav(routes.admin.root) }}
-          triggerProps={scopeChoices.length > 1 ? { 'data-scope-switcher': true } : { 'data-scope-fixed': true }} />
+          triggerProps={{ 'data-tour': 'top-unit', ...(scopeChoices.length > 1 ? { 'data-scope-switcher': true } : { 'data-scope-fixed': true }) }} />
       )}
 
       {/* Facility switcher — the staff app works in one facility under the scope */}
       {module === 'staff' && scopeUnit && facilities.length > 0 && (
         <UnitSwitcher units={facilityUnits} levels={FACILITY_ONLY} value={facility?.id ?? null} placeholder={t('org.pickFacility')} hint={t('org.switcher.workplace')} recentKey="clinic.recent.facility" disabled={facilities.length < 2}
           onChange={(id) => setFacility(id)}
-          triggerProps={facilities.length > 1 ? { 'data-facility-switcher': true } : { 'data-facility-fixed': true }} />
+          triggerProps={{ 'data-tour': 'top-unit', ...(facilities.length > 1 ? { 'data-facility-switcher': true } : { 'data-facility-fixed': true }) }} />
       )}
       {module === 'admin' && <Badge tone="brand" size="sm" className="max-sm:hidden">{t('nav.admin')}</Badge>}
 
       <div className="flex-1 min-w-2" />
 
       <div className="flex shrink-0 items-center gap-0 xs:gap-1">
+        <TourButton />
         <HotkeysButton onClick={onHelp} />
         <LanguageSwitcher compact />
         <ThemeToggle />
         <Menu
           trigger={() => (
-            <span className="relative">
+            <span className="relative" data-tour="top-notif">
               <IconButton label="notifications"><Bell /></IconButton>
               {unread > 0 && <span className="absolute right-1.5 top-1.5 grid size-4 place-items-center rounded-full bg-accent text-[10px] font-bold text-white ring-2 ring-bg">{unread}</span>}
             </span>
@@ -294,7 +304,7 @@ function TopBar({ onMenu, module, onHelp, ws }: { onMenu: () => void; module: 's
         />
         <Menu
           trigger={() => (
-            <button type="button" className="ml-0.5 xs:ml-1 flex items-center gap-2 rounded-full p-1 sm:pr-2 hover:bg-surface-2">
+            <button type="button" data-tour="top-me" className="ml-0.5 xs:ml-1 flex items-center gap-2 rounded-full p-1 sm:pr-2 hover:bg-surface-2">
               <Avatar name={s.fullName} size="sm" />
               <span className="max-md:hidden max-w-[160px] text-left leading-tight">
                 <span className="block truncate text-[13px] font-medium">{s.fullName}</span>

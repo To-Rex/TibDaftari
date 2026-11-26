@@ -31,7 +31,7 @@ const ESKIZ_DEFAULT_SENDER = '4546'
 export function UnitSmsAccountCard({ unit, readOnly }: { unit: OrgUnit; readOnly?: boolean }) {
   const { t } = useTranslation()
   return (
-    <Card data-unit-sms>
+    <Card data-unit-sms data-tour="sms-account">
       <CardHeader className="max-xs:flex-col max-xs:items-start" title={t('admin.sms.accountTitle')} description={t('admin.sms.accountSub')} />
       {/* keyed by unit: switching units starts from that unit's saved account */}
       <SmsAccountEditor key={unit.id} unit={unit} readOnly={readOnly} />
@@ -176,7 +176,7 @@ function SmsAccountEditor({ unit, readOnly }: { unit: OrgUnit; readOnly?: boolea
 
       {current.isLoading ? <Skeleton className="h-40" /> : current.isError ? <p className="text-[13px] text-danger">{errorMessage(current.error)}</p> : (
         <fieldset disabled={readOnly} className="flex min-w-0 flex-col gap-5">
-          <div className="grid gap-3 sm:grid-cols-3" role="radiogroup" aria-label={t('admin.sms.accountTitle')}>
+          <div data-tour="sms-modes" className="grid gap-3 sm:grid-cols-3" role="radiogroup" aria-label={t('admin.sms.accountTitle')}>
             {MODES.map((m) => {
               const on = mode === m.value
               return (
@@ -239,7 +239,7 @@ function SmsAccountEditor({ unit, readOnly }: { unit: OrgUnit; readOnly?: boolea
           {mode !== 'off' && (
             <Field label={t('admin.sms.testTo')} hint={t('admin.sms.testToHint')} optionalText={t('common.optional')}>
               {(id) => (
-                <div className="flex flex-wrap gap-2">
+                <div data-tour="sms-test" className="flex flex-wrap gap-2">
                   <Input id={id} inputMode="tel" value={testTo} onChange={(e) => setTestTo(e.target.value)} placeholder={unit.phone ? fmtPhone(unit.phone) : '+998 90 123 45 67'} className="min-w-0 flex-1 basis-48" data-unit-sms-test-to />
                   <Button type="button" variant="secondary" className="max-sm:w-full" leftIcon={<PlugZap className="size-4" />} loading={testing} onClick={() => void test()} disabled={mode === 'inherited' && !inheritsFrom} data-unit-sms-test>{t('admin.sms.test')}</Button>
                 </div>
