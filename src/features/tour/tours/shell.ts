@@ -67,6 +67,7 @@ export const ADMIN_SHELL: TourDef = {
       item('nav-unit', 'nav.unit', 'unit'),
       item('nav-units', 'nav.units', 'units'),
       item('nav-employees', 'nav.employees', 'employees'),
+      item('nav-training', 'training.overview.nav', 'training'),
       item('nav-roles', 'nav.roles', 'roles'),
     ] },
     { key: 'navCatalog', target: 'nav-sec-catalog', menu: true, placement: 'right', items: [

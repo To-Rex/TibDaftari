@@ -41,6 +41,10 @@ export interface Notification {
   createdAt: IsoDateTime
   read: boolean
   link?: string
+  /** a notice the system wrote: what it is about (`training.passed` …) and its values — said in the reader's
+   *  language when the interface knows the code (`features/notifications`), else `title` / `body` as they are */
+  code?: string | null
+  params?: Record<string, string | number | null> | null
 }
 
 export interface DashboardSummary {

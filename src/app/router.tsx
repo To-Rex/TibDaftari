@@ -38,6 +38,7 @@ const UnitPage = lazy(() => import('@/modules/admin/org/UnitPage'))
 const UnitsPage = lazy(() => import('@/modules/admin/org/UnitsPage'))
 const EmployeesPage = lazy(() => import('@/modules/admin/employees/EmployeesPage'))
 const EmployeePage = lazy(() => import('@/modules/admin/employees/EmployeePage'))
+const TrainingOverviewPage = lazy(() => import('@/modules/admin/training/TrainingOverviewPage'))
 const RolesPage = lazy(() => import('@/modules/admin/roles/RolesPage'))
 const CatalogPage = lazy(() => import('@/modules/admin/catalog/CatalogPage'))
 const SchemasPage = lazy(() => import('@/modules/admin/schemas/SchemasPage'))
@@ -136,6 +137,7 @@ export const router = createBrowserRouter([
           { element: <RequirePerm perm="admin.employee.read" />, children: [
             { path: routes.admin.employees, element: page(<EmployeesPage />) },
             { path: routes.admin.employee(), element: page(<EmployeePage />) },
+            { path: routes.admin.training, element: page(<TrainingOverviewPage />) },
           ] },
           { element: <RequirePerm perm="admin.role.write" />, children: [{ path: routes.admin.roles, element: page(<RolesPage />) }] },
           { element: <RequirePerm perm="assistant.use" />, children: [{ path: routes.admin.assistant, element: page(<AssistantPage />) }] },

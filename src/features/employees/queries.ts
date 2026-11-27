@@ -1,5 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { Employee, Id, PageQuery, PermissionOverrides } from '@/domain'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { Employee, Id, PageQuery, PermissionOverrides, TrainingOverviewQuery } from '@/domain'
 import { repos } from '@/data'
 
 /** `unitId` narrows the list to one sub-unit of the scope (the employee's home unit). */
@@ -38,6 +38,12 @@ export function useSaveEmployee() {
   })
 }
 
+/** The overview of everyone's training (`modules/admin/training`): one list, narrowed by state, unit and search. */
+export const trainingOverviewKey = ['training-overview'] as const
+export function useTrainingOverview(q: TrainingOverviewQuery) {
+  return useQuery({ queryKey: [...trainingOverviewKey, q], queryFn: () => repos.training.overview(q), placeholderData: keepPreviousData, refetchInterval: 60_000 })
+}
+
 /** A manager's two decisions about a colleague's training: let them through (`skip`) or send them (back) to it (`reset`). */
 export function useEmployeeTraining() {
   const qc = useQueryClient()
@@ -46,6 +52,7 @@ export function useEmployeeTraining() {
     onSuccess: (e) => {
       qc.setQueryData(employeeKeys.one(e.id), e)
       void qc.invalidateQueries({ queryKey: employeeKeys.all })
+      void qc.invalidateQueries({ queryKey: trainingOverviewKey })
     },
   })
 }

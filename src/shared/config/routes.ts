@@ -38,6 +38,8 @@ export const routes = {
     unitDetail: (id = ':unitId') => `/admin/units/${id}`,
     employees: '/admin/employees',
     employee: (id = ':employeeId') => `/admin/employees/${id}`,
+    /** who is in the mandatory training and how far (`?state=` narrows it) */
+    training: '/admin/training',
     roles: '/admin/roles',
     catalog: '/admin/catalog',
     schemas: '/admin/schemas',

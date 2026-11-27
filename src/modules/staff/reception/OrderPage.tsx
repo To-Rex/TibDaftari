@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
@@ -28,6 +28,7 @@ import { RemoveItemModal } from '@/features/reception/RemoveItemModal'
 import { Receipt, type ReceiptProps } from '@/features/reception/Receipt'
 import { printReceipt } from '@/features/printing/printReceipt'
 import { PrintSettingsModal } from '@/features/printing/PrintSettingsModal'
+import { pointAt } from '@/features/training/point'
 
 export default function OrderPage() {
   const { t } = useTranslation()
@@ -79,13 +80,25 @@ export default function OrderPage() {
     try { await removeItem.mutateAsync({ itemId }) } catch (e) { toast.error(errorMessage(e)) } finally { setRemoving(null) }
   }
 
+  const editable = !!order && order.status !== 'cancelled' && order.status !== 'completed' && can('reception.order.create')
+  const remaining = order ? Math.max(0, order.total - order.paidAmount) : 0
+  const payable = !!order && can('reception.payment.create') && order.status !== 'cancelled' && order.itemCount > 0 && remaining > 0
+  // `?pay=1` (the training's «take a payment» leads here): the payment window when there is something to pay, else
+  // the place a service is added first; answered once, then the address is tidied
+  const [sp, setSp] = useSearchParams()
+  const payAsked = sp.get('pay') === '1'
+  const loaded = !!order
+  useEffect(() => {
+    if (!payAsked || !loaded) return
+    if (payable) setPayOpen(true)
+    else if (editable) pointAt('order-add')
+    setSp((prev) => { prev.delete('pay'); return prev }, { replace: true })
+  }, [payAsked, loaded, payable, editable, setSp])
+
   if (q.isError) return <Page><EmptyState title={t('common.error')} description={errorMessage(q.error)} action={<Link to={routes.app.reception}><Button variant="secondary">{t('common.back')}</Button></Link>} /></Page>
 
   const st = order ? orderStatusMeta(order.status) : null
   const pay = order ? paymentStatusMeta(order.payment) : null
-  const editable = !!order && order.status !== 'cancelled' && order.status !== 'completed' && can('reception.order.create')
-  const remaining = order ? Math.max(0, order.total - order.paidAmount) : 0
-  const payable = !!order && can('reception.payment.create') && order.status !== 'cancelled' && order.itemCount > 0 && remaining > 0
 
   return (
     <Page width="wide">

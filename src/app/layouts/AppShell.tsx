@@ -14,7 +14,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import {
   ReceiptText, FileCheck2, LayoutDashboard, ClipboardList, Users, FlaskConical, BadgeCheck, BarChart3, MessageSquare, Building2, UserCog,
   ShieldCheck, FolderTree, ListChecks, LayoutTemplate, Send, PanelLeftClose, PanelLeftOpen, Bell, LogOut, Menu as MenuIcon, X, Globe2, Receipt, ArrowLeftRight,
-  Loader2, Landmark, Sparkles,
+  Loader2, Landmark, Sparkles, GraduationCap,
 } from 'lucide-react'
 import type { OrgUnit, Permission, UnitLevel } from '@/domain'
 import { repos } from '@/data'
@@ -25,6 +25,7 @@ import { useGlobalHotkeys } from '@/features/hotkeys/useGlobalHotkeys'
 import { HotkeysButton, HotkeysHelp } from '@/features/hotkeys/HotkeysHelp'
 import { TourButton, TourProvider, type TourMenuControl } from '@/features/tour'
 import { TrainingCenter, TrainingChip } from '@/features/training'
+import { notificationText } from '@/features/notifications/text'
 import { preloadRouteChunks, warmWorkspaceData } from '@/features/session/warmup'
 import { routes } from '@/shared/config/routes'
 import { cn } from '@/shared/lib/cn'
@@ -110,6 +111,8 @@ export function AppShell({ module }: { module: 'staff' | 'admin' }) {
           { to: routes.admin.unit, label: t('nav.unit'), icon: <Building2 />, perm: 'admin.unit.read', key: 'k', tour: 'nav-unit' },
           { to: routes.admin.units, label: t('nav.units'), icon: <Landmark />, perm: ['admin.unit.manage', 'admin.unit.read'], key: 'f', tour: 'nav-units' },
           { to: routes.admin.employees, label: t('nav.employees'), icon: <UserCog />, perm: 'admin.employee.read', key: 'x', tour: 'nav-employees' },
+          // who is in the mandatory training and how far — one list for the whole scope
+          { to: routes.admin.training, label: t('training.overview.nav'), icon: <GraduationCap />, perm: 'admin.employee.read', key: 'o', tour: 'nav-training' },
           { to: routes.admin.roles, label: t('nav.roles'), icon: <ShieldCheck />, perm: 'admin.role.write', key: 'r', tour: 'nav-roles' },
         ] },
         { id: 'catalog', title: t('nav.catalog'), items: [
@@ -297,17 +300,21 @@ function TopBar({ onMenu, module, onHelp, ws }: { onMenu: () => void; module: 's
               {unread > 0 && <span className="absolute right-1.5 top-1.5 grid size-4 place-items-center rounded-full bg-accent text-[10px] font-bold text-white ring-2 ring-bg">{unread}</span>}
             </span>
           )}
-          items={(notif.data ?? []).slice(0, 6).map((n) => ({
+          items={(notif.data ?? []).slice(0, 6).map((n) => {
+            // a notice the system wrote is said in the reader's language; anything else — as the server worded it
+            const said = notificationText(t, n)
+            return {
             key: n.id,
             label: (
-              <span className="flex flex-col gap-0.5 max-w-[280px]">
-                <span className={cn('text-[13.5px]', !n.read && 'font-semibold')}>{n.title}</span>
-                <span className="text-[12px] text-ink-3 whitespace-normal">{n.body}</span>
+              <span className="flex flex-col gap-0.5 max-w-[280px]" data-notice={n.code ?? undefined}>
+                <span className={cn('text-[13.5px]', !n.read && 'font-semibold')}>{said.title}</span>
+                <span className="text-[12px] text-ink-3 whitespace-normal">{said.body}</span>
               </span>
             ),
             // a notice of the assistant (a scheduled task's answer) names no app: it opens in the one the reader is in
-            onSelect: () => { void repos.messaging.markRead(n.id); if (n.link) nav(n.link.startsWith('/assistant') ? (module === 'admin' ? routes.admin.assistant : routes.app.assistant) + n.link.slice('/assistant'.length) : n.link) },
-          }))}
+            onSelect: () => { void repos.messaging.markRead(n.id).then(() => notif.refetch()).catch(() => undefined); if (n.link) nav(n.link.startsWith('/assistant') ? (module === 'admin' ? routes.admin.assistant : routes.app.assistant) + n.link.slice('/assistant'.length) : n.link) },
+            }
+          })}
         />
         <Menu
           trigger={() => (

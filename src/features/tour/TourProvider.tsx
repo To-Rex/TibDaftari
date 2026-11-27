@@ -32,6 +32,9 @@ export interface TourApi {
   /** tours exist for this reader */
   enabled: boolean
   active: boolean
+  /** a tour is about to open by itself on this page (it waits for the page to settle) — whoever else wants the
+   *  reader's attention with a window of their own lets it go first */
+  pending: boolean
   /** new pages open their tour by themselves */
   auto: boolean
   setAuto: (on: boolean) => void
@@ -40,7 +43,7 @@ export interface TourApi {
   startGeneral: () => void
   startPage: () => void
 }
-const OFF: TourApi = { enabled: false, active: false, auto: false, setAuto: () => {}, hasPageTour: false, startGeneral: () => {}, startPage: () => {} }
+const OFF: TourApi = { enabled: false, active: false, pending: false, auto: false, setAuto: () => {}, hasPageTour: false, startGeneral: () => {}, startPage: () => {} }
 const Ctx = createContext<TourApi>(OFF)
 export const useTour = () => useContext(Ctx)
 
@@ -124,6 +127,7 @@ export function TourProvider({ audience, user, name, menu, known, children }: {
   const [run, setRun] = useState<Run | null>(null)
   const runRef = useRef(run)
   runRef.current = run
+  const [pending, setPending] = useState(false)
   const [auto, setAutoState] = useState(() => (user ? tourMemory(user).auto : false))
   useEffect(() => setAutoState(user ? tourMemory(user).auto : false), [user])
   const menuRef = useRef(menu)
@@ -184,6 +188,7 @@ export function TourProvider({ audience, user, name, menu, known, children }: {
     if (!due) return
     // `on` goes off when the page changes or the tour is no longer due
     const live = { on: true }
+    setPending(true)
     // someone already working on the page is not interrupted: its tour waits for the next visit
     let busy = false
     const touch = () => { busy = true }
@@ -202,19 +207,21 @@ export function TourProvider({ audience, user, name, menu, known, children }: {
         await sleep(200)
       }
       if (live.on && calm >= 3 && (await texts) && live.on && !busy && !dialogOpen() && document.visibilityState === 'visible') begin(due, false)
+      if (live.on) setPending(false)
     })()
-    return () => { live.on = false; window.removeEventListener('pointerdown', touch, true); window.removeEventListener('keydown', touch, true) }
+    return () => { live.on = false; setPending(false); window.removeEventListener('pointerdown', touch, true); window.removeEventListener('keydown', touch, true) }
   }, [user, audience, pathname, page, run, auto, begin, stepPresent, qc])
 
   const api = useMemo<TourApi>(() => (!user ? OFF : {
     enabled: true,
     active: !!run,
+    pending,
     auto,
     setAuto: (on) => { setTourAuto(user, on); setAutoState(on) },
     hasPageTour: !!page,
     startGeneral: () => { void loadTourTexts().then(() => { begin(shellTour(audience), true) }, () => toast.error(tRef.current('common.error'))) },
     startPage: () => { void loadTourTexts().then(() => { if (!page || !begin(page, true)) toast.info(tRef.current('tour.ui.pageNone')) }, () => toast.error(tRef.current('common.error'))) },
-  }), [user, run, auto, page, audience, begin])
+  }), [user, run, pending, auto, page, audience, begin])
 
   return (
     <Ctx.Provider value={api}>

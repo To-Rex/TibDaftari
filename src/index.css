@@ -1023,3 +1023,19 @@ img, video, canvas { max-width: 100%; }
 .dark .tour-spot { box-shadow: 0 0 0 2px var(--c-brand), 0 0 0 6px color-mix(in srgb, var(--c-brand) 30%, transparent), 0 0 0 100vmax rgb(0 0 0 / 0.5); }
 .dark .tour-spot[data-empty] { box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0.5); }
 @media (prefers-reduced-motion: reduce) { .tour-spot.is-gliding { transition: none; } }
+
+/* ------------------------------------------------------------------
+   Training (features/training/point.ts): «here» — the control a task is done with, ringed for a few seconds after
+   the checklist has led to it. An outline, so nothing moves and nothing is covered.
+------------------------------------------------------------------- */
+.training-point {
+  outline: 2px solid var(--c-warn);
+  outline-offset: 3px;
+  border-radius: var(--radius);
+  animation: training-point 1.3s var(--ease-out) 4;
+}
+@keyframes training-point {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c-warn) 46%, transparent); }
+  70%, 100% { box-shadow: 0 0 0 12px transparent; }
+}
+@media (prefers-reduced-motion: reduce) { .training-point { animation: none; } }

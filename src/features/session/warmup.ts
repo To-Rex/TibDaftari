@@ -29,6 +29,7 @@ const ADMIN_ROUTE_CHUNKS = [
   () => import('@/modules/admin/org/UnitsPage'),
   () => import('@/modules/admin/employees/EmployeesPage'),
   () => import('@/modules/admin/employees/EmployeePage'),
+  () => import('@/modules/admin/training/TrainingOverviewPage'),
   () => import('@/modules/admin/roles/RolesPage'),
   () => import('@/modules/admin/catalog/CatalogPage'),
   () => import('@/modules/admin/schemas/SchemasPage'),

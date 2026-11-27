@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
 import { ArrowLeft, ClipboardList } from 'lucide-react'
@@ -22,6 +23,19 @@ export default function ReceptionPage() {
   const [drawer, setDrawer] = useState<{ open: boolean; patient: Patient | null }>({ open: false, patient: null })
   const inputRef = useRef<HTMLInputElement>(null)
   const newOrder = useNewOrder()
+  // `?patient=<id>` opens the page with that patient already picked (the training's checklist leads here to open a
+  // cheque for them); the address is tidied once it has been answered
+  const [sp, setSp] = useSearchParams()
+  const wanted = sp.get('patient')
+  useEffect(() => {
+    if (!wanted || !scopeId) return
+    let live = true
+    void repos.patients.get(wanted, { unitId: scopeId })
+      .then((p) => { if (live) setSelected(p) })
+      .catch((e) => { if (live) toast.error(errorMessage(e)) })
+      .finally(() => { if (live) setSp((prev) => { prev.delete('patient'); return prev }, { replace: true }) })
+    return () => { live = false }
+  }, [wanted, scopeId, setSp])
   // "/" search · N new patient · C new cheque · ? help — the app-wide hotkeys (AppShell) pick these up from
   // `data-search` / `data-hotkey` on the controls below
   const canCreatePatient = can('reception.patient.write')

@@ -27,6 +27,8 @@ import type {
   PatientPasswordChangeInput,
   PatientPasswordLoginInput,
   PatientSession,
+  TrainingOverview,
+  TrainingOverviewQuery,
   TrainingStatus,
   Gender,
   PatientFamily,
@@ -194,12 +196,14 @@ export interface StaffRepository {
   resetTraining(id: Id): Promise<Employee>
 }
 
-/** The signed-in employee's own training («o‘quv rejimi»). */
+/** The mandatory training («o‘quv rejimi»): the signed-in employee's own, and a manager's view of everyone's. */
 export interface TrainingRepository {
   /** `unitId` = the facility they are working in: the practice samples are put into its sandbox */
   status(unitId?: Id | null): Promise<TrainingStatus>
   /** every task done → from the next request the employee works with the real data */
   complete(unitId?: Id | null): Promise<TrainingStatus>
+  /** a manager's list: everyone the training concerns inside their scope (a superadmin: every company and clinic) */
+  overview(q?: TrainingOverviewQuery): Promise<TrainingOverview>
 }
 
 export interface PatientRepository {
