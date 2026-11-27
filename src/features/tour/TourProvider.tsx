@@ -21,7 +21,7 @@ import { loadTourTexts } from '@/shared/i18n'
 import { cn } from '@/shared/lib/cn'
 import { Button, toast } from '@/shared/ui'
 import { pageTour, shellTour } from './registry'
-import { markTourSeen, setTourAuto, tourMemory } from './storage'
+import { forgetTours, markTourSeen, setTourAuto, tourMemory } from './storage'
 import { TOP_SEEN, TOP_STEP_KEYS } from './tours/shell'
 import type { TourAudience, TourDef, TourStep } from './types'
 
@@ -42,8 +42,11 @@ export interface TourApi {
   hasPageTour: boolean
   startGeneral: () => void
   startPage: () => void
+  /** show the tours again by themselves: all of them, as on the first day (`'all'`), or the tours of the named
+   *  pages (their `id`) — someone going through the training again is taught again */
+  replay: (ids: string[] | 'all') => void
 }
-const OFF: TourApi = { enabled: false, active: false, pending: false, auto: false, setAuto: () => {}, hasPageTour: false, startGeneral: () => {}, startPage: () => {} }
+const OFF: TourApi = { enabled: false, active: false, pending: false, auto: false, setAuto: () => {}, hasPageTour: false, startGeneral: () => {}, startPage: () => {}, replay: () => {} }
 const Ctx = createContext<TourApi>(OFF)
 export const useTour = () => useContext(Ctx)
 
@@ -128,6 +131,8 @@ export function TourProvider({ audience, user, name, menu, known, children }: {
   const runRef = useRef(run)
   runRef.current = run
   const [pending, setPending] = useState(false)
+  /** bumped when the memory was changed from outside (`replay`): the first-visit rule is asked again */
+  const [epoch, setEpoch] = useState(0)
   const [auto, setAutoState] = useState(() => (user ? tourMemory(user).auto : false))
   useEffect(() => setAutoState(user ? tourMemory(user).auto : false), [user])
   const menuRef = useRef(menu)
@@ -210,7 +215,7 @@ export function TourProvider({ audience, user, name, menu, known, children }: {
       if (live.on) setPending(false)
     })()
     return () => { live.on = false; setPending(false); window.removeEventListener('pointerdown', touch, true); window.removeEventListener('keydown', touch, true) }
-  }, [user, audience, pathname, page, run, auto, begin, stepPresent, qc])
+  }, [user, audience, pathname, page, run, auto, epoch, begin, stepPresent, qc])
 
   const api = useMemo<TourApi>(() => (!user ? OFF : {
     enabled: true,
@@ -221,6 +226,7 @@ export function TourProvider({ audience, user, name, menu, known, children }: {
     hasPageTour: !!page,
     startGeneral: () => { void loadTourTexts().then(() => { begin(shellTour(audience), true) }, () => toast.error(tRef.current('common.error'))) },
     startPage: () => { void loadTourTexts().then(() => { if (!page || !begin(page, true)) toast.info(tRef.current('tour.ui.pageNone')) }, () => toast.error(tRef.current('common.error'))) },
+    replay: (ids) => { forgetTours(user, ids); rested.current = null; setAutoState(true); setEpoch((n) => n + 1) },
   }), [user, run, pending, auto, page, audience, begin])
 
   return (

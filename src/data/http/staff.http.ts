@@ -27,5 +27,5 @@ export const staffHttp: StaffRepository = {
 
   skipTraining: (id) => api.post<Employee>(`/employees/${id}/training/skip`),
 
-  resetTraining: (id) => api.post<Employee>(`/employees/${id}/training/reset`),
+  resetTraining: (id, tasks) => api.post<Employee>(`/employees/${id}/training/reset`, tasks?.length ? { tasks } : undefined),
 }

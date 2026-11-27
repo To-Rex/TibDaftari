@@ -15,10 +15,13 @@ export const trainingKeys = {
   status: (unitId: Id | null) => ['training', 'status', unitId] as const,
 }
 
-/** The checklist drawer — opened from the top bar's chip and from the banner. */
-export const useTrainingPanel = create<{ open: boolean; setOpen: (open: boolean) => void }>((set) => ({
+/** The checklist drawer — opened from the top bar's chip and from the banner — and the «repeat the training» window,
+ *  opened from the user menu and from the drawer. */
+export const useTrainingPanel = create<{ open: boolean; setOpen: (open: boolean) => void; repeat: boolean; setRepeat: (repeat: boolean) => void }>((set) => ({
   open: false,
   setOpen: (open) => set({ open }),
+  repeat: false,
+  setRepeat: (repeat) => set({ repeat }),
 }))
 
 export function useTrainingStatus(unitId: Id | null, ready = true) {

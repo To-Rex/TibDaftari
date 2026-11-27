@@ -9,7 +9,7 @@
  */
 import type { TFunction } from 'i18next'
 import { BadgeCheck, CreditCard, FlaskConical, ListPlus, ReceiptText, SendHorizontal, UserPlus, type LucideIcon } from 'lucide-react'
-import type { TrainingTarget, TrainingTask, TrainingTaskKey } from '@/domain'
+import type { Permission, TrainingTarget, TrainingTask, TrainingTaskKey } from '@/domain'
 import { routes } from '@/shared/config/routes'
 
 interface TaskMeta {
@@ -42,6 +42,22 @@ export const TASK_META: Record<TrainingTaskKey, TaskMeta> = {
   result_submit: { icon: SendHorizontal, to: routes.app.lab, button: 'clinical.lab.submit', at: (t) => (t.itemId ? routes.app.labItem(t.itemId) : undefined), point: 'labItem-submit' },
   result_approve: { icon: BadgeCheck, to: routes.app.confirm, page: 'nav.confirm', button: 'clinical.confirm.approve', at: (t) => (t.itemId ? `${routes.app.confirm}?item=${t.itemId}` : undefined), point: 'confirm-approve' },
 }
+
+/** Holding any of these gives a role something to practise (the server's `training.tasks` — it decides; this only
+ *  tells whether «repeat the training» is worth offering). */
+export const TASK_PERMISSIONS: Permission[] = ['reception.patient.write', 'reception.order.create', 'reception.payment.create', 'lab.result.write', 'lab.result.submit', 'confirm.result.approve']
+
+/** The page tours that teach a task (`features/tour` ids): someone repeating only some tasks is shown these again. */
+const TASK_TOURS: Record<TrainingTaskKey, string[]> = {
+  patient_create: ['patients'],
+  order_create: ['reception'],
+  order_add_item: ['order'],
+  payment_take: ['order'],
+  result_enter: ['lab', 'labItem'],
+  result_submit: ['labItem'],
+  result_approve: ['confirm'],
+}
+export const toursOf = (keys: string[]): string[] => [...new Set(keys.flatMap((k) => (TASK_TOURS as Record<string, string[] | undefined>)[k] ?? []))]
 
 /** A task the server knows and this build does not yet: shown by its key, never hidden (it still has to be done). */
 const metaOf = (key: string): TaskMeta | undefined => (TASK_META as Record<string, TaskMeta | undefined>)[key]

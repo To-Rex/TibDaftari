@@ -51,6 +51,14 @@ export interface TrainingStatus {
   /** the facility whose sandbox holds the practice samples */
   unitId?: Id | null
   unitName?: string | null
+  /** a repeat they started themselves: they may leave it at any time */
+  voluntary?: boolean
+  /** only some tasks of the role were chosen for this round */
+  partial?: boolean
+  /** which time this is (1 = the first training) */
+  attempt?: number
+  /** every task the role has now — what a repeat can be made of (absent from an older API) */
+  plan?: TrainingTaskKey[]
 }
 
 /** A colleague's training as a manager sees it: on their card and in the overview. */
@@ -70,6 +78,16 @@ export interface EmployeeTraining {
   completedAt?: IsoDateTime | null
   /** who let them through (state `skipped`) */
   completedByName?: string | null
+  /** a repeat the employee started themselves (they may leave it; nobody is reminded about it) */
+  voluntary?: boolean
+  /** only some tasks of the role were chosen for this round */
+  partial?: boolean
+  /** which time this is (1 = the first training) */
+  attempt?: number
+  /** the manager who sent them (back); absent for the first training and for a repeat of their own */
+  startedByName?: string | null
+  /** every task the employee's role has now — what a manager chooses from when sending them (back) */
+  plan?: TrainingTaskKey[]
 }
 
 /** What the overview can be narrowed to: `open` = in the training or not signed in yet; `stalled` = in it for

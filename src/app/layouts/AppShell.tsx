@@ -24,7 +24,8 @@ import { UnitSwitcher } from '@/features/org/UnitSwitcher'
 import { useGlobalHotkeys } from '@/features/hotkeys/useGlobalHotkeys'
 import { HotkeysButton, HotkeysHelp } from '@/features/hotkeys/HotkeysHelp'
 import { TourButton, TourProvider, type TourMenuControl } from '@/features/tour'
-import { TrainingCenter, TrainingChip } from '@/features/training'
+import { TrainingCenter, TrainingChip, useTrainingPanel } from '@/features/training'
+import { TASK_PERMISSIONS } from '@/features/training/tasks'
 import { notificationText } from '@/features/notifications/text'
 import { preloadRouteChunks, warmWorkspaceData } from '@/features/session/warmup'
 import { routes } from '@/shared/config/routes'
@@ -252,6 +253,9 @@ function TopBar({ onMenu, module, onHelp, ws }: { onMenu: () => void; module: 's
   const logoutStaff = useAuth((s) => s.logoutStaff)
   const { staff: s, shape, scopeUnit, facilities, facility, setScopeUnit, setFacility } = ws
   const notif = useQuery({ queryKey: ['notifications'], queryFn: () => repos.messaging.notifications(), refetchInterval: 60_000 })
+  const { can, isSuperAdmin, isInstaller } = usePermissions()
+  const inTraining = useInTraining()
+  const canRepeat = !isSuperAdmin && !isInstaller && can(TASK_PERMISSIONS)
   const unread = notif.data?.filter((n) => !n.read).length ?? 0
   // the scope switcher: every unit the employee may administer (their subtree(s)); for a superadmin the whole tree
   // a superadmin: the whole tree; everyone else: their own scope roots (home + extra units) with everything under
@@ -327,7 +331,9 @@ function TopBar({ onMenu, module, onHelp, ws }: { onMenu: () => void; module: 's
             </button>
           )}
           items={[
-            { key: 'logout', label: t('common.logout'), icon: <LogOut />, danger: true, onSelect: () => { void logoutStaff().then(() => nav(routes.staffLogin)) } },
+            // anyone whose role has something to practise may go through the training again (the whole plan or what they forgot)
+            ...(canRepeat ? [{ key: 'training', label: inTraining ? t('training.repeat.again') : t('training.repeat.menu'), icon: <GraduationCap />, onSelect: () => useTrainingPanel.getState().setRepeat(true) }] : []),
+            { key: 'logout', label: t('common.logout'), icon: <LogOut />, danger: true, onSelect: () => { void logoutStaff().then(() => nav(routes.staffLogin)) }, separatorBefore: canRepeat },
           ]}
         />
       </div>

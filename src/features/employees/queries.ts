@@ -44,11 +44,13 @@ export function useTrainingOverview(q: TrainingOverviewQuery) {
   return useQuery({ queryKey: [...trainingOverviewKey, q], queryFn: () => repos.training.overview(q), placeholderData: keepPreviousData, refetchInterval: 60_000 })
 }
 
-/** A manager's two decisions about a colleague's training: let them through (`skip`) or send them (back) to it (`reset`). */
+/** A manager's two decisions about a colleague's training: let them through (`skip`) or send them (back) to it
+ *  (`reset` — the whole plan of their role, or only the tasks named). */
 export function useEmployeeTraining() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ id, action }: { id: Id; action: 'skip' | 'reset' }) => (action === 'skip' ? repos.staff.skipTraining(id) : repos.staff.resetTraining(id)),
+    mutationFn: ({ id, action, tasks }: { id: Id; action: 'skip' | 'reset'; /** `reset` only: the tasks to practise (none = the whole plan) */ tasks?: string[] }) =>
+      (action === 'skip' ? repos.staff.skipTraining(id) : repos.staff.resetTraining(id, tasks)),
     onSuccess: (e) => {
       qc.setQueryData(employeeKeys.one(e.id), e)
       void qc.invalidateQueries({ queryKey: employeeKeys.all })

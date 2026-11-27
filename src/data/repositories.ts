@@ -192,8 +192,9 @@ export interface StaffRepository {
   deleteRole(id: Id): Promise<void>
   /** let a new employee work with the real data without the training */
   skipTraining(id: Id): Promise<Employee>
-  /** send an employee (back) to the training: they work in the sandbox until the tasks of their role are done */
-  resetTraining(id: Id): Promise<Employee>
+  /** send an employee (back) to the training: they work in the sandbox until the tasks are done — every task of
+   *  their role (as on the first day), or only `tasks` */
+  resetTraining(id: Id, tasks?: string[]): Promise<Employee>
 }
 
 /** The mandatory training («o‘quv rejimi»): the signed-in employee's own, and a manager's view of everyone's. */
@@ -202,6 +203,10 @@ export interface TrainingRepository {
   status(unitId?: Id | null): Promise<TrainingStatus>
   /** every task done → from the next request the employee works with the real data */
   complete(unitId?: Id | null): Promise<TrainingStatus>
+  /** go through the training again by one's own wish: the whole plan, or only `tasks` (it can be left at any time) */
+  restart(unitId?: Id | null, tasks?: string[]): Promise<TrainingStatus>
+  /** leave a repeat one started oneself — back to the real data */
+  leave(): Promise<TrainingStatus>
   /** a manager's list: everyone the training concerns inside their scope (a superadmin: every company and clinic) */
   overview(q?: TrainingOverviewQuery): Promise<TrainingOverview>
 }

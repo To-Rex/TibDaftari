@@ -28,3 +28,10 @@ function update(user: string, change: (m: TourMemory) => void) {
 }
 export const markTourSeen = (user: string, ids: string[], version = 1) => update(user, (m) => { for (const id of ids) m.seen[id] = Math.max(m.seen[id] ?? 0, version) })
 export const setTourAuto = (user: string, on: boolean) => update(user, (m) => { m.auto = on })
+/** Forget what was shown — everything (`'all'`: the reader meets the tours as on the first day) or the named tours —
+ *  and let them open by themselves again. */
+export const forgetTours = (user: string, ids: string[] | 'all') => update(user, (m) => {
+  if (ids === 'all') m.seen = {}
+  else for (const id of ids) delete m.seen[id]
+  m.auto = true
+})
