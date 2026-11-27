@@ -40,7 +40,7 @@ const uz = {
   messages: {
     intro: { title: 'SMS xabarlar', body: 'Bemorlarga ketgan barcha SMS’lar shu yerda yoziladi: to‘lov cheki, natija tayyorligi, kodlar va o‘zingiz yozgan xabarlar. Xabar yetib borgan-bormaganini shu yerdan tekshirasiz.' },
     search: { title: 'Qidiruv va holat yorliqlari', body: 'Telefon raqami yoki xabar matnidan bir bo‘lagini yozib qidiring. Ustidagi yorliqlar xabarlarni holati bo‘yicha ajratadi — masalan, «Xato» faqat yuborilmaganlarini ko‘rsatadi.' },
-    list: { title: 'Xabarlar jurnali', body: 'Har bir qator — bitta SMS: kimga ketgani, matni, turi va vaqti. Eng yangisi tepada. Yuborilayotgan xabar bo‘lsa, ro‘yxat o‘zi yangilanib turadi.' },
+    list: { title: 'Xabarlar jurnali', body: 'Har bir qator — bitta SMS: kimga ketgani, matni, turi va vaqti. Eng yangisi tepada. Yuborilayotgan xabar bo‘lsa, ro‘yxat o‘zi yangilanib turadi. Qatorni bossangiz, xabar to‘liq ochiladi: butun matni, qaysi bosqichda ekani va amallar — nusxa olish, qayta yuborish, navbatdagisini bekor qilish.' },
     status: { title: 'Xabar holati', body: '«Navbatda» — hali ketmagan, «Yuborildi» — operatorga topshirilgan, «Yetkazildi» — bemor telefoniga yetgan. «Xato» bo‘lsa, sababi shu yerda qizil yozuvda turadi.' },
     newMessage: { title: 'Yangi xabar yozish', body: '«Yangi xabar» tugmasi yon oynani ochadi: telefon raqamini va matnni yozib, «Yuborish»ni bosasiz. «Keyinroq yuborish»ni yoqsangiz, xabar siz belgilagan vaqtda ketadi.' },
   },
@@ -91,7 +91,7 @@ const ru: typeof uz = {
   messages: {
     intro: { title: 'SMS-сообщения', body: 'Здесь записаны все SMS, отправленные пациентам: чеки об оплате, сообщения о готовом результате, коды и те, что написали вы сами. Здесь же видно, дошло сообщение или нет.' },
     search: { title: 'Поиск и вкладки статусов', body: 'Ищите по номеру телефона или части текста. Вкладки выше отбирают сообщения по статусу — например, «Ошибка» покажет только неотправленные.' },
-    list: { title: 'Журнал сообщений', body: 'Каждая строка — одно SMS: кому ушло, текст, тип и время. Самые новые — сверху. Пока есть отправляемые сообщения, список обновляется сам.' },
+    list: { title: 'Журнал сообщений', body: 'Каждая строка — одно SMS: кому ушло, текст, тип и время. Самые новые — сверху. Пока есть отправляемые сообщения, список обновляется сам. Нажмите на строку — сообщение откроется целиком: весь текст, на каком оно этапе и действия — скопировать, отправить повторно, отменить то, что ещё в очереди.' },
     status: { title: 'Статус сообщения', body: '«В очереди» — ещё не ушло, «Отправлено» — передано оператору, «Доставлено» — дошло до телефона пациента. При статусе «Ошибка» причина написана здесь красным.' },
     newMessage: { title: 'Новое сообщение', body: 'Кнопка «Новое сообщение» открывает боковую панель: введите номер телефона и текст, затем нажмите «Отправить». Включите «Отправить позже» — и сообщение уйдёт в указанное вами время.' },
   },
@@ -142,7 +142,7 @@ const en: typeof uz = {
   messages: {
     intro: { title: 'SMS messages', body: 'Every SMS sent to patients is recorded here: payment receipts, result-ready notices, codes and the ones you write yourself. This is where you check whether a message arrived.' },
     search: { title: 'Search and status tabs', body: 'Search by phone number or a piece of the text. The tabs above filter messages by status — “Failed”, for example, shows only those that were not sent.' },
-    list: { title: 'The message log', body: 'Each row is one SMS: who it went to, its text, kind and time. The newest are on top. While messages are on their way, the list refreshes by itself.' },
+    list: { title: 'The message log', body: 'Each row is one SMS: who it went to, its text, kind and time. The newest are on top. While messages are on their way, the list refreshes by itself. Click a row and the message opens in full: the whole text, the stage it is at, and actions — copy, send again, cancel what is still queued.' },
     status: { title: 'Message status', body: '“Queued” — not sent yet, “Sent” — handed to the operator, “Delivered” — reached the patient’s phone. With “Failed”, the reason is written here in red.' },
     newMessage: { title: 'Writing a new message', body: 'The “New message” button opens a side panel: type the phone number and the text, then press “Send”. Switch on “Send later” and the message goes out at the time you set.' },
   },

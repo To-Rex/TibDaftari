@@ -1,5 +1,5 @@
 /** "New message" drawer: recipients, quick templates, text with segment counter, optional schedule. */
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
 import { CalendarClock, Globe2, Send, Users } from 'lucide-react'
@@ -9,6 +9,7 @@ import { errorMessage } from '@/shared/lib/errors'
 import { fmtPhone } from '@/shared/lib/format'
 import { Button, Drawer, Field, Input, Select, Switch, Textarea, toast } from '@/shared/ui'
 import { useUnitSms } from '@/features/org/queries'
+import type { ComposeSeed } from './MessageDrawer'
 import { useSendSms } from './queries'
 import { parseRecipients, smsInfo } from './sms'
 import { regionNames } from '@/shared/i18n'
@@ -16,12 +17,14 @@ import { regionNames } from '@/shared/i18n'
 /** the countries offered for numbers abroad (ISO-2; the names come from the browser in the UI language) */
 const ABROAD = ['KZ', 'RU', 'KG', 'TJ', 'TM', 'TR', 'AE', 'KR', 'CN', 'IN', 'AF', 'AZ', 'BY', 'UA', 'GE', 'DE', 'GB', 'US', 'SA', 'EG'] as const
 
-export function ComposeDrawer({ open, onClose, scopeId, canBroadcast }: {
+export function ComposeDrawer({ open, onClose, scopeId, canBroadcast, seed }: {
   open: boolean
   onClose: () => void
   /** the unit the outbox page works in — the facility, or (no facility chosen under it) a unit above facility level */
   scopeId: string
   canBroadcast: boolean
+  /** opened from a message of the journal: the same number (and country) and, when it may be reused, its text */
+  seed?: ComposeSeed
 }) {
   const { t, i18n } = useTranslation()
   const [to, setTo] = useState('')
@@ -33,6 +36,17 @@ export function ComposeDrawer({ open, onClose, scopeId, canBroadcast }: {
   const [abroad, setAbroad] = useState(false)
   const [country, setCountry] = useState<string>('KZ')
   const send = useSendSms(scopeId)
+  // what the journal handed over replaces whatever was typed before — the drawer was opened FOR that message
+  useEffect(() => {
+    if (!open || !seed) return
+    const away = seed.countryCode && seed.countryCode !== 'UZ' ? seed.countryCode : null
+    setTo(seed.to ? (away ? `+${seed.to.replace(/\D/g, '')}` : fmtPhone(seed.to)) : '')
+    setText(seed.text ?? '')
+    setAbroad(!!away)
+    if (away) setCountry(away)
+    setSchedule(false)
+    setWhen('')
+  }, [open, seed])
   // a message goes out from a facility: the scope itself, or — when the scope sits above facility level — one picked here
   const { shape } = useWorkspace()
   const scopeUnit = shape.byId.get(scopeId)
@@ -55,6 +69,8 @@ export function ComposeDrawer({ open, onClose, scopeId, canBroadcast }: {
   const account = useUnitSms(unitId ?? scopeId)
   const abroadBlocked = abroad && !!account.data && account.data.provider !== 'eskiz'
   const countryName = useMemo(() => regionNames(i18n.language), [i18n.language])
+  // a country a message of the journal went to is offered even when it is not one of the usual ones
+  const countries = useMemo(() => ((ABROAD as readonly string[]).includes(country) ? [...ABROAD] : [country, ...ABROAD]), [country])
   const info = useMemo(() => smsInfo(text), [text])
   const tooMany = !canBroadcast && rec.valid.length > 1
   const canSend = rec.valid.length > 0 && text.trim().length > 0 && !tooMany && !abroadBlocked && (!schedule || !!when) && (isFacility || !!unitId)
@@ -93,7 +109,7 @@ export function ComposeDrawer({ open, onClose, scopeId, canBroadcast }: {
             <Field label={t('clinical.messages.abroadCountry')} hint={abroadBlocked ? undefined : t('clinical.messages.abroadCountryHint')} error={abroadBlocked ? t('clinical.messages.abroadNeedsEskiz') : undefined}>
               {(id) => (
                 <Select id={id} value={country} onChange={(e) => setCountry(e.target.value)} data-compose-country>
-                  {ABROAD.map((c) => <option key={c} value={c}>{countryName?.of(c) ?? c} · {c}</option>)}
+                  {countries.map((c) => <option key={c} value={c}>{countryName?.of(c) ?? c} · {c}</option>)}
                 </Select>
               )}
             </Field>

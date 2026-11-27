@@ -31,6 +31,20 @@ export interface OutboxMessage extends AuditStamp {
   parts?: number | null
   cost?: number | null
   providerStatus?: string | null
+  /** who the message is for and which cheque it is about, by name (the ids are above) */
+  patientName?: string | null
+  orderNumber?: string | null
+  /** the employee who wrote it or sent it again; empty = the system sent it on its own (a receipt, a result, a code) */
+  sentByName?: string | null
+  /** a message waiting for another try after a provider hiccup: when that try is due */
+  nextAttemptAt?: IsoDateTime | null
+  /** the text is a credential (a code, a password): the journal keeps it masked and it is never sent again */
+  secret?: boolean
+  /** the message this one repeats (it was sent again from the journal) */
+  resendOf?: Id | null
+  /** what the reader may do with it right now — their permission and the message's state together */
+  canCancel?: boolean
+  canResend?: boolean
 }
 
 export interface Notification {

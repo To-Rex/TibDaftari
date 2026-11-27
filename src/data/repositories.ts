@@ -309,9 +309,17 @@ export interface TemplateRepository {
 }
 
 export interface MessagingRepository {
-  listOutbox(scopeId: Id, q: PageQuery & { status?: string; kind?: string; unitId?: Id }): Promise<Page<OutboxMessage>>
+  /** `dateFrom` / `dateTo`: inclusive calendar days (yyyy-MM-dd) the message was written on. */
+  listOutbox(scopeId: Id, q: PageQuery & { status?: string; kind?: string; unitId?: Id; dateFrom?: string; dateTo?: string }): Promise<Page<OutboxMessage>>
   /** Per-status counters for the same outbox filters (one request for all tabs). */
-  outboxCounts(scopeId: Id, q: { kind?: string; search?: string; unitId?: Id }): Promise<Record<'all' | MessageStatus | 'sending', number>>
+  outboxCounts(scopeId: Id, q: { kind?: string; search?: string; unitId?: Id; dateFrom?: string; dateTo?: string }): Promise<Record<'all' | MessageStatus | 'sending', number>>
+  /** One message of the unit's journal (404 when it is not under the unit). */
+  getOutbox(scopeId: Id, id: Id): Promise<OutboxMessage>
+  /** Take a waiting message out of the queue; 409 `message_not_cancellable` once it has gone to the provider. */
+  cancelOutbox(scopeId: Id, id: Id): Promise<OutboxMessage>
+  /** Send a finished SMS again — answers with the NEW message. 409 `message_secret` | `message_not_resendable` |
+   *  `message_in_flight` | `message_already_resent`. */
+  resendOutbox(scopeId: Id, id: Id): Promise<OutboxMessage>
   /** `unitId` = the facility the message goes out from (default: the scope when it is a facility) */
   send(scopeId: Id, input: { to: string[]; text: string; kind: OutboxMessage['kind']; scheduledAt?: string; unitId?: Id; /** ISO-2; another country than UZ = international numbers through Eskiz */ countryCode?: string }): Promise<OutboxMessage[]>
   notifications(): Promise<Notification[]>

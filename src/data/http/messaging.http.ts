@@ -7,7 +7,7 @@ import type { MessagingRepository } from '@/data/repositories'
 import { api, compact } from './client'
 
 export const messagingHttp: MessagingRepository = {
-  outboxCounts: (scopeId, q) => api.get(`/units/${scopeId}/outbox/counts`, { query: { kind: q.kind, search: q.search, unitId: q.unitId } }),
+  outboxCounts: (scopeId, q) => api.get(`/units/${scopeId}/outbox/counts`, { query: { kind: q.kind, search: q.search, unitId: q.unitId, dateFrom: q.dateFrom, dateTo: q.dateTo } }),
 
   /** Sort is fixed server-side (createdAt desc); sortBy/sortDir are forwarded but ignored. */
   listOutbox: (scopeId, q) =>
@@ -21,13 +21,19 @@ export const messagingHttp: MessagingRepository = {
         status: q.status,
         kind: q.kind,
         unitId: q.unitId,
+        dateFrom: q.dateFrom,
+        dateTo: q.dateTo,
       },
     }),
+
+  getOutbox: (scopeId, id) => api.get<OutboxMessage>(`/units/${scopeId}/outbox/${id}`),
+  cancelOutbox: (scopeId, id) => api.post<OutboxMessage>(`/units/${scopeId}/outbox/${id}/cancel`),
+  resendOutbox: (scopeId, id) => api.post<OutboxMessage>(`/units/${scopeId}/outbox/${id}/resend`),
 
   send: (scopeId, input) =>
     api.post<OutboxMessage[]>(
       `/units/${scopeId}/messages/send`,
-      compact({ to: input.to, text: input.text, kind: input.kind, scheduledAt: input.scheduledAt, unitId: input.unitId }),
+      compact({ to: input.to, text: input.text, kind: input.kind, scheduledAt: input.scheduledAt, unitId: input.unitId, countryCode: input.countryCode }),
     ),
 
   notifications: () => api.get<Notification[]>('/notifications'),

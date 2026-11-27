@@ -92,15 +92,16 @@ export function Drawer({ open, onClose, title, description, children, footer, si
         <div className={cn('fixed inset-0 z-[80] flex', side === 'right' ? 'justify-end' : 'justify-start')} role="dialog" aria-modal>
           <motion.div initial={reduce ? false : { opacity: 0 }} animate={reduce ? undefined : { opacity: 1 }} exit={reduce ? undefined : { opacity: 0 }} transition={{ duration: reduce ? 0.01 : 0.2 }} className="app-modal-backdrop absolute inset-0 bg-ink/40 backdrop-blur-[2px] dark:bg-black/60" onClick={onClose} />
           <motion.div initial={reduce ? false : { x, opacity: 0.6 }} animate={reduce ? undefined : { x: 0, opacity: 1 }} exit={reduce ? undefined : { x, opacity: 0 }} transition={reduce ? { duration: 0.01 } : spring} className={cn('app-drawer-surface relative flex h-full w-full flex-col border-l border-line bg-bg-elevated shadow-3', width, className)}>
-            <div className="flex items-start gap-4 px-6 pt-5 pb-3 border-b border-line">
+            {/* a phone gets its whole width: narrower gutters, a footer that wraps and clears the home indicator */}
+            <div className="flex items-start gap-3 border-b border-line px-4 pb-3 pt-4 sm:gap-4 sm:px-6 sm:pt-5">
               <div className="min-w-0 flex-1">
                 {title && <h2 className="text-[17px] font-semibold leading-6">{title}</h2>}
                 {description && <p className="mt-0.5 text-[13.5px] text-ink-3">{description}</p>}
               </div>
               <IconButton label="close" size="sm" onClick={onClose} className="-mr-2 -mt-1"><X /></IconButton>
             </div>
-            <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
-            {footer && <div className="px-6 py-4 border-t border-line flex items-center justify-end gap-2 bg-surface/60">{footer}</div>}
+            <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 sm:py-5">{children}</div>
+            {footer && <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line bg-surface/60 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 sm:px-6 sm:py-4">{footer}</div>}
           </motion.div>
         </div>
       )}
